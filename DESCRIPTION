@@ -1,0 +1,33 @@
+Package: ClassifyR
+Type: Package
+Title: A framework for two-class classification problems, with
+        applications to differential variability and differential
+        distribution testing.
+Version: 0.99.4
+Date: 2014-08-20
+Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
+Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
+VignetteBuilder: knitr
+biocViews: Classification, Survival
+Depends: R (>= 3.1.1), methods, Biobase, BiocParallel
+Imports: limma (>= 3.20.7), edgeR (>= 3.6.5), robustbase, car, Rmixmod,
+        ggplot2, grid, gridExtra, ROCR, PoiClaClu, locfit
+Suggests: sparsediscrim, curatedOvarianData, parathyroidSE, knitr, klaR
+Description: The software formalises a framework for classification in
+        R. There are four stages. Data transformation, feature
+        selection, and prediction. The requirements of variable types
+        and names are fixed, but specialised variables for functions
+        can also be provided. The classification framework is wrapped
+        in a driver loop, that reproducibly does a couple of
+        cross-validation schemes. Functions for differential
+        expression, differential variability, and differential
+        distribution are included. Additional functions may be
+        developed by the user, if they have better performing methods.
+Collate: classes.R utilities.R calcError.R classify.R edgeRselection.R
+        errorMap.R fisherDiscriminant.R distribution.R
+        getLocationsAndScales.R KolmogorovSmirnovSelection.R
+        KullbackLeiblerSelection.R leveneSelection.R
+        likelihoodRatioSelection.R limmaSelection.R mixmodels.R
+        naiveBayesKernel.R plotFeatureClasses.R runTest.R runTests.R
+        subtractFromLocation.R
+License: GPL-3
