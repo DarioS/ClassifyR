@@ -20,6 +20,7 @@ setMethod("edgeRselection", "ExpressionSet",
 {
   if(verbose == 3)
     message("Doing feature selection.")
+  allFeatures <- featureNames(expression)
   exprMatrix <- exprs(expression)
   colnames(exprMatrix) <- NULL # Might be duplicates because of sampling with replacement.  
   classes <- pData(expression)[, "class"]
@@ -43,7 +44,7 @@ setMethod("edgeRselection", "ExpressionSet",
     message("Fitting linear model.")
   fit <- do.call(glmFit, paramList)
   result <- topTags(glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
-  orderedFeatures <- rownames(result[["table"]])
+  orderedFeatures <- match(rownames(result[["table"]]), allFeatures)
 
   if(verbose == 3)
     message("Selecting number of features to use.")
