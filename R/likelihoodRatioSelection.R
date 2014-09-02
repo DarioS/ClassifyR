@@ -44,12 +44,12 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   switch(alternative[["location"]], same = allDistribution[[1]], different = otherClassDistribution[[1]]),
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
 
-  orderedGenes <- order(logLikelihoodRatios)
+  orderedFeatures <- order(logLikelihoodRatios)
   if(verbose == 3)
     message("Selecting number of features to use.")
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                        trainParams, predictParams, verbose = verbose) != classes) / length(classes)
   })
@@ -57,5 +57,5 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   
   if(verbose == 3)
     message("Features selected.")
-  orderedGenes[.pickRows(errorRates)]
+  orderedFeatures[.pickRows(errorRates)]
 })

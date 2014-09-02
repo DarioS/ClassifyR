@@ -31,7 +31,7 @@
 
 .doTransform <- function(expression, transformParams, verbose)
 {
-  if(capture.output(transformParams@transform)[1] != "function () ")
+  if(!grepl("{}", paste(capture.output(transformParams@transform), collapse = ''), fixed = TRUE))
   {
     paramList <- list(expression)
     do.call(transformParams@transform,

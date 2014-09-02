@@ -15,7 +15,7 @@ setMethod("runTest", c("ExpressionSet"),
                    trainParams = TrainParams(), predictParams = PredictParams(), verbose = 1)
 {    
   doFirst <- match.arg(doFirst)
-  if(capture.output(transformParams@transform)[1] != "function () ")
+  if(!grepl("{}", paste(capture.output(transformParams@transform), collapse = ''), fixed = TRUE))
     transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
   if(doFirst == "transform") # Transformation, followed by feature selection.
   {

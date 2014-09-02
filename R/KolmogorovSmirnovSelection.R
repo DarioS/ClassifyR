@@ -22,12 +22,12 @@ setMethod("KolmogorovSmirnovSelection", "ExpressionSet",
   otherClass <- classes == levels(classes)[2]
   KSdistance <- apply(exprs(expression), 1, function(geneRow)
                       ks.test(geneRow[oneClass], geneRow[otherClass], ...)[["statistic"]])
-  orderedGenes <- order(KSdistance, decreasing = TRUE)
+  orderedFeatures <- order(KSdistance, decreasing = TRUE)
   if(verbose == 3)
     message("Selecting number of features to use.")
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                        trainParams, predictParams, verbose = verbose) != classes) / length(classes)
   })
@@ -38,7 +38,7 @@ setMethod("KolmogorovSmirnovSelection", "ExpressionSet",
     message("Features selected.")
   
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedGenes[pickedSet])
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
   else
-    orderedGenes[picked]
+    orderedFeatures[picked]
 })

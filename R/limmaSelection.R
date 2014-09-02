@@ -20,19 +20,20 @@ setMethod("limmaSelection", "ExpressionSet",
     message("Doing feature selection.")
   exprMatrix <- exprs(expression)
   classes <- pData(expression)[, "class"]
+  allFeatures <- featureNames(expression)
   
   fitParams <- list(exprMatrix, model.matrix(~ classes))
   if(!missing(...))
     fitParams <- append(fitParams, list(...))
   prognosisModel <- do.call(lmFit, fitParams)
   prognosisModel <- eBayes(prognosisModel)
-  orderedGenes <- rownames(topTable(prognosisModel, 2, number = Inf, sort.by = "p"))
+  orderedFeatures <- match(rownames(topTable(prognosisModel, 2, number = Inf, sort.by = "p")), allFeatures)
   
   if(verbose == 3)
     message("Selecting number of features to use.")
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                        trainParams, predictParams, verbose = verbose) != classes) / length(classes)
   })
@@ -43,7 +44,7 @@ setMethod("limmaSelection", "ExpressionSet",
     message("Features selected.")
   
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedGenes[pickedSet])
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
   else
-    orderedGenes[picked]
+    orderedFeatures[picked]
 })

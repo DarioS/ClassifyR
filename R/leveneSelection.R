@@ -21,12 +21,12 @@ setMethod("leveneSelection", "ExpressionSet",
   exprMatrix <- exprs(expression)
   classes <- pData(expression)[, "class"]
   pValues <- apply(exprMatrix, 1, function(geneRow) leveneTest(geneRow, classes)[["Pr(>F)"]][1])
-  orderedGenes <- order(pValues)
+  orderedFeatures <- order(pValues)
   if(verbose == 3)
     message("Selecting number of features to use.")
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                         trainParams, predictParams, verbose = verbose) != classes) / length(classes)
   })
@@ -37,7 +37,7 @@ setMethod("leveneSelection", "ExpressionSet",
     message("Features selected.")
   
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedGenes[pickedSet])
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
   else
-    orderedGenes[picked]
+    orderedFeatures[picked]
 })

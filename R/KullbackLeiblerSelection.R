@@ -35,13 +35,13 @@ setMethod("KullbackLeiblerSelection", "ExpressionSet",
     divergence <- abs(locationDifference) + abs(oneClassDistribution[[2]]
                 - otherClassDistribution[[2]])
   
-  orderedGenes <- order(divergence, decreasing = TRUE)
+  orderedFeatures <- order(divergence, decreasing = TRUE)
   if(verbose == 3)
     message("Selecting number of features to use.")
 
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     trainPredictions <- .doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                                      trainParams, predictParams, verbose = verbose)
     if(is.list(trainPredictions))
@@ -56,7 +56,7 @@ setMethod("KullbackLeiblerSelection", "ExpressionSet",
     message("Features selected.")
 
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedGenes[pickedSet])
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
   else
-    orderedGenes[picked]
+    orderedFeatures[picked]
 })

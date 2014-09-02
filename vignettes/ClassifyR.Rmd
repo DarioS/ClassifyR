@@ -102,7 +102,7 @@ The *limmaSelection* function specified to *selectionParams* ranks probes based 
 The top five probes selected in the feature selection step can be checked visually. *DEresults* is a *ClassifyResult* object returned by *runTests*. *features* is a function that allows access to the row indices that were chosen for each fold.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5], "array")
+plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5])
 ```
 
 This plots the distribution of microarray intensities for the two survival classes for features that were chosen in the first fold of the first resampling. As seen, the means of the probes are not much different.
@@ -159,7 +159,7 @@ deviationResults
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(deviationResults)[[1]][[2]][1:5], "array")
+plotFeatureClasses(ovarSet, features(deviationResults)[[1]][[2]][1:5])
 ```
 
 Calculate the balanced error rate for differential deviation.
@@ -197,7 +197,7 @@ Since *naiveBayesKernel* does both training and testing, an empty function is sp
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(distributionResults)[[1]][[1]][1:5], "array")
+plotFeatureClasses(ovarSet, features(distributionResults)[[1]][[1]][1:5])
 ```
 
 Calculate the balanced error rate for differential distribution.

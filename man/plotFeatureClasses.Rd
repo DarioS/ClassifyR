@@ -8,7 +8,9 @@ selection method.
        }
 \usage{
   \S4method{plotFeatureClasses}{matrix}(expression, classes, ...)
-  \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, assayType)
+  \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, plot = c("both", "density", "stripchart"),
+                               expressionLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
+                               colours = c("blue", "red"))
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -18,7 +20,10 @@ selection method.
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
   \item{rows}{A vector specifying which rows of the matrix to plot.}             
-  \item{assayType}{Character. Either "array" or "sequencing".}
+  \item{plot}{Which plots to draw. Can draw either a density plot, stripchart, or both.}
+  \item{expressionLabel}{The axis label for the expression axis.}
+  \item{expressionLimits}{The minimum and maximum expression values to plot. Set to NULL to use range of data.}
+  \item{colours}{The colours to plot data of each class in.}
 }
 \value{
   Plots.
@@ -32,5 +37,5 @@ selection method.
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   chosen <- 1:5 # First five genes in the data were chosen.
                                      
-  #plotFeatureClasses(genesMatrix, classes, chosen, "array")
+  #plotFeatureClasses(genesMatrix, classes, chosen, expressionLimits = NULL)
 }

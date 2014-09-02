@@ -43,13 +43,13 @@ setMethod("edgeRselection", "ExpressionSet",
     message("Fitting linear model.")
   fit <- do.call(glmFit, paramList)
   result <- topTags(glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
-  orderedGenes <- rownames(result[["table"]])
+  orderedFeatures <- rownames(result[["table"]])
 
   if(verbose == 3)
     message("Selecting number of features to use.")
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedGenes[1:topFeatures], ]
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
     sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
                       trainParams, predictParams, verbose = verbose) != classes) / length(classes)
   })
@@ -60,7 +60,7 @@ setMethod("edgeRselection", "ExpressionSet",
     message("Features selected.")
   
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedGenes[pickedSet])
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
   else
-    orderedGenes[picked]
+    orderedFeatures[picked]
 })
