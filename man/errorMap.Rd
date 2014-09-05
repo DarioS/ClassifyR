@@ -8,16 +8,16 @@ and one row for each classification result.
 \usage{
   \S4method{errorMap}{list}(results,
                      errorColours = c("#FFFFFF", "#E0E0E0", "#BABABA", "#888888", "#000000"),
-                     classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12))
+                     classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12))
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{errorColours}{A vector of colours for error levels.}
   \item{classColours}{A vector of colours for class levels.}
-  \item{fontSizes}{A vector of length 4. The first number is the size of the title.
+  \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
-                   legends' titles.}
+                   legends' titles. The fifth number is the font size of the legend labels.}
 }
 \details{
 The names of \code{results} determine the row names that will be in the plot.

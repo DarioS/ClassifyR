@@ -10,7 +10,7 @@ selection method.
   \S4method{plotFeatureClasses}{matrix}(expression, classes, ...)
   \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, plot = c("both", "density", "stripchart"),
                                expressionLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
-                               colours = c("blue", "red"))
+                               fontSizes = c(24, 16, 12, 12, 12), colours = c("blue", "red"))
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -23,6 +23,10 @@ selection method.
   \item{plot}{Which plots to draw. Can draw either a density plot, stripchart, or both.}
   \item{expressionLabel}{The axis label for the expression axis.}
   \item{expressionLimits}{The minimum and maximum expression values to plot. Set to NULL to use range of data.}
+  \item{fontSizes}{A vector of length 5. The first number is the size of the title.
+                   The second number is the size of the axes titles. The third number is
+                   the size of the axes values. The fourth number is the size of the
+                   legends' titles. The fifth number is the font size of the legend labels.}  
   \item{colours}{The colours to plot data of each class in.}
 }
 \value{

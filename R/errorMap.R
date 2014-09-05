@@ -4,7 +4,7 @@ setGeneric("errorMap", function(results, ...)
 setMethod("errorMap", "list", 
           function(results,
                    errorColours = c("#FFFFFF", "#E0E0E0", "#BABABA", "#888888", "#000000"),
-                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12))
+                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12))
 {
   errorBinEnds <- seq(0, 1, 1/length(errorColours))
   errors <- lapply(results, function(result)
@@ -32,7 +32,8 @@ setMethod("errorMap", "list",
                  scale_x_discrete(expand = c(0, 0), breaks = NULL) +
                  scale_y_discrete(expand = c(0, 0), breaks = NULL) +
                  labs(x = '', y = '') + theme(plot.margin = unit(c(2, 1, 0, 1), "cm"),
-                                              legend.title = element_text(size = fontSizes[4]))
+                                              legend.title = element_text(size = fontSizes[4]),
+                                              legend.text = element_text(size = fontSizes[5]))
   
   errorPlot <- ggplot(plotData, aes(name, type)) + geom_tile(aes(fill = Error)) +
                scale_fill_manual(values = errorColours, drop = FALSE) + scale_x_discrete(expand = c(0, 0)) +
@@ -42,7 +43,8 @@ setMethod("errorMap", "list",
                axis.text.y = element_text(size = fontSizes[3]),
                axis.title = element_text(size = fontSizes[2]),
                plot.margin = unit(c(0, 1, 1, 1), "cm"),
-               legend.title = element_text(size = fontSizes[4])) + labs(x = "Sample Name", y = "Result")
+               legend.title = element_text(size = fontSizes[4]),
+               legend.text = element_text(size = fontSizes[5])) + labs(x = "Sample Name", y = "Result")
   
   classGrob <- ggplot_gtable(ggplot_build(classesPlot))
   errorGrob <- ggplot_gtable(ggplot_build(errorPlot))

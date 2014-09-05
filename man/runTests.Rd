@@ -19,7 +19,7 @@
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
-  \item{classes}{A vector the same length as the number of rows of expression data specifying
+  \item{classes}{A vector the same length as the number of columns of expression data specifying
                  the class that the samples belong to.}                    
   \item{validation}{"bootstrap" for repeated resampling or "leaveOut" for leaving all combinations
                     of k samples as test samples.}
