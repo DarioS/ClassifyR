@@ -5,6 +5,9 @@ setMethod("distribution", "ClassifyResult",
           function(result, type = c("features", "samples"), summary = c("density", "frequency"),
                    plot = TRUE, xMax = NULL, ...)
 {
+  if(plot == TRUE && !requireNamespace("ggplot2", quietly = TRUE))
+    stop("The package 'ggplot2' could not be found. Please install it.")            
+            
   type <- match.arg(type)
   summary <- match.arg(summary)
   if(is.null(xMax))
@@ -53,11 +56,11 @@ setMethod("distribution", "ClassifyResult",
       extras <- list()
     if(summary == "density")
     {
-       extras[["mapping"]] <- aes(y = ..density..)
+       extras[["mapping"]] <- ggplot2::aes(y = ..density..)
     }
     
-    print(ggplot(plotData, aes(x = scores)) + do.call(geom_histogram, extras) + xlim(0, xMax) +
-    xlab(xText) + ylab("Count") + ggtitle(titleText))
+    print(ggplot2::ggplot(plotData, ggplot2::aes(x = scores)) + do.call(ggplot2::geom_histogram, extras) + ggplot2::xlim(0, xMax) +
+          ggplot2::xlab(xText) + ggplot2::ylab("Count") + ggplot2::ggtitle(titleText))
   }
   
   if(type == "features")

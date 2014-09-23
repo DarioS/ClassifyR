@@ -20,7 +20,7 @@ identifying outlier samples that are difficult to classify.
   \item{plot}{Whether to draw a histogram of the aggregation.}
   \item{xMax}{Maximum bin value for histogram to plot.}            
   \item{...}{Further parameters, such as \code{colour} and \code{fill}, passed to
-             \code{\link{geom_histogram}}.}
+             \code{\link[ggplot2]{geom_histogram}}.}
 }
 \value{
   If \code{type} is "features", a vector as long as the number of features that were

@@ -6,6 +6,13 @@ setMethod("errorMap", "list",
                    errorColours = c("#FFFFFF", "#E0E0E0", "#BABABA", "#888888", "#000000"),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12))
 {
+  if(!requireNamespace("ggplot2", quietly = TRUE))
+    stop("The package 'ggplot2' could not be found. Please install it.")  
+  if(!requireNamespace("grid", quietly = TRUE))
+    stop("The package 'grid' could not be found. Please install it.")
+  if(!requireNamespace("gridExtra", quietly = TRUE))
+    stop("The package 'gridExtra' could not be found. Please install it.")       
+            
   errorBinEnds <- seq(0, 1, 1/length(errorColours))
   errors <- lapply(results, function(result)
   {
@@ -27,31 +34,31 @@ setMethod("errorMap", "list",
                          class = rep(knownClasses, length(results)),
                          Error = unlist(errors))
   
-  classesPlot <- ggplot(data.frame(Class = knownClasses), aes(Class, factor(1))) +
-                 scale_fill_manual(values = classColours) + geom_tile(aes(fill = Class, height = 10)) +
-                 scale_x_discrete(expand = c(0, 0), breaks = NULL) +
-                 scale_y_discrete(expand = c(0, 0), breaks = NULL) +
-                 labs(x = '', y = '') + theme(plot.margin = unit(c(2, 1, 0, 1), "cm"),
-                                              legend.title = element_text(size = fontSizes[4]),
-                                              legend.text = element_text(size = fontSizes[5]))
+  classesPlot <- ggplot2::ggplot(data.frame(Class = knownClasses), ggplot2::aes(Class, factor(1))) +
+                 ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(aes(fill = Class, height = 10)) +
+                 ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL) +
+                 ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
+                 ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(2, 1, 0, 1), "cm"),
+                                                                legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                                                legend.text = ggplot2::element_text(size = fontSizes[5]))
   
-  errorPlot <- ggplot(plotData, aes(name, type)) + geom_tile(aes(fill = Error)) +
-               scale_fill_manual(values = errorColours, drop = FALSE) + scale_x_discrete(expand = c(0, 0)) +
-               scale_y_discrete(expand = c(0, 0)) + theme_bw() +
-               theme(axis.ticks = element_blank(),
-               axis.text.x = element_text(angle = 45, hjust = 1, size = fontSizes[3]),
-               axis.text.y = element_text(size = fontSizes[3]),
-               axis.title = element_text(size = fontSizes[2]),
-               plot.margin = unit(c(0, 1, 1, 1), "cm"),
-               legend.title = element_text(size = fontSizes[4]),
-               legend.text = element_text(size = fontSizes[5])) + labs(x = "Sample Name", y = "Result")
+  errorPlot <- ggplot2::ggplot(plotData, aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Error)) +
+               ggplot2::scale_fill_manual(values = errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+               ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
+               ggplot2::theme(axis.ticks = ggplot2::element_blank(),
+               axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]),
+               axis.text.y = ggplot2::element_text(size = fontSizes[3]),
+               axis.title = ggplot2::element_text(size = fontSizes[2]),
+               plot.margin = grid::unit(c(0, 1, 1, 1), "cm"),
+               legend.title = ggplot2::element_text(size = fontSizes[4]),
+               legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::labs(x = "Sample Name", y = "Result")
   
-  classGrob <- ggplot_gtable(ggplot_build(classesPlot))
-  errorGrob <- ggplot_gtable(ggplot_build(errorPlot))
-  commonWidth <- unit.pmax(classGrob[["widths"]], errorGrob[["widths"]])
+  classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
+  errorGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
+  commonWidth <- grid::unit.pmax(classGrob[["widths"]], errorGrob[["widths"]])
   classGrob[["widths"]] <- commonWidth
   errorGrob[["widths"]] <- commonWidth
   
-  grid.arrange(classGrob, errorGrob, nrow = 2, heights = c(length(results), 4 * length(results)),
+  gridExtra::grid.arrange(classGrob, errorGrob, nrow = 2, heights = c(length(results), 4 * length(results)),
                main = textGrob("Error Comparison", gp = gpar(fontsize = fontSizes[1]), vjust = 1))
 })

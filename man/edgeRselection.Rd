@@ -19,11 +19,11 @@ the features which have best resubstitution error rate.
   \item{nFeatures}{A vector for the top number of features to test the resubstitution error
                    for.}
   \item{normFactorsOptions}{A named \code{\link{list}} of any options to be passed to
-                            \code{\link{calcNormFactors}}.}
+                            \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{\link{list}} of any options to be passed to
-                            \code{\link{estimateDisp}}.}
+                            \code{\link[edgeR]{estimateDisp}}.}
   \item{fitOptions}{A named \code{\link{list}} of any options to be passed to
-                            \code{\link{glmFit}}.}                
+                            \code{\link[edgeR]{glmFit}}.}                
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -34,7 +34,7 @@ the features which have best resubstitution error rate.
                  A higher number will produce more messages.}
 }
 \details{
-  The differential expression analysis follows the standard \code{\link{edgeR}}
+  The differential expression analysis follows the standard \code{\link[edgeR]{edgeR}}
   steps of estimating library size normalisation factors, calculating dispersion,
   in this case robustly, and then fitting a generalised linear model followed by
   a likelihood ratio test.

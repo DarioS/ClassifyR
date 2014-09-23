@@ -16,11 +16,13 @@ setMethod("leveneSelection", "matrix",
 setMethod("leveneSelection", "ExpressionSet", 
           function(expression, nFeatures, trainParams, predictParams, verbose = 3)
 {
+  if(!requireNamespace("car", quietly = TRUE))
+    stop("The package 'car' could not be found. Please install it.")            
   if(verbose == 3)
     message("Calculating Levene statistic.")
   exprMatrix <- exprs(expression)
   classes <- pData(expression)[, "class"]
-  pValues <- apply(exprMatrix, 1, function(geneRow) leveneTest(geneRow, classes)[["Pr(>F)"]][1])
+  pValues <- apply(exprMatrix, 1, function(geneRow) car::leveneTest(geneRow, classes)[["Pr(>F)"]][1])
   orderedFeatures <- order(pValues)
   if(verbose == 3)
     message("Selecting number of features to use.")

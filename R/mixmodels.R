@@ -17,6 +17,8 @@ setMethod("mixModelsTrain", "ExpressionSet",
 {
   if(verbose == 3)
     message("Fitting mixtures of normals for genes.")
+  if(!requireNamespace("Rmixmod", quietly = TRUE))
+    stop("The package 'Rmixmod' could not be found. Please install it.")
   classes <- pData(expression)[, "class"]
   expression <- exprs(expression)
   oneClass <- classes == levels(classes)[1]
@@ -32,7 +34,7 @@ setMethod("mixModelsTrain", "ExpressionSet",
                 {
                    mixmodParams <- list(geneRow)
                    if(isExtra) mixmodParams <- append(mixmodParams, list(...))
-                   do.call(mixmodCluster, mixmodParams)
+                   do.call(Rmixmod::mixmodCluster, mixmodParams)
                 }), nrow(classExpression))        
             })
   

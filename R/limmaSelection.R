@@ -16,6 +16,8 @@ setMethod("limmaSelection", "matrix",
 setMethod("limmaSelection", "ExpressionSet", 
           function(expression, nFeatures, trainParams, predictParams, ..., verbose = 3)
 {
+  if(!requireNamespace("limma", quietly = TRUE))
+    stop("The package 'limma' could not be found. Please install it.")            
   if(verbose == 3)
     message("Doing feature selection.")
   exprMatrix <- exprs(expression)
@@ -25,9 +27,9 @@ setMethod("limmaSelection", "ExpressionSet",
   fitParams <- list(exprMatrix, model.matrix(~ classes))
   if(!missing(...))
     fitParams <- append(fitParams, list(...))
-  prognosisModel <- do.call(lmFit, fitParams)
-  prognosisModel <- eBayes(prognosisModel)
-  orderedFeatures <- match(rownames(topTable(prognosisModel, 2, number = Inf, sort.by = "p")), allFeatures)
+  prognosisModel <- do.call(limma::lmFit, fitParams)
+  prognosisModel <- limma::eBayes(prognosisModel)
+  orderedFeatures <- match(rownames(limma::topTable(prognosisModel, 2, number = Inf, sort.by = "p")), allFeatures)
   
   if(verbose == 3)
     message("Selecting number of features to use.")

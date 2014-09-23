@@ -1,11 +1,3 @@
 exportPattern("^[[:alpha:]]+")
 
-import(methods, ggplot2, Biobase, ROCR, BiocParallel, locfit)
-importFrom(limma, lmFit, eBayes, topTable)
-importFrom(edgeR, DGEList, calcNormFactors, estimateDisp, glmFit, glmLRT, topTags)
-importFrom(car, leveneTest)
-importFrom(robustbase, Qn)
-importFrom(Rmixmod, mixmodCluster)
-importFrom(PoiClaClu, Classify)
-importFrom(grid, textGrob, gpar)
-importFrom(gridExtra, grid.arrange)
+import(methods, Biobase, ROCR, BiocParallel, locfit)

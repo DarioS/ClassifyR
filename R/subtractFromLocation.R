@@ -19,7 +19,7 @@ setMethod("subtractFromLocation", "ExpressionSet",
     geneTrainingLocations <- rowMeans(expressionTrain)
   else # median.
     geneTrainingLocations <- apply(expressionTrain, 1, median)
-  transformed <- apply(expression, 2, '-', geneTrainingLocations)
+  transformed <- apply(exprs(expression), 2, '-', geneTrainingLocations)
   exprs(expression) <- transformed
   if(verbose == 3)
     message("Subtraction from ", location, " completed.")
