@@ -34,9 +34,9 @@ setMethod("errorMap", "list",
                          class = rep(knownClasses, length(results)),
                          Error = unlist(errors))
   
-  classesPlot <- ggplot2::ggplot(data.frame(Class = knownClasses), ggplot2::aes(Class, factor(1))) +
+  classesPlot <- ggplot2::ggplot(data.frame(Class = knownClasses), ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
                  ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(aes(fill = Class, height = 10)) +
-                 ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL) +
+                 ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
                  ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
                  ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(2, 1, 0, 1), "cm"),
                                                                 legend.title = ggplot2::element_text(size = fontSizes[4]),
