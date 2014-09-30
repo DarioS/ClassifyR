@@ -29,7 +29,7 @@ setMethod("errorMap", "list",
   knownClasses <- knownClasses[ordering]
   errors <- lapply(errors, function(resultErrors) resultErrors[ordering])
   
-  plotData <- data.frame(name = rep(sampleNames(results[[1]])[ordering], length(results)),
+  plotData <- data.frame(name = factor(rep(sampleNames(results[[1]])[ordering], length(results)), levels = sampleNames(results[[1]])[ordering]),
                          type = rep(names(results), sapply(errors, length)),
                          class = rep(knownClasses, length(results)),
                          Error = unlist(errors))
