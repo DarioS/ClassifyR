@@ -13,15 +13,18 @@ setMethod("runTests", c("matrix"),
 setMethod("runTests", c("ExpressionSet"),
     function(expression, validation = c("bootstrap", "leaveOut"),
              bootMode = c("fold", "split"),
-             doFirst = c("transform", "selection"),
              resamples = 100, percent = 25, folds = 5, leave = 2,
-             seed, parallelParams = bpparam(), transformParams = TransformParams(), selectionParams = SelectionParams(),
-             trainParams = TrainParams(), predictParams = PredictParams(), verbose = 1)
+             seed, parallelParams = bpparam(),
+             params = list(SelectionParams(), TrainParams(), PredictParams()),
+             verbose = 1)
 {
   validation <- match.arg(validation)
-  doFirst <- match.arg(doFirst)
   bootMode <- match.arg(bootMode)
   if(!missing(seed)) set.seed(seed)
+
+  stagesParamClasses <- sapply(params, class)
+  if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
+    stop("\"testing\" must not be before \"training\" in 'params'.")
   
   if(validation == "bootstrap")
   {
@@ -43,16 +46,12 @@ setMethod("runTests", c("ExpressionSet"),
       {
         lapply(1:length(sampleFolds), function(foldIndex)
         {
-          runTest(expression, doFirst, training = unlist(sampleFolds[-foldIndex]),
-                  testing = sampleFolds[[foldIndex]], transformParams = transformParams, 
-                  selectionParams = selectionParams, trainParams = trainParams,
-                  predictParams = predictParams, verbose = verbose)
+          runTest(expression, training = unlist(sampleFolds[-foldIndex]),
+                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose)
         })
       } else { # Split mode.
-        runTest(expression, doFirst, training = sampleFolds[[1]],
-                testing = sampleFolds[[2]], transformParams = transformParams, 
-                selectionParams = selectionParams, trainParams = trainParams,
-                predictParams = predictParams, verbose = verbose)
+        runTest(expression, training = sampleFolds[[1]],
+                testing = sampleFolds[[2]], params = params, verbose = verbose)
       }
     }, samplesFolds, as.list(1:length(samplesFolds)), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else # leave k out.
@@ -63,13 +62,14 @@ setMethod("runTests", c("ExpressionSet"),
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(expression, doFirst, training = trainingSample, testing = testSample,
-              transformParams = transformParams, selectionParams = selectionParams,
-              trainParams = trainParams, predictParams = predictParams, verbose = verbose)
+      runTest(expression, training = trainingSample, testing = testSample,
+              params = params, verbose = verbose)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
-    SIMPLIFY = FALSE, BPPARAM = parallelParams)
+    BPPARAM = parallelParams, SIMPLIFY = FALSE)
   }
 
+  selectionParams <- params[[match("SelectionParams", stagesParamClasses)]]
+  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   if(validation == "bootstrap")
   {
     resultsLists <- lapply(c(3, 2, 1), function(position)

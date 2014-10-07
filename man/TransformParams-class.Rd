@@ -14,10 +14,6 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{TransformParams()}
-	    Creates a TransformParams object which has no effect on the data.
-  }
-    \item{}{
       \code{TransformParams(transform, ...)}
       Creates a TransformParams object which stores the function which will do the
       transformation and parameters that the function will use.

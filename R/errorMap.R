@@ -4,7 +4,8 @@ setGeneric("errorMap", function(results, ...)
 setMethod("errorMap", "list", 
           function(results,
                    errorColours = c("#FFFFFF", "#E0E0E0", "#BABABA", "#888888", "#000000"),
-                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12))
+                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
+                   mapHeight = 4)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
@@ -12,7 +13,7 @@ setMethod("errorMap", "list",
     stop("The package 'grid' could not be found. Please install it.")
   if(!requireNamespace("gridExtra", quietly = TRUE))
     stop("The package 'gridExtra' could not be found. Please install it.")       
-            
+      
   errorBinEnds <- seq(0, 1, 1/length(errorColours))
   errors <- lapply(results, function(result)
   {
@@ -38,7 +39,7 @@ setMethod("errorMap", "list",
                  ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(aes(fill = Class, height = 10)) +
                  ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
                  ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
-                 ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(2, 1, 0, 1), "cm"),
+                 ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(1, 0, -1, 0), "lines"),
                                                                 legend.title = ggplot2::element_text(size = fontSizes[4]),
                                                                 legend.text = ggplot2::element_text(size = fontSizes[5]))
   
@@ -49,16 +50,18 @@ setMethod("errorMap", "list",
                axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]),
                axis.text.y = ggplot2::element_text(size = fontSizes[3]),
                axis.title = ggplot2::element_text(size = fontSizes[2]),
-               plot.margin = grid::unit(c(0, 1, 1, 1), "cm"),
+               plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
                legend.title = ggplot2::element_text(size = fontSizes[4]),
                legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::labs(x = "Sample Name", y = "Result")
-  
+
   classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
   errorGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
   commonWidth <- grid::unit.pmax(classGrob[["widths"]], errorGrob[["widths"]])
   classGrob[["widths"]] <- commonWidth
   errorGrob[["widths"]] <- commonWidth
   
-  gridExtra::grid.arrange(classGrob, errorGrob, nrow = 2, heights = c(length(results), 4 * length(results)),
-               main = textGrob("Error Comparison", gp = gpar(fontsize = fontSizes[1]), vjust = 1))
+  wholePlot <- gridExtra::arrangeGrob(classGrob, errorGrob, nrow = 2, heights = c(1, mapHeight),
+               main = grid::textGrob("Error Comparison", gp = grid::gpar(fontsize = fontSizes[1])))
+  print(wholePlot)
+  wholePlot
 })

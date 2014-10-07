@@ -27,7 +27,7 @@ the features which have best resubstitution error rate.
                    See details for definitions.} 
        \item{...}{Variables passed to \code{\link{getLocationsAndScales}}.}                       
        \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                      A higher number will produce more messages.}
+                      This function only prints progress messages if the value is 3.}
        }
 \details{
   Symmetric distance is defined as \eqn{1/2 * (location_1 - location_2)^2}{0.5 * (location1 - location2)^2 / scale1^2 + (location1 - location2)^2 / scale2^2 + scale1^2 / scale2^2 + scale2^2 / scale1^2 }

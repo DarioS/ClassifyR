@@ -26,7 +26,7 @@ differentially expressed features.
                  \code{\link{ExpressionSet}} method. For the \code{\link{ExpressionSet}}
                  method, extra parameters that are passed to \code{\link{TrainParams}}}.
        \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+                      This function only prints progress messages if the value is 3.}
        }
 \details{
   This selection method looks for differential expression. It uses a moderated t-test.
@@ -43,10 +43,12 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
 \examples{
   if(require(sparsediscrim))
   {
-    # Samples in one class with differential variability to other class.
+    # Samples in one class with differential expression to other class.
     genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) rnorm(100, 9, 4)))
+    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
+                                 c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
+    
     limmaSelection(genesMatrix, classes, nFeatures = seq(10, 100, 10),
                     trainParams = TrainParams(), predictParams = PredictParams())
   }

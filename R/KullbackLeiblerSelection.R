@@ -5,7 +5,6 @@ setMethod("KullbackLeiblerSelection", "matrix", function(expression, classes, ..
 { 
   colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.  
   features <- rownames(expression)
-  rownames(expression) <- NULL
   groupsTable <- data.frame(class = classes)
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
@@ -42,12 +41,18 @@ setMethod("KullbackLeiblerSelection", "ExpressionSet",
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
     expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
-    trainPredictions <- .doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
-                                     trainParams, predictParams, verbose = verbose)
-    if(is.list(trainPredictions))
-      lapply(trainPredictions, function(predictions) sum(predictions != classes) / length(classes))
+    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
+                        trainParams, predictParams, verbose)
+    if(trainParams@doesTests == FALSE)
+      predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
+                             predictParams, verbose)
     else
-      sum(trainPredictions != classes) / length(classes)
+      predictions <- trained
+    
+    if(is.list(predictions))
+      lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))
+    else
+      sum(predictions != classes) / length(classes)
   })
   if(class(errorRates) == "numeric") names(errorRates) <- nFeatures else colnames(errorRates) <- nFeatures
   

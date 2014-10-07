@@ -5,7 +5,6 @@ setMethod("likelihoodRatioSelection", "matrix", function(expression, classes, ..
 { 
   colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.  
   features <- rownames(expression)
-  rownames(expression) <- NULL # In case of duplicate gene symbols rownames.
   groupsTable <- data.frame(class = classes)
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
@@ -50,12 +49,27 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   errorRates <- sapply(nFeatures, function(topFeatures)
   {
     expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
-    sum(.doTrainAndTest(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
-                       trainParams, predictParams, verbose = verbose) != classes) / length(classes)
+    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
+                        trainParams, predictParams, verbose)
+    if(trainParams@doesTests == FALSE)
+      predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
+                             predictParams, verbose)
+    else
+      predictions <- trained
+    
+    if(is.list(predictions))
+      lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))
+    else
+      sum(predictions != classes) / length(classes)
   })
   names(errorRates) <- nFeatures
   
+  picked <- .pickRows(errorRates)
   if(verbose == 3)
     message("Features selected.")
-  orderedFeatures[.pickRows(errorRates)]
+  
+  if(class(picked) == "list")
+    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
+  else
+    orderedFeatures[picked]
 })

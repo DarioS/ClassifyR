@@ -8,27 +8,21 @@ It consists of data transformation, feature selection, training and testing.
        }
 \usage{
   \S4method{runTest}{matrix}(expression, classes, ...)
-  \S4method{runTest}{ExpressionSet}(expression, doFirst = c("transform", "selection"),
-                     training, testing, transformParams, selectionParams, trainParams,
-                     predictParams, verbose = 1)
+  \S4method{runTest}{ExpressionSet}(expression,
+                     training, testing, params = list(SelectionParams(), TrainParams(), PredictParams()),
+                     verbose = 1)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
   \item{classes}{A vector of class labels.}
-  \item{doFirst}{Character. Either "selection" or "transform". Specifies whether the first
-                 step of the process should be selection or transformation.}
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    
-  \item{transformParams}{A container of class \code{\link{TransformParams}} which contains
-                         the function to do transformation and parameters it will use.}
-  \item{selectionParams}{A container of class \code{\link{SelectionParams}} which contains
-                         the function to do feature selection and parameters it will use.}       
-  \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
-                     classifier to use for training.}
-  \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
-                       prediction is to be done.}
+  \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
+               \code{\link{SelectionParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
+               The order they are in the list determines the order in which the stages
+               of classification are done in.}
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
@@ -55,7 +49,7 @@ It consists of data transformation, feature selection, training and testing.
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    runTest(TCGA_eset, doFirst = "selection", training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
+    runTest(TCGA_eset, training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
             testing = (1:ncol(TCGA_eset)) \%\% 2 != 0)
   }
 }

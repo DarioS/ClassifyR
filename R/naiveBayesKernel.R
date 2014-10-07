@@ -6,7 +6,6 @@ setMethod("naiveBayesKernel", "matrix",
 { 
   colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.            
   features <- rownames(expression)
-  rownames(expression) <- NULL # In case of duplicate gene symbols rownames.  
   groupsTable <- data.frame(class = classes)  
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features

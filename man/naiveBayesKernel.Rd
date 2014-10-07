@@ -27,7 +27,7 @@
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs.}                      
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+                 This function only prints progress messages if the value is 3.}
 }
 \details{
   If \code{weighted} is \code{TRUE}, then a sample's predicted class is the class with

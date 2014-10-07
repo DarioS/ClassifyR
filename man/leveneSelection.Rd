@@ -25,7 +25,7 @@ the features which have best resubstitution error rate.
        \item{...}{For the \code{\link{matrix}} method, variables passed to the
                  \code{\link{ExpressionSet}} method.}                     
        \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                      A higher number will produce more messages.}
+                      This function only prints progress messages if the value is 3.}
        }
 \details{
   Levene's statistic for unequal variance between groups is a robust version of

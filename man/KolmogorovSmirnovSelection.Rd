@@ -26,7 +26,7 @@ the features which have best resubstitution error rate.
                  \code{\link{ExpressionSet}} method. For the \code{\link{ExpressionSet}} method,
                 the options to be passed to function \code{\link{ks.test}}.}                       
        \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                      A higher number will produce more messages.}
+                      This function only prints progress messages if the value is 3.}
        }
 \details{
   Features are sorted in order of biggest distance to smallest. The top number of features

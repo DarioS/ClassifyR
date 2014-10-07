@@ -10,34 +10,53 @@ setMethod("runTest", c("matrix"),
     runTest(exprSet, ...)
 })
 setMethod("runTest", c("ExpressionSet"),
-          function(expression, doFirst = c("transform", "selection"), training, testing,
-                   transformParams = TransformParams(), selectionParams = SelectionParams(),
-                   trainParams = TrainParams(), predictParams = PredictParams(), verbose = 1)
-{    
-  doFirst <- match.arg(doFirst)
-  if(!grepl("{}", paste(capture.output(transformParams@transform), collapse = ''), fixed = TRUE))
-    transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
-  if(doFirst == "transform") # Transformation, followed by feature selection.
+          function(expression, training, testing,
+                   params = list(SelectionParams(), TrainParams(), PredictParams()),
+                   verbose = 1)
+{
+  stagesParamClasses <- sapply(params, class)
+  if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
+    stop("\"testing\" must not be before \"training\" in 'params'.")
+  
+  transformParams <- params[[match("TransformParams", stagesParamClasses)]]
+  selectionParams <- params[[match("SelectionParams", stagesParamClasses)]]
+  trainParams <- params[[match("TrainParams", stagesParamClasses)]]
+  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
+  
+  lastSize <- 1
+  for(stageIndex in 1:length(params))
   {
-    transformed <- .doTransform(expression, transformParams, verbose)
-    selectedFeatures <- .doSelection(transformed, training, selectionParams,
-                                     trainParams, predictParams, verbose)
-    if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
-      expression <- transformed[selectedFeatures, ]
-    else
-      expression <- lapply(selectedFeatures, function(features) transformed[features, ])
-  } else { # Feature selection, then transformation.
-    selectedFeatures <- .doSelection(expression, training, selectionParams,
-                                     trainParams, predictParams, verbose)
-
-    expression <- .doTransform(expression, transformParams, verbose)
-    if(is.numeric(selectedFeatures) || is.character(selectedFeatures))  
-      expression <- expression[selectedFeatures, ]
-    else
-      expression <- lapply(selectedFeatures, function(features) expression[features, ])
+    switch(stagesParamClasses[[stageIndex]],
+                 TransformParams = {
+                               transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
+                               expression <- .doTransform(expression, transformParams, verbose)
+                               newSize <- if(class(expression) == "list") length(expression) else 1
+                             },
+                 SelectionParams = {
+                               selectedFeatures <- .doSelection(expression, training, selectionParams,
+                                                                trainParams, predictParams, verbose)
+                               if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
+                                 expression <- expression[selectedFeatures, ]
+                               else
+                                 expression <- lapply(selectedFeatures, function(features) expression[features, ])
+                               newSize <- if(class(selectedFeatures) == "list") length(selectedFeatures) else 1
+                               if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)
+                                                                                       lapply(1:(newSize / lastSize), function(x) variety)),
+                                                                                recursive = FALSE)                               
+                               lastSize <- newSize
+                             }, 
+                 TrainParams = {
+                              trained <- .doTrain(expression, training, testing, trainParams, predictParams, verbose)
+                              newSize <- if(class(trained) == "list") length(trained) else 1
+                              if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)
+                                                                                      lapply(1:(newSize / lastSize), function(x) variety)),
+                                                                               recursive = FALSE)
+                              lastSize <- newSize
+                              },
+                 PredictParams = predictedClasses <- .doTest(trained, expression, testing, predictParams, verbose)
+           )
+    
   }
-
-  predictedClasses <- .doTrainAndTest(expression, training, testing,
-                                      trainParams, predictParams, verbose)  
+  
   list(selectedFeatures, testing, predictedClasses)
 })

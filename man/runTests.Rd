@@ -10,10 +10,10 @@
 \usage{
   \S4method{runTests}{matrix}(expression, classes, ...)
   \S4method{runTests}{ExpressionSet}(expression, validation = c("bootstrap", "leaveOut"),
-                     bootMode = c("fold", "split"), doFirst = c("transform", "selection"),
+                     bootMode = c("fold", "split"),
                      resamples = 100, percent = 25, folds = 5, leave = 2, seed, parallelParams = bpparam(),
-                     transformParams = TransformParams(), selectionParams = SelectionParams(),
-                     trainParams = TrainParams(), predictParams = PredictParams(), verbose = 1)
+                     params = list(SelectionParams(), TrainParams(), PredictParams()),
+                     verbose = 1)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -26,8 +26,6 @@
   \item{bootMode}{Character. Either "fold" or "split". If "fold", then the samples are split into
                  folds and in each iteration one is used as the test set. If "split", the samples
                  are split into two groups. One is used as the training set, the other is the test set.}                    
-  \item{doFirst}{Character. Either "selection" or "transform". Specifies whether the first
-                 step of the process should be selection or transformation.}
   \item{resamples}{Relevant when repeated resampling is used. The number of times to do
                    sampling with replacement.}
   \item{percent}{Used when bootstrap resampling with split method is chosen. The percentage of
@@ -39,14 +37,10 @@
   \item{seed}{The random number generator used for repeated resampling will use this seed,
               if it is provided. Allows reproducibility of repeated usage on the same input data.}
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}               
-  \item{transformParams}{A container of class \code{\link{TransformParams}} which contains
-                         the function to do transformation and parameters it will use.}
-  \item{selectionParams}{A container of class \code{\link{SelectionParams}} which contains
-                         the function to do feature selection and parameters it will use.}       
-  \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
-                     classifier to use for training.}
-  \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
-                       prediction is to be done.}
+  \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
+               \code{\link{SelectionParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
+               The order they are in the list determines the order in which the stages
+               of classification are done in.}
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.

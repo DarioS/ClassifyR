@@ -5,10 +5,7 @@ setClass("TransformParams", representation(
 
 setGeneric("TransformParams", function(transform, ...)
 {standardGeneric("TransformParams")})
-setMethod("TransformParams", character(0), function()
-{
-  new("TransformParams", transform = function(){}, otherParams = list())
-})
+
 setMethod("TransformParams", c("function"),
           function(transform, ...)
           {
@@ -59,23 +56,24 @@ setMethod("TrainParams", c("function"),
 
 setClass("PredictParams", representation(
   predictor = "function",
+  transposeExpression = "logical",
   multipleResults = "logical",
   getClasses = "function",
   otherParams = "list")
 )
 
-setGeneric("PredictParams", function(predictor, multipleResults, getClasses, ...)
+setGeneric("PredictParams", function(predictor, transposeExpression, multipleResults, getClasses, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {
-  new("PredictParams", predictor = predict, multipleResults = FALSE,
+  new("PredictParams", predictor = predict, transposeExpression = TRUE, multipleResults = FALSE,
       getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("function"),
-          function(predictor, multipleResults, getClasses, ...)
+          function(predictor, transposeExpression, multipleResults, getClasses, ...)
           {
-            new("PredictParams", predictor = predictor, multipleResults = multipleResults,
-                getClasses = getClasses, otherParams = list(...))
+            new("PredictParams", predictor = predictor, transposeExpression = transposeExpression,
+                multipleResults = multipleResults, getClasses = getClasses, otherParams = list(...))
           })
 
 setGeneric("ClassifyResult", function(originalNames, originalFeatures, chosenFeatures, ...)

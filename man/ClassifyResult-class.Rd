@@ -23,7 +23,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{ClassifyResult(originalNames, originalFeatures, chosenFeatures, predictions, actualClasses, validation, )}}
+      \code{ClassifyResult(originalNames, originalFeatures, chosenFeatures, predictions, actualClasses, validation)}}
     }
   \describe{
             \item{\code{originalNames}}{Sample names.}

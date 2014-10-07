@@ -28,7 +28,7 @@ the features which have best resubstitution error rate.
                           the alternate hypothesis. Acceptable values are "same" or "different".}
        \item{...}{Variables passed to \code{\link{getLocationsAndScales}}.}                      
        \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                      A higher number will produce more messages.}
+                      This function only prints progress messages if the value is 3.}
        }
 \details{
   Likelihood ratio test of null hypothesis that the location and scale are the same for

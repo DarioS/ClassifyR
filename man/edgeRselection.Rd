@@ -31,7 +31,7 @@ the features which have best resubstitution error rate.
   \item{...}{Unused variables from the \code{\link{matrix}} method passed
                        to the \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+                 This function only prints progress messages if the value is 3.}
 }
 \details{
   The differential expression analysis follows the standard \code{\link[edgeR]{edgeR}}
@@ -60,8 +60,8 @@ the features which have best resubstitution error rate.
     classes <- rep(c("Contol", "DPN"), c(length(control), length(DPN)))
     expression <- expression[rowSums(expression > 10) > 8, ]
     selected <- edgeRselection(expression, classes, nFeatures = seq(100, 1000, 100),
-                               trainParams = TrainParams(classify, TRUE, TRUE),
-                               predictParams = PredictParams(function(){}, FALSE, 
+                               trainParams = TrainParams(classifyInterface, TRUE, TRUE),
+                               predictParams = PredictParams(function(){}, TRUE, FALSE, 
                                                              function(result) result[["ytehat"]]))
   }
 }

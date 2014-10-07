@@ -18,7 +18,7 @@ for the test set.
   \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the test data.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+                 This function only prints progress messages if the value is 3.}
 }
 \details{
   Unlike ordinary LDA, Fisher's version does not have assumptions about the normality
