@@ -30,7 +30,7 @@
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs.}                                 
   \item{...}{For the training or testing function with \code{\link{matrix}} dispatch,
-             arguments passed to the training function with \code{\link{ExpressionSet}} dispatch.
+             arguments passed to the function with \code{\link{ExpressionSet}} dispatch.
              For the training function with \code{\link{ExpressionSet}} dispatch,
              extra arguments passed to \code{\link[Rmixmod]{mixmodCluster}}. The argument \code{nbCluster}
              is mandatory.}                       

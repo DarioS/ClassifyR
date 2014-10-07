@@ -9,6 +9,7 @@ setMethod("runTest", c("matrix"),
     exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
     runTest(exprSet, ...)
 })
+
 setMethod("runTest", c("ExpressionSet"),
           function(expression, training, testing,
                    params = list(SelectionParams(), TrainParams(), PredictParams()),
@@ -28,17 +29,28 @@ setMethod("runTest", c("ExpressionSet"),
   {
     switch(stagesParamClasses[[stageIndex]],
                  TransformParams = {
+                               if(length(transformParams@intermediate) != 0)
+                                 transformParams@otherParams <- c(transformParams@otherParams,
+                                                                  as.list(environment())[transformParams@intermediate])
+
                                transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
                                expression <- .doTransform(expression, transformParams, verbose)
                                newSize <- if(class(expression) == "list") length(expression) else 1
                              },
                  SelectionParams = {
+                               if(length(selectionParams@intermediate) != 0)
+                                 selectionParams@otherParams <- c(selectionParams@otherParams,
+                                                                  as.list(environment())[selectionParams@intermediate])
+                               
                                selectedFeatures <- .doSelection(expression, training, selectionParams,
                                                                 trainParams, predictParams, verbose)
-                               if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
-                                 expression <- expression[selectedFeatures, ]
-                               else
-                                 expression <- lapply(selectedFeatures, function(features) expression[features, ])
+                               if(selectionParams@subsetExpressionData == TRUE)
+                               {
+                                 if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
+                                   expression <- expression[selectedFeatures, ]
+                                 else
+                                   expression <- lapply(selectedFeatures, function(features) expression[features, ])
+                               }
                                newSize <- if(class(selectedFeatures) == "list") length(selectedFeatures) else 1
                                if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)
                                                                                        lapply(1:(newSize / lastSize), function(x) variety)),
@@ -46,6 +58,10 @@ setMethod("runTest", c("ExpressionSet"),
                                lastSize <- newSize
                              }, 
                  TrainParams = {
+                              if(length(trainParams@intermediate) != 0)
+                                trainParams@otherParams <- c(trainParams@otherParams,
+                                                             as.list(environment())[trainParams@intermediate])
+
                               trained <- .doTrain(expression, training, testing, trainParams, predictParams, verbose)
                               newSize <- if(class(trained) == "list") length(trained) else 1
                               if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)

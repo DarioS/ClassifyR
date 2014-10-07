@@ -1,3 +1,5 @@
+setOldClass("pamrtrained")
+
 .doSelection <- function(expression, training, selectionParams, trainParams,
                          predictParams, verbose)
 {

@@ -1,5 +1,6 @@
 setClass("TransformParams", representation(
   transform = "function",
+  intermediate = "character",  
   otherParams = "list")
 )
 
@@ -7,9 +8,10 @@ setGeneric("TransformParams", function(transform, ...)
 {standardGeneric("TransformParams")})
 
 setMethod("TransformParams", c("function"),
-          function(transform, ...)
+          function(transform, intermediate = character(0), ...)
           {
-            new("TransformParams", transform = transform, otherParams = list(...))
+            new("TransformParams", transform = transform,
+                intermediate = intermediate, otherParams = list(...))
           })
 
 setClassUnion("functionOrList", c("function", "list"))
@@ -17,6 +19,8 @@ setClassUnion("functionOrList", c("function", "list"))
 setClass("SelectionParams", representation(
   featureSelection = "functionOrList",
   minPresence = "numeric",
+  intermediate = "character",
+  subsetExpressionData = "logical",  
   otherParams = "list")
 )
 
@@ -25,33 +29,38 @@ setGeneric("SelectionParams", function(featureSelection, ...)
 setMethod("SelectionParams", character(0), function()
 {
   new("SelectionParams", featureSelection = limmaSelection, minPresence = 1,
+      intermediate = character(0), subsetExpressionData = TRUE,
       otherParams = list(nFeatures = seq(100, 500, 100)))
 })
 setMethod("SelectionParams", c("functionOrList"),
-          function(featureSelection, minPresence = 1, ...)
+          function(featureSelection, minPresence = 1, intermediate = character(0),
+                   subsetExpressionData = TRUE, ...)
           {
             new("SelectionParams", featureSelection = featureSelection,
-                minPresence = minPresence, otherParams = list(...))
+                minPresence = minPresence, intermediate = intermediate,
+                subsetExpressionData = subsetExpressionData, otherParams = list(...))
           })
 
 setClass("TrainParams", representation(
   classifier = "function",
   transposeExpression = "logical",
   doesTests = "logical",
+  intermediate = "character",  
   otherParams = "list")
 )
 
-setGeneric("TrainParams", function(classifier, transposeExpression, doesTests, ...)
+setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
 setMethod("TrainParams", character(0), function()
 {
-  new("TrainParams", classifier = dlda, transposeExpression = TRUE, doesTests = FALSE)
+  new("TrainParams", classifier = dlda, transposeExpression = TRUE, intermediate = character(0),
+      doesTests = FALSE)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, transposeExpression, doesTests, ...)
+          function(classifier, transposeExpression, doesTests, intermediate = character(0), ...)
           {
             new("TrainParams", classifier = classifier, transposeExpression = transposeExpression,
-                doesTests = doesTests, otherParams = list(...))
+                doesTests = doesTests, intermediate = intermediate, otherParams = list(...))
           })
 
 setClass("PredictParams", representation(
@@ -62,7 +71,7 @@ setClass("PredictParams", representation(
   otherParams = "list")
 )
 
-setGeneric("PredictParams", function(predictor, transposeExpression, multipleResults, getClasses, ...)
+setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {

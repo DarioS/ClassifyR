@@ -34,6 +34,8 @@
             features as columns.}
             \item{\code{doesTests}}{Set to \code{TRUE} if \code{classifier} also performs
             and returns predictions.}
+            \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
+            \code{\link{runTest}} that need to be passed to \code{classifier}.}            
             \item{\code{...}}{Other named parameters which will be used by the classifier.}
 	         }
     }
