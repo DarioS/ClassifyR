@@ -67,6 +67,7 @@ setClass("PredictParams", representation(
   predictor = "function",
   transposeExpression = "logical",
   multipleResults = "logical",
+  intermediate = "character",    
   getClasses = "function",
   otherParams = "list")
 )
@@ -76,13 +77,14 @@ setGeneric("PredictParams", function(predictor, ...)
 setMethod("PredictParams", character(0), function()
 {
   new("PredictParams", predictor = predict, transposeExpression = TRUE, multipleResults = FALSE,
-      getClasses = function(result){result[["class"]]})
+      intermediate = character(0), getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("function"),
-          function(predictor, transposeExpression, multipleResults, getClasses, ...)
+          function(predictor, transposeExpression, multipleResults, intermediate = character(0), getClasses, ...)
           {
             new("PredictParams", predictor = predictor, transposeExpression = transposeExpression,
-                multipleResults = multipleResults, getClasses = getClasses, otherParams = list(...))
+                multipleResults = multipleResults, intermediate = intermediate,
+                getClasses = getClasses, otherParams = list(...))
           })
 
 setGeneric("ClassifyResult", function(originalNames, originalFeatures, chosenFeatures, ...)

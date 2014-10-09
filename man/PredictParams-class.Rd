@@ -14,10 +14,10 @@
     \item{}{
       \code{PredictParams()}
       Creates a default PredictParams object. This assumes that the object returned by
-      the clasifier has a list element named "class".
+      the classifier has a list element named "class".
   }
     \item{}{
-      \code{PredictParams(predictor, transposeExpression, multipleResults, getClasses, ...)}
+      \code{PredictParams(predictor, transposeExpression, multipleResults, intermediate = character(0), getClasses, ...)}
       Creates a PredictParams object which stores the function which will do the
       class prediction and parameters that the function will use.
   \describe{
@@ -29,6 +29,8 @@
             \item{\code{multipleResults}}{If \code{TRUE}, \code{predictor} will return a
             \code{\link{list}} of results, perhaps for different values of some parameter.
             If FALSE, a single result is returned.}
+            \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
+            \code{\link{runTest}} that need to be passed to the prediction function.}               
             \item{\code{getClasses}}{A \code{\link{function}} to extract the vector of class predictions
             from the result object created by \code{predictor}.}
             \item{\code{...}}{Other arguments that \code{predictor} may use.}

@@ -69,7 +69,12 @@ setMethod("runTest", c("ExpressionSet"),
                                                                                recursive = FALSE)
                               lastSize <- newSize
                               },
-                 PredictParams = predictedClasses <- .doTest(trained, expression, testing, predictParams, verbose)
+                 PredictParams = {
+                                 if(length(predictParams@intermediate) != 0)
+                                   predictParams@otherParams <- c(predictParams@otherParams,
+                                                      as.list(environment())[predictParams@intermediate])
+                                  predictedClasses <- .doTest(trained, expression, testing, predictParams, verbose)
+                                 }
            )
     
   }

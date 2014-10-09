@@ -62,6 +62,6 @@ setMethod("errorMap", "list",
   
   wholePlot <- gridExtra::arrangeGrob(classGrob, errorGrob, nrow = 2, heights = c(1, mapHeight),
                main = grid::textGrob("Error Comparison", gp = grid::gpar(fontsize = fontSizes[1])))
-  print(wholePlot)
+  grid::grid.draw(wholePlot)
   wholePlot
 })
