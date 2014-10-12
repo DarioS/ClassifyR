@@ -88,8 +88,8 @@ Differential expression classifiers look for consistent changes in means between
 library(sparsediscrim)
 DEresults <- runTests(ovarSet, validation = "bootstrap", resamples = 5, folds = 3,
                       params = list(SelectionParams(limmaSelection, nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
-                                    TrainParams(dlda, TRUE, FALSE),
-                                    PredictParams(predict, TRUE, FALSE, function(result) result[["class"]])),
+                                    TrainParams(dlda, TRUE, doesTests = FALSE),
+                                    PredictParams(predict, TRUE, FALSE, getClasses = function(result) result[["class"]])),
                       parallelParams = bpparam(), verbose = 1)
 DEresults
 ```
@@ -145,8 +145,8 @@ Only two resamples are done.
 deviationResults <- runTests(ovarSet, validation = "bootstrap", resamples = 2, folds = 4,
                              params = list(SelectionParams(leveneSelection, nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
                                            TransformParams(subtractFromLocation, location = "median"),
-                                           TrainParams(fisherDiscriminant, FALSE, TRUE),
-                                           PredictParams(predictor = function(){}, FALSE, FALSE, function(result) result)),
+                                           TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
+                                           PredictParams(predictor = function(){}, FALSE, FALSE, getClasses = function(result) result)),
                              verbose = 1)
 deviationResults
 ```
@@ -182,9 +182,9 @@ distributionResults <- runTests(ovarSet, validation = "bootstrap", resamples = 2
                                 params = list(SelectionParams(KullbackLeiblerSelection,
                                                               nFeatures = c(25, 50, 75, seq(100, 1000, 100)),
                                                               type = "dynamic"),
-                                              TrainParams(naiveBayesKernel, FALSE, TRUE),
+                                              TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
                                               PredictParams(predictor = function(){}, FALSE, FALSE,
-                                                            function(result) result, weighted = "weighted")),
+                                                            getClasses = function(result) result, weighted = "weighted")),
                                 verbose = 1)
 distributionResults
 ```

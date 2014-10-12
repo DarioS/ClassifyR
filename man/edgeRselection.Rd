@@ -62,6 +62,6 @@ the features which have best resubstitution error rate.
     selected <- edgeRselection(expression, classes, nFeatures = seq(100, 1000, 100),
                                trainParams = TrainParams(classifyInterface, TRUE, TRUE),
                                predictParams = PredictParams(function(){}, TRUE, FALSE, 
-                                                             function(result) result[["ytehat"]]))
+                                                             getClasses = function(result) result[["ytehat"]]))
   }
 }
