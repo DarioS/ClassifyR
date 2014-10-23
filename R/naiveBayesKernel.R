@@ -83,8 +83,8 @@ setMethod("naiveBayesKernel", "ExpressionSet",
     unweightedList <- unlist(unweightedList)
     weightedList <- unlist(weightedList)
   } else {
-    names(unweightedList) <- paste("Unweighted,minDifference", minDifference, sep = '=')
-    names(weightedList) <- paste("Weighted,minDifference", minDifference, sep = '=')
+    names(unweightedList) <- paste("weighted=unweighted,minDifference=", minDifference, sep = '')
+    names(weightedList) <- paste("weighted=weighted,minDifference=", minDifference, sep = '')
   }
                               
   switch(weighted, unweighted = unweightedList,

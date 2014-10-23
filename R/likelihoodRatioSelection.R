@@ -55,15 +55,15 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
       predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
                              predictParams, verbose)
     else
-      predictions <- trained
+      predictions <- predictParams@getClasses(trained)
     
     if(is.list(predictions))
       lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))
     else
       sum(predictions != classes) / length(classes)
   })
-  names(errorRates) <- nFeatures
-  
+  if(class(errorRates) == "numeric") names(errorRates) <- nFeatures else colnames(errorRates) <- nFeatures
+
   picked <- .pickRows(errorRates)
   if(verbose == 3)
     message("Features selected.")

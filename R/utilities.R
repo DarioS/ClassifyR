@@ -6,7 +6,7 @@ setOldClass("pamrtrained")
   initialClass <- class(expression)
   if(class(expression) != "list")
     expression <- list(data = expression)  
-  
+
   selected <- lapply(expression, function(expressionVariety)
   {
     if(is.function(selectionParams@featureSelection))
@@ -36,8 +36,9 @@ setOldClass("pamrtrained")
       }
     }
   })
+
   if(initialClass != "list") selected <- selected[[1]]
-  if(class(selected) == "list") selected <- unlist(selected, recursive = FALSE)
+  if(class(selected[[1]]) == "list") selected <- unlist(selected, recursive = FALSE)
   selected
 }
 
@@ -57,7 +58,7 @@ setOldClass("pamrtrained")
   })
   
   if(initialClass != "list") transformed <- transformed[[1]]
-  if(class(transformed) == "list") transformed <- unlist(transformed, recursive = FALSE)
+  if(class(transformed[[1]]) == "list") transformed <- unlist(transformed, recursive = FALSE)
   transformed
 }
 
@@ -69,7 +70,7 @@ setOldClass("pamrtrained")
   if(class(expression) != "list")
     expression <- list(data = expression)
   
-  trained <- lapply(expression, function(expressionVariety)
+  trained <- mapply(function(expressionVariety, variety)
   {
     classes <- pData(expressionVariety)[, "class"]
     expressionTrain <- exprs(expressionVariety[, training])
@@ -78,6 +79,18 @@ setOldClass("pamrtrained")
     {
       expressionTrain <- t(expressionTrain)
       expressionTest <- t(expressionTest)
+    }
+    
+    if(variety != "data")
+    {
+      multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
+      individiualParams <- lapply(multiplierParams, '[', 2)
+      names(individiualParams) <- sapply(multiplierParams, '[', 1)
+      individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
+      if(all(names(individiualParams) %in% names(trainParams@otherParams)))
+        trainParams@otherParams[names(individiualParams)] <- individiualParams
+      else
+        predictParams@otherParams[names(individiualParams)] <- individiualParams
     }
     
     paramList <- list(expressionTrain, classes[training])
@@ -98,9 +111,9 @@ setOldClass("pamrtrained")
       prediction <- do.call(trainParams@classifier, paramList)
       if(verbose >= 2)
         message("Training and classification completed.")    
-      predictions <- predictParams@getClasses(prediction)
+      prediction
     }
-  })
+  }, expression, names(expression), SIMPLIFY = FALSE)
   
   if(initialClass != "list") trained <- trained[[1]]
   if(class(trained[[1]]) == "list") trained <- unlist(trained, recursive = FALSE)
@@ -112,15 +125,19 @@ setOldClass("pamrtrained")
 {
   initialClass <- class(trained)
   if(class(trained) != "list")
+  {
     trained <- list(model = trained)
-  testExpression <- exprs(expression)[, testing]
-  if(predictParams@transposeExpression == TRUE)
-    testExpression <- t(testExpression)
+    expression <- list(data = expression)
+  }
   
-  predicted <- lapply(trained, function(model)
+  predicted <- mapply(function(model, data)
   {
     if(!grepl("{}", paste(capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
     {
+      testExpression <- exprs(data)[, testing]
+      if(predictParams@transposeExpression == TRUE)
+        testExpression <- t(testExpression)
+    
       paramList <- list(model, testExpression)
       if(length(predictParams@otherParams) > 0)
         paramList <- c(paramList, predictParams@otherParams)
@@ -135,7 +152,7 @@ setOldClass("pamrtrained")
     if(verbose >= 2)
       message("Prediction completed.")    
     predictions
-  })
+  }, trained, expression, SIMPLIFY = FALSE)
 
   if(initialClass != "list") predicted <- predicted[[1]]
   if(class(predicted[[1]]) == "list") predicted <- unlist(predicted, recursive = FALSE)

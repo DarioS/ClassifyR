@@ -7,19 +7,33 @@ and one row for each classification result.
        }
 \usage{
   \S4method{errorMap}{list}(results,
-                     errorColours = c("#FFFFFF", "#E0E0E0", "#BABABA", "#888888", "#000000"),
+                     errorColours = list(c("#FFFFFF", "#BFBFFF", "#7F7FFF", "#3F3FFF", "#0000FF"),
+                                         c("#FFFFFF", "#FFBFBF", "#FF7F7F", "#FF3F3F", "#FF0000")),
                      classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
-                     mapHeight = 4)
+                     mapHeight = 4, title = "Error Comparison", showLegends = TRUE, showXlabels = TRUE, showXtitle = TRUE,
+                     showYlabels = TRUE, showYtitle = TRUE, legendSize = grid::unit(1, "lines"),
+                      plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{errorColours}{A vector of colours for error levels.}
-  \item{classColours}{A vector of colours for class levels.}
+  \item{classColours}{Either a vector of colours for class levels if both classes should
+                      have same colour, or a list of length 2, with each component
+                      being a vector of the same length. The vector has the colour gradient
+                      for each class.}
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}
-  \item{mapHeight}{Height of the map, relative to the height of the class colour bar.}                 
+  \item{mapHeight}{Height of the map, relative to the height of the class colour bar.}     
+  \item{title}{The title to place above the plot.}     
+  \item{showLegends}{Logical. IF FALSE, the legend is not drawn.}
+  \item{showXlabels}{Logical. IF FALSE, the x-axis labels are hidden.}
+  \item{showXtitle}{Logical. IF FALSE, the x-axis title is hidden.}
+  \item{showYlabels}{Logical. IF FALSE, the y-axis labels are hidden.}
+  \item{showYtitle}{Logical. IF FALSE, the y-axis title is hidden.}
+  \item{legendSize}{The size of the boxes in the legends.}
+  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
 }
 \details{
 The names of \code{results} determine the row names that will be in the plot.

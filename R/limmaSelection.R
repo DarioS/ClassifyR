@@ -41,7 +41,7 @@ setMethod("limmaSelection", "ExpressionSet",
       predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
                              predictParams, verbose)
     else
-      predictions <- trained
+      predictions <- predictParams@getClasses(trained)
     
     if(is.list(predictions))
       lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))

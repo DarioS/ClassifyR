@@ -44,17 +44,36 @@ setMethod("runTest", c("ExpressionSet"),
                                
                                selectedFeatures <- .doSelection(expression, training, selectionParams,
                                                                 trainParams, predictParams, verbose)
+
                                if(selectionParams@subsetExpressionData == TRUE)
                                {
                                  if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
-                                   expression <- expression[selectedFeatures, ]
-                                 else
-                                   expression <- lapply(selectedFeatures, function(features) expression[features, ])
+                                 {
+                                   if(class(expression) != "list")
+                                     expression <- expression[selectedFeatures, ]
+                                   else
+                                     lapply(expression, function(variety) variety[selectedFeatures, ])
+                                 } else {
+                                   if(class(expression) != "list")
+                                     expression <- lapply(selectedFeatures, function(features) expression[features, ])
+                                   else
+                                     expression <- lapply(expression, function(variety)
+                                                          lapply(selectedFeatures, function(features) variety[features, ]))
+                                 }
+                               } else {
+                                 if(is.list(selectedFeatures))
+                                 {
+                                   if(class(expression) != "list")
+                                     expression <- lapply(selectedFeatures, function(features) expression)
+                                   else
+                                     expression <- lapply(expression, function(variety)
+                                                          lapply(selectedFeatures, function(features) variety))
+                                 }
                                }
-                               newSize <- if(class(selectedFeatures) == "list") length(selectedFeatures) else 1
-                               if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)
-                                                                                       lapply(1:(newSize / lastSize), function(x) variety)),
-                                                                                recursive = FALSE)                               
+                               
+                               if(class(expression) == "list" && class(expression[[1]]) == "list")
+                                 expression <- unlist(expression, recursive = FALSE)
+                               newSize <- length(expression)
                                lastSize <- newSize
                              }, 
                  TrainParams = {
