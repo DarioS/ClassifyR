@@ -149,7 +149,7 @@ setMethod("errorMap", "list",
             if(showLegends == TRUE)
             {
               legendWidth <- sum(classLegend[["widths"]])
-              legendHeight <- sum(firstLegend[["heights"]])
+              legendHeight <- firstLegend[["heights"]][2]
               widths <- unit.c(unit(1, "npc") - legendWidth, legendWidth)
               heights <- unit.c(unit(1 / (mapHeight + 1), "npc"), legendHeight)
               if(is.list(errorColours))
