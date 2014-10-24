@@ -92,7 +92,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                    both = if(class(unweightedList) == "list")
                             unlist(list(unweightedList, weightedList), recursive = FALSE)
                           else
-                            list(Unweighted = unweightedList, Weighted = weightedList)
+                            list(`weightwed=unweighted` = unweightedList, `weighted=weighted` = weightedList)
                        
         )
 })
