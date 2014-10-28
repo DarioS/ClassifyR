@@ -123,7 +123,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
          both = if(class(unweightedList) == "list")
            unlist(list(unweightedList, weightedList), recursive = FALSE)
          else
-           list(`weightwed=unweighted` = unweightedList, `weighted=weighted` = weightedList)
+           list(`weighted=unweighted` = unweightedList, `weighted=weighted` = weightedList)
          
   )
 })
