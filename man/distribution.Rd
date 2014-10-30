@@ -39,7 +39,7 @@ identifying outlier samples that are difficult to classify.
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    result <- runTests(TCGA_eset, resamples = 2, fold = 2)
+    result <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", resamples = 2, fold = 2)
     sampleDistribution <- distribution(result, "samples", binwidth = 0.1)
     featureDistribution <- distribution(result, "features", binwidth = 1)
     print(head(sampleDistribution))

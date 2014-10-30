@@ -32,7 +32,8 @@ differentially expressed features.
   This selection method looks for differential expression. It uses a moderated t-test.
 }
 \value{
-  A vector of feature indices for the features that gave the best resubstitution error rate.
+  A list of length 2. The first element has the features ranked from most important to least important.
+  The second element has the features that were selected to be used for classification.
 }
 
 \author{Dario Strbenac}

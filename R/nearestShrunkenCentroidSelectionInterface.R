@@ -33,5 +33,5 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "ExpressionSet",
   if(verbose == 3)
     message("Nearest shrunken centroid feature selection completed.")
   
-  chosen
+  list(list(), chosen)
 })

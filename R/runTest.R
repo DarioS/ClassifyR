@@ -42,9 +42,11 @@ setMethod("runTest", c("ExpressionSet"),
                                  selectionParams@otherParams <- c(selectionParams@otherParams,
                                                                   as.list(environment())[selectionParams@intermediate])
                                
-                               selectedFeatures <- .doSelection(expression, training, selectionParams,
+                               topFeatures <- .doSelection(expression, training, selectionParams,
                                                                 trainParams, predictParams, verbose)
 
+                               rankedFeatures <- topFeatures[[1]]
+                               selectedFeatures <- topFeatures[[2]]
                                if(selectionParams@subsetExpressionData == TRUE)
                                {
                                  if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
@@ -98,5 +100,5 @@ setMethod("runTest", c("ExpressionSet"),
     
   }
   
-  list(selectedFeatures, testing, predictedClasses)
+  list(rankedFeatures, selectedFeatures, testing, predictedClasses)
 })

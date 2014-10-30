@@ -55,7 +55,12 @@ setMethod("limmaSelection", "ExpressionSet",
     message("Features selected.")
   
   if(class(picked) == "list")
-    lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
-  else
-    orderedFeatures[picked]
+  {
+    rankedFeatures <- lapply(1:length(picked), function(variety) orderedFeatures)
+    pickedFeatures <- lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
+  } else {
+    rankedFeatures <- orderedFeatures
+    pickedFeatures <- orderedFeatures[picked]
+  }
+  list(rankedFeatures, pickedFeatures)
 })

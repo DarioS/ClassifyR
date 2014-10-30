@@ -87,21 +87,26 @@ setMethod("PredictParams", c("function"),
                 getClasses = getClasses, otherParams = list(...))
           })
 
-setGeneric("ClassifyResult", function(originalNames, originalFeatures, chosenFeatures, ...)
+setGeneric("ClassifyResult", function(datasetName, classificationName, originalNames, originalFeatures, ...)
 {standardGeneric("ClassifyResult")})
 setClass("ClassifyResult", representation(
+  datasetName = "character",
+  classificationName = "character",
   originalNames = "character",
   originalFeatures = "character",
-  chosenFeatures = "list",  
+  chosenFeatures = "list",
+  rankedFeatures = "list",
   actualClasses = "factor",
   predictions = "list",
   validation = "list",  
   errors = "list")
 )
-setMethod("ClassifyResult", c("character", "character", "list"),
-          function(originalNames, originalFeatures, chosenFeatures, predictions, actualClasses, validation)
+setMethod("ClassifyResult", c("character", "character", "character", "character"),
+          function(datasetName, classificationName, originalNames, originalFeatures,
+                   rankedFeatures, chosenFeatures, predictions, actualClasses, validation)
           {
-            new("ClassifyResult", predictions = predictions, chosenFeatures = chosenFeatures,
+            new("ClassifyResult", datasetName = datasetName, classificationName = classificationName,
+                predictions = predictions, rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 actualClasses = actualClasses, validation = validation,
                 originalNames = originalNames, originalFeatures = originalFeatures)
           })
@@ -109,6 +114,8 @@ setMethod("show", c("ClassifyResult"),
           function(object)
           {
             cat("An object of class 'ClassifyResult'.\n")
+            cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
+            cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Validation: ") 
             if(object@validation[[1]] == "leave")
               cat("Leave ", object@validation[[2]], " out cross-validation.\n", sep = '')

@@ -7,7 +7,7 @@ setOldClass("pamrtrained")
   if(class(expression) != "list")
     expression <- list(data = expression)  
 
-  selected <- lapply(expression, function(expressionVariety)
+  rankedSelected <- lapply(expression, function(expressionVariety)
   {
     if(is.function(selectionParams@featureSelection))
     {
@@ -15,31 +15,37 @@ setOldClass("pamrtrained")
                         predictParams = predictParams, verbose = verbose)
       paramList <- append(paramList, selectionParams@otherParams)
       do.call(selectionParams@featureSelection, paramList)    
-    } else { # It is a list of functions.
+    } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
         paramList <- list(expressionVariety[, training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
-        do.call(selector, paramList)    
+        do.call(selector, paramList)[[2]]    
       }, selectionParams@featureSelection, selectionParams@otherParams, SIMPLIFY = FALSE)
+      
       if(is.numeric(featuresLists[[1]]))
       {
         featuresCounts <- table(unlist(featuresLists))
-        as.integer(names(featuresCounts))[featuresCounts >= selectionParams@minPresence]
+        selectedFeatures <- as.integer(names(featuresCounts))[featuresCounts >= selectionParams@minPresence]
       } else {
-        lapply(1:length(featuresLists[[1]]), function(variety)
+        selectedFeatures <-lapply(1:length(featuresLists[[1]]), function(variety)
         {
           varietyFeatures <- table(unlist(lapply(featuresLists, "[[", variety)))
           as.integer(names(varietyFeatures))[varietyFeatures >= selectionParams@minPresence]
         })
       }
+      list(NULL, selectedFeatures)
     }
   })
 
-  if(initialClass != "list") selected <- selected[[1]]
-  if(class(selected[[1]]) == "list") selected <- unlist(selected, recursive = FALSE)
-  selected
+  if(initialClass != "list") rankedSelected <- rankedSelected[[1]]
+  if(class(rankedSelected[[1]][[1]]) == "list")
+  {
+    rankedSelected[[1]] <- unlist(rankedSelected[[1]], recursive = FALSE)
+    rankedSelected[[2]] <- unlist(rankedSelected[[2]], recursive = FALSE)
+  }
+  rankedSelected
 }
 
 .doTransform <- function(expression, transformParams, verbose)

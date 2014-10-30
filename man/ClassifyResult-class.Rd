@@ -2,7 +2,7 @@
 \docType{class}
 \alias{ClassifyResult}
 \alias{ClassifyResult-class}
-\alias{ClassifyResult,character,character,list-method}
+\alias{ClassifyResult,character,character,character,character-method}
 \alias{show,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
@@ -23,12 +23,16 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{ClassifyResult(originalNames, originalFeatures, chosenFeatures, predictions, actualClasses, validation)}}
+      \code{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures, rankedFeatures,
+      chosenFeatures, predictions, actualClasses, validation)}}
     }
   \describe{
+            \item{\code{datasetName}}{A name associated with the dataset used.}
+            \item{\code{classificationName}}{A name associated with the classification.}
             \item{\code{originalNames}}{Sample names.}
-            \item{\code{originalFeatures}}{Feature names.}       
-            \item{\code{chosenFeatures}}{Indices of features selected at each fold.}
+            \item{\code{originalFeatures}}{Feature names.}
+            \item{\code{rankedFeatures}}{Indices or names of all features, from most to least important.}
+            \item{\code{chosenFeatures}}{Indices or names of features selected at each fold.}
             \item{\code{predictions}}{A \code{\link{list}} of \code{\link{data.frame}}
             containing information about samples, their actual class and predicted class.}            
             \item{\code{actualClasses}}{Factor of class of each sample.}
@@ -78,7 +82,7 @@
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    results <- runTests(TCGA_eset, resamples = 2, folds = 2)
+    results <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", resamples = 2, folds = 2)
     show(results)
     predictions(results)
     actualClasses(results)

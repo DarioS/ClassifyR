@@ -7,8 +7,8 @@ and one row for each classification result.
        }
 \usage{
   \S4method{errorMap}{list}(results,
-                     errorColours = list(c("#FFFFFF", "#BFBFFF", "#7F7FFF", "#3F3FFF", "#0000FF"),
-                                         c("#FFFFFF", "#FFBFBF", "#FF7F7F", "#FF3F3F", "#FF0000")),
+                     errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
+                                         c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                      classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
                      mapHeight = 4, title = "Error Comparison", showLegends = TRUE, showXlabels = TRUE, showXtitle = TRUE,
                      showYlabels = TRUE, showYtitle = TRUE, legendSize = grid::unit(1, "lines"),
@@ -49,10 +49,10 @@ be discretised to.
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                             predicted = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  result1 <- ClassifyResult(LETTERS[1:10], LETTERS[10:1], list(sample(10, 10)),
+  result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, list("fold", 100, 5))
   predicted[, "predicted"] <- sample(predicted[, "predicted"])
-  result2 <- ClassifyResult(LETTERS[1:10], LETTERS[10:1], list(sample(10, 10)),
+  result2 <- ClassifyResult("Example", "Differential Deviation", LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   # wholePlot <- errorMap(list(Gene = result1, Protein = result2)) # Wait for namespace problems to be fixed.
   # ggsave("wholePlot.png", wholePlot)

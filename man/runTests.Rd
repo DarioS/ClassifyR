@@ -9,8 +9,8 @@
 }
 \usage{
   \S4method{runTests}{matrix}(expression, classes, ...)
-  \S4method{runTests}{ExpressionSet}(expression, validation = c("bootstrap", "leaveOut"),
-                     bootMode = c("fold", "split"),
+  \S4method{runTests}{ExpressionSet}(expression, datasetName, classificationName,
+                     validation = c("bootstrap", "leaveOut"), bootMode = c("fold", "split"),
                      resamples = 100, percent = 25, folds = 5, leave = 2, seed, parallelParams = bpparam(),
                      params = list(SelectionParams(), TrainParams(), PredictParams()),
                      verbose = 1)
@@ -20,7 +20,9 @@
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
   \item{classes}{A vector the same length as the number of columns of expression data specifying
-                 the class that the samples belong to.}                    
+                 the class that the samples belong to.}            
+  \item{datasetName}{A name associated with the dataset used.}
+  \item{classificationName}{A name associated with the classification.}
   \item{validation}{"bootstrap" for repeated resampling or "leaveOut" for leaving all combinations
                     of k samples as test samples.}
   \item{bootMode}{Character. Either "fold" or "split". If "fold", then the samples are split into
@@ -62,6 +64,6 @@
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    runTests(TCGA_eset, resamples = 2, fold = 2)
+    runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", resamples = 2, fold = 2)
   }
 }

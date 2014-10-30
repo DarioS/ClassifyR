@@ -26,7 +26,8 @@
   The set of features chosen is the obtained by considering the range of thresholds provided to \code{\link{nearestShrunkenCentroidTrainInterface}} and using the threshold that obtains the lowest cross-validation error rate on the training set.
 }
 \value{
-  A vector of numeric row indexes, of the features that were chosen after applying the threshold.
+  A list of length 2. The first element is empty. The second element has the features that were chosen
+  after applying the threshold.
 }
 \author{Dario Strbenac}
 \seealso{\code{\link[pamr]{pamr.listgenes}} for the function that was interfaced to.}
@@ -40,6 +41,6 @@
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
     trained <- nearestShrunkenCentroidTrainInterface(genesMatrix, classes)
-    nearestShrunkenCentroidSelectionInterface(genesMatrix, classes, trained)
+    nearestShrunkenCentroidSelectionInterface(genesMatrix, classes, trained)[[2]]
   }
 }
