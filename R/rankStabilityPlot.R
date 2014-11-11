@@ -7,7 +7,7 @@ setMethod("rankStabilityPlot", "list",
                    pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
                    rowVariable = c("None", "datasetName", "classificationName", "validation"),
                    columnVariable = c("classificationName", "datasetName", "validation", "None"),
-                   fontSizes = c(24, 16, 12, 12, 12))
+                   fontSizes = c(24, 16, 12, 12, 12), plot = TRUE, parallelParams = bpparam())
 {
   lineColourVariable <- match.arg(lineColourVariable)
   pointTypeVariable <- match.arg(pointTypeVariable)
@@ -20,7 +20,7 @@ setMethod("rankStabilityPlot", "list",
       rankedFeatures <- unlist(result@rankedFeatures, recursive = FALSE)
     else
       rankedFeatures <- result@rankedFeatures
-    averageOverlap <- rowMeans(do.call(cbind, mapply(function(features, index)
+    averageOverlap <- rowMeans(do.call(cbind, bpmapply(function(features, index)
     {
       otherFeatures <- rankedFeatures[(index + 1):length(rankedFeatures)]
       sapply(otherFeatures, function(other)
@@ -31,7 +31,7 @@ setMethod("rankStabilityPlot", "list",
           length(intersect(features[1:top], other[1:top])) / top * 100
         })
       })
-    }, rankedFeatures[1:(length(rankedFeatures) - 1)], 1:(length(rankedFeatures) - 1), SIMPLIFY = FALSE)))
+    }, rankedFeatures[1:(length(rankedFeatures) - 1)], 1:(length(rankedFeatures) - 1), SIMPLIFY = FALSE, BPPARAM = parallelParams)))
     
     validationText <- if(result@validation[[1]] == "fold") "Resample and Fold"
                       else if(result@validation[[1]] == "split") "Resample and Split"
@@ -53,5 +53,8 @@ setMethod("rankStabilityPlot", "list",
   if(rowVariable != "None" || columnVariable != "None")
     stabilityPlot <- stabilityPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis")))
   
-  print(stabilityPlot)  
+  if(plot == TRUE)
+    print(stabilityPlot)
+  
+  stabilityPlot
 })

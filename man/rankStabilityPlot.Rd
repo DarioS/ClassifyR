@@ -9,7 +9,8 @@
                               lineColourVariable = c("validation", "datasetName", "classificationName", "None"),
                               pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
                               rowVariable = c("None", "datasetName", "classificationName", "validation"),
-                              columnVariable = c("classificationName", "datasetName", "validation", "None"), fontSizes = c(24, 16, 12, 12, 12))
+                              columnVariable = c("classificationName", "datasetName", "validation", "None"),
+                              fontSizes = c(24, 16, 12, 12, 12), plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
@@ -24,12 +25,17 @@
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}
+  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{
   Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and \code{"validation"}. If \code{"None"}, then that graphic element is not used.
+  
+  Calculating all pair-wise set overlaps can be time-consuming. This stage can be done on multiple CPUs by providing the
+  relevant options to \code{parallelParams}.
 }
 \value{
-  A plot.
+  An object of class \code{ggplot} and a plot on the current graphics device, if \code{plot} is \code{TRUE}.
 }
 \author{Dario Strbenac}
 
