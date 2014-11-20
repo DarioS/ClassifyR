@@ -66,7 +66,11 @@ setMethod("selectionPlot", "list",
     
     plotData <- do.call(rbind, unname(unlist(lapply(compareIndices, function(indicesSet)
     {
-      unname(lapply(data.frame(combn(indicesSet, length(indicesSet))), function(indiciesCombination)
+      if(length(indicesSet) == 2)
+        indiciesCombinations <- list(indicesSet)
+      else
+        indiciesCombinations <- lapply(1:length(indicesSet), function(index) c(indicesSet[index], indicesSet[-index]))      
+      unname(lapply(indiciesCombinations, function(indiciesCombination)
       {
         aDataset <- results[[indiciesCombination[1]]]
         otherDatasets <- results[indiciesCombination[-1]]   
