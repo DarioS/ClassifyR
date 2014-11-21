@@ -95,9 +95,15 @@ setMethod("rankPlot", "list",
     }, BPPARAM = parallelParams), recursive = FALSE)))
   }
   
+  validationOrder <- unique(sapply(results, function(result) result@validation[[1]]))
+  validationLabels <- c("Resample and Fold", "Resample and Split", "Leave Out")
+  newValidLevels <- sapply(validationOrder, function(validation) grep(validation, validationLabels, ignore.case = TRUE))
+  plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
+  plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
   plotData[, "validation"] <- gsub("fold", "Resample and Fold", plotData[, "validation"])
   plotData[, "validation"] <- gsub("split", "Resample and Split", plotData[, "validation"])
   plotData[, "validation"] <- gsub("leave", "Leave Out", plotData[, "validation"])
+  plotData[, "validation"] <- factor(plotData[, "validation"], levels = validationLabels[newValidLevels])
 
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap,
                           colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis),

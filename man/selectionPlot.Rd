@@ -15,7 +15,7 @@
                    rowVariable = c("None", "validation", "datasetName", "classificationName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12), title = "Feature Selection Stability",
-                   xLabel = "Analysis", yLabel = "Average Pairwise Common Features (\%)", margin = grid::unit(c(0, 1, 1, 0), "lines"), plot = TRUE, parallelParams = bpparam())
+                   xLabel = "Analysis", yLabel = "Average Pairwise Common Features (\%)", margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
@@ -37,6 +37,7 @@
   \item{xLabel}{Label to be used for the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
   \item{margin}{The margin to have around the plot.}
+  \item{rotate90}{Logical. IF TRUE, the boxplot is horizontal.}
   \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }

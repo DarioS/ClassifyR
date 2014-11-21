@@ -13,7 +13,7 @@ setMethod("selectionPlot", "list",
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12), title = "Feature Selection Stability",
                    xLabel = "Analysis", yLabel = "Average Pairwise Common Features (%)",
-                   margin = grid::unit(c(0, 1, 1, 0), "lines"), plot = TRUE, parallelParams = bpparam())
+                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
@@ -97,15 +97,24 @@ setMethod("selectionPlot", "list",
     if(!is.null(boxFillColours)) boxFillColours else boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
   if(boxLineColouring != "None")
     if(!is.null(boxLineColours)) boxLineColours else boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
+  
+  validationOrder <- unique(sapply(results, function(result) result@validation[[1]]))
+  validationLabels <- c("Resample and Fold", "Resample and Split", "Leave Out")
+  newValidLevels <- sapply(validationOrder, function(validation) grep(validation, validationLabels, ignore.case = TRUE))
+  plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
+  plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
   plotData[, "validation"] <- gsub("fold", "Resample and Fold", plotData[, "validation"])
   plotData[, "validation"] <- gsub("split", "Resample and Split", plotData[, "validation"])
   plotData[, "validation"] <- gsub("leave", "Leave Out", plotData[, "validation"])
+  plotData[, "validation"] <- factor(plotData[, "validation"], levels = validationLabels[newValidLevels])
   
   selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis), y = overlap,
                           fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL)), environment = environment()) +
                           ggplot2::geom_boxplot() + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::scale_fill_manual(values = boxFillColours) + ggplot2::scale_colour_manual(values = boxLineColours) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
-
+  if(rotate90 == TRUE)
+    selectionPlot <- selectionPlot + ggplot2::coord_flip()
+  
   if(rowVariable != "None" || columnVariable != "None")
     selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis")))
   
