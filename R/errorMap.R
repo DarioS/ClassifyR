@@ -6,9 +6,8 @@ setMethod("errorMap", "list",
                    errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
                                        c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
-                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE, showXlabels = TRUE,
-                   showXtitle = TRUE, showYlabels = TRUE, showYtitle = TRUE,
-                   legendSize = grid::unit(1, "lines"), plot = TRUE)
+                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
+                   showYtickLabels = TRUE, yAxisLabel = "Analysis", legendSize = grid::unit(1, "lines"), plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
@@ -63,22 +62,20 @@ setMethod("errorMap", "list",
                                                    legend.text = ggplot2::element_text(size = fontSizes[5]),
                                                    legend.position = ifelse(showLegends, "right", "none"),
                                                    legend.key.size = legendSize)
-  
-  xLabel <- if(showXtitle == TRUE) "Sample Name" else NULL
-  yLabel <- if(showYtitle == TRUE) "Result" else NULL                                                             
+                                                           
   errorPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Error)) +
     ggplot2::scale_fill_manual(values = errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
     ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                   axis.text.x = if(showXlabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                   axis.text.y = if(showYlabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                   axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
+                   axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
                    axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                    axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                    plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
                    legend.title = ggplot2::element_text(size = fontSizes[4]),
                    legend.text = ggplot2::element_text(size = fontSizes[5]),
                    legend.position = ifelse(showLegends, "right", "none"),
-                   legend.key.size = legendSize) + ggplot2::labs(x = xLabel, y = yLabel)
+                   legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
   
   classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
   errorGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
@@ -108,15 +105,15 @@ setMethod("errorMap", "list",
                                  values = if(is.list(errorColours)) errorColours[[1]] else errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                     axis.text.x = if(showXlabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                     axis.text.y = if(showYlabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
                      axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                      axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                      plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
                      legend.title = ggplot2::element_text(size = fontSizes[4]),
                      legend.text = ggplot2::element_text(size = fontSizes[5]),
                      legend.position = ifelse(showLegends, "right", "none"),
-                     legend.key.size = legendSize) + ggplot2::labs(x = xLabel, y = yLabel)
+                     legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
     
     errorGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
     commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], errorGrobUnused[["widths"]])                   
@@ -131,15 +128,15 @@ setMethod("errorMap", "list",
                                  values = if(is.list(errorColours)) errorColours[[2]] else errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                     axis.text.x = if(showXlabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                     axis.text.y = if(showYlabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
                      axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                      axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                      plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
                      legend.title = ggplot2::element_text(size = fontSizes[4]),
                      legend.text = ggplot2::element_text(size = fontSizes[5]),
                      legend.position = ifelse(showLegends, "right", "none"),
-                     legend.key.size = legendSize) + ggplot2::labs(x = xLabel, y = yLabel)
+                     legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
     
     errorGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot)) 
     errorGrobUnused[["widths"]] <- commonWidth  

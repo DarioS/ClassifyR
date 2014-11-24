@@ -7,12 +7,12 @@ and one row for each classification result.
        }
 \usage{
   \S4method{errorMap}{list}(results,
-                     errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
-                                         c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
-                     classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
-                     mapHeight = 4, title = "Error Comparison", showLegends = TRUE, showXlabels = TRUE, showXtitle = TRUE,
-                     showYlabels = TRUE, showYtitle = TRUE, legendSize = grid::unit(1, "lines"),
-                      plot = TRUE)
+                   errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
+                                       c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
+                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
+                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", 
+                   showXtickLabels = TRUE, showYtickLabels = TRUE, yAxisLabel = "Analysis",
+                   legendSize = grid::unit(1, "lines"), plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
@@ -28,10 +28,10 @@ and one row for each classification result.
   \item{mapHeight}{Height of the map, relative to the height of the class colour bar.}     
   \item{title}{The title to place above the plot.}     
   \item{showLegends}{Logical. IF FALSE, the legend is not drawn.}
-  \item{showXlabels}{Logical. IF FALSE, the x-axis labels are hidden.}
-  \item{showXtitle}{Logical. IF FALSE, the x-axis title is hidden.}
-  \item{showYlabels}{Logical. IF FALSE, the y-axis labels are hidden.}
-  \item{showYtitle}{Logical. IF FALSE, the y-axis title is hidden.}
+  \item{xAxisLabel}{The name plotted for the x-axis. NULL suppresses label.} 
+  \item{showXtickLabels}{Logical. IF FALSE, the x-axis labels are hidden.}
+  \item{showYtickLabels}{Logical. IF FALSE, the y-axis labels are hidden.}
+  \item{yAxisLabel}{The name plotted for the y-axis. NULL suppresses label.}
   \item{legendSize}{The size of the boxes in the legends.}
   \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
 }
