@@ -101,12 +101,6 @@ setMethod("selectionPlot", "list",
   validationOrder <- unique(sapply(results, function(result) result@validation[[1]]))
   validationLabels <- c("Resample and Fold", "Resample and Split", "Leave Out")
   newValidLevels <- sapply(validationOrder, function(validation) grep(validation, validationLabels, ignore.case = TRUE))
-  if(rotate90 == TRUE)
-  {
-    switch(xVariable, validation = levels(plotData[, "validation"]) <- rev(levels(plotData[, "validation"])),
-           datasetName = levels(plotData[, "dataset"]) <- rev(levels(plotData[, "dataset"])),
-           classificationName = levels(plotData[, "analysis"]) <- rev(levels(plotData[, "analysis"])))
-  }
   
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
@@ -114,6 +108,12 @@ setMethod("selectionPlot", "list",
   plotData[, "validation"] <- gsub("split", "Resample and Split", plotData[, "validation"])
   plotData[, "validation"] <- gsub("leave", "Leave Out", plotData[, "validation"])
   plotData[, "validation"] <- factor(plotData[, "validation"], levels = validationLabels[newValidLevels])
+  if(rotate90 == TRUE)
+  {
+    switch(xVariable, validation = plotData[, "validation"] <- factor(plotData[, "validation"], levels = rev(levels(plotData[, "validation"]))),
+           datasetName = plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = rev(levels(plotData[, "dataset"]))),
+           classificationName = plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = rev(levels(plotData[, "analysis"]))))
+  }
   
   selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis), y = overlap,
                           fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL)), environment = environment()) +
