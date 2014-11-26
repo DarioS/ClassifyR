@@ -1,15 +1,15 @@
-\name{KullbackLeiblerSelection}
-\alias{KullbackLeiblerSelection}
-\alias{KullbackLeiblerSelection,matrix-method}
-\alias{KullbackLeiblerSelection,ExpressionSet-method}
+\name{DMDselection}
+\alias{DMDselection}
+\alias{DMDselection,matrix-method}
+\alias{DMDselection,ExpressionSet-method}
 \title{Selection of Differential Distributions with Kullback Leibler Distance}
-\description{Ranks features by largest Kullback Leibler distance and chooses
+\description{Ranks features by largest Differences in Means/Medians and Deviations and chooses
 the features which have best resubstitution error rate.
        }
 \usage{
-  \S4method{KullbackLeiblerSelection}{matrix}(expression, classes, ...)
-  \S4method{KullbackLeiblerSelection}{ExpressionSet}(expression, nFeatures, trainParams,
-                                      predictParams, ..., verbose = 3)
+  \S4method{DMDselection}{matrix}(expression, classes, ...)
+  \S4method{DMDselection}{ExpressionSet}(expression, nFeatures, trainParams,
+                                         predictParams, ..., verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -27,9 +27,7 @@ the features which have best resubstitution error rate.
                       This function only prints progress messages if the value is 3.}
        }
 \details{
-  Symmetric distance is defined as \eqn{1/2 * (location_1 - location_2)^2}{0.5 * (location1 - location2)^2 / scale1^2 + (location1 - location2)^2 / scale2^2 + scale1^2 / scale2^2 + scale2^2 / scale1^2 }
-  
-  Dynamic distance is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}
+  DMD is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}.
   
   The subscripts denote the group which the parameter is calculated for.
 }
@@ -46,7 +44,7 @@ the features which have best resubstitution error rate.
     genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(50, 5, 1), rnorm(50, 15, 1)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) rnorm(100, 9, 3)))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    KullbackLeiblerSelection(genesMatrix, classes, nFeatures = seq(10, 100, 10),
+    DMDselection(genesMatrix, classes, nFeatures = seq(10, 100, 10),
                              trainParams = TrainParams(), predictParams = PredictParams())
   }
 }

@@ -20,6 +20,7 @@ setMethod("selectionPlot", "list",
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")             
 
+  comparison <- match.arg(comparison)
   xVariable <- match.arg(xVariable)
   boxFillColouring <- match.arg(boxFillColouring)
   boxLineColouring <- match.arg(boxLineColouring)
@@ -49,7 +50,7 @@ setMethod("selectionPlot", "list",
       
       data.frame(dataset = rep(result@datasetName, length(percentOverlaps)),
                  analysis = rep(result@classificationName, length(percentOverlaps)),
-                 validation = rep(result@validation[1], length(percentOverlaps)),
+                 validation = rep(result@validation[[1]], length(percentOverlaps)),
                  overlap = percentOverlaps)
     }, BPPARAM = parallelParams))
   } else { # Commonality analysis.

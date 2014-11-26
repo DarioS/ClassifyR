@@ -182,8 +182,7 @@ Kullback-Leibler divergence will be used for feature selection and a naive Bayes
 distributionResults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
                                 validation = "bootstrap", resamples = 2, folds = 2,
                                 params = list(SelectionParams(KullbackLeiblerSelection,
-                                                              nFeatures = c(25, 50, 75, seq(100, 1000, 100)),
-                                                              type = "dynamic"),
+                                                              nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
                                               TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
                                               PredictParams(predictor = function(){}, FALSE, FALSE,
                                                             getClasses = function(result) result, weighted = "weighted")),
@@ -209,11 +208,12 @@ errors(distributionResults)
 
 The error rates are higher than for deviation or expression.
 
-**ClassifyR** has three feature selection functions for differential distribution :
+**ClassifyR** has four feature selection functions for differential distribution :
 
 * Likelihood ratio statistic.
 * Kolmogorov-Smirnov distance.
 * Kullback-Leibler distance.
+* Differences of Means/Medians and Deviations (DMD).
 
 <!-- -->
 
