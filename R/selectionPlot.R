@@ -38,7 +38,7 @@ setMethod("selectionPlot", "list",
   {  
     plotData <- do.call(rbind, bplapply(results, function(result)
     {
-  
+      chosenFeatures <- result@chosenFeatures
       percentOverlaps <- unlist(mapply(function(features, index)
       {
         otherFeatures <- chosenFeatures[(index + 1):length(chosenFeatures)]
