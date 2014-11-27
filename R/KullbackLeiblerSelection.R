@@ -13,10 +13,8 @@ setMethod("KullbackLeiblerSelection", "matrix", function(expression, classes, ..
 
 setMethod("KullbackLeiblerSelection", "ExpressionSet", 
           function(expression, nFeatures, trainParams,
-                                     predictParams, type = c("symmetric", "dynamic"),
-                                     ..., verbose = 3)
+                                     predictParams, ..., verbose = 3)
 {
-  type <- match.arg(type)
   if(verbose == 3)
     message("Selecting features by Kullback Leibler divergence")
   classes <- pData(expression)[, "class"]
