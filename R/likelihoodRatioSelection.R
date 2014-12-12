@@ -12,7 +12,7 @@ setMethod("likelihoodRatioSelection", "matrix", function(expression, classes, ..
 })
 
 setMethod("likelihoodRatioSelection", "ExpressionSet", 
-          function(expression, nFeatures, trainParams, predictParams,
+          function(expression, trainParams, predictParams, resubstituteParams,
                    alternative = c(location = "different", scale = "different"),
                    ..., verbose = 3)
 {
@@ -42,39 +42,7 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   as.data.frame(t(otherClassExpression)),
   switch(alternative[["location"]], same = allDistribution[[1]], different = otherClassDistribution[[1]]),
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
-
   orderedFeatures <- order(logLikelihoodRatios)
-  if(verbose == 3)
-    message("Selecting number of features to use.")
-  errorRates <- sapply(nFeatures, function(topFeatures)
-  {
-    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
-    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
-                        trainParams, predictParams, verbose)
-    if(trainParams@doesTests == FALSE)
-      predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
-                             predictParams, verbose)
-    else
-      predictions <- predictParams@getClasses(trained)
-    
-    if(is.list(predictions))
-      lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))
-    else
-      sum(predictions != classes) / length(classes)
-  })
-  if(class(errorRates) == "numeric") names(errorRates) <- nFeatures else colnames(errorRates) <- nFeatures
-
-  picked <- .pickRows(errorRates)
-  if(verbose == 3)
-    message("Features selected.")
   
-  if(class(picked) == "list")
-  {
-    rankedFeatures <- lapply(1:length(picked), function(variety) orderedFeatures)
-    pickedFeatures <- lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
-  } else {
-    rankedFeatures <- orderedFeatures
-    pickedFeatures <- orderedFeatures[picked]
-  }
-  list(rankedFeatures, pickedFeatures)
+  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
 })

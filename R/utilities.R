@@ -165,17 +165,67 @@ setOldClass("pamrtrained")
   predicted
 }
 
-.pickRows <- function(errorRates)
+.pickRows <- function(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
 {
-  if(is.numeric(errorRates))
+  performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
-    nFeatures <- as.numeric(names(errorRates))
-    pickedRows <- 1:(nFeatures[which.min(errorRates)[1]])
+    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
+    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
+                        trainParams, predictParams, verbose)
+    if(trainParams@doesTests == FALSE)
+      predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
+                             predictParams, verbose)
+    else
+      predictions <- predictParams@getClasses(trained)
+    
+    if(is.list(predictions))
+    {
+      classData <- prediction(lapply(predictions, as.numeric), lapply(1:length(predictions), function(variety) pData(expression)[, "class"]))
+    } else {
+      classData <- prediction(as.numeric(predictions), pData(expression)[, "class"])
+    }
+    if(resubstituteParams@performanceType == "balanced")
+    {
+      falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)
+      falsePositiveRate <- sapply(ROCR::performance(classData, "fpr")@y.values, "[[", 2)
+      performanceValues <- rowMeans(matrix(c(falseNegativeRate, falsePositiveRate), ncol = 2))
+    } else
+    {
+      performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
+      performanceData <- do.call(ROCR::performance, performanceList)
+      performanceValues <- sapply(performanceData@y.values, "[[", 2)
+    }
+  })
+  
+  if(is.numeric(performances))
+  {
+    if(resubstituteParams@better == "lower")
+      pickedRows <- 1:(resubstituteParams@nFeatures[which.min(performances)[1]])
+    else
+      pickedRows <- 1:(resubstituteParams@nFeatures[which.max(performances)[1]])
   } else {
-    nFeatures <- as.numeric(colnames(errorRates))
-    pickedRows <- apply(errorRates, 1, function(rates) 1:(nFeatures[which.min(rates)[1]]))
+    pickedRows <- apply(performances, 1, function(varietyPerformances)
+                  {
+                    if(resubstituteParams@better == "lower")
+                      1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
+                    else
+                      1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
+                  })
+
     if(is.matrix(pickedRows))
       pickedRows <- as.list(as.data.frame(pickedRows))
   }
-  pickedRows
+  
+  if(verbose == 3)
+    message("Features selected.")
+  
+  if(class(pickedRows) == "list")
+  {
+    rankedFeatures <- lapply(1:length(pickedRows), function(variety) orderedFeatures)
+    pickedFeatures <- lapply(pickedRows, function(pickedSet) orderedFeatures[pickedSet])
+  } else {
+    rankedFeatures <- orderedFeatures
+    pickedFeatures <- orderedFeatures[pickedRows]
+  }
+  list(rankedFeatures, pickedFeatures)
 }

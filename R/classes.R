@@ -16,6 +16,29 @@ setMethod("TransformParams", c("function"),
 
 setClassUnion("functionOrList", c("function", "list"))
 
+setClass("ResubstituteParams", representation(
+  nFeatures = "numeric",
+  performanceType = "character",
+  better = "character",
+  otherParams = "list")
+)
+
+setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c("lower", "higher"), ...)
+{standardGeneric("ResubstituteParams")})
+
+setMethod("ResubstituteParams", numeric(0), function()
+{
+  new("ResubstituteParams", nFeatures = seq(100, 500, 100), performanceType = "balanced",
+      better = "lower")
+})
+
+setMethod("ResubstituteParams", c("numeric", "character", "character"),
+          function(nFeatures, performanceType, better, ...)
+          {
+            new("ResubstituteParams", nFeatures = nFeatures, performanceType = performanceType,
+                better = better, otherParams = list(...))
+          })
+
 setClass("SelectionParams", representation(
   featureSelection = "functionOrList",
   minPresence = "numeric",
@@ -30,7 +53,7 @@ setMethod("SelectionParams", character(0), function()
 {
   new("SelectionParams", featureSelection = limmaSelection, minPresence = 1,
       intermediate = character(0), subsetExpressionData = TRUE,
-      otherParams = list(nFeatures = seq(100, 500, 100)))
+      otherParams = list(resubstituteParams = ResubstituteParams()))
 })
 setMethod("SelectionParams", c("functionOrList"),
           function(featureSelection, minPresence = 1, intermediate = character(0),
@@ -99,7 +122,7 @@ setClass("ClassifyResult", representation(
   actualClasses = "factor",
   predictions = "list",
   validation = "list",  
-  errors = "list")
+  performance = "list")
 )
 setMethod("ClassifyResult", c("character", "character", "character", "character"),
           function(datasetName, classificationName, originalNames, originalFeatures,
@@ -132,10 +155,10 @@ setMethod("show", c("ClassifyResult"),
             else
               cat("Features: List of length ", length(object@chosenFeatures), " of lists of length ",
                   length(object@chosenFeatures[[1]]), " of row indices.\n", sep = '')
-            if(length(object@errors) > 0)
-              cat("Errors: ", paste(names(object@errors), collapse = ', '), ".\n", sep = '')
+            if(length(object@performance) > 0)
+              cat("Performance Measures: ", paste(names(object@performance), collapse = ', '), ".\n", sep = '')
             else
-              cat("Errors: None calculated yet.\n", sep = '')
+              cat("Performance Measures: None calculated yet.\n", sep = '')
           })
 
 setGeneric("predictions", function(object, ...)
@@ -154,12 +177,12 @@ setMethod("features", c("ClassifyResult"),
             object@chosenFeatures
           })
 
-setGeneric("errors", function(object, ...)
-{standardGeneric("errors")})
-setMethod("errors", c("ClassifyResult"),
+setGeneric("performance", function(object, ...)
+{standardGeneric("performance")})
+setMethod("performance", c("ClassifyResult"),
           function(object)
           {
-            object@errors
+            object@performance
           })
 
 setMethod("sampleNames", c("ClassifyResult"),

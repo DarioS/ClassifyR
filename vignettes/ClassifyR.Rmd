@@ -87,7 +87,7 @@ Differential expression classifiers look for consistent changes in means between
 ```{r, tidy = FALSE}
 library(sparsediscrim)
 DEresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
-                      params = list(SelectionParams(limmaSelection, nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
+                      params = list(SelectionParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
                                     TrainParams(dlda, TRUE, doesTests = FALSE),
                                     PredictParams(predict, TRUE, FALSE, getClasses = function(result) result[["class"]])),
                       parallelParams = bpparam(), verbose = 1)
@@ -112,20 +112,20 @@ plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5])
 
 This plots the distribution of microarray intensities for the two survival classes for features that were chosen in the first fold of the first resampling. As seen, the means of the probes are not much different.
 
-Classification error rates can be calculated with *calcError*. Next, the balanced error rate is calculated for all ten resamplings. The balanced error rate is defined as the average of the errors of each class.
+Classification error rates, as well as many other prediction performance measures, can be calculated with *calcPerformance*. Next, the balanced error rate is calculated for all ten resamplings. The balanced error rate is defined as the average of the classification errors of each class.
 
 ```{r}
-DEresults <- calcError(DEresults, "balanced")
+DEresults <- calcPerformance(DEresults, "balanced")
 DEresults
-errors(DEresults)
+performance(DEresults)
 ```
 
-The error rates are reasonable. Any error rate can be calculated that the [ROCR](http://cran.r-project.org/web/packages/ROCR/index.html) function *performance* calculates. For example, the Matthews correlation coefficient can also be calculated.
+The error rates are reasonable. Any performance measure can be calculated that the [ROCR](http://cran.r-project.org/web/packages/ROCR/index.html) function *performance* calculates. For example, the Matthews correlation coefficient can also be calculated.
 
 ```{r}
-DEresults <- calcError(DEresults, "mat")
+DEresults <- calcPerformance(DEresults, "mat")
 DEresults
-errors(DEresults)
+performance(DEresults)
 ```
 
 **ClassifyR** has two feature selection functions for differential expression.
@@ -135,21 +135,21 @@ errors(DEresults)
 
 *limmaSelection* is suited to microarray data and *edgeRSelection* is suited to RNA-seq data where the expression values are raw counts.
 
-### Differential Deviation
+### Differential Variability
 
 Some diseases are typified not by a change in expression means of features between groups, but a change in the expression variability. This can be observed by when the variance of a gene's expression changes drastically between conditions, such as healthy cells and cancerous cells.
 
 Only two resamples are done.
 
 ```{r, tidy = FALSE}
-deviationResults <- runTests(ovarSet, "Ovarian Cancer", "Differential Deviation",
-                             validation = "bootstrap", resamples = 2, folds = 4,
-                             params = list(SelectionParams(leveneSelection, nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
-                                           TransformParams(subtractFromLocation, location = "median"),
-                                           TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
-                                           PredictParams(predictor = function(){}, FALSE, FALSE, getClasses = function(result) result)),
-                             verbose = 1)
-deviationResults
+DVresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Deviation",
+                      validation = "bootstrap", resamples = 2, folds = 4,
+                      params = list(SelectionParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                                    TransformParams(subtractFromLocation, location = "median"),
+                                    TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
+                                    PredictParams(predictor = function(){}, FALSE, FALSE, getClasses = function(result) result)),
+                      verbose = 1)
+DVresults
 ```
 
 For *params*, the *SelectionParams* object is specified first. In this analysis, feature selection is done first. A *TransformParams* object is next in the list, so data transformation will be applied after feature selection has been done. *transformParams* specifies *subtractFromLocation* as the transformation funcion. This is because it is anticipated that subtracting all features from the median of the training set will be a good feature to detect differential deviation. *trainParams* specifies *fisherDiscriminant* as the classifier function. Note that this function does both training and prediction, so the third parameter is TRUE. *predictParams* specifies an empty function as the prediction function, because *fisherDiscriminant* does both steps. *fisherDiscriminant* directly returns a vector of predictions, so the second function simply returns the argument *result*.
@@ -157,15 +157,15 @@ For *params*, the *SelectionParams* object is specified first. In this analysis,
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(deviationResults)[[1]][[2]][1:5])
+plotFeatureClasses(ovarSet, features(DVresults)[[1]][[2]][1:5])
 ```
 
 Calculate the balanced error rate for differential deviation.
 
 ```{r}
-deviationResults <- calcError(deviationResults, "balanced")
-deviationResults
-errors(deviationResults)
+DVresults <- calcPerformance(DVresults, "balanced")
+DVresults
+performance(DVresults)
 ```
 
 The errors are reasonable.
@@ -179,15 +179,13 @@ Differential distribution describes classification based on differences in eithe
 Kullback-Leibler divergence will be used for feature selection and a naive Bayes classifier will fit a density to expression values of a gene, for each class. The prediction is then the differences in density between classes, scaled for the number of samples that were in each class in the training set, summed for all selected probes.
 
 ```{r, tidy = FALSE}
-distributionResults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
-                                validation = "bootstrap", resamples = 2, folds = 2,
-                                params = list(SelectionParams(KullbackLeiblerSelection,
-                                                              nFeatures = c(25, 50, 75, seq(100, 1000, 100))),
-                                              TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
-                                              PredictParams(predictor = function(){}, FALSE, FALSE,
-                                                            getClasses = function(result) result, weighted = "weighted")),
+DDresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
+                      validation = "bootstrap", resamples = 2, folds = 2,
+                      params = list(SelectionParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                                    TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
+                                    PredictParams(predictor = function(){}, FALSE, FALSE, getClasses = function(result) result, weighted = "weighted")),
                                 verbose = 1)
-distributionResults
+DDresults
 ```
 
 Since *naiveBayesKernel* does both training and testing, an empty function is specified as the predictor function for the *PredictParams* constructor.
@@ -195,15 +193,15 @@ Since *naiveBayesKernel* does both training and testing, an empty function is sp
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(distributionResults)[[1]][[1]][1:5])
+plotFeatureClasses(ovarSet, features(DDresults)[[1]][[1]][1:5])
 ```
 
 Calculate the balanced error rate for differential distribution.
 
 ```{r}
-distributionResults <- calcError(distributionResults, "balanced")
-distributionResults
-errors(distributionResults)
+DDresults <- calcPerformance(DDresults, "balanced")
+DDresults
+performance(DDresults)
 ```
 
 The error rates are higher than for deviation or expression.
@@ -227,13 +225,13 @@ The *errorMap* function allows the visual comparison of error rates from differe
 
 ```{r, fig.width = 10, fig.height = 7}
 library(grid)
-resultsList <- list(Expression = DEresults, Deviation = deviationResults)
+resultsList <- list(Expression = DEresults, Variability = DVresults)
 errorPlot <- errorMap(resultsList)
 ```
 
 ### Conclusion
 
-When many replicates per class are available, differential deviaton or distribution classification may have better prediction perfomance than traditional differential expression analysis. Judging by feature selection, the probes chosen for their differential distribution have much stronger differences than those for expression.
+When many replicates per class are available, differential variability or distribution classification may have better prediction perfomance than traditional differential expression analysis. Judging by feature selection, the probes chosen for their differential distribution have much stronger differences than those for expression.
 
 ## Rules for New Functions
 

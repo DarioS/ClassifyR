@@ -13,9 +13,9 @@ setMethod("edgeRselection", "matrix",
 })
 
 setMethod("edgeRselection", "ExpressionSet", 
-          function(expression, nFeatures, normFactorsOptions = NULL,
+          function(expression, normFactorsOptions = NULL,
                            dispOptions = NULL, fitOptions = NULL, trainParams,
-                           predictParams, verbose = 3)
+                           predictParams, resubstituteParams, verbose = 3)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))
     stop("The package 'edgeR' could not be found. Please install it.")
@@ -48,38 +48,5 @@ setMethod("edgeRselection", "ExpressionSet",
   result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
   orderedFeatures <- match(rownames(result[["table"]]), allFeatures)
 
-  if(verbose == 3)
-    message("Selecting number of features to use.")
-  errorRates <- sapply(nFeatures, function(topFeatures)
-  {
-    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
-    
-    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
-                        trainParams, predictParams, verbose)
-    if(trainParams@doesTests == FALSE)
-      predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
-                             predictParams, verbose)
-    else
-      predictions <- predictParams@getClasses(trained)
-    
-    if(is.list(predictions))
-        lapply(predictions, function(predictions) sum(predictions != classes) / length(classes))
-    else
-      sum(predictions != classes) / length(classes)
-  })
-  if(class(errorRates) == "numeric") names(errorRates) <- nFeatures else colnames(errorRates) <- nFeatures
-  
-  picked <- .pickRows(errorRates)
-  if(verbose == 3)
-    message("Features selected.")
-  
-  if(class(picked) == "list")
-  {
-    rankedFeatures <- lapply(1:length(picked), function(variety) orderedFeatures)
-    pickedFeatures <- lapply(picked, function(pickedSet) orderedFeatures[pickedSet])
-  } else {
-    rankedFeatures <- orderedFeatures
-    pickedFeatures <- orderedFeatures[picked]
-  }
-  list(rankedFeatures, pickedFeatures)
+  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
 })

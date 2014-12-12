@@ -4,20 +4,18 @@
 \alias{edgeRselection,ExpressionSet-method}
 \title{Feature Selection Based on Differential Expression for RNA-seq}
 \description{Performs a differential expression analysis between classes and chooses
-the features which have best resubstitution error rate.
+the features which have best resubstitution performance.
 }
 \usage{
   \S4method{edgeRselection}{matrix}(expression, classes, ...)
-  \S4method{edgeRselection}{ExpressionSet}(expression, nFeatures, normFactorsOptions = NULL,
+  \S4method{edgeRselection}{ExpressionSet}(expression, normFactorsOptions = NULL,
                            dispOptions = NULL, fitOptions = NULL, trainParams,
-                           predictParams, verbose = 3)
+                           predictParams, resubstituteParams, verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing the
                     expression values.}
   \item{classes}{A vector of class labels.}
-  \item{nFeatures}{A vector for the top number of features to test the resubstitution error
-                   for.}
   \item{normFactorsOptions}{A named \code{\link{list}} of any options to be passed to
                             \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{\link{list}} of any options to be passed to
@@ -28,6 +26,9 @@ the features which have best resubstitution error rate.
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
                        prediction is to be done.}
+  \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
+                       describing the performance measure to consider and the numbers of
+                       top features to try for resubstitution classification.}                   
   \item{...}{Unused variables from the \code{\link{matrix}} method passed
                        to the \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
@@ -60,9 +61,10 @@ the features which have best resubstitution error rate.
     expression <- expression[, c(control, DPN)]
     classes <- rep(c("Contol", "DPN"), c(length(control), length(DPN)))
     expression <- expression[rowSums(expression > 10) > 8, ]
-    selected <- edgeRselection(expression, classes, nFeatures = seq(100, 1000, 100),
+    selected <- edgeRselection(expression, classes,
                                trainParams = TrainParams(classifyInterface, TRUE, TRUE),
                                predictParams = PredictParams(function(){}, TRUE, FALSE, 
-                                                             getClasses = function(result) result[["ytehat"]]))
+                                                             getClasses = function(result) result[["ytehat"]]),
+                               resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10), performanceType = "balanced", better = "lower"))
   }
 }

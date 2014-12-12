@@ -10,8 +10,8 @@
 \alias{actualClasses,ClassifyResult-method}
 \alias{features}
 \alias{features,ClassifyResult-method}
-\alias{errors}
-\alias{errors,ClassifyResult-method}
+\alias{performance}
+\alias{performance,ClassifyResult-method}
 
 \title{Container for Storing Classification Results}
 \description{
@@ -66,8 +66,8 @@
   \item{\code{features(result)}}{Returns a \code{\link{list}} of \code{\link{data.frame}}.
     Each data.frame contains columns \code{sample}, \code{predicted}, and \code{actual}.}}
   \describe{
-  \item{\code{errors(result)}}{Returns a \code{\link{list}} of error measures. This is
-    empty until \code{\link{calcError}} has been used.}}
+  \item{\code{performance(result)}}{Returns a \code{\link{list}} of performance measures. This is
+    empty until \code{\link{calcPerformance}} has been used.}}
   \describe{
   \item{\code{names(result)}}{Returns a \code{\link{character}} vector of sample names.}}
 }
