@@ -11,7 +11,7 @@ setMethod("runTest", c("matrix"),
 })
 
 setMethod("runTest", c("ExpressionSet"),
-          function(expression, training, testing,
+          function(expression, datasetName, classificationName, training, testing,
                    params = list(SelectionParams(), TrainParams(), PredictParams()),
                    verbose = 1)
 {
@@ -45,11 +45,20 @@ setMethod("runTest", c("ExpressionSet"),
                                topFeatures <- .doSelection(expression, training, selectionParams,
                                                                 trainParams, predictParams, verbose)
 
-                               rankedFeatures <- topFeatures[[1]]
-                               selectedFeatures <- topFeatures[[2]]
+                               if(sum(grepl('=', names(topFeatures))) > 0)
+                               {
+                                 multiSelection <- TRUE
+                                 rankedFeatures <- lapply(topFeatures, "[[", 1) # Extract for adding to result list.
+                                 selectedFeatures <- lapply(topFeatures, "[[", 2)
+                               } else {
+                                 multiSelection <- FALSE
+                                 rankedFeatures <- topFeatures[[1]] # Extract for adding to result list.
+                                 selectedFeatures <- topFeatures[[2]]
+                               }
+
                                if(selectionParams@subsetExpressionData == TRUE)
                                {
-                                 if(is.numeric(selectedFeatures) || is.character(selectedFeatures))
+                                 if(multiSelection == FALSE)
                                  {
                                    if(class(expression) != "list")
                                      expression <- expression[selectedFeatures, ]
@@ -63,7 +72,7 @@ setMethod("runTest", c("ExpressionSet"),
                                                           lapply(selectedFeatures, function(features) variety[features, ]))
                                  }
                                } else {
-                                 if(is.list(selectedFeatures))
+                                 if(is.list(selectedFeatures)) # Multiple selection varieties. Replicate the expression data.
                                  {
                                    if(class(expression) != "list")
                                      expression <- lapply(selectedFeatures, function(features) expression)
@@ -72,9 +81,14 @@ setMethod("runTest", c("ExpressionSet"),
                                                           lapply(selectedFeatures, function(features) variety))
                                  }
                                }
-                               
+
                                if(class(expression) == "list" && class(expression[[1]]) == "list")
+                               {
+                                 oldNames <- sapply(expression, names)
+                                 newNames <- unlist(lapply(expression, names))
                                  expression <- unlist(expression, recursive = FALSE)
+                                 names(expression) <- paste(rep(oldNames, each = length(expression[[1]])), newNames, sep = ',')
+                               }
                                newSize <- length(expression)
                                lastSize <- newSize
                              }, 
@@ -82,13 +96,24 @@ setMethod("runTest", c("ExpressionSet"),
                               if(length(trainParams@intermediate) != 0)
                                 trainParams@otherParams <- c(trainParams@otherParams,
                                                              as.list(environment())[trainParams@intermediate])
-
+                              
                               trained <- .doTrain(expression, training, testing, trainParams, predictParams, verbose)
+
                               newSize <- if(class(trained) == "list") length(trained) else 1
-                              if(newSize / lastSize != 1) expression <- unlist(lapply(expression, function(variety)
-                                                                                      lapply(1:(newSize / lastSize), function(x) variety)),
+                              if(newSize / lastSize != 1)
+                              {
+                                expression <- unlist(lapply(if(class(expression) == "list") expression else list(expression), function(variety)
+                                                                                      lapply(1:(newSize / lastSize), function(replicate) variety)),
                                                                                recursive = FALSE)
+                                names(expression) <- names(trained)
+                              }
+                              
                               lastSize <- newSize
+                              if(class(trained) == "list")
+                                tuneDetails <- lapply(trained, attr, "tune")
+                              else
+                                tuneDetails <- attr(trained, "tune")
+                                if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
                               },
                  PredictParams = {
                                  if(length(predictParams@intermediate) != 0)
@@ -99,6 +124,26 @@ setMethod("runTest", c("ExpressionSet"),
            )
     
   }
-  
-  list(rankedFeatures, selectedFeatures, testing, predictedClasses)
+  if(class(testing) == "logical") testing <- which(testing)
+
+  if(any(grepl("runTests", deparse(sys.calls()))))
+  {        
+    list(rankedFeatures, selectedFeatures, testing, predictedClasses, tuneDetails)
+  } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
+    if(class(predictedClasses) != "list")
+    {
+      return(ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+                            list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = predictedClasses)),
+                            pData(expression)[, "class"], list("independent"), tuneDetails)
+             )
+    } else {
+      return(mapply(function(varietyPredictions, varietyTunes)
+      {
+        if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
+        ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+                       list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = varietyPredictions)),
+                       pData(expression)[, "class"], list("independent"), varietyTunes)
+      }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))
+    }
+  }
 })

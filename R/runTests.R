@@ -34,7 +34,7 @@ setMethod("runTests", c("ExpressionSet"),
       sampleFold <- rep(1:folds, length.out = ncol(expression))
       samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
     } else {
-      sampleFold <- rep(1:2, c(ncol(expression) * (100 - percent) / 100, ncol(expression) * percent / 100))
+      sampleFold <- rep(1:2, c(round(ncol(expression) * (100 - percent) / 100), round(ncol(expression) * percent / 100)))
       samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
     }
 
@@ -72,19 +72,31 @@ setMethod("runTests", c("ExpressionSet"),
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   if(validation == "bootstrap")
   {
-    resultsLists <- lapply(c(4, 3, 2, 1), function(position)
+    if(bootMode == "fold")
+    {
+      if(class(results[[1]][[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
+    } else {
+      if(class(results[[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
+    }
+    
+    resultsLists <- lapply(c(4, 3, 2, 1, 5), function(position)
     {
       resultList <- lapply(results, function(sample)
       {
-        
-        if(position == 3 || predictParams@multipleResults == FALSE)
+        if(position == 3 || multipleVarieties == FALSE)
         {
-          if(!position %in% c(1, 2))
+          if(!position %in% c(1, 2, 5))
           {
             if(bootMode == "fold")
-              unlist(lapply(sample, function(fold) fold[[position]]))
-            else
-              unlist(sample[[position]])
+            {
+              if(position == 3 || class(sample[[1]][[4]]) != "data.frame")
+                                  # First fold predictions are a not data.frame.
+                unlist(lapply(sample, function(fold) fold[[position]]))
+              else # Predictions is a data.frame with labels and scores.
+                do.call(rbind, lapply(sample, function(fold) fold[[position]]))
+            } else { #bootMode is "split".
+              sample[[position]]
+            }
           } else {
             if(bootMode == "fold")
               lapply(sample, function(fold) fold[[position]])
@@ -92,15 +104,23 @@ setMethod("runTests", c("ExpressionSet"),
               sample[[position]]
           }
         } else {
-          if(position == 4)
+          if(position == 4) # Predictions with varieties.
           {
             if(bootMode == "fold")
+            {
+              prediction <- lapply(1:length(sample[[1]][[4]]), function(variety)
+                            {
+                              prediction <- lapply(sample, function(fold) fold[[position]][[variety]])
+                              if(class(prediction[[1]]) == "data.frame")
+                                do.call(rbind, prediction)
+                              else
+                                unlist(prediction)
+                            })
+            } else { # is 'split'.
             lapply(1:length(sample[[1]][[4]]), function(variety)
-              unlist(lapply(sample, function(fold) fold[[position]][[variety]])))
-            else
-            lapply(1:length(sample[[1]][[4]]), function(variety)
-              unlist(factor(sample[[position]][[variety]])))
-          } else {
+              sample[[position]][[variety]])
+            }
+          } else { # Ranked, selected features and test samples, with varieties.
             if(is.function(selectionParams@featureSelection))
             {
               if(bootMode == "fold")
@@ -119,29 +139,34 @@ setMethod("runTests", c("ExpressionSet"),
         }
       })
       
-      if(predictParams@multipleResults == TRUE && position %in% c(1, 2, 4))
+      if(multipleVarieties == TRUE && position != 3) # Rearrange lists by variety.
         resultList <- lapply(1:length(resultList[[1]]), function(variety)
                         lapply(resultList, "[[", variety))
       else
         resultList
     })
   } else { # leave k out.
-    resultsLists <- lapply(c(4, 3, 2, 1), function(position)
+    if(class(results[[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
+    resultsLists <- lapply(c(4, 3, 2, 1, 5), function(position)
     {
       resultList <- lapply(results, function(sample) sampleResult <- sample[[position]])
       
-      if(position == 3 || (predictParams@multipleResults == FALSE && position == 4))
+      if(position == 3 || position == 4 && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
         resultList <- unlist(resultList)
-      else if(predictParams@multipleResults == TRUE && position == 4)
+      else if (position == 4 && multipleVarieties == FALSE) # Predictions are in a data.frame.
+        resultList <- do.call(rbind, resultList)
+      else if(multipleVarieties == TRUE && position == 4 && class(resultList[[1]]) != "data.frame")
         lapply(1:length(resultList[[1]]), function(variety) unlist(lapply(resultList, "[[", variety)))
-      else if(predictParams@multipleResults == TRUE && position %in% c(1, 2) && is.function(selectionParams@featureSelection))
+      else if(multipleVarieties == TRUE && position == 4)
+        lapply(1:length(resultList[[1]]), function(variety) do.call(rbind, lapply(resultList, "[[", variety)))
+      else if(multipleVarieties == TRUE && position %in% c(1, 2, 5) && is.function(selectionParams@featureSelection))
         lapply(1:length(resultList[[1]]), function(variety) lapply(resultList, "[[", variety))
       else
         resultList
     })
   }    
   
-  if(predictParams@multipleResults == FALSE)
+  if(multipleVarieties == FALSE)
     predictionsListed <- list(resultsLists[[1]]) else predictionsListed <- resultsLists[[1]]
   
   predictionTables <- lapply(1:length(predictionsListed), function(variety)
@@ -149,9 +174,22 @@ setMethod("runTests", c("ExpressionSet"),
     if(validation == "bootstrap")
     {
       lapply(1:length(predictionsListed[[1]]), function(resample)
-             data.frame(sample = resultsLists[[2]][[resample]], predicted = predictionsListed[[variety]][[resample]]))        
+      {
+        switch(class(predictionsListed[[variety]][[resample]]),
+               factor = data.frame(sample = resultsLists[[2]][[resample]], label = predictionsListed[[variety]][[resample]]),
+               numeric = data.frame(sample = resultsLists[[2]][[resample]], score = predictionsListed[[variety]][[resample]]),
+               data.frame = data.frame(sample = resultsLists[[2]][[resample]],
+                                       label = predictionsListed[[variety]][[resample]][, sapply(predictionsListed[[variety]][[resample]], class) == "factor"],
+                                       score = predictionsListed[[variety]][[resample]][, sapply(predictionsListed[[variety]][[resample]], class) == "numeric"]))
+                
+      })
     } else {
-      list(data.frame(sample = resultsLists[[2]], predicted = predictionsListed[[variety]]))
+      switch(class(predictionsListed[[variety]]),
+             factor = data.frame(sample = resultsLists[[2]], label = predictionsListed[[variety]]),
+             numeric = data.frame(sample = resultsLists[[2]], score = predictionsListed[[variety]]),
+             data.frame = data.frame(sample = resultsLists[[2]],
+                                     label = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "factor"],
+                                     score = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "numeric"]))
     }
   })
   
@@ -165,17 +203,21 @@ setMethod("runTests", c("ExpressionSet"),
     validationInfo <- list("leave", leave)
   }
 
-  if(predictParams@multipleResults == FALSE)
+  if(multipleVarieties == FALSE)
   {
+    if(length(unlist(resultsLists[[5]])) == 0) # All tune values are NULL.
+      resultsLists[[5]] <- list(NULL)
     ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
                    resultsLists[[4]], resultsLists[[3]], predictionTables[[1]],
-                   pData(expression)[, "class"], validationInfo)
+                   pData(expression)[, "class"], validationInfo, resultsLists[[5]])
   } else {
     classifyResults <- lapply(1:length(predictionTables), function(variety)
     {
+      if(length(unlist(resultsLists[[5]][[variety]])) == 0) # All tune values are NULL.
+        resultsLists[[5]][[variety]] <- list(NULL)
       ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
                      resultsLists[[4]][[variety]], resultsLists[[3]][[variety]],
-                     predictionTables[[variety]], pData(expression)[, "class"], validationInfo)
+                     predictionTables[[variety]], pData(expression)[, "class"], validationInfo, resultsLists[[5]][[variety]])
     })
     if(validation == "bootstrap")
       names(classifyResults) <- names(results[[1]][[1]][[4]])

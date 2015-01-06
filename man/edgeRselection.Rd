@@ -63,7 +63,7 @@ the features which have best resubstitution performance.
     expression <- expression[rowSums(expression > 10) > 8, ]
     selected <- edgeRselection(expression, classes,
                                trainParams = TrainParams(classifyInterface, TRUE, TRUE),
-                               predictParams = PredictParams(function(){}, TRUE, FALSE, 
+                               predictParams = PredictParams(function(){}, TRUE, 
                                                              getClasses = function(result) result[["ytehat"]]),
                                resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10), performanceType = "balanced", better = "lower"))
   }

@@ -2,19 +2,20 @@ setGeneric("fisherDiscriminant", function(expression, ...)
            {standardGeneric("fisherDiscriminant")})
 
 setMethod("fisherDiscriminant", "matrix", 
-          function(expression, classes, test, verbose = 3)
+          function(expression, classes, ...)
 { 
   colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.            
   features <- rownames(expression)
   groupsTable <- data.frame(class = classes)
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
-  fisherDiscriminant(exprSet, test, verbose)
+  fisherDiscriminant(exprSet, ...)
 })
 
 setMethod("fisherDiscriminant", "ExpressionSet", 
-          function(expression, test, verbose = 3)
-{ 
+          function(expression, test, returnType = c("labels", "scores", "both"), verbose = 3)
+{
+  returnType <- match.arg(returnType)
   classes <- pData(expression)[, "class"]
   expression <- exprs(expression)      
   oneClassTraining <- which(classes == levels(classes)[1])
@@ -30,11 +31,14 @@ setMethod("fisherDiscriminant", "ExpressionSet",
   if(verbose == 3)
     message("Critical value calculated.")
   
-  factor(apply(test, 2, function(testSample)
+  labels <- factor(apply(test, 2, function(testSample)
   {
     if(aT %*% as.matrix(testSample) >= criticalValue)
       levels(classes)[1]
     else
       levels(classes)[2]
   }), levels = levels(classes))
+  scores <- apply(test, 2, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
+  
+  switch(returnType, label = labels, score = scores, both = data.frame(label = labels, score = scores))
 })

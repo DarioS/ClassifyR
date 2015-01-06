@@ -8,7 +8,7 @@ It consists of data transformation, feature selection, training and testing.
        }
 \usage{
   \S4method{runTest}{matrix}(expression, classes, ...)
-  \S4method{runTest}{ExpressionSet}(expression,
+  \S4method{runTest}{ExpressionSet}(expression, datasetName, classificationName,
                      training, testing, params = list(SelectionParams(), TrainParams(), PredictParams()),
                      verbose = 1)
 }
@@ -17,6 +17,8 @@ It consists of data transformation, feature selection, training and testing.
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
   \item{classes}{A vector of class labels.}
+  \item{datasetName}{A name associated with the dataset used.}
+  \item{classificationName}{A name associated with the classification.}  
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    
   \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
@@ -30,13 +32,15 @@ It consists of data transformation, feature selection, training and testing.
 }
 \details{
   This function only performs one classification and prediction. See \code{\link{runTests}}
-  for a driver function that does cross validation and uses this function.
+  for a driver function that does cross validation and uses this function. \code{datasetName}
+  and \code{classificationName} need to be provided.
 }
 \value{
-  A list with three elements. The first element contains the indices of genes that were selected
-  by the feature selection step. The second element contains the indices of the samples that
-  were in the test set. The third element contains a vector of the classes predicted by the
-  classifer.
+  A list with five elements. The first element contained all of the features, ranked from most
+  important to least important.The second element contains the indices of genes that were selected
+  by the feature selection step. The third element contains the indices of the samples that
+  were in the test set. The fourth element contains a vector of the classes predicted by the
+  classifer. The fifth element contains the value of any tuning parameters tried and chosen.
 }
 \author{Dario Strbenac}
 
@@ -49,7 +53,8 @@ It consists of data transformation, feature selection, training and testing.
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    runTest(TCGA_eset, training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
+    runTest(TCGA_eset, "TCGA Cancer", "Differential Expression",
+            training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
             testing = (1:ncol(TCGA_eset)) \%\% 2 != 0)
   }
 }

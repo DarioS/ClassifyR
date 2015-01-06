@@ -89,7 +89,6 @@ setMethod("TrainParams", c("function"),
 setClass("PredictParams", representation(
   predictor = "function",
   transposeExpression = "logical",
-  multipleResults = "logical",
   intermediate = "character",    
   getClasses = "function",
   otherParams = "list")
@@ -99,15 +98,14 @@ setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {
-  new("PredictParams", predictor = predict, transposeExpression = TRUE, multipleResults = FALSE,
+  new("PredictParams", predictor = predict, transposeExpression = TRUE,
       intermediate = character(0), getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("function"),
-          function(predictor, transposeExpression, multipleResults, intermediate = character(0), getClasses, ...)
+          function(predictor, transposeExpression, intermediate = character(0), getClasses, ...)
           {
             new("PredictParams", predictor = predictor, transposeExpression = transposeExpression,
-                multipleResults = multipleResults, intermediate = intermediate,
-                getClasses = getClasses, otherParams = list(...))
+                intermediate = intermediate, getClasses = getClasses, otherParams = list(...))
           })
 
 setGeneric("ClassifyResult", function(datasetName, classificationName, originalNames, originalFeatures, ...)
@@ -122,16 +120,17 @@ setClass("ClassifyResult", representation(
   actualClasses = "factor",
   predictions = "list",
   validation = "list",  
-  performance = "list")
+  performance = "list",
+  tune = "list")
 )
 setMethod("ClassifyResult", c("character", "character", "character", "character"),
           function(datasetName, classificationName, originalNames, originalFeatures,
-                   rankedFeatures, chosenFeatures, predictions, actualClasses, validation)
+                   rankedFeatures, chosenFeatures, predictions, actualClasses, validation, tune = list(NULL))
           {
             new("ClassifyResult", datasetName = datasetName, classificationName = classificationName,
                 predictions = predictions, rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 actualClasses = actualClasses, validation = validation,
-                originalNames = originalNames, originalFeatures = originalFeatures)
+                originalNames = originalNames, originalFeatures = originalFeatures, tune = tune)
           })
 setMethod("show", c("ClassifyResult"),
           function(object)
@@ -143,14 +142,16 @@ setMethod("show", c("ClassifyResult"),
             if(object@validation[[1]] == "leave")
               cat("Leave ", object@validation[[2]], " out cross-validation.\n", sep = '')
             else if(object@validation[[1]] == "split")
-              cat("Split cross-validation, ", object@validation[[2]], " percent of samples in test set.",
+              cat("Split cross-validation, ", object@validation[[2]], " percent of samples in test set.\n",
                   sep = '')
+            else if(object@validation[[1]] == "independent")
+              cat("Independent test set.\n")
             else
               cat(object@validation[[3]], " fold cross-validation of ", object@validation[[2]],
                   " resamples.\n", sep = '')
             cat("Predictions: List of data frames of length ", length(object@predictions),
                 ".\n", sep = '')
-            if(object@validation[[1]] %in% c("split", "leave"))
+            if(object@validation[[1]] %in% c("split", "leave", "independent"))
               cat("Features: List of length ", length(object@chosenFeatures), " of row indices.\n", sep = '')
             else
               cat("Features: List of length ", length(object@chosenFeatures), " of lists of length ",
@@ -203,4 +204,12 @@ setMethod("actualClasses", c("ClassifyResult"),
           function(object)
           {
             object@actualClasses
+          })
+
+setGeneric("tunedParameters", function(object, ...)
+{standardGeneric("tunedParameters")})
+setMethod("tunedParameters", c("ClassifyResult"),
+          function(object)
+          {
+            object@tune
           })

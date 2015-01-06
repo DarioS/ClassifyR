@@ -15,7 +15,9 @@ setMethod("plotFeatureClasses", "matrix",
 
 setMethod("plotFeatureClasses", "ExpressionSet", 
           function(expression, rows, plot = c("both", "density", "stripchart"),
-                   expressionLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
+                   xAxisLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
+                   yAxisLabels = c("Density", "Classes"),
+                   showXtickLabels = TRUE, showYtickLabels = TRUE,
                    fontSizes = c(24, 16, 12, 12, 12), colours = c("blue", "red"))
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -43,26 +45,35 @@ setMethod("plotFeatureClasses", "ExpressionSet",
     {
       stripPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = classes, y = expr)) +
                    ggplot2::geom_dotplot(dotsize = 0.5, binaxis = "y", stackdir = "center", position = "dodge", ggplot2::aes(colour = classes)) +
-                   ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::ylab(expressionLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
-                   ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]), axis.text = ggplot2::element_text(size = fontSizes[3]),
-                         axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
-                         legend.text = ggplot2::element_text(size = fontSizes[5]))
+                   ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::xlab(yAxisLabels[2]) + ggplot2::ylab(xAxisLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
+                   ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]),
+                                  axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                  axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                  axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                  legend.text = ggplot2::element_text(size = fontSizes[5]))
       stripPlot <- stripPlot + ggplot2::coord_flip()
     }
     if(is.numeric(rows)) featureName <- features[featureRow] else featureName <-featureRow
     if(plot == "both")
     {
       densPlot <- densPlot + ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
-                                            axis.text = ggplot2::element_text(size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]),
-                                            legend.text = ggplot2::element_text(size = fontSizes[5]))
+                                            axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                            axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                            legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                            legend.text = ggplot2::element_text(size = fontSizes[5])) +
+                             ggplot2::labs(x = NULL, y = yAxisLabels[1])
       gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
                    main = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
     } else if(plot == "density")
     {
-      densPlot <- densPlot + ggplot2::xlab(expressionLabel) +
-                  ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]), axis.text = ggplot2::element_text(size = fontSizes[3]),
-                        axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
-                        legend.text = ggplot2::element_text(size = fontSizes[5]))
+      densPlot <- densPlot + ggplot2::lab(x = xAxisLabel, y = yAxisLabels[1]) +
+                  ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]),
+                                 axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                 axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                                 axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                 legend.text = ggplot2::element_text(size = fontSizes[5])) +
+                  
+      
       print(densPlot + ggplot2::ggtitle(featureName))
     } else {
       print(stripPlot + ggplot2::ggtitle(featureName))

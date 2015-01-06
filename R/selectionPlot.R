@@ -7,7 +7,7 @@ setMethod("selectionPlot", "list",
                    xVariable = c("classificationName", "datasetName", "validation"),
                    boxFillColouring = c("classificationName", "datasetName", "validation", "None"),
                    boxFillColours = NULL,
-                   boxLineColouring = c("validation", "classificationName", "validation", "None"),
+                   boxLineColouring = c("validation", "classificationName", "datasetName", "None"),
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
@@ -46,11 +46,12 @@ setMethod("selectionPlot", "list",
         {
           length(intersect(features, other)) / max(length(features), length(other)) * 100
         })
-      }, chosenFeatures[1:(length(chosenFeatures) - 1)], 1:(length(chosenFeatures) - 1), SIMPLIFY = FALSE))
+      }, chosenFeatures[1:(length(chosenFeatures) - 1)], 1:(length(chosenFeatures) - 1), SIMPLIFY = FALSE))      
+      validationText <- .validationText(result)
       
       data.frame(dataset = rep(result@datasetName, length(percentOverlaps)),
                  analysis = rep(result@classificationName, length(percentOverlaps)),
-                 validation = rep(result@validation[[1]], length(percentOverlaps)),
+                 validation = rep(validationText, length(percentOverlaps)),
                  overlap = percentOverlaps)
     }, BPPARAM = parallelParams))
   } else { # Commonality analysis.
@@ -85,30 +86,27 @@ setMethod("selectionPlot", "list",
             })
           })
         }))
-
+        validationText <- .validationText(aDataset)      
+        
         data.frame(dataset = rep(aDataset@datasetName, length(allOverlaps)),
                    analysis = rep(aDataset@classificationName, length(allOverlaps)),
-                   validation = rep(aDataset@validation[[1]], length(allOverlaps)),
+                   validation = rep(validationText, length(allOverlaps)),
                    overlap = allOverlaps)
       }))
     }), recursive = FALSE)))
   }
 
   if(boxFillColouring != "None")
-    if(!is.null(boxFillColours)) boxFillColours else boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
+    if(!is.null(boxFillColours))
+      boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
   if(boxLineColouring != "None")
-    if(!is.null(boxLineColours)) boxLineColours else boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
-  
-  validationOrder <- unique(sapply(results, function(result) result@validation[[1]]))
-  validationLabels <- c("Resample and Fold", "Resample and Split", "Leave Out")
-  newValidLevels <- sapply(validationOrder, function(validation) grep(validation, validationLabels, ignore.case = TRUE))
+    if(!is.null(boxLineColours))
+      boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
   
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
-  plotData[, "validation"] <- gsub("fold", "Resample and Fold", plotData[, "validation"])
-  plotData[, "validation"] <- gsub("split", "Resample and Split", plotData[, "validation"])
-  plotData[, "validation"] <- gsub("leave", "Leave Out", plotData[, "validation"])
-  plotData[, "validation"] <- factor(plotData[, "validation"], levels = validationLabels[newValidLevels])
+  plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(plotData[, "validation"])) # Order in which validations were provided.
+  
   if(rotate90 == TRUE)
   {
     switch(xVariable, validation = plotData[, "validation"] <- factor(plotData[, "validation"], levels = rev(levels(plotData[, "validation"]))),

@@ -10,7 +10,7 @@
                    xVariable = c("classificationName", "datasetName", "validation"),
                    boxFillColouring = c("classificationName", "datasetName", "validation", "None"),
                    boxFillColours = NULL,
-                   boxLineColouring = c("validation", "classificationName", "validation", "None"),
+                   boxLineColouring = c("validation", "classificationName", "datasetName", "None"),
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
@@ -23,16 +23,17 @@
                     detailed description.}  
   \item{xVariable}{The factor to make separate boxes in the boxplot for.}
   \item{boxFillColouring}{A factor to colour the boxes by.}
-  \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}.}
+  \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}. If \code{NULL},
+                     a default palette is used.}
   \item{boxLineColouring}{A factor to colour the box lines by.}
-  \item{boxLineColours}{A vector of colours, one for each level of \code{boxLineColouring}.}  
+  \item{boxLineColours}{A vector of colours, one for each level of \code{boxLineColouring}. If \code{NULL},
+                     a default palette is used.}  
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}     
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of boxplots.}
   \item{yMax}{The maximum value of the percentage to plot.}
-  \item{fontSizes}{A vector of length 5. The first number is the size of the title.
+  \item{fontSizes}{A vector of length 3. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
-                   the size of the axes values. The fourth number is the size of the
-                   legends' titles. The fifth number is the font size of the legend labels.}
+                   the size of the axes values.}
   \item{title}{An overall title for the plot.}
   \item{xLabel}{Label to be used for the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
@@ -55,11 +56,11 @@
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                            predicted = rep(c("Healthy", "Cancer"), each = 50))
+                          label = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
                             list(predicted), actual, list("fold", 100, 5))
-  predicted[, "predicted"] <- sample(predicted[, "predicted"])
+  predicted[, "label"] <- sample(predicted[, "label"])
   result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   # selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxColouring = "classificationName") # Wait for namespace problems to be fixed.

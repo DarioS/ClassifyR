@@ -8,6 +8,7 @@
   \S4method{rankPlot}{list}(results, topRanked = seq(10, 100, 10),
                             comparison = c("within", "classificationName", "validation", "datasetName"),
                             lineColourVariable = c("validation", "datasetName", "classificationName", "None"),
+                            lineColours = NULL, lineWidth = 1,
                             pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
                             rowVariable = c("None", "datasetName", "classificationName", "validation"),
                             columnVariable = c("classificationName", "datasetName", "validation", "None"),
@@ -22,6 +23,9 @@
                     detailed description.}  
   \item{lineColourVariable}{The slot name that different levels of are plotted as
                             different line colours.}
+  \item{lineColours}{A vector of colours for different levels of the line colouring parameter. If \code{NULL},
+                     a default palette is used.}       
+  \item{lineWidth}{A single number controlling the thickness of lines drawn.}
   \item{pointTypeVariable}{The slot name that different levels of are plotted as
                             different point shapes on the lines.}
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of lineplots.}     
@@ -66,11 +70,11 @@
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                            predicted = rep(c("Healthy", "Cancer"), each = 50))
+                          label = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
                             list(predicted), actual, list("fold", 100, 5))
-  predicted[, "predicted"] <- sample(predicted[, "predicted"])
+  predicted[, "label"] <- sample(predicted[, "label"])
   result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(sample(10, 10), sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   # rankPlot(list(result1, result2), pointTypeVariable = "classificationName") # Wait for namespace problems to be fixed.

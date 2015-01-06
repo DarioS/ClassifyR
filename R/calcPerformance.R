@@ -3,10 +3,10 @@ setGeneric("calcPerformance", function(result, performanceType, ...)
 
 setMethod("calcPerformance", c("ClassifyResult"), function(result, performanceType, ...)
 {
-  predictions <- lapply(result@predictions, function(sample) sample[, "predicted"])
+  predictions <- lapply(result@predictions, function(sample) sample[, "label"])
   correctClasses <- lapply(result@predictions, function(sample)
     factor(actualClasses(result)[sample[, "sample"]], ordered = TRUE))
-  classData <- prediction(lapply(predictions, as.numeric), correctClasses)
+  classData <- ROCR::prediction(lapply(predictions, as.numeric), correctClasses)
   if(performanceType == "balanced") # ROCR doesn't do this, currently.
   {
     falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)

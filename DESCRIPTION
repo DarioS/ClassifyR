@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for two-class classification problems, with
         applications to differential variability and differential
         distribution testing.
-Version: 1.1.15
-Date: 2014-12-12
+Version: 1.1.16
+Date: 2015-01-02
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -13,7 +13,7 @@ Depends: R (>= 3.0.3), methods, Biobase, BiocParallel
 Imports: locfit, ROCR, grid
 Suggests: limma, edgeR, car, Rmixmod, ggplot2, gridExtra,
         BiocStyle, pamr, sparsediscrim, PoiClaClu, curatedOvarianData,
-        parathyroidSE, knitr, klaR, gtable, scales
+        parathyroidSE, knitr, klaR, gtable, scales, e1071
 Description: The software formalises a framework for classification in R.
              There are four stages. Data transformation, feature selection,
              and prediction. The requirements of variable types and names are
@@ -30,8 +30,8 @@ Collate: classes.R utilities.R calcPerformance.R classifyInterface.R DMDselectio
         likelihoodRatioSelection.R limmaSelection.R mixmodels.R
         naiveBayesKernel.R nearestShrunkenCentroidSelectionInterface.R
         nearestShrunkenCentroidTrainInterface.R
-        nearestShrunkenCentroidPredictInterface.R plotFeatureClasses.R
-        rankPlot.R runTest.R runTests.R selectionPlot.R
+        nearestShrunkenCentroidPredictInterface.R performancePlot.R
+        plotFeatureClasses.R rankPlot.R ROCplot.R runTest.R runTests.R selectionPlot.R
         subtractFromLocation.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

@@ -7,16 +7,22 @@
 for the test set.
 }
 \usage{
-  \S4method{fisherDiscriminant}{matrix}(expression, classes, test, verbose = 3)
-  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, verbose = 3)
+  \S4method{fisherDiscriminant}{matrix}(expression, classes, ...)
+  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType, verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
   \item{classes}{A vector of class labels.}
+  \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
+             \code{\link{ExpressionSet}} method.}  
   \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the test data.}
+  \item{returnType}{Either \code{"labels"}, \code{"scores"}, or \code{"both"}. Sets the return value
+                    from the prediction to either a vector of class labels, score for a sample belonging
+                    to the second class, as determined by the factor levels, or both labels and scores
+                    in a \code{\link{data.frame}}.}                         
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -25,7 +31,7 @@ for the test set.
   of the features.
 }
 \value{
-  A vector of class predictions, as long as the number of samples in the test data.
+  A vector or \code{data.frame} of class prediction information, as long as the number of samples in the test data.
 }
 \author{Dario Strbenac}
 

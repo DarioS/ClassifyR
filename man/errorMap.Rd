@@ -47,11 +47,11 @@ be discretised to.
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                            predicted = rep(c("Healthy", "Cancer"), each = 50))
+                          label = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, list("fold", 100, 5))
-  predicted[, "predicted"] <- sample(predicted[, "predicted"])
+  predicted[, "label"] <- sample(predicted[, "label"])
   result2 <- ClassifyResult("Example", "Differential Deviation", LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   # wholePlot <- errorMap(list(Gene = result1, Protein = result2)) # Wait for namespace problems to be fixed.

@@ -5,6 +5,7 @@ setMethod("rankPlot", "list",
           function(results, topRanked = seq(10, 100, 10),
                    comparison = c("within", "classificationName", "validation", "datasetName"),
                    lineColourVariable = c("validation", "datasetName", "classificationName", "None"),
+                   lineColours = NULL, lineWidth = 1,
                    pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
                    rowVariable = c("None", "datasetName", "classificationName", "validation"),
                    columnVariable = c("classificationName", "datasetName", "validation", "None"),
@@ -44,10 +45,11 @@ setMethod("rankPlot", "list",
           })
         })
       }, rankedFeatures[1:(length(rankedFeatures) - 1)], 1:(length(rankedFeatures) - 1), SIMPLIFY = FALSE)))
+      validationText <- .validationText(result)
       
       data.frame(dataset = rep(result@datasetName, length(topRanked)),
                  analysis = rep(result@classificationName, length(topRanked)),
-                 validation = rep(result@validation[[1]], length(topRanked)),
+                 validation = rep(validationText, length(topRanked)),
                  top = topRanked,
                  overlap = averageOverlap)
     }, BPPARAM = parallelParams))
@@ -86,29 +88,25 @@ setMethod("rankPlot", "list",
             })
           })))
         })))
+        validationText <- .validationText(aDataset)
+        
         data.frame(dataset = rep(aDataset@datasetName, length(topRanked)),
                    analysis = rep(aDataset@classificationName, length(topRanked)),
-                   validation = rep(aDataset@validation[[1]], length(topRanked)),
+                   validation = rep(validationText, length(topRanked)),
                    top = topRanked,
                    overlap = averageOverlap)
       }))
     }, BPPARAM = parallelParams), recursive = FALSE)))
   }
   
-  validationOrder <- unique(sapply(results, function(result) result@validation[[1]]))
-  validationLabels <- c("Resample and Fold", "Resample and Split", "Leave Out")
-  newValidLevels <- sapply(validationOrder, function(validation) grep(validation, validationLabels, ignore.case = TRUE))
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
-  plotData[, "validation"] <- gsub("fold", "Resample and Fold", plotData[, "validation"])
-  plotData[, "validation"] <- gsub("split", "Resample and Split", plotData[, "validation"])
-  plotData[, "validation"] <- gsub("leave", "Leave Out", plotData[, "validation"])
-  plotData[, "validation"] <- factor(plotData[, "validation"], levels = validationLabels[newValidLevels])
-
+  plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(plotData[, "validation"])) # Order in which validations were provided.
+  
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap,
                           colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis),
                           shape = switch(pointTypeVariable, validation = validation, datasetName = dataset, classificationName = analysis)), environment = environment()) +
-                          ggplot2::geom_line() + ggplot2::geom_point(size = 3) + ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
+                          ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = 3) + ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis")) +
                           ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = grid::unit(c(0, 0, 1, 0), "lines"), legend.margin = grid::unit(-1, "lines"))
   

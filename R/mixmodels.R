@@ -55,9 +55,10 @@ setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 
 setMethod("mixModelsTest", c("list", "ExpressionSet"),
           function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   minDifference = 0, verbose = 3)
+                   minDifference = 0, returnType = c("labels", "scores", "both"), verbose = 3)
 {
-  weighted <- match.arg(weighted)            
+  weighted <- match.arg(weighted)
+  returnType <- match.arg(returnType)
   test <- exprs(test)
   classLevels <- attr(models, "classes")
   
@@ -74,7 +75,8 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
                                         }))
                                       })
                        models[[2]][[2]] * classScores[[2]] - models[[1]][[2]] * classScores[[1]]
-                }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]])
+                       # Second element of second list in 'models' is unimportant information added by mixmod.
+                }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]]) 
   
   otherClassScore <- as.data.frame(otherClassScore)
 
@@ -83,36 +85,52 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
     apply(otherClassScore, 1, function(sampleRow)
     {
       sampleRow <- sampleRow[abs(sampleRow) > difference]
-      sum(sampleRow > 0) > length(sampleRow) / 2
+      list(sum(sampleRow > 0) > length(sampleRow) / 2, sum(sampleRow > 0) / length(sampleRow))
     })
   })
-  
+  unweightedIsOther <- lapply(unweightedOther, function(difference) unlist(lapply(difference, "[[", 1)))
+  unweightedOtherScores <- lapply(unweightedOther, function(difference) unlist(lapply(difference, "[[", 2)))
+
   weightedOther <- lapply(minDifference, function(difference)
   {
     weightedOtherClass <- apply(otherClassScore, 1, function(sampleRow)
     {
       sampleRow <- sampleRow[abs(sampleRow) > difference]
-      sum(sampleRow) > 0
+      list(sum(sampleRow) > 0, sum(sampleRow))
     })
   })
+  weightedIsOther <- lapply(weightedOther, function(difference) unlist(lapply(difference, "[[", 1)))
+  weightedOtherScores <- lapply(weightedOther, function(difference) unlist(lapply(difference, "[[", 2)))  
   
-  unweightedList <- lapply(lapply(unweightedOther, function(other)
+  unweightedList <- mapply(function(other, scores)
   {  
-    predictions <- rep(classLevels[1], ncol(test))
-    predictions[other] <- classLevels[2]
+    predictions <- rep(levels(classes)[1], ncol(test))
+    predictions[other] <- levels(classes)[2]
+    predictions <- factor(predictions, levels = levels(classes))
     predictions
-  }), factor, levels = classLevels)
-  weightedList <- lapply(lapply(weightedOther, function(other)
+    switch(returnType, labels = predictions, score = scores,
+           both = data.frame(label = predictions, score = scores))
+  }, unweightedIsOther, unweightedOtherScores, SIMPLIFY = FALSE)
+  weightedList <- mapply(function(other, scores)
   {  
-    predictions <- rep(classLevels[1], ncol(test))
-    predictions[other] <- classLevels[2]
-    predictions  
-  }), factor, levels = classLevels)
+    predictions <- rep(levels(classes)[1], ncol(test))
+    predictions[other] <- levels(classes)[2]
+    predictions <- factor(predictions, levels = levels(classes))
+    predictions
+    switch(returnType, labels = predictions, score = scores,
+           both = data.frame(label = predictions, score = scores))
+  }, weightedIsOther, weightedOtherScores, SIMPLIFY = FALSE)
   
   if(length(unweightedList) == 1)
   {
-    unweightedList <- unlist(unweightedList)
-    weightedList <- unlist(weightedList)
+    if(class(unweightedList[[1]]) != "data.frame")
+    {
+      unweightedList <- unlist(unweightedList)
+      weightedList <- unlist(weightedList)
+    } else {
+      unweightedList <- unweightedList[[1]]
+      weightedList <- weightedList[[1]]
+    }
   } else {
     names(unweightedList) <- paste("weighted=unweighted,minDifference=", minDifference, sep = '')
     names(weightedList) <- paste("weighted=weighted,minDifference=", minDifference, sep = '')

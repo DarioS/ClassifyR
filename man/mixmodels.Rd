@@ -14,7 +14,8 @@
   \S4method{mixModelsTrain}{ExpressionSet}(expression, ..., verbose = 3)
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
-            weighted = c("both", "unweighted", "weighted"), minDifference = 0, verbose = 3)  
+            weighted = c("both", "unweighted", "weighted"), minDifference = 0,
+            returnType = c("labels", "scores", "both"), verbose = 3)  
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -38,6 +39,10 @@
                 The first element has mixture models the same length as the number
                 of features in the expression data for one class. The second element
                 has the same information for the other class.}
+  \item{returnType}{Either \code{"labels"}, \code{"scores"}, or \code{"both"}. Sets the return value
+                    from the prediction to either a vector of class labels, score for a sample belonging
+                    to the second class, as determined by the factor levels, or both labels and scores
+                    in a \code{\link{data.frame}}.}                     
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages.}
 }
@@ -45,11 +50,16 @@
   For weighted voting, the difference between probability density, scaled for the number
   of samples of each class used in training, is summed for all features. For unweighted voting,
   each feature votes based on the scaled density difference with the same strength.
+  
+  For unweighted classification, the score is the number of features which voted for the second class,
+  divided by the features which voted. For weighted classification, the score is the sum of scaled
+  differences in densities.  
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.
-  For \code{mixModelsTest}, either a factor of predicted classes for the test data, or lists of factors,
-  if both weighted and unweighted voting or a range of \code{minDifference} values was provided.
+  A vector or list of class prediction information, as long as the number of samples in the test data,
+  or lists of such information, if both weighted and unweighted voting or a range of \code{minDifference}
+  values was provided.
 }
 \author{Dario Strbenac}
 

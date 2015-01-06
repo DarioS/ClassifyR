@@ -17,7 +17,7 @@
       the classifier has a list element named "class".
   }
     \item{}{
-      \code{PredictParams(predictor, transposeExpression, multipleResults, intermediate = character(0), getClasses, ...)}
+      \code{PredictParams(predictor, transposeExpression, intermediate = character(0), getClasses, ...)}
       Creates a PredictParams object which stores the function which will do the
       class prediction and parameters that the function will use.
   \describe{
@@ -26,9 +26,6 @@
             The second argument must accept a \code{\link{matrix}} of new data.}
             \item{\code{transposeExpression}}{Set to \code{TRUE} if \code{classifier} expects
             features as columns.}
-            \item{\code{multipleResults}}{If \code{TRUE}, \code{predictor} will return a
-            \code{\link{list}} of results, perhaps for different values of some parameter.
-            If FALSE, a single result is returned.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
             \code{\link{runTest}} that need to be passed to the prediction function.}               
             \item{\code{getClasses}}{A \code{\link{function}} to extract the vector of class predictions
@@ -41,8 +38,8 @@
 \author{Dario Strbenac}
 
 \examples{
-predictParams <- PredictParams(predictor = predict, TRUE, FALSE, getClasses = function(result) result)
+predictParams <- PredictParams(predictor = predict, TRUE, getClasses = function(result) result)
 # For prediction by trained object created by dlda function.
-PredictParams(predictor = function(){}, TRUE, FALSE, getClasses = function(result) result)
+PredictParams(predictor = function(){}, TRUE, getClasses = function(result) result)
 # For when the training function also does prediction and directly returns vector of predictions.
 }

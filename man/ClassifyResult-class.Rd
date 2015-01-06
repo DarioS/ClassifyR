@@ -12,6 +12,8 @@
 \alias{features,ClassifyResult-method}
 \alias{performance}
 \alias{performance,ClassifyResult-method}
+\alias{tunedParameters}
+\alias{tunedParameters,ClassifyResult-method}
 
 \title{Container for Storing Classification Results}
 \description{
@@ -24,20 +26,24 @@
   \describe{
     \item{}{
       \code{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures, rankedFeatures,
-      chosenFeatures, predictions, actualClasses, validation)}}
+      chosenFeatures, predictions, actualClasses, validation, tune = list(NULL))}}
     }
   \describe{
             \item{\code{datasetName}}{A name associated with the dataset used.}
             \item{\code{classificationName}}{A name associated with the classification.}
             \item{\code{originalNames}}{Sample names.}
             \item{\code{originalFeatures}}{Feature names.}
-            \item{\code{rankedFeatures}}{Indices or names of all features, from most to least important.}
+            \item{\code{rankedFeatures}}{Indices or names of all features, from most to least
+                                         important.}
             \item{\code{chosenFeatures}}{Indices or names of features selected at each fold.}
             \item{\code{predictions}}{A \code{\link{list}} of \code{\link{data.frame}}
-            containing information about samples, their actual class and predicted class.}            
+                                      containing information about samples, their actual class and
+                                      predicted class.}            
             \item{\code{actualClasses}}{Factor of class of each sample.}
             \item{\code{validation}}{List with first elment being name of the validation scheme,
             and other elements providing details about scehme.}
+            \item{\code{tune}}{A description of the tuning parameters, and the value chosen of
+                               each parameter.}
            }
 }
 
@@ -68,6 +74,8 @@
   \describe{
   \item{\code{performance(result)}}{Returns a \code{\link{list}} of performance measures. This is
     empty until \code{\link{calcPerformance}} has been used.}}
+  \describe{
+  \item{\code{tunedParameters(result)}}{Returns a \code{\link{list}} of tuned parameter values. If cross-validation is used, this list will be large, as it stores chosen values for every validation.}}    
   \describe{
   \item{\code{names(result)}}{Returns a \code{\link{character}} vector of sample names.}}
 }

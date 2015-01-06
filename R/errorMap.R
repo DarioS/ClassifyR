@@ -25,7 +25,7 @@ setMethod("errorMap", "list",
     resultTable <- do.call(rbind, predictions(result))
     sampleErrors <- by(resultTable, resultTable[, "sample"],
                        function(samplePredictions)
-                         sum(samplePredictions[, "predicted"] != result@actualClasses[samplePredictions[1, "sample"]]))
+                         sum(samplePredictions[, "label"] != result@actualClasses[samplePredictions[1, "sample"]]))
     cut(sampleErrors / table(resultTable[, "sample"]), errorBinEnds, include.lowest = TRUE)
   })
   classedErrors <- lapply(errors, function(errorSet)
