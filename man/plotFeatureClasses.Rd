@@ -8,7 +8,7 @@ selection method.
        }
 \usage{
   \S4method{plotFeatureClasses}{matrix}(expression, classes, ...)
-  \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, plot = c("both", "density", "stripchart"),
+  \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, whichPlots = c("both", "density", "stripchart"),
                                xAxisLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
                                yAxisLabels = c("Density", "Classes"), showXtickLabels = TRUE,
                                showYtickLabels = TRUE, fontSizes = c(24, 16, 12, 12, 12),
@@ -22,7 +22,7 @@ selection method.
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
   \item{rows}{A vector specifying which rows of the matrix to plot.}             
-  \item{plot}{Which plots to draw. Can draw either a density plot, stripchart, or both.}
+  \item{whichPlots}{Which plots to draw. Can draw either a density plot, stripchart, or both.}
   \item{xAxisLabel}{The axis label for the expression axis.}
   \item{yAxisLabels}{A character vector of length 2. The first value is the y-axis label
                      for the density plot. The second value is the y-axis labels for the
