@@ -12,7 +12,7 @@ selection method.
                                xAxisLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
                                yAxisLabels = c("Density", "Classes"), showXtickLabels = TRUE,
                                showYtickLabels = TRUE, fontSizes = c(24, 16, 12, 12, 12),
-                               colours = c("blue", "red"))
+                               colours = c("blue", "red"), plot = TRUE)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -35,6 +35,7 @@ selection method.
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}  
   \item{colours}{The colours to plot data of each class in.}
+  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}  
 }
 \value{
   Plots.

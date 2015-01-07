@@ -18,7 +18,7 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                    xAxisLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
                    yAxisLabels = c("Density", "Classes"),
                    showXtickLabels = TRUE, showYtickLabels = TRUE,
-                   fontSizes = c(24, 16, 12, 12, 12), colours = c("blue", "red"))
+                   fontSizes = c(24, 16, 12, 12, 12), colours = c("blue", "red"), plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
@@ -62,8 +62,11 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                                             legend.title = ggplot2::element_text(size = fontSizes[4]),
                                             legend.text = ggplot2::element_text(size = fontSizes[5])) +
                              ggplot2::labs(x = NULL, y = yAxisLabels[1])
-      gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
-                   main = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
+      bothGraphics <- gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
+                                              main = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
+      if(plot == TRUE)
+        print(bothGraphics)
+      bothGraphics
     } else if(plot == "density")
     {
       densPlot <- densPlot + ggplot2::lab(x = xAxisLabel, y = yAxisLabels[1]) +
@@ -71,12 +74,16 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                                  axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
                                  axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
                                  axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
-                                 legend.text = ggplot2::element_text(size = fontSizes[5])) +
+                                 legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::ggtitle(featureName)
                   
-      
-      print(densPlot + ggplot2::ggtitle(featureName))
+      if(plot == TRUE)
+        print(densPlot)
+      densPlot
     } else {
-      print(stripPlot + ggplot2::ggtitle(featureName))
+      stripPlot <- stripPlot + ggplot2::ggtitle(featureName)
+      if(plot == TRUE)
+        print(stripPlot)
+      stripPlot
     }
   }))
 })

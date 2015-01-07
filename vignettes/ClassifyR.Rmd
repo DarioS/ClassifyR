@@ -4,7 +4,7 @@ output:
 ---
 
 <!--
-%\VignetteEngine{knitr}
+%\VignetteEngine{knitr::knitr}
 %\VignetteIndexEntry{An Introduction to the ClassifyR Package}
 -->
 
@@ -14,6 +14,7 @@ An Introduction to **ClassifyR**
 ```{r, echo = FALSE, results = "asis"}
 options(width = 130)
 BiocStyle::markdown()
+set.seed(44)
 ```
 
 Dario Strbenac, Grahan Mann, John Ormerod, Jean Yang  
@@ -120,7 +121,7 @@ The *limmaSelection* function specified to *selectionParams* ranks probes based 
 The top five probes selected in the feature selection step can be checked visually. *DEresults* is a *ClassifyResult* object returned by *runTests*. *features* is a function that allows access to the row indices that were chosen for each fold.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5])
+DEplots <- plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5])
 ```
 
 This plots the distribution of microarray intensities for the two survival classes for features that were chosen in the first fold of the first resampling. As seen, the means of the probes are not much different.
@@ -168,7 +169,7 @@ For *params*, the *SelectionParams* object is specified first. In this analysis,
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(DVresults)[[1]][[2]][1:5])
+DVplots <- plotFeatureClasses(ovarSet, features(DVresults)[[1]][[2]][1:5])
 ```
 
 Calculate the balanced error rate for differential deviation.
@@ -215,7 +216,7 @@ Since *naiveBayesKernel* does both training and testing, an empty function is sp
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-plotFeatureClasses(ovarSet, features(DDresults)[[1]][[1]][1:5])
+DDplots <- plotFeatureClasses(ovarSet, features(DDresults)[[1]][[1]][1:5])
 ```
 
 Calculate the balanced error rate for differential distribution.
@@ -240,11 +241,11 @@ errorPlot <- errorMap(resultsList)
 
 The *performancePlot* function allows the comparison of overall performance measures, such as accuracy and error rate.
 
-```{r, fig.width = 6, fig.height = 5}
-performancePlot(list(DEresults, DVresults, DDresults),
-                performanceName = "Balanced Error Rate",
-                boxFillColouring  = "None", boxLineColouring = "None",
-                title = "Errors Across Classification Types")
+```{r, fig.width = 6.8, fig.height = 5}
+errorBoxes <- performancePlot(list(DEresults, DVresults, DDresults),
+                              performanceName = "Balanced Error Rate",
+                              boxFillColouring  = "None", boxLineColouring = "None",
+                              title = "Errors Across Classification Types")
 ```
 
 This plots the balanced error rates of the three kinds of classification together.
@@ -279,8 +280,8 @@ independentResult
 
 Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier and Fisher discriminant analysis used previously had the *returnType* variable set to *"both"*, so labels and scores were both stored in the classification result. Setting *returnType* to *"score"* is also sufficient. Many existing classifiers in other R package also have an option that allows a score or probability to be calculated.
 
-```{r, fig.height = 5, fig.width = 5}
-ROCplot(list(DVresults, DDresults))
+```{r, fig.height = 5, fig.width = 6}
+ROCcurves <- ROCplot(list(DVresults, DDresults))
 ```
 
 ### Parameter Tuning
@@ -308,7 +309,7 @@ length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[[1]]
 ```
 
-These are the cost values chosen for the three folds of the first resampling. In the second fold, the best value was 1, whereas for the first and third folds, it was 0.01.
+These are the cost values chosen for the three folds of the first resampling. In the first fold, the best value was `r tunedParameters(SVMresults)[[1]][[1]][[1]]`, whereas for the second and third folds, it was `r tunedParameters(SVMresults)[[1]][[2]][[1]]`.
 
 ### Conclusion
 
