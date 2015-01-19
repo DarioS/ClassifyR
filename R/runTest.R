@@ -13,7 +13,7 @@ setMethod("runTest", c("matrix"),
 setMethod("runTest", c("ExpressionSet"),
           function(expression, datasetName, classificationName, training, testing,
                    params = list(SelectionParams(), TrainParams(), PredictParams()),
-                   verbose = 1)
+                   verbose = 1, .usedInternally = FALSE)
 {
   stagesParamClasses <- sapply(params, class)
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
@@ -126,7 +126,7 @@ setMethod("runTest", c("ExpressionSet"),
   }
   if(class(testing) == "logical") testing <- which(testing)
 
-  if(any(grepl("runTests", deparse(sys.calls()))))
+  if(.usedInternally == TRUE)
   {        
     list(rankedFeatures, selectedFeatures, testing, predictedClasses, tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.

@@ -47,11 +47,11 @@ setMethod("runTests", c("ExpressionSet"),
         lapply(1:length(sampleFolds), function(foldIndex)
         {
           runTest(expression, training = unlist(sampleFolds[-foldIndex]),
-                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose)
+                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose, .usedInternally = TRUE)
         })
       } else { # Split mode.
         runTest(expression, training = sampleFolds[[1]],
-                testing = sampleFolds[[2]], params = params, verbose = verbose)
+                testing = sampleFolds[[2]], params = params, verbose = verbose, .usedInternally = TRUE)
       }
     }, samplesFolds, as.list(1:length(samplesFolds)), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else # leave k out.
@@ -63,7 +63,7 @@ setMethod("runTests", c("ExpressionSet"),
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
       runTest(expression, training = trainingSample, testing = testSample,
-              params = params, verbose = verbose)
+              params = params, verbose = verbose, .usedInternally = TRUE)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   }

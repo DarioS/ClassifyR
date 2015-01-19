@@ -11,7 +11,8 @@ selection method.
   \S4method{plotFeatureClasses}{ExpressionSet}(expression, rows, whichPlots = c("both", "density", "stripchart"),
                                xAxisLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
                                yAxisLabels = c("Density", "Classes"), showXtickLabels = TRUE,
-                               showYtickLabels = TRUE, fontSizes = c(24, 16, 12, 12, 12),
+                               showYtickLabels = TRUE, xLabelPositions = "auto",
+                               yLabelPositions = "auto", fontSizes = c(24, 16, 12, 12, 12),
                                colours = c("blue", "red"), plot = TRUE)
 }
 \arguments{
@@ -30,6 +31,10 @@ selection method.
   \item{expressionLimits}{The minimum and maximum expression values to plot. Set to NULL to use range of data.}
   \item{showXtickLabels}{Logical. IF FALSE, the x-axis labels are hidden.}
   \item{showYtickLabels}{Logical. IF FALSE, the y-axis labels are hidden.}  
+  \item{xLabelPositions}{Either "auto" or a vector of values. The positions of labels on the x-axis.
+                         If "auto", the placement of labels is automatically calculated.}
+  \item{yLabelPositions}{Either "auto" or a vector of values. The positions of labels on the y-axis.
+                         If "auto", the placement of labels is automatically calculated.}                         
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the

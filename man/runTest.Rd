@@ -10,7 +10,7 @@ It consists of data transformation, feature selection, training and testing.
   \S4method{runTest}{matrix}(expression, classes, ...)
   \S4method{runTest}{ExpressionSet}(expression, datasetName, classificationName,
                      training, testing, params = list(SelectionParams(), TrainParams(), PredictParams()),
-                     verbose = 1)
+                     verbose = 1, .usedInternally = FALSE)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -29,6 +29,8 @@ It consists of data transformation, feature selection, training and testing.
              \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages.}
+  \item{.usedInternally}{Not to be changed by a user. This flag is used to decide what kind of result
+                         to return. It is set to TRUE, if called by \code{\link{runTests}}.}                 
 }
 \details{
   This function only performs one classification and prediction. See \code{\link{runTests}}
