@@ -427,3 +427,16 @@ setOldClass("pamrtrained")
   split = paste(result@validation[[2]], "Resamples,", result@validation[[3]], "% Test"),
   independent = "Independent Set")
 }
+
+.binValues <- function(values, nBins)
+{
+  ordering <- order(values)
+  binID <- rep(1:nBins, each = length(values) / nBins)
+  if(length(binID) < length(values))
+    binID <- c(binID, rep(max(binID) + 1, length(values) - length(binID)))
+  bins <- split(ordering, binID)  
+  binID <- numeric()
+  binID[unlist(bins)] <- rep(as.numeric(names(bins)), sapply(bins, length))
+}
+
+

@@ -44,7 +44,7 @@ setMethod("selectionPlot", "list",
         otherFeatures <- chosenFeatures[(index + 1):length(chosenFeatures)]
         sapply(otherFeatures, function(other)
         {
-          length(intersect(features, other)) / max(length(features), length(other)) * 100
+          length(intersect(features, other)) / length(union(features, other)) * 100
         })
       }, chosenFeatures[1:(length(chosenFeatures) - 1)], 1:(length(chosenFeatures) - 1), SIMPLIFY = FALSE))      
       validationText <- .validationText(result)

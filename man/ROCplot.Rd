@@ -5,29 +5,34 @@
 \description{The average pair-wise overlap is computed for every pair of cross-validations. The overlap is converted to a percentage and plotted as lineplots.
        }
 \usage{
-  \S4method{ROCplot}{list}(results, nBins = 5,
+  \S4method{ROCplot}{list}(results, nBins = sapply(results, totalPredictions),
                    lineColourVariable = c("classificationName", "datasetName", "validation", "None"), lineColours = NULL,
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
-                   title = "ROC", xLabel = "False Positive Rate", yLabel = "True Positive Rate",
-                   plot = TRUE)
+                   plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate",
+                   plot = TRUE, showAUC = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
-  \item{nBins}{The number of intervals to group the samples' scores into.}
+  \item{nBins}{The number of intervals to group the samples' scores into. By default, there are as
+               many bins as there were predictions made, for each result object.}
   \item{lineColourVariable}{The slot name that different levels of are plotted as
                             different line colours.}
   \item{lineColours}{A vector of colours for different levels of the line colouring parameter. If \code{NULL},
                      a default palette is used.}       
   \item{lineWidth}{A single number controlling the thickness of lines drawn.}
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
-                   The second number is the size of the axes titles. The third number is
-                   the size of the axes values. The fourth number is the size of the
-                   legends' titles. The fifth number is the font size of the legend labels.}
+                   The second number is the size of the axes titles and AUC text, if it
+                   is not part of the legend. The third number is the size of the axes values. The
+                   fourth number is the size of the legends' titles. The fifth number is
+                   the font size of the legend labels.}
   \item{labelPositions}{Locations where to put labels on the x and y axes.}
-  \item{title}{An overall title for the plot.}
+  \item{plotTitle}{An overall title for the plot.}
+  \item{legendTitle}{A default name is used if the value is \code{NULL}. Otherwise a character name can
+                   be provided.}
   \item{xLabel}{Label to be used for the x-axis of false positive rate.}
   \item{yLabel}{Label to be used for the y-axis of true positive rate.}
   \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{showAUC}{Logical. IF TRUE, the AUC value of each result is added to its legend text.}
 }
 \details{
   Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and
@@ -41,6 +46,8 @@
   
   The number of bins determines how many pairs of TPR and FPR points will be used to draw the plot.
   A higher number will result in a smoother ROC curve.
+  
+  The AUC is calculated using the trapezoidal rule.
 }
 \value{
   An object of class \code{ggplot} and a plot on the current graphics device, if \code{plot} is \code{TRUE}.
@@ -56,5 +63,5 @@
   predicted[[1]][, "score"][c(2, 6)] <- c(0.60, 0.40)
   result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(sample(10, 10), sample(10, 10)),
                             predicted, actual, validation = list("fold", 2, 1))
-  # ROCplot(list(result1, result2), lineColourVariable = "classificationName", title = "Ovarian Cancer ROC", nBins = 4) # Wait for namespace problems to be fixed.
+  ROCplot(list(result1, result2), lineColourVariable = "classificationName", plotTitle = "Ovarian Cancer ROC")
 }

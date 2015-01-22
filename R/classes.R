@@ -213,3 +213,14 @@ setMethod("tunedParameters", c("ClassifyResult"),
           {
             object@tune
           })
+
+setGeneric("totalPredictions", function(result, ...)
+{standardGeneric("totalPredictions")})
+setMethod("totalPredictions", c("ClassifyResult"),
+          function(result)
+          {
+            if(length(predictions(result)) > 1)
+              nrow(do.call(rbind, predictions(result)))
+            else
+              nrow(predictions(result))
+          })

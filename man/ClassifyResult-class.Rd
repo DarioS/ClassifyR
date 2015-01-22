@@ -14,6 +14,8 @@
 \alias{performance,ClassifyResult-method}
 \alias{tunedParameters}
 \alias{tunedParameters,ClassifyResult-method}
+\alias{totalPredictions}
+\alias{totalPredictions,ClassifyResult-method}
 
 \title{Container for Storing Classification Results}
 \description{
@@ -55,6 +57,10 @@
     \item{}{
       \code{show(result)}{Prints a short summary of what \code{result} contains.}
     }}
+  \describe{
+    \item{}{
+      \code{totalPredictions(ClassifyResult)}{Calculates the sum of the number of predictions.}
+    }}  
 }
 
 \section{Accessors}{
