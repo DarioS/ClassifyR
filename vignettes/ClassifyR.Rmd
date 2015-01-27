@@ -36,6 +36,7 @@ A survival study was performed on microarrays for ovarian cancers and is availab
 
 ```{r, message = FALSE}
 library(ClassifyR)
+library(ggplot2)
 library(curatedOvarianData)
 data(GSE26712_eset)
 GSE26712_eset <- GSE26712_eset[1:1000, ]
@@ -62,7 +63,6 @@ ovarGroups <- factor(rep(c("Poor", "Good"), c(length(which(ovarPoor)), length(wh
 Boxplots are drawn to get an idea of the distrbution of the data.
 
 ```{r, fig.width = 18, fig.height = 10, tidy = FALSE}
-library(ggplot2)
 plotData <- data.frame(expression = as.numeric(ovarExpression),
                        sample = factor(rep(1:ncol(ovarExpression), each = nrow(ovarExpression))))
 

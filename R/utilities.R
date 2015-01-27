@@ -437,6 +437,7 @@ setOldClass("pamrtrained")
   bins <- split(ordering, binID)  
   binID <- numeric()
   binID[unlist(bins)] <- rep(as.numeric(names(bins)), sapply(bins, length))
+  binID
 }
 
 

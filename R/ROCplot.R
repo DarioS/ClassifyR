@@ -16,7 +16,6 @@ setMethod("ROCplot", "list",
 
   plotData <- mapply(function(result, resultBins)
   {
-    
     predictions <- result@predictions
     if(class(predictions) == "list") # A list of data.frames. Concatenate them.
       predictions <- do.call(rbind, predictions)
@@ -28,8 +27,7 @@ setMethod("ROCplot", "list",
     totalNegatives <- sum(actualClasses == levels(actualClasses)[1])
     rates <- t(sapply(resultBins:1, function(lowerBin)
     {
-      consideredSamples <- samplesBins %in% levels(samplesBins)[lowerBin:resultBins]
-      threshold <- levels(samplesBins)[lowerBin:resultBins][[1]]
+      consideredSamples <- samplesBins %in% lowerBin:resultBins
       truePositives <- sum(predictions[consideredSamples, "score"] >= boundaries[lowerBin] & actualClasses[consideredSamples] == levels(actualClasses)[2])
       falsePositives <- sum(predictions[consideredSamples, "score"] >= boundaries[lowerBin] & actualClasses[consideredSamples] == levels(actualClasses)[1])
       TPR <- truePositives / totalPositives
@@ -51,7 +49,7 @@ setMethod("ROCplot", "list",
                AUC = rep(round(areaSum, 2), resultBins + 1))
     
   }, results, nBins, SIMPLIFY = FALSE)
-  
+
   plotData <- do.call(rbind, plotData)
   plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(plotData[, "validation"])) # Order in which validations were provided.
   
