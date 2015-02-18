@@ -168,7 +168,7 @@ setMethod("runTests", c("ExpressionSet"),
   
   if(multipleVarieties == FALSE)
     predictionsListed <- list(resultsLists[[1]]) else predictionsListed <- resultsLists[[1]]
-  
+
   predictionTables <- lapply(1:length(predictionsListed), function(variety)
   {
     if(validation == "bootstrap")
@@ -184,12 +184,12 @@ setMethod("runTests", c("ExpressionSet"),
                 
       })
     } else {
-      switch(class(predictionsListed[[variety]]),
+      list(switch(class(predictionsListed[[variety]]),
              factor = data.frame(sample = resultsLists[[2]], label = predictionsListed[[variety]]),
              numeric = data.frame(sample = resultsLists[[2]], score = predictionsListed[[variety]]),
              data.frame = data.frame(sample = resultsLists[[2]],
                                      label = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "factor"],
-                                     score = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "numeric"]))
+                                     score = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "numeric"])))
     }
   })
   
@@ -202,7 +202,7 @@ setMethod("runTests", c("ExpressionSet"),
   } else {
     validationInfo <- list("leave", leave)
   }
-
+  
   if(multipleVarieties == FALSE)
   {
     if(length(unlist(resultsLists[[5]])) == 0) # All tune values are NULL.
