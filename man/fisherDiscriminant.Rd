@@ -8,7 +8,7 @@ for the test set.
 }
 \usage{
   \S4method{fisherDiscriminant}{matrix}(expression, classes, ...)
-  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType, verbose = 3)
+  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType = c("labels", "scores", "both"), verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
