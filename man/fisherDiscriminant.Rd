@@ -8,7 +8,7 @@ for the test set.
 }
 \usage{
   \S4method{fisherDiscriminant}{matrix}(expression, classes, ...)
-  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType = c("labels", "scores", "both"), verbose = 3)
+  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType = c("label", "score", "both"), verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -19,7 +19,7 @@ for the test set.
              \code{\link{ExpressionSet}} method.}  
   \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the test data.}
-  \item{returnType}{Either \code{"labels"}, \code{"scores"}, or \code{"both"}. Sets the return value
+  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{\link{data.frame}}.}                         

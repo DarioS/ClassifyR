@@ -11,7 +11,7 @@
   \S4method{naiveBayesKernel}{matrix}(expression, classes, ...)
   \S4method{naiveBayesKernel}{ExpressionSet}(expression, test,
             weighted = c("both", "unweighted", "weighted"), minDifference = 0,
-            returnType = c("labels", "scores", "both"), verbose = 3)
+            returnType = c("label", "score", "both"), verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -27,7 +27,7 @@
                   computational time, both can be calculated simultaneously.}
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs.}
-  \item{returnType}{Either \code{"labels"}, \code{"scores"}, or \code{"both"}. Sets the return value
+  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{\link{data.frame}}.}     

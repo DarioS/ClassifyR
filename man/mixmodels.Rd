@@ -15,7 +15,7 @@
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
             weighted = c("both", "unweighted", "weighted"), minDifference = 0,
-            returnType = c("labels", "scores", "both"), verbose = 3)  
+            returnType = c("label", "score", "both"), verbose = 3)  
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -39,7 +39,7 @@
                 The first element has mixture models the same length as the number
                 of features in the expression data for one class. The second element
                 has the same information for the other class.}
-  \item{returnType}{Either \code{"labels"}, \code{"scores"}, or \code{"both"}. Sets the return value
+  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{\link{data.frame}}.}                     

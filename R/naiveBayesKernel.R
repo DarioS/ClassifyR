@@ -14,7 +14,7 @@ setMethod("naiveBayesKernel", "matrix",
 
 setMethod("naiveBayesKernel", "ExpressionSet", 
           function(expression, test, weighted = c("both", "unweighted", "weighted"),
-                   minDifference = 0, returnType = c("labels", "scores", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
   returnType <- match.arg(returnType)
@@ -77,7 +77,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                       predictions[other] <- levels(classes)[2]
                       predictions <- factor(predictions, levels = levels(classes))
                       predictions
-                      switch(returnType, labels = predictions, score = scores,
+                      switch(returnType, label = predictions, score = scores,
                                          both = data.frame(label = predictions, score = scores))
                     }, unweightedIsOther, unweightedOtherScores, SIMPLIFY = FALSE)
   weightedList <- mapply(function(other, scores)
@@ -86,7 +86,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                     predictions[other] <- levels(classes)[2]
                     predictions <- factor(predictions, levels = levels(classes))
                     predictions
-                    switch(returnType, labels = predictions, score = scores,
+                    switch(returnType, label = predictions, score = scores,
                            both = data.frame(label = predictions, score = scores))
                   }, weightedIsOther, weightedOtherScores, SIMPLIFY = FALSE)
 

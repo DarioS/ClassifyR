@@ -13,7 +13,7 @@ setMethod("fisherDiscriminant", "matrix",
 })
 
 setMethod("fisherDiscriminant", "ExpressionSet", 
-          function(expression, test, returnType = c("labels", "scores", "both"), verbose = 3)
+          function(expression, test, returnType = c("label", "score", "both"), verbose = 3)
 {
   returnType <- match.arg(returnType)
   classes <- pData(expression)[, "class"]
