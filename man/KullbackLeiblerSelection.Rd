@@ -28,9 +28,7 @@ the features which have best resubstitution performance.
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  Symmetric distance is defined as \eqn{1/2 * (location_1 - location_2)^2}{0.5 * (location1 - location2)^2 / scale1^2 + (location1 - location2)^2 / scale2^2 + scale1^2 / scale2^2 + scale2^2 / scale1^2 }
-  
-  Dynamic distance is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}
+  The distance is defined as \eqn{1/2 * (location_1 - location_2)^2}{0.5 * (location1 - location2)^2 / scale1^2 + (location1 - location2)^2 / scale2^2 + scale1^2 / scale2^2 + scale2^2 / scale1^2 }
   
   The subscripts denote the group which the parameter is calculated for.
 }
