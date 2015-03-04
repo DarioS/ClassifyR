@@ -378,15 +378,21 @@ setOldClass("pamrtrained")
       falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)
       falsePositiveRate <- sapply(ROCR::performance(classData, "fpr")@y.values, "[[", 2)
       performanceValues <- rowMeans(matrix(c(falseNegativeRate, falsePositiveRate), ncol = 2))
+      if(length(performanceValues) > 1)
+        names(performanceValues) <- names(predictions)
+      performanceValues
     } else
     {
       performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
       performanceData <- do.call(ROCR::performance, performanceList)
       performanceValues <- sapply(performanceData@y.values, "[[", 2)
+      if(length(performanceValues) > 1)
+        names(performanceValues) <- names(predictions)
+      performanceValues      
     }
   })
   
-  if(is.numeric(performances))
+  if(class(performances) == "numeric")
   {
     if(resubstituteParams@better == "lower")
       pickedRows <- 1:(resubstituteParams@nFeatures[which.min(performances)[1]])
@@ -411,6 +417,7 @@ setOldClass("pamrtrained")
   if(class(pickedRows) == "list")
   {
     rankedFeatures <- lapply(1:length(pickedRows), function(variety) orderedFeatures)
+    names(rankedFeatures) <- names(pickedRows)
     pickedFeatures <- lapply(pickedRows, function(pickedSet) orderedFeatures[pickedSet])
   } else {
     rankedFeatures <- orderedFeatures

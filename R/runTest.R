@@ -45,16 +45,15 @@ setMethod("runTest", c("ExpressionSet"),
                                topFeatures <- .doSelection(expression, training, selectionParams,
                                                                 trainParams, predictParams, verbose)
 
-                               if(sum(grepl('=', names(topFeatures))) > 0)
+                               if(sum(grepl('=', names(topFeatures[[1]]))) > 0)
                                {
                                  multiSelection <- TRUE
-                                 rankedFeatures <- lapply(topFeatures, "[[", 1) # Extract for adding to result list.
-                                 selectedFeatures <- lapply(topFeatures, "[[", 2)
                                } else {
                                  multiSelection <- FALSE
-                                 rankedFeatures <- topFeatures[[1]] # Extract for adding to result list.
-                                 selectedFeatures <- topFeatures[[2]]
                                }
+                               
+                               rankedFeatures <- topFeatures[[1]] # Extract for adding to result list.
+                               selectedFeatures <- topFeatures[[2]]
 
                                if(selectionParams@subsetExpressionData == TRUE)
                                {

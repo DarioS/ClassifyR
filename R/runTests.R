@@ -74,9 +74,9 @@ setMethod("runTests", c("ExpressionSet"),
   {
     if(bootMode == "fold")
     {
-      if(class(results[[1]][[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
+      if(class(results[[1]][[1]][[4]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
     } else {
-      if(class(results[[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
+      if(class(results[[1]][[4]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
     }
     
     resultsLists <- lapply(c(4, 3, 2, 1, 5), function(position)
