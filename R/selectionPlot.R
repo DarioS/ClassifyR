@@ -96,12 +96,10 @@ setMethod("selectionPlot", "list",
     }), recursive = FALSE)))
   }
 
-  if(boxFillColouring != "None")
-    if(!is.null(boxFillColours))
-      boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
-  if(boxLineColouring != "None")
-    if(!is.null(boxLineColours))
-      boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
+  if(is.null(boxFillColours) && boxFillColouring != "None")
+    boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
+  if(is.null(boxLineColours) && boxLineColouring != "None")
+    boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
   
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(sapply(results, function(result) result@datasetName)))
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(sapply(results, function(result) result@classificationName)))
@@ -116,8 +114,14 @@ setMethod("selectionPlot", "list",
   
   selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis), y = overlap,
                           fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL)), environment = environment()) +
-                          ggplot2::geom_boxplot() + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::scale_fill_manual(values = boxFillColours) + ggplot2::scale_colour_manual(values = boxLineColours) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+                          ggplot2::geom_boxplot() + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
+  
+  if(!is.null(boxFillColours))
+    selectionPlot <- selectionPlot + ggplot2::scale_fill_manual(values = boxFillColours)
+  if(!is.null(boxLineColours))
+    selectionPlot <- selectionPlot + ggplot2::scale_colour_manual(values = boxLineColours)
+  
   if(rotate90 == TRUE)
     selectionPlot <- selectionPlot + ggplot2::coord_flip()
   
