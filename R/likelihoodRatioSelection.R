@@ -42,7 +42,7 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   as.data.frame(t(otherClassExpression)),
   switch(alternative[["location"]], same = allDistribution[[1]], different = otherClassDistribution[[1]]),
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
-  orderedFeatures <- order(logLikelihoodRatios)
+  orderedFeatures <- order(logLikelihoodRatios, decreasing = TRUE)
   
   .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
 })

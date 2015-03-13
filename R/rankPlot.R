@@ -107,10 +107,10 @@ setMethod("rankPlot", "list",
     lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
   
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap,
-                          colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis),
-                          shape = switch(pointTypeVariable, validation = validation, datasetName = dataset, classificationName = analysis)), environment = environment()) +
+                          colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL),
+                          shape = switch(pointTypeVariable, validation = validation, datasetName = dataset, classificationName = analysis), None = NULL), environment = environment()) +
                           ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = 3) + ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(limits = c(0, yMax)) +
-                          ggplot2::scale_colour_manual(values = lineColours) + ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
+                          ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis")) +
                           ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = grid::unit(c(0, 0, 1, 0), "lines"), legend.margin = grid::unit(-1, "lines"))
   
