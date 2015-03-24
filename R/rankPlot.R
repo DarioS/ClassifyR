@@ -7,7 +7,7 @@ setMethod("rankPlot", "list",
                    lineColourVariable = c("validation", "datasetName", "classificationName", "None"),
                    lineColours = NULL, lineWidth = 1,
                    pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
-                   pointSize = 1,
+                   pointSize = 2, legendLinesPointsSize = 1,
                    rowVariable = c("None", "datasetName", "classificationName", "validation"),
                    columnVariable = c("classificationName", "datasetName", "validation", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12, 12, 12), title = "Feature Ranking Stability",
@@ -113,7 +113,9 @@ setMethod("rankPlot", "list",
                           ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = pointSize) + ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(limits = c(0, yMax)) +
                           ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis")) +
-                          ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = grid::unit(c(0, 0, 1, 0), "lines"), legend.margin = grid::unit(-1, "lines"))
+                          ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = grid::unit(c(0, 0, 1, 0), "lines"), legend.margin = grid::unit(-1, "lines")) +
+                          ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)),
+                                          shape = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)))
   
   if(!is.null(lineColours))
     overlapPlot <- overlapPlot + ggplot2::scale_colour_manual(values = lineColours)

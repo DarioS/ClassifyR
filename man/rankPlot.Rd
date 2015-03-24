@@ -10,7 +10,7 @@
                             lineColourVariable = c("validation", "datasetName", "classificationName", "None"),
                             lineColours = NULL, lineWidth = 1,
                             pointTypeVariable = c("datasetName", "classificationName", "validation", "None"),
-                            pointSize = 1,
+                            pointSize = 2, legendLinesPointsSize = 1,
                             rowVariable = c("None", "datasetName", "classificationName", "validation"),
                             columnVariable = c("classificationName", "datasetName", "validation", "None"),
                             yMax = 100, fontSizes = c(24, 16, 12, 12, 12), title = "Feature Ranking Stability",
@@ -30,6 +30,7 @@
   \item{pointTypeVariable}{The slot name that different levels of are plotted as
                             different point shapes on the lines.}
   \item{pointSize}{A single number diameter of points drawn.}
+  \item{legendLinesPointsSize}{A single number specifying the size of the lines and points in the legend, if a legend is drawn.}
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of lineplots.}     
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of lineplots.}
   \item{yMax}{The maximum value of the percentage to plot.}

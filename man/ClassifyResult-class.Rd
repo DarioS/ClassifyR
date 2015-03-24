@@ -75,8 +75,7 @@
   \item{\code{actualClasses(result)}}{Returns a \code{\link{factor}} class labels, one for
     each sample.}}
   \describe{
-  \item{\code{features(result)}}{Returns a \code{\link{list}} of \code{\link{data.frame}}.
-    Each data.frame contains columns \code{sample}, \code{predicted}, and \code{actual}.}}
+  \item{\code{features(result)}}{A \code{\link{list}} of the features selected for each training.}}
   \describe{
   \item{\code{performance(result)}}{Returns a \code{\link{list}} of performance measures. This is
     empty until \code{\link{calcPerformance}} has been used.}}
