@@ -13,7 +13,7 @@
                             pointSize = 2, legendLinesPointsSize = 1,
                             rowVariable = c("None", "datasetName", "classificationName", "validation"),
                             columnVariable = c("classificationName", "datasetName", "validation", "None"),
-                            yMax = 100, fontSizes = c(24, 16, 12, 12, 12), title = "Feature Ranking Stability",
+                            yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16), title = "Feature Ranking Stability",
                             xLabelPositions = seq(10, 100, 10), yLabel = "Average Pairwise Common Features (\%)",
                             plot = TRUE, parallelParams = bpparam())
 }
@@ -34,10 +34,13 @@
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of lineplots.}     
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of lineplots.}
   \item{yMax}{The maximum value of the percentage to plot.}
-  \item{fontSizes}{A vector of length 5. The first number is the size of the title.
+  \item{fontSizes}{A vector of length 6. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
-                   legends' titles. The fifth number is the font size of the legend labels.}
+                   legends' titles. The fifth number is the font size of the legend labels.
+                   The sixth number is the font size of the titles of grouped plots, if any
+                   are produced. In other words, when \code{rowVariable} or
+                   \code{columnVariable} are not \code{NULL}.}
   \item{title}{An overall title for the plot.}
   \item{xLabelPositions}{Locations where to put labels on the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}

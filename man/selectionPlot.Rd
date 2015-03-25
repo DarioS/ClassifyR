@@ -14,7 +14,7 @@
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12), title = "Feature Selection Stability",
+                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = "Feature Selection Stability",
                    xLabel = "Analysis", yLabel = "Average Pairwise Common Features (\%)", margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
@@ -31,9 +31,11 @@
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}     
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of boxplots.}
   \item{yMax}{The maximum value of the percentage to plot.}
-  \item{fontSizes}{A vector of length 3. The first number is the size of the title.
+  \item{fontSizes}{A vector of length 4. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
-                   the size of the axes values.}
+                   the size of the axes values. The fourth number is the font size of the
+                   titles of grouped plots, if any are produced. In other words, when
+                   \code{rowVariable} or \code{columnVariable} are not \code{NULL}.}
   \item{title}{An overall title for the plot.}
   \item{xLabel}{Label to be used for the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
@@ -63,5 +65,5 @@
   predicted[, "label"] <- sample(predicted[, "label"])
   result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
                             list(predicted), actual, validation = list("leave", 1))
-  # selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxColouring = "classificationName") # Wait for namespace problems to be fixed.
+  # selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName") # Wait for namespace problems to be fixed.
 }

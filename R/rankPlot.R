@@ -10,7 +10,7 @@ setMethod("rankPlot", "list",
                    pointSize = 2, legendLinesPointsSize = 1,
                    rowVariable = c("None", "datasetName", "classificationName", "validation"),
                    columnVariable = c("classificationName", "datasetName", "validation", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 12, 12), title = "Feature Ranking Stability",
+                   yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16), title = "Feature Ranking Stability",
                    xLabelPositions = seq(10, 100, 10), yLabel = "Average Pairwise Common Features (%)",
                    plot = TRUE, parallelParams = bpparam())
 {
@@ -121,7 +121,7 @@ setMethod("rankPlot", "list",
     overlapPlot <- overlapPlot + ggplot2::scale_colour_manual(values = lineColours)
   
   if(rowVariable != "None" || columnVariable != "None")
-    overlapPlot <- overlapPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis")))
+    overlapPlot <- overlapPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"))) + theme(strip.text = element_text(size = fontSizes[6]))
   
   if(plot == TRUE)
     print(overlapPlot)

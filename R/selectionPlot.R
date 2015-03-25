@@ -11,7 +11,7 @@ setMethod("selectionPlot", "list",
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12), title = "Feature Selection Stability",
+                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = "Feature Selection Stability",
                    xLabel = "Analysis", yLabel = "Average Pairwise Common Features (%)",
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 {
@@ -126,7 +126,7 @@ setMethod("selectionPlot", "list",
     selectionPlot <- selectionPlot + ggplot2::coord_flip()
   
   if(rowVariable != "None" || columnVariable != "None")
-    selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis")))
+    selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"))) + theme(strip.text = element_text(size = fontSizes[4]))
   
   if(plot == TRUE)
     print(selectionPlot)
