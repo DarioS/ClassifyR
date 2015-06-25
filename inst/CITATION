@@ -1,0 +1,14 @@
+citEntry(entry = "article",
+author = c(person("Dario", "Strbenac"),
+           person(c("Graham", "J"), "Mann"),
+           person(c("John", "T"),"Ormerod"),
+           person(c(c("Jean", "Y", "H"), "Yang")),
+title = "{ClassifyR}: an {R} package for performance assessment of classification with applications to transcriptomics",
+journal = "Bioinformatics",
+year = 2015,
+volume = 31,
+number = 11,
+pages = "1851-1853",
+textVersion = "Strbenac D., Mann G.J., Ormerod, J.T. and Yang J.Y.H. (2015) ClassifyR: an R package for performance assessment of classification with applications to transcriptomics, Bioinformatics, 31(11) 1851-1853."
+)
+
