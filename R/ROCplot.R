@@ -3,7 +3,7 @@ setGeneric("ROCplot", function(results, ...)
 
 setMethod("ROCplot", "list", 
           function(results, nBins = sapply(results, totalPredictions),
-                   lineColourVariable = c("classificationName", "datasetName", "validation", "None"), lineColours = NULL,
+                   lineColourVariable = c("classificationName", "datasetName", "selectionName", "validation", "None"), lineColours = NULL,
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
                    plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate",
                    plot = TRUE, showAUC = TRUE)
@@ -44,6 +44,7 @@ setMethod("ROCplot", "list",
                         
     data.frame(dataset = rep(result@datasetName, resultBins + 1),
                analysis = rep(result@classificationName, resultBins + 1),
+               selection = rep(result@selectResult@selectionName, resultBins + 1),
                validation = rep(validationText, resultBins + 1),
                rates,
                AUC = rep(round(areaSum, 2), resultBins + 1))
@@ -73,7 +74,7 @@ setMethod("ROCplot", "list",
     plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(plotData[, "analysis"]))
   }
 
-  ROCplot <- ggplot2::ggplot(data.frame(plotData), ggplot2::aes(x = FPR, y = TPR, colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL)), environment = environment()) +
+  ROCplot <- ggplot2::ggplot(data.frame(plotData), ggplot2::aes(x = FPR, y = TPR, colour = switch(lineColourVariable, validation = validation, selectionName = selection, datasetName = dataset, classificationName = analysis, None = NULL)), environment = environment()) +
     ggplot2::geom_line(size = lineWidth) + ggplot2::labs(colour = legendTitle) + ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, size = lineWidth, colour = "black") + ggplot2::scale_x_continuous(breaks = labelPositions, limits = c(0, 1)) +  ggplot2::scale_y_continuous(breaks = labelPositions, limits = c(0, 1)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
     ggplot2::ggtitle(plotTitle) + ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = c(1, 0), legend.justification = c(1, 0), legend.title = ggplot2::element_text(size = fontSizes[4], hjust = 0), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1])) + ggplot2::guides(colour = ggplot2::guide_legend(title.hjust = 0.5)) + ggplot2::scale_colour_manual(values = lineColours)
   

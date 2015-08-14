@@ -10,6 +10,6 @@
 
 \author{Dario Strbenac}
 \examples{
-  SelectionParams(limmaSelection)
-  SelectionParams(list(limmaSelection, leveneSelection))
+  SelectParams(limmaSelection)
+  SelectParams(list(limmaSelection, leveneSelection), "Ensemble Selection")
 }

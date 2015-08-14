@@ -12,9 +12,9 @@ setMethod("likelihoodRatioSelection", "matrix", function(expression, classes, ..
 })
 
 setMethod("likelihoodRatioSelection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams,
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams,
                    alternative = c(location = "different", scale = "different"),
-                   ..., verbose = 3)
+                   ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by likelihood ratio ranking.")
@@ -44,5 +44,6 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
   orderedFeatures <- order(logLikelihoodRatios, decreasing = TRUE)
   
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
+            selectionName, verbose)
 })

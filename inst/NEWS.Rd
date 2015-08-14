@@ -2,6 +2,18 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 1.4.0}{\itemize{
+
+\item
+Bartlett Test selection function included.
+\item
+New class SelectResult. rankPlot and selectionPlot can additionally work with lists of SelectResult objects.
+All feature selection functions now return a SelectResult object or a list of them.
+\item
+priorSelection is a new selection function for using features selected in a prior cross validation for a new
+dataset classification.
+}}
+
 \section{Version 1.2.0}{\itemize{
 
 \item

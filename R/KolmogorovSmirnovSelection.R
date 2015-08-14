@@ -12,7 +12,8 @@ setMethod("KolmogorovSmirnovSelection", "matrix", function(expression, classes, 
 })
 
 setMethod("KolmogorovSmirnovSelection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams, ..., verbose = 3)
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams, ...,
+                   selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by Kolmogorov Smirnov distance")
@@ -23,5 +24,5 @@ setMethod("KolmogorovSmirnovSelection", "ExpressionSet",
                       ks.test(geneRow[oneClass], geneRow[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
 })

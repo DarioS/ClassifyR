@@ -27,7 +27,7 @@
   predictTable <- data.frame(sample = 1:5,
                              label = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
   actual <- factor(sample(LETTERS[1:2], 50, replace = TRUE))                             
-  result <- ClassifyResult("Example", "Differential Expression",
+  result <- ClassifyResult("Example", "Differential Expression", "A Selection",
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
                            list(1:100, 1:100), list(1:5, 6:15),
                            list(predictTable), actual, list("leave", 2))

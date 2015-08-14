@@ -1,6 +1,6 @@
 setOldClass("pamrtrained")
 
-.doSelection <- function(expression, training, selectionParams, trainParams,
+.doSelection <- function(expression, training, selectParams, trainParams,
                          predictParams, verbose)
 {
   initialClass <- class(expression)
@@ -9,30 +9,46 @@ setOldClass("pamrtrained")
 
   rankedSelected <- lapply(expression, function(expressionVariety)
   {
-    if(is.function(selectionParams@featureSelection))
+    if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(expressionVariety[, training], trainParams = trainParams,
-                        predictParams = predictParams, verbose = verbose)
-      paramList <- append(paramList, selectionParams@otherParams)
-      do.call(selectionParams@featureSelection, paramList)    
+      paramList <- list(expressionVariety[, training], verbose = verbose)
+      if(selectParams@featureSelection@generic[1] != "previousSelection")
+        paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
+      paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
+      selection <- do.call(selectParams@featureSelection, paramList)
+
+      if(class(selection) == "SelectResult")
+      {
+        if(length(selection@rankedFeatures) == 0) ranked <- numeric() else ranked <- selection@rankedFeatures[[1]]
+        list(ranked, selection@chosenFeatures[[1]])
+      } else { # List of such results for varieties.
+        list(lapply(selection, function(variety) {
+                               if(length(variety@rankedFeatures) == 0)
+                                 numeric()
+                               else
+                                 variety@rankedFeatures[[1]]
+                               }),
+             lapply(selection, function(variety) variety@chosenFeatures[[1]]))
+      }
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
         paramList <- list(expressionVariety[, training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
-        do.call(selector, paramList)[[2]]    
-      }, selectionParams@featureSelection, selectionParams@otherParams, SIMPLIFY = FALSE)
+        do.call(selector, paramList)
+      }, selectParams@featureSelection, selectParams@otherParams, SIMPLIFY = FALSE)
       
-      if(is.numeric(featuresLists[[1]]))
+      if(class(featuresLists[[1]]) == "SelectResult")
       {
-        featuresCounts <- table(unlist(featuresLists))
-        selectedFeatures <- as.integer(names(featuresCounts))[featuresCounts >= selectionParams@minPresence]
-      } else {
+        featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatues[[1]])))
+        selectedFeatures <- as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
+      } else { # The prediction function used for resubstitution returned a variety of lists.
         selectedFeatures <- lapply(1:length(featuresLists[[1]]), function(variety)
         {
-          varietyFeatures <- table(unlist(lapply(featuresLists, "[[", variety)))
-          as.integer(names(varietyFeatures))[varietyFeatures >= selectionParams@minPresence]
+          varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatues[[1]])
+          featuresCounts <- table(unlist(varietyFeatures))
+          as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
         })
       }
       list(NULL, selectedFeatures)
@@ -40,11 +56,6 @@ setOldClass("pamrtrained")
   })
 
   if(initialClass != "list") rankedSelected <- rankedSelected[[1]]
-  if(class(rankedSelected[[1]][[1]]) == "list")
-  {
-    rankedSelected[[1]] <- unlist(rankedSelected[[1]], recursive = FALSE)
-    rankedSelected[[2]] <- unlist(rankedSelected[[2]], recursive = FALSE)
-  }
   rankedSelected
 }
 
@@ -283,6 +294,7 @@ setOldClass("pamrtrained")
     trained <- unlist(trained, recursive = FALSE)
     names(trained) <- paste(rep(trainNames, each = length(varietyNames), rep(varietyNames, length(trainNames))), sep = ',')
   }
+  
   trained
 }
 
@@ -339,7 +351,7 @@ setOldClass("pamrtrained")
   predicted
 }
 
-.pickRows <- function(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+.pickRows <- function(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
 {
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
@@ -358,8 +370,7 @@ setOldClass("pamrtrained")
         predictions <- lapply(trained, function(model) .doTest(model, expressionSubset, 1:ncol(expressionSubset),
                                                                predictParams, verbose))
     }
-    
-    if(class(predictions) == "list")
+    if(class(predictions) == "list") # Mutiple varieties of predictions.
     {
       if(class(predictions[[1]]) == "data.frame")
         labels <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
@@ -373,6 +384,7 @@ setOldClass("pamrtrained")
         labels <- predictions
       classData <- ROCR::prediction(as.numeric(labels), factor(pData(expression)[, "class"], ordered = TRUE))
     }
+    
     if(resubstituteParams@performanceType == "balanced")
     {
       falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)
@@ -381,49 +393,44 @@ setOldClass("pamrtrained")
       if(length(performanceValues) > 1)
         names(performanceValues) <- names(predictions)
       performanceValues
-    } else
-    {
+    } else {
       performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
       performanceData <- do.call(ROCR::performance, performanceList)
       performanceValues <- sapply(performanceData@y.values, "[[", 2)
       if(length(performanceValues) > 1)
         names(performanceValues) <- names(predictions)
-      performanceValues      
+      performanceValues
     }
   })
   
   if(class(performances) == "numeric")
-  {
-    if(resubstituteParams@better == "lower")
-      pickedRows <- 1:(resubstituteParams@nFeatures[which.min(performances)[1]])
-    else
-      pickedRows <- 1:(resubstituteParams@nFeatures[which.max(performances)[1]])
-  } else {
-    pickedRows <- apply(performances, 1, function(varietyPerformances)
-                  {
-                    if(resubstituteParams@better == "lower")
-                      1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
-                    else
-                      1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
-                  })
+    performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
 
-    if(is.matrix(pickedRows))
-      pickedRows <- as.list(as.data.frame(pickedRows))
-  }
+  pickedRows <- apply(performances, 1, function(varietyPerformances)
+                {
+                  if(resubstituteParams@better == "lower")
+                    1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
+                  else
+                    1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
+                })
+
+  if(is.matrix(pickedRows))
+    pickedRows <- as.list(as.data.frame(pickedRows))
   
   if(verbose == 3)
     message("Features selected.")
   
-  if(class(pickedRows) == "list")
+  rankedFeatures <- lapply(1:length(pickedRows), function(variety) orderedFeatures)
+  pickedFeatures <- lapply(pickedRows, function(pickedSet) orderedFeatures[pickedSet])
+  
+  selectResults <- lapply(1:length(rankedFeatures), function(variety)
   {
-    rankedFeatures <- lapply(1:length(pickedRows), function(variety) orderedFeatures)
-    names(rankedFeatures) <- names(pickedRows)
-    pickedFeatures <- lapply(pickedRows, function(pickedSet) orderedFeatures[pickedSet])
-  } else {
-    rankedFeatures <- orderedFeatures
-    pickedFeatures <- orderedFeatures[pickedRows]
-  }
-  list(rankedFeatures, pickedFeatures)
+    SelectResult(datasetName, selectionName,
+                 list(rankedFeatures[[variety]]), list(pickedFeatures[[variety]]))
+  })
+  names(selectResults) <- names(pickedRows)
+  
+  if(length(selectResults) == 1) selectResults <- selectResults[[1]] else selectResults
 }
 
 .validationText <- function(result)
@@ -447,4 +454,16 @@ setOldClass("pamrtrained")
   binID
 }
 
-
+.methodFormals <- function(f, signature = character()) {
+  fdef <- getGeneric(f)
+  method <- selectMethod(fdef, signature)
+  genFormals <- base::formals(fdef)
+  b <- body(method)
+  if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+    local <- eval(b[[2]][[3]])
+    if(is.function(local))
+      return(formals(local))
+    warning("Expected a .local assignment to be a function. Corrupted method?")
+  }
+  genFormals
+} 

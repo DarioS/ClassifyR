@@ -8,14 +8,15 @@
        }
 \usage{
   \S4method{limmaSelection}{matrix}(expression, classes, ...)
-  \S4method{limmaSelection}{ExpressionSet}(expression, trainParams, predictParams,
-                                           resubstituteParams, ..., verbose = 3)
+  \S4method{limmaSelection}{ExpressionSet}(expression, datasetName, trainParams, predictParams,
+                                           resubstituteParams, ..., selectionName = "Moderated t-test", verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
                     the training data. For a matrix, the rows are features, and the columns
                     are samples.}
-  \item{classes}{A vector of class labels.}
+  \item{classes}{A vector of class labels.}                    
+  \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -25,7 +26,8 @@
                             top features to try for resubstitution classification.}                       
   \item{...}{For the \code{\link{matrix}} method, variables passed to the \code{\link{ExpressionSet}}
              method. For the \code{\link{ExpressionSet}} method, extra parameters that are
-             passed to \code{\link{TrainParams}}}.
+             passed to \code{\link{[limma]lmFit}}}.
+  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -33,8 +35,8 @@
   This selection method looks for differential expression. It uses a moderated t-test.
 }
 \value{
-  A list of length 2. The first element has the features ranked from most important to least important.
-  The second element has the features that were selected to be used for classification.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was used
+  for determining resubstitution error rate made a number of prediction varieties.
 }
 
 \author{Dario Strbenac}
@@ -45,13 +47,13 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
 \examples{
   if(require(sparsediscrim))
   {
-    # Samples in one class with differential expression to other class.
-    genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-                                 c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+    # Genes 76 to 100 have differential expression.
+    genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
+    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
+                                 c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
-    limmaSelection(genesMatrix, classes,
+    limmaSelection(genesMatrix, classes, "Example",
                     trainParams = TrainParams(), predictParams = PredictParams(),
                     resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10), performanceType = "balanced", better = "lower"))
   }

@@ -12,15 +12,15 @@ setMethod("runTest", c("matrix"),
 
 setMethod("runTest", c("ExpressionSet"),
           function(expression, datasetName, classificationName, training, testing,
-                   params = list(SelectionParams(), TrainParams(), PredictParams()),
-                   verbose = 1, .usedInternally = FALSE)
+                   params = list(SelectParams(), TrainParams(), PredictParams()),
+                   verbose = 1, .iteration = NULL)
 {
   stagesParamClasses <- sapply(params, class)
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"testing\" must not be before \"training\" in 'params'.")
   
   transformParams <- params[[match("TransformParams", stagesParamClasses)]]
-  selectionParams <- params[[match("SelectionParams", stagesParamClasses)]]
+  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
   trainParams <- params[[match("TrainParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   
@@ -30,32 +30,30 @@ setMethod("runTest", c("ExpressionSet"),
     switch(stagesParamClasses[[stageIndex]],
                  TransformParams = {
                                if(length(transformParams@intermediate) != 0)
-                                 transformParams@otherParams <- c(transformParams@otherParams,
-                                                                  as.list(environment())[transformParams@intermediate])
+                                 transformParams@otherParams <- c(transformParams@otherParams, mget(transformParams@intermediate))
 
                                transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
                                expression <- .doTransform(expression, transformParams, verbose)
                                newSize <- if(class(expression) == "list") length(expression) else 1
                              },
-                 SelectionParams = {
-                               if(length(selectionParams@intermediate) != 0)
-                                 selectionParams@otherParams <- c(selectionParams@otherParams,
-                                                                  as.list(environment())[selectionParams@intermediate])
-                               
-                               topFeatures <- .doSelection(expression, training, selectionParams,
+                 SelectParams = {
+                               if(length(selectParams@intermediate) != 0)
+                                 selectParams@otherParams <- c(selectParams@otherParams, mget(selectParams@intermediate))
+
+                               topFeatures <- .doSelection(expression, training, selectParams,
                                                                 trainParams, predictParams, verbose)
 
-                               if(sum(grepl('=', names(topFeatures[[1]]))) > 0)
+                               if(class(topFeatures[[1]]) == "list")
                                {
                                  multiSelection <- TRUE
                                } else {
                                  multiSelection <- FALSE
                                }
                                
-                               rankedFeatures <- topFeatures[[1]] # Extract for adding to result list.
+                               rankedFeatures <- topFeatures[[1]] # Extract for subsetting.
                                selectedFeatures <- topFeatures[[2]]
 
-                               if(selectionParams@subsetExpressionData == TRUE)
+                               if(selectParams@subsetExpressionData == TRUE)
                                {
                                  if(multiSelection == FALSE)
                                  {
@@ -71,7 +69,7 @@ setMethod("runTest", c("ExpressionSet"),
                                                           lapply(selectedFeatures, function(features) variety[features, ]))
                                  }
                                } else {
-                                 if(is.list(selectedFeatures)) # Multiple selection varieties. Replicate the expression data.
+                                 if(multiSelection == TRUE) # Multiple selection varieties. Replicate the expression data.
                                  {
                                    if(class(expression) != "list")
                                      expression <- lapply(selectedFeatures, function(features) expression)
@@ -93,9 +91,8 @@ setMethod("runTest", c("ExpressionSet"),
                              }, 
                  TrainParams = {
                               if(length(trainParams@intermediate) != 0)
-                                trainParams@otherParams <- c(trainParams@otherParams,
-                                                             as.list(environment())[trainParams@intermediate])
-                              
+                                trainParams@otherParams <- c(trainParams@otherParams, mget(trainParams@intermediate))
+
                               trained <- .doTrain(expression, training, testing, trainParams, predictParams, verbose)
 
                               newSize <- if(class(trained) == "list") length(trained) else 1
@@ -116,8 +113,7 @@ setMethod("runTest", c("ExpressionSet"),
                               },
                  PredictParams = {
                                  if(length(predictParams@intermediate) != 0)
-                                   predictParams@otherParams <- c(predictParams@otherParams,
-                                                      as.list(environment())[predictParams@intermediate])
+                                   predictParams@otherParams <- c(predictParams@otherParams, mget(predictParams@intermediate))
                                   predictedClasses <- .doTest(trained, expression, testing, predictParams, verbose)
                                  }
            )
@@ -125,21 +121,21 @@ setMethod("runTest", c("ExpressionSet"),
   }
   if(class(testing) == "logical") testing <- which(testing)
 
-  if(.usedInternally == TRUE)
+  if(!is.null(.iteration)) # This function was called by runTests.
   {        
     list(rankedFeatures, selectedFeatures, testing, predictedClasses, tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")
     {
-      return(ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+      return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
                             list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = predictedClasses)),
                             pData(expression)[, "class"], list("independent"), tuneDetails)
              )
-    } else {
+    } else { # A variety of predictions were made.
       return(mapply(function(varietyPredictions, varietyTunes)
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-        ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+        ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
                        list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = varietyPredictions)),
                        pData(expression)[, "class"], list("independent"), varietyTunes)
       }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))

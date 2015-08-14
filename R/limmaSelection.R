@@ -13,7 +13,8 @@ setMethod("limmaSelection", "matrix",
 })
 
 setMethod("limmaSelection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams, ..., verbose = 3)
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams, ...,
+                   selectionName = "Moderated t-test", verbose = 3)
 {
   if(!requireNamespace("limma", quietly = TRUE))
     stop("The package 'limma' could not be found. Please install it.")            
@@ -28,7 +29,9 @@ setMethod("limmaSelection", "ExpressionSet",
     fitParams <- append(fitParams, ...)
   prognosisModel <- do.call(limma::lmFit, fitParams)
   prognosisModel <- limma::eBayes(prognosisModel)
-  orderedFeatures <- match(rownames(limma::topTable(prognosisModel, 2, number = Inf, sort.by = "p")), allFeatures)
+  orderedFeatures <- match(rownames(limma::topTable(prognosisModel, 2, number = Inf, sort.by = "p")),
+                           allFeatures)
   
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
+            selectionName, verbose)
 })

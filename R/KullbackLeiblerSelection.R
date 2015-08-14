@@ -12,11 +12,11 @@ setMethod("KullbackLeiblerSelection", "matrix", function(expression, classes, ..
 })
 
 setMethod("KullbackLeiblerSelection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams,
-                   ..., verbose = 3)
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams,
+                   ..., selectionName = "Kullback-Leibler Divergence", verbose = 3)
 {
   if(verbose == 3)
-    message("Selecting features by Kullback Leibler divergence")
+    message("Selecting features by Kullback-Leibler divergence")
   classes <- pData(expression)[, "class"]
   oneClassExpression <- exprs(expression[, classes == levels(classes)[1]])
   otherClassExpression <- exprs(expression[, classes == levels(classes)[2]])
@@ -29,5 +29,6 @@ setMethod("KullbackLeiblerSelection", "ExpressionSet",
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
   
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
+            selectionName, verbose)
 })

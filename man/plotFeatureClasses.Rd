@@ -54,5 +54,5 @@ selection method.
   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
   chosen <- 1:5 # First five genes in the data were chosen.
                                      
-  # plotFeatureClasses(genesMatrix, classes, chosen, expressionLimits = NULL) Waiting for gridExtra fix.
+  plotFeatureClasses(genesMatrix, classes, chosen, expressionLimits = NULL)
 }

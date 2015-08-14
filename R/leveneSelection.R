@@ -13,7 +13,8 @@ setMethod("leveneSelection", "matrix",
 })
 
 setMethod("leveneSelection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams, verbose = 3)
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams, selectionName = "Levene Test",
+                   verbose = 3)
 {
   if(!requireNamespace("car", quietly = TRUE))
     stop("The package 'car' could not be found. Please install it.")            
@@ -24,5 +25,5 @@ setMethod("leveneSelection", "ExpressionSet",
   pValues <- apply(exprMatrix, 1, function(geneRow) car::leveneTest(geneRow, classes)[["Pr(>F)"]][1])
   orderedFeatures <- order(pValues)
  
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
 })

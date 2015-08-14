@@ -12,7 +12,7 @@
   \S4method{runTests}{ExpressionSet}(expression, datasetName, classificationName,
                      validation = c("bootstrap", "leaveOut"), bootMode = c("fold", "split"),
                      resamples = 100, percent = 25, folds = 5, leave = 2, seed, parallelParams = bpparam(),
-                     params = list(SelectionParams(), TrainParams(), PredictParams()),
+                     params = list(SelectParams(), TrainParams(), PredictParams()),
                      verbose = 1)
 }
 \arguments{
@@ -40,7 +40,7 @@
               if it is provided. Allows reproducibility of repeated usage on the same input data.}
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}               
   \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
-               \code{\link{SelectionParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
+               \code{\link{SelectParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
                The order they are in the list determines the order in which the stages
                of classification are done in.}
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the

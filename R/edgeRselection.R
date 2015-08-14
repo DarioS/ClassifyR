@@ -13,9 +13,10 @@ setMethod("edgeRselection", "matrix",
 })
 
 setMethod("edgeRselection", "ExpressionSet", 
-          function(expression, normFactorsOptions = NULL,
-                           dispOptions = NULL, fitOptions = NULL, trainParams,
-                           predictParams, resubstituteParams, verbose = 3)
+          function(expression, datasetName, normFactorsOptions = NULL,
+                   dispOptions = NULL, fitOptions = NULL, trainParams,
+                   predictParams, resubstituteParams, selectionName = "edgeR LRT",
+                   verbose = 3)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))
     stop("The package 'edgeR' could not be found. Please install it.")
@@ -48,5 +49,6 @@ setMethod("edgeRselection", "ExpressionSet",
   result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
   orderedFeatures <- match(rownames(result[["table"]]), allFeatures)
 
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
+            selectionName, verbose)
 })

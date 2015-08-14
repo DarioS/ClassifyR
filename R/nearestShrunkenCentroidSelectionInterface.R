@@ -15,7 +15,8 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "matrix", function(expres
 })
 
 setMethod("nearestShrunkenCentroidSelectionInterface", "ExpressionSet",
-          function(expression, trained, ..., verbose = 3)
+          function(expression, datasetName, trained, ..., selectionName = "Shrunken Centroids",
+                   verbose = 3)
 { 
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")
@@ -33,5 +34,5 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "ExpressionSet",
   if(verbose == 3)
     message("Nearest shrunken centroid feature selection completed.")
   
-  list(list(), chosen)
+  SelectResult(datasetName, selectionName, list(), list(chosen))
 })

@@ -2,25 +2,39 @@
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
 \title{Plot Pair-wise Overlap of Selected Features}
-\description{The average pair-wise overlap is computed for every pair of cross-validations. The overlap is converted to a percentage and plotted as a set of boxplots.
+\description{Pair-wise overlaps can be done for two types of analyses. Firstly, each cross-validation iteration
+can be considered within a single classification. This explores the feature selection stability. Secondly, the
+overlap may be considered between different classification results. This approach compares the feature selection
+commonality between different selection methods. Two types of commonality are possible to analyse. One summary is
+the average pair-wise overlap between a level of the comparison factor and the other summary is the pair-wise
+overlap of each level of the comparison factor that is not the reference level against the reference level.
+The overlaps are converted to percentages and plotted as lineplots.
        }
 \usage{
   \S4method{selectionPlot}{list}(results,
-                   comparison = c("within", "classificationName", "validation", "datasetName"),
-                   xVariable = c("classificationName", "datasetName", "validation"),
-                   boxFillColouring = c("classificationName", "datasetName", "validation", "None"),
+                   comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
+                   referenceLevel = NULL,
+                   xVariable = c("classificationName", "datasetName", "validation", "selectionName"),
+                   boxFillColouring = c("classificationName", "datasetName", "validation", "selectionName", "None"),
                    boxFillColours = NULL,
-                   boxLineColouring = c("validation", "classificationName", "datasetName", "None"),
+                   boxLineColouring = c("validation", "classificationName", "datasetName", "selectionName", "None"),
                    boxLineColours = NULL,
-                   rowVariable = c("None", "validation", "datasetName", "classificationName"),
-                   columnVariable = c("datasetName", "classificationName", "validation", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = "Feature Selection Stability",
-                   xLabel = "Analysis", yLabel = "Average Pairwise Common Features (\%)", margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
+                   rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
+                   columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
+                   yMax = 100, fontSizes = c(24, 16, 12, 16),
+                   title = if(comparison == "within") "Feature Selection Stability" else "Feature Selection Commonality",
+                   xLabel = "Analysis",
+                   yLabel = if(is.null(referenceLevel)) "Pairwise Common Features (\%)" else paste("Common Features with", referenceLevel, "(\%)"),
+                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE,
+                   parallelParams = bpparam())
 }
 \arguments{
-  \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+  \item{results}{A list of \code{\link{ClassifyResult}} or \code{\link{SelectResult}} objects.}
   \item{comparison}{The aspect of the experimental design to compare. See \code{Details} section for a
-                    detailed description.}  
+                    detailed description.}
+  \item{referenceLevel}{The level of the comparison factor to use as the reference to compare each
+                        non-reference level to. If \code{NULL}, then each level has the
+                        average pairwise overlap calculated to all other levels.}                    
   \item{xVariable}{The factor to make separate boxes in the boxplot for.}
   \item{boxFillColouring}{A factor to colour the boxes by.}
   \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}. If \code{NULL},
@@ -45,11 +59,34 @@
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{
-  Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and \code{"validation"}.
-  If \code{"None"}, then that graphic element is not used.
+  Possible values for characteristics are \code{"datasetName"}, \code{"classificationName"},
+  \code{"selectionName"}, and \code{"validation"}. If \code{"None"}, then that graphical element is not used.
+  
+  If \code{comparison} is \code{"within"}, then the feature selection overlaps are compared within a particular
+  analysis. The result will inform how stable the selections are between different iterations of cross-validation
+  for a particular analysis. If \code{comparison} is \code{"classificationName"}, then the feature
+  selections are compared across different classification algorithm types, for each level of \code{"datasetName"},
+  \code{"selectionName"} and \code{"validation"}. The result will inform how stable the feature selections
+  are between different classification algorithms, for every cross-validation scheme, selction algorithm and
+  dataset. If \code{comparison} is \code{"selectionName"}, then the feature selections are compared across
+  different feature selection algorithms, for each level of \code{"datasetName"}, \code{"classificationName"} and
+  \code{"validation"}. The result will inform how stable the feature selections are between feature selection
+  algorithms, for every dataset, classification algorithm, and cross-validation scheme. If \code{comparison}
+  is \code{"validation"}, then the feature selections are compared across different cross-validation schemes,
+  for each level of \code{"classificationName"}, \code{"selectionName"} and \code{"datasetName"}. The result
+  will inform how stable the feature selections are between different cross-validation schemes, for every
+  selection algorithm, classification algorithm and every dataset. If \code{comparison} is
+  \code{"datasetName"}, then the feature selections are compared across different datasets,
+  for each level of \code{"classificationName"}, \code{"selectionName"}, and \code{"validation"}.
+  The result will inform how stable the feature selections are between different datasets, for every
+  classification algorithm and every dataset. This could be used to consider if different
+  experimental studies have a highly overlapping feature selection pattern.
   
   Calculating all pair-wise set overlaps can be time-consuming. This stage can be done on multiple CPUs by
   providing the relevant options to \code{parallelParams}.
+  
+  The percentage is calculated as the intersection of two sets of features divided by the union of the sets,
+  multiplied by 100.
 }
 \value{
   An object of class \code{ggplot} and a plot on the current graphics device, if \code{plot} is \code{TRUE}.
@@ -60,10 +97,27 @@
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                           label = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
-                            list(predicted), actual, list("fold", 100, 5))
+  rankList <- list(list(1:100, c(5:1, 6:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
+  result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection", LETTERS[1:10], LETTERS[10:1],
+                            rankList,
+                            list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
+                                 list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
+                            list(predicted), actual, list("fold", 2, 2))
+  
   predicted[, "label"] <- sample(predicted[, "label"])
-  result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
-                            list(predicted), actual, validation = list("leave", 1))
-  # selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName") # Wait for namespace problems to be fixed.
+  rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
+  result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection", LETTERS[1:10], LETTERS[10:1],
+                            rankList,
+                            list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
+                                 list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
+                            list(predicted), actual, validation = list("fold", 2, 2))
+                            
+  selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName")
+  
+  oneRanking <- c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)
+  otherRanking <- c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)
+  oneResult <- SelectResult("Example", "One Method", list(oneRanking), list(oneRanking[1:5]))
+  otherResult <- SelectResult("Example", "Another Method", list(otherRanking), list(otherRanking[1:2]))
+  
+  selectionPlot(list(oneResult, otherResult), comparison = "selectionName", xVariable = "selectionName", xLabel = "Selection Method", columnVariable = "None", rowVariable = "None", boxFillColouring = "selectionName", boxLineColouring = "None")
 }

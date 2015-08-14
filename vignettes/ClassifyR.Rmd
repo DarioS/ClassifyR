@@ -110,7 +110,7 @@ Here, a feature selection based on a ranked list from limma followed by a DLDA c
 ```{r, tidy = FALSE}
 library(sparsediscrim)
 DEresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
-                      params = list(SelectionParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
                                     TrainParams(dlda, TRUE, doesTests = FALSE),
                                     PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])),
                       parallelParams = bpparam(), verbose = 1)
@@ -165,7 +165,7 @@ Fisher's LDA is suitable for the absolute value of expression values subtracted 
 ```{r, tidy = FALSE}
 DVresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Variability",
                       validation = "bootstrap", resamples = 2, folds = 4,
-                      params = list(SelectionParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
                                     TransformParams(subtractFromLocation, location = "median"),
                                     TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
                                     PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, returnType = "both")),
@@ -213,7 +213,7 @@ Kullback-Leibler divergence will be used for feature selection and a naive Bayes
 ```{r, tidy = FALSE}
 DDresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
                       validation = "bootstrap", resamples = 2, folds = 2,
-                      params = list(SelectionParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
                                     TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
                                     PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, weighted = "weighted", returnType = "both")),
                                 verbose = 1)
@@ -285,6 +285,10 @@ independentResult  <- runTest(allExpr, allClasses, datasetName = "Simulation", c
 independentResult
 ```
 
+### Cross-validating on a Different Dataset
+
+Once a cross-validation classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing ClassifyResult object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset. The classifier training should be redone.
+
 ### Generating a ROC Plot
 
 Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier and Fisher discriminant analysis used previously had the *returnType* variable set to *"both"*, so labels and scores were both stored in the classification result. Setting *returnType* to *"score"* is also sufficient. Many existing classifiers in other R package also have an option that allows a score or probability to be calculated.
@@ -305,7 +309,7 @@ A linear SVM is demonstrated. It only has one tuning parameter, the cost value.
 library(e1071) # Provides SVM functions.
 resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")
 SVMresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
-                      params = list(SelectionParams(limmaSelection, resubstituteParams = resubstituteParams),
+                      params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
                                     TrainParams(svm, TRUE, doesTests = FALSE, kernel = "linear", resubstituteParams = resubstituteParams, tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
                                     PredictParams(predict, TRUE, getClasses = function(result) result)),
                       parallelParams = bpparam(), verbose = 1)

@@ -39,29 +39,34 @@ setMethod("ResubstituteParams", c("numeric", "character", "character"),
                 better = better, otherParams = list(...))
           })
 
-setClass("SelectionParams", representation(
+setClass("SelectParams", representation(
   featureSelection = "functionOrList",
+  selectionName = "character",
   minPresence = "numeric",
   intermediate = "character",
   subsetExpressionData = "logical",  
   otherParams = "list")
 )
 
-setGeneric("SelectionParams", function(featureSelection, ...)
-{standardGeneric("SelectionParams")})
-setMethod("SelectionParams", character(0), function()
+setGeneric("SelectParams", function(featureSelection, ...)
+{standardGeneric("SelectParams")})
+setMethod("SelectParams", character(0), function()
 {
-  new("SelectionParams", featureSelection = limmaSelection, minPresence = 1,
+  new("SelectParams", featureSelection = limmaSelection,
+      selectionName = "Limma moderated t-test", minPresence = 1,
       intermediate = character(0), subsetExpressionData = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })
-setMethod("SelectionParams", c("functionOrList"),
-          function(featureSelection, minPresence = 1, intermediate = character(0),
+setMethod("SelectParams", c("functionOrList"),
+          function(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
                    subsetExpressionData = TRUE, ...)
           {
-            new("SelectionParams", featureSelection = featureSelection,
-                minPresence = minPresence, intermediate = intermediate,
-                subsetExpressionData = subsetExpressionData, otherParams = list(...))
+            if(missing(selectionName) && !is.list(class(featureSelection)))
+              selectionName <- .methodFormals(featureSelection, "ExpressionSet")[["selectionName"]]
+            new("SelectParams", featureSelection = featureSelection,
+                selectionName = selectionName, minPresence = minPresence,
+                intermediate = intermediate, subsetExpressionData = subsetExpressionData,
+                otherParams = list(...))
           })
 
 setClass("TrainParams", representation(
@@ -82,8 +87,9 @@ setMethod("TrainParams", character(0), function()
 setMethod("TrainParams", c("function"),
           function(classifier, transposeExpression, doesTests, intermediate = character(0), ...)
           {
-            new("TrainParams", classifier = classifier, transposeExpression = transposeExpression,
-                doesTests = doesTests, intermediate = intermediate, otherParams = list(...))
+            new("TrainParams", classifier = classifier,
+                transposeExpression = transposeExpression, doesTests = doesTests,
+                intermediate = intermediate, otherParams = list(...))
           })
 
 setClass("PredictParams", representation(
@@ -108,27 +114,70 @@ setMethod("PredictParams", c("function"),
                 intermediate = intermediate, getClasses = getClasses, otherParams = list(...))
           })
 
-setGeneric("ClassifyResult", function(datasetName, classificationName, originalNames, originalFeatures, ...)
+setGeneric("SelectResult", function(dataset, selection, rankedFeatures, chosenFeatures, ...)
+{standardGeneric("SelectResult")})
+setClass("SelectResult", representation(
+  datasetName = "character",
+  selectionName = "character",
+  rankedFeatures = "list",
+  chosenFeatures = "list"
+))
+
+setMethod("SelectResult", c("character", "character", "list", "list"),
+          function(dataset, selection, rankedFeatures, chosenFeatures)
+          {
+            new("SelectResult", datasetName = dataset, selectionName = selection, 
+                rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures)
+          })
+setMethod("show", c("SelectResult"),
+          function(object)
+          {
+            if(class(object@chosenFeatures[[1]]) == "list")
+            {
+              selectionSizes <- unlist(lapply(object@chosenFeatures, function(resampling)
+                lapply(resampling, function(fold) length(fold))))
+            } else {selectionSizes <- sapply(object@chosenFeatures, length)}
+            cat("An object of class 'SelectResult'.\n")
+            cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
+            cat("Feature Selection Name: ", object@selectionName, ".\n", sep = '')
+            if(length(object@rankedFeatures) > 0) # Some methods don't use rankings.
+            {
+              if(class(object@rankedFeatures[[1]]) == "list") # Must be from resampling and folding.
+                featureLength <- length(object@rankedFeatures[[1]][[1]])
+              else # Either from direct feature selection, or a cross-validation method that doesn't have folds.
+                featureLength <- length(object@rankedFeatures[[1]])
+              cat("Features Considered: ", featureLength, ".\n", sep = '')
+            }
+            selectionsText <- paste("Selections: List of length", length(object@chosenFeatures))
+            if(class(object@chosenFeatures[[1]]) == "list")
+              selectionsText <- paste(selectionsText, "of lists of length", length(object@chosenFeatures[[1]]))
+            cat(selectionsText, ".\n", sep = '')
+            if(length(selectionSizes) > 1)
+              cat("Selection Size Range: Between ", min(selectionSizes), " and ", max(selectionSizes), " features.\n", sep = '')
+            else
+              cat("Selection Size : ", selectionSizes[[1]], " features.\n", sep = '')
+          })
+
+setGeneric("ClassifyResult", function(datasetName, classificationName, selectionName, originalNames, originalFeatures, ...)
 {standardGeneric("ClassifyResult")})
 setClass("ClassifyResult", representation(
   datasetName = "character",
   classificationName = "character",
   originalNames = "character",
   originalFeatures = "character",
-  chosenFeatures = "list",
-  rankedFeatures = "list",
+  selectResult = "SelectResult",
   actualClasses = "factor",
   predictions = "list",
   validation = "list",  
   performance = "list",
   tune = "list")
 )
-setMethod("ClassifyResult", c("character", "character", "character", "character"),
-          function(datasetName, classificationName, originalNames, originalFeatures,
+setMethod("ClassifyResult", c("character", "character", "character", "character", "character"),
+          function(datasetName, classificationName, selectionName, originalNames, originalFeatures,
                    rankedFeatures, chosenFeatures, predictions, actualClasses, validation, tune = list(NULL))
           {
             new("ClassifyResult", datasetName = datasetName, classificationName = classificationName,
-                predictions = predictions, rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
+                predictions = predictions, selectResult = SelectResult(datasetName, selectionName, rankedFeatures, chosenFeatures),
                 actualClasses = actualClasses, validation = validation,
                 originalNames = originalNames, originalFeatures = originalFeatures, tune = tune)
           })
@@ -138,7 +187,13 @@ setMethod("show", c("ClassifyResult"),
             cat("An object of class 'ClassifyResult'.\n")
             cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
-            cat("Validation: ") 
+            cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
+            if(object@validation[[1]] %in% c("split", "leave", "independent"))
+              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of row indices.\n", sep = '')
+            else # Resample and fold. Nested lists.
+              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of length ",
+                  length(object@selectResult@chosenFeatures[[1]]), " of row indices.\n", sep = '')
+            cat("Validation: ")
             if(object@validation[[1]] == "leave")
               cat("Leave ", object@validation[[2]], " out cross-validation.\n", sep = '')
             else if(object@validation[[1]] == "split")
@@ -151,11 +206,6 @@ setMethod("show", c("ClassifyResult"),
                   " resamples.\n", sep = '')
             cat("Predictions: List of data frames of length ", length(object@predictions),
                 ".\n", sep = '')
-            if(object@validation[[1]] %in% c("split", "leave", "independent"))
-              cat("Features: List of length ", length(object@chosenFeatures), " of row indices.\n", sep = '')
-            else
-              cat("Features: List of length ", length(object@chosenFeatures), " of lists of length ",
-                  length(object@chosenFeatures[[1]]), " of row indices.\n", sep = '')
             if(length(object@performance) > 0)
               cat("Performance Measures: ", paste(names(object@performance), collapse = ', '), ".\n", sep = '')
             else
@@ -175,7 +225,7 @@ setGeneric("features", function(object, ...)
 setMethod("features", c("ClassifyResult"),
           function(object)
           {
-            object@chosenFeatures
+            object@selectResult@chosenFeatures
           })
 
 setGeneric("performance", function(object, ...)
@@ -219,8 +269,5 @@ setGeneric("totalPredictions", function(result, ...)
 setMethod("totalPredictions", c("ClassifyResult"),
           function(result)
           {
-            if(length(predictions(result)) > 1)
               nrow(do.call(rbind, predictions(result)))
-            else
-              nrow(predictions(result))
           })

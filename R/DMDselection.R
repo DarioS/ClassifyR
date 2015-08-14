@@ -1,3 +1,4 @@
+# Mean or Median, Three Kinds of Deviations.
 setGeneric("DMDselection", function(expression, ...)
            {standardGeneric("DMDselection")})
 
@@ -12,10 +13,12 @@ setMethod("DMDselection", "matrix", function(expression, classes, ...)
 })
 
 setMethod("DMDselection", "ExpressionSet", 
-          function(expression, trainParams, predictParams, resubstituteParams, ..., verbose = 3)
+          function(expression, datasetName, trainParams, predictParams, resubstituteParams,
+                   ..., selectionName = "Differences of Medians and Deviations", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by DMD.")
+            
   classes <- pData(expression)[, "class"]
   oneClassExpression <- exprs(expression[, classes == levels(classes)[1]])
   otherClassExpression <- exprs(expression[, classes == levels(classes)[2]])
@@ -25,5 +28,6 @@ setMethod("DMDselection", "ExpressionSet",
   divergence <- abs(locationDifference) + abs(oneClassDistribution[[2]] - otherClassDistribution[[2]])
   orderedFeatures <- order(divergence, decreasing = TRUE)
   
-  .pickRows(expression, trainParams, predictParams, resubstituteParams, orderedFeatures, verbose)
+  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams,
+            orderedFeatures, selectionName, verbose)
 })

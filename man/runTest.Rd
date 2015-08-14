@@ -9,8 +9,8 @@ It consists of data transformation, feature selection, training and testing.
 \usage{
   \S4method{runTest}{matrix}(expression, classes, ...)
   \S4method{runTest}{ExpressionSet}(expression, datasetName, classificationName,
-                     training, testing, params = list(SelectionParams(), TrainParams(), PredictParams()),
-                     verbose = 1, .usedInternally = FALSE)
+                     training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
+                     verbose = 1, .iteration = NULL)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -22,15 +22,15 @@ It consists of data transformation, feature selection, training and testing.
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    
   \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
-               \code{\link{SelectionParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
+               \code{\link{SelectParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
                The order they are in the list determines the order in which the stages
                of classification are done in.}
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages.}
-  \item{.usedInternally}{Not to be changed by a user. This flag is used to decide what kind of result
-                         to return. It is set to TRUE, if called by \code{\link{runTests}}.}                 
+  \item{.iteration}{Not to be set by a user. This value is used to keep track of the cross-validation
+                   iteration, if called by \code{\link{runTests}}.}                 
 }
 \details{
   This function only performs one classification and prediction. See \code{\link{runTests}}
@@ -55,7 +55,7 @@ It consists of data transformation, feature selection, training and testing.
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    runTest(TCGA_eset, "TCGA Cancer", "Differential Expression",
+    runTest(TCGA_eset, "Ovarian Cancer", "Differential Expression",
             training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
             testing = (1:ncol(TCGA_eset)) \%\% 2 != 0)
   }

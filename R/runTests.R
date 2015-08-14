@@ -15,7 +15,7 @@ setMethod("runTests", c("ExpressionSet"),
              bootMode = c("fold", "split"),
              resamples = 100, percent = 25, folds = 5, leave = 2,
              seed, parallelParams = bpparam(),
-             params = list(SelectionParams(), TrainParams(), PredictParams()),
+             params = list(SelectParams(), TrainParams(), PredictParams()),
              verbose = 1)
 {
   validation <- match.arg(validation)
@@ -38,7 +38,7 @@ setMethod("runTests", c("ExpressionSet"),
       samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
     }
 
-    results <- bpmapply(function(sampleFolds, sampleNumber)
+    results <- mapply(function(sampleFolds, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
@@ -47,13 +47,14 @@ setMethod("runTests", c("ExpressionSet"),
         lapply(1:length(sampleFolds), function(foldIndex)
         {
           runTest(expression, training = unlist(sampleFolds[-foldIndex]),
-                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose, .usedInternally = TRUE)
+                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
+                  .iteration = c(sampleNumber, foldIndex))
         })
       } else { # Split mode.
         runTest(expression, training = sampleFolds[[1]],
-                testing = sampleFolds[[2]], params = params, verbose = verbose, .usedInternally = TRUE)
+                testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
-    }, samplesFolds, as.list(1:length(samplesFolds)), BPPARAM = parallelParams, SIMPLIFY = FALSE)
+    }, samplesFolds, as.list(1:length(samplesFolds)), SIMPLIFY = FALSE)
   } else # leave k out.
   {
     testSamples <- as.data.frame(combn(ncol(expression), leave))
@@ -63,12 +64,12 @@ setMethod("runTests", c("ExpressionSet"),
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
       runTest(expression, training = trainingSample, testing = testSample,
-              params = params, verbose = verbose, .usedInternally = TRUE)
+              params = params, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   }
 
-  selectionParams <- params[[match("SelectionParams", stagesParamClasses)]]
+  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   if(validation == "bootstrap")
   {
@@ -121,7 +122,7 @@ setMethod("runTests", c("ExpressionSet"),
               sample[[position]][[variety]])
             }
           } else { # Ranked, selected features and test samples, with varieties.
-            if(is.function(selectionParams@featureSelection))
+            if(is.function(selectParams@featureSelection))
             {
               if(bootMode == "fold")
                 lapply(1:length(sample[[1]][[4]]), function(variety)
@@ -159,7 +160,7 @@ setMethod("runTests", c("ExpressionSet"),
         lapply(1:length(resultList[[1]]), function(variety) unlist(lapply(resultList, "[[", variety)))
       else if(multipleVarieties == TRUE && position == 4)
         lapply(1:length(resultList[[1]]), function(variety) do.call(rbind, lapply(resultList, "[[", variety)))
-      else if(multipleVarieties == TRUE && position %in% c(1, 2, 5) && is.function(selectionParams@featureSelection))
+      else if(multipleVarieties == TRUE && position %in% c(1, 2, 5) && is.function(selectParams@featureSelection))
         lapply(1:length(resultList[[1]]), function(variety) lapply(resultList, "[[", variety))
       else
         resultList
@@ -207,7 +208,7 @@ setMethod("runTests", c("ExpressionSet"),
   {
     if(length(unlist(resultsLists[[5]])) == 0) # All tune values are NULL.
       resultsLists[[5]] <- list(NULL)
-    ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+    ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
                    resultsLists[[4]], resultsLists[[3]], predictionTables[[1]],
                    pData(expression)[, "class"], validationInfo, resultsLists[[5]])
   } else {
@@ -215,7 +216,7 @@ setMethod("runTests", c("ExpressionSet"),
     {
       if(length(unlist(resultsLists[[5]][[variety]])) == 0) # All tune values are NULL.
         resultsLists[[5]][[variety]] <- list(NULL)
-      ClassifyResult(datasetName, classificationName, sampleNames(expression), featureNames(expression),
+      ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
                      resultsLists[[4]][[variety]], resultsLists[[3]][[variety]],
                      predictionTables[[variety]], pData(expression)[, "class"], validationInfo, resultsLists[[5]][[variety]])
     })

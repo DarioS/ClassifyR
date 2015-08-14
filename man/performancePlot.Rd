@@ -57,11 +57,11 @@
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                           label = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  result1 <- ClassifyResult("Example", "Differential Expression", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
+  result1 <- ClassifyResult("Example", "Differential Expression", "t-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
                             list(predicted), actual, list("fold", 100, 5))
   result1 <- calcPerformance(result1, "f")
   predicted[, "label"] <- sample(predicted[, "label"])
-  result2 <- ClassifyResult("Example", "Differential Variability", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
+  result2 <- ClassifyResult("Example", "Differential Variability", "F-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   result2 <- calcPerformance(result2, "f")                            
   performancePlot(list(result1, result2), performanceName = "Precision-Recall F measure", title = "Comparison")
