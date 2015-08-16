@@ -1,7 +1,7 @@
-setGeneric("rankPlot", function(results, ...)
-{standardGeneric("rankPlot")})
+setGeneric("rankingPlot", function(results, ...)
+{standardGeneric("rankingPlot")})
 
-setMethod("rankPlot", "list", 
+setMethod("rankingPlot", "list", 
           function(results, topRanked = seq(10, 100, 10),
                    comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
                    referenceLevel = NULL,

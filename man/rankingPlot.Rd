@@ -1,6 +1,6 @@
-\name{rankPlot}
-\alias{rankPlot}
-\alias{rankPlot,list-method}
+\name{rankingPlot}
+\alias{rankingPlot}
+\alias{rankingPlot,list-method}
 \title{Plot Pair-wise Overlap of Ranked Features}
 \description{Pair-wise overlaps can be done for two types of analyses. Firstly, each cross-validation iteration
 can be considered within a single classification. This explores the feature ranking stability. Secondly, the
@@ -11,7 +11,7 @@ overlap of each level of the comparison factor that is not the reference level a
 The overlaps are converted to percentages and plotted as lineplots.
        }
 \usage{
-  \S4method{rankPlot}{list}(results, topRanked = seq(10, 100, 10),
+  \S4method{rankingPlot}{list}(results, topRanked = seq(10, 100, 10),
                             comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
                             referenceLevel = NULL,
                             lineColourVariable = c("validation", "datasetName", "classificationName",
@@ -112,14 +112,14 @@ The overlaps are converted to percentages and plotted as lineplots.
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, validation = list("fold", 2, 2))
                             
-  rankPlot(list(result1, result2), pointTypeVariable = "classificationName")
+  rankingPlot(list(result1, result2), pointTypeVariable = "classificationName")
   
   oneRanking <- c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)
   otherRanking <- c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)
   oneResult <- SelectResult("Example", "One Method", list(oneRanking), list(oneRanking[1:5]))
   otherResult <- SelectResult("Example", "Another Method", list(otherRanking), list(otherRanking[1:2]))
   
-  rankPlot(list(oneResult, otherResult), comparison = "selectionName",
+  rankingPlot(list(oneResult, otherResult), comparison = "selectionName",
            referenceLevel = "One Method", topRanked = seq(2, 8, 2),
            lineColourVariable = "selectionName", columnVariable = "None",
            pointTypeVariable = "None", xLabelPositions = 1:10)
