@@ -12,7 +12,7 @@ setOldClass("pamrtrained")
     if(is.function(selectParams@featureSelection))
     {
       paramList <- list(expressionVariety[, training], verbose = verbose)
-      if(selectParams@featureSelection@generic[1] != "previousSelection")
+      if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
       selection <- do.call(selectParams@featureSelection, paramList)
@@ -454,16 +454,20 @@ setOldClass("pamrtrained")
   binID
 }
 
-.methodFormals <- function(f, signature = character()) {
-  fdef <- getGeneric(f)
-  method <- selectMethod(fdef, signature)
-  genFormals <- base::formals(fdef)
-  b <- body(method)
-  if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
-    local <- eval(b[[2]][[3]])
-    if(is.function(local))
-      return(formals(local))
-    warning("Expected a .local assignment to be a function. Corrupted method?")
-  }
-  genFormals
+.methodFormals <- function(f, signature = "ExpressionSet") {
+  tryCatch({
+    fdef <- getGeneric(f)
+    method <- selectMethod(fdef, signature)
+    genFormals <- base::formals(fdef)
+    b <- body(method)
+    if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+      local <- eval(b[[2]][[3]])
+      if(is.function(local))
+        return(formals(local))
+      warning("Expected a .local assignment to be a function. Corrupted method?")
+    }
+    genFormals},
+    error = function(error) {
+      formals(f)
+    })
 } 
