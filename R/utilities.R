@@ -35,18 +35,18 @@ setOldClass("pamrtrained")
       {
         paramList <- list(expressionVariety[, training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
-        paramList <- append(paramList, selParams)
+        paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
       }, selectParams@featureSelection, selectParams@otherParams, SIMPLIFY = FALSE)
       
       if(class(featuresLists[[1]]) == "SelectResult")
       {
-        featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatues[[1]])))
+        featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]])))
         selectedFeatures <- as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
       } else { # The prediction function used for resubstitution returned a variety of lists.
         selectedFeatures <- lapply(1:length(featuresLists[[1]]), function(variety)
         {
-          varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatues[[1]])
+          varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatures[[1]])
           featuresCounts <- table(unlist(varietyFeatures))
           as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
         })

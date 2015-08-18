@@ -61,12 +61,16 @@ setMethod("SelectParams", c("functionOrList"),
           function(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
                    subsetExpressionData = TRUE, ...)
           {
-            if(missing(selectionName) && !is.list(class(featureSelection)))
+            if(missing(selectionName) && !is.list(featureSelection))
               selectionName <- .methodFormals(featureSelection, "ExpressionSet")[["selectionName"]]
+            others <- list(...)
+            if(is.list(featureSelection))
+              others <- unlist(others, recursive = FALSE)
+            if(is.null(others)) others <- list()
             new("SelectParams", featureSelection = featureSelection,
                 selectionName = selectionName, minPresence = minPresence,
                 intermediate = intermediate, subsetExpressionData = subsetExpressionData,
-                otherParams = list(...))
+                otherParams = others)
           })
 
 setClass("TrainParams", representation(

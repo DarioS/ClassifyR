@@ -20,7 +20,7 @@
       object for the characteristics of their data, once they are familiar with this software.
   }
     \item{}{
-      \code{SelectParams(featureSelection, minPresence = 1, intermediate = character(0),
+      \code{SelectParams(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
                    subsetExpressionData = TRUE, ...)}
       Creates a SelectParams object which stores the function which will do the
       selection and parameters that the function will use.
@@ -29,6 +29,7 @@
             or a list of such functions. For a particular function, the first argument must
             be an \code{\link[Biobase]{ExpressionSet}} object. The function's
             return value must be a vector of row indices of genes that were selected.}
+            \item{\code{selectionName}}{A name to identify this selection method by.}
             \item{\code{minPresence}}{If a list of functions was provided, how many of those
             must a feature have been selected by to be used in classification. 1 is equivalent
             to a set union and a number the same length as \code{featureSelection}

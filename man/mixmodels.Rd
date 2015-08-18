@@ -29,7 +29,8 @@
                   If unweighted mode, each features's vote is worth the same. To save
                   computational time, both can be calculated simultaneously.}
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
-                       to vote. Can be a vector of cutoffs.}                                 
+                       to vote. Can be a vector of cutoffs. If no features for a particular sample
+                       have a difference large enough, the class predicted is simply the largest class.}
   \item{...}{For the training or testing function with \code{\link{matrix}} dispatch,
              arguments passed to the function with \code{\link{ExpressionSet}} dispatch.
              For the training function with \code{\link{ExpressionSet}} dispatch,

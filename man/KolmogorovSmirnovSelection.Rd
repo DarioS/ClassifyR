@@ -48,8 +48,8 @@ the features which have best resubstitution performance.
   {
     # First 20 features have bimodal distribution for Poor class. Other 80 features have normal distribution for
     # both classes.
-    genesMatrix <- sapply(1:25, function(sample) c(rnorm(20, sample(c(7, 12), 20, replace = TRUE), 1), rnorm(80, 10, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) rnorm(100, 10, 1)))
+    genesMatrix <- sapply(1:25, function(sample) c(rnorm(20, sample(c(8, 12), 20, replace = TRUE), 1), rnorm(80, 10, 1)))
+    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     KolmogorovSmirnovSelection(genesMatrix, classes, "Example",
                                trainParams = TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),

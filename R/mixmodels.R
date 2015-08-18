@@ -80,68 +80,68 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
   
   otherClassScore <- as.data.frame(otherClassScore)
 
-  unweightedOther <- lapply(minDifference, function(difference)
+  other <- lapply(minDifference, function(difference)
   {
     apply(otherClassScore, 1, function(sampleRow)
     {
       sampleRow <- sampleRow[abs(sampleRow) > difference]
-      list(sum(sampleRow > 0) > length(sampleRow) / 2, sum(sampleRow > 0) / length(sampleRow))
+      if(length(sampleRow) == 0) # No features have a large enough density difference.
+      {                          # Simply vote for the larger class.
+        largerClass <- names(classesSizes)[which.max(classesSizes)]
+        if(largerClass == levels(classes)[1])
+        {
+          logicalSymbol <- FALSE
+          difference <- -1
+        } else {
+          logicalSymbol <- TRUE
+          difference <- 1
+        }
+        list(unweighted=list(logicalSymbol, difference),
+             weighted=list(logicalSymbol, difference))
+      } else { 
+        list(unweighted=list(sum(sampleRow > 0) > length(sampleRow) / 2, sum(sampleRow > 0) / length(sampleRow)),
+             weighted=list(sum(sampleRow) > 0, sum(sampleRow)))
+      }
     })
   })
-  unweightedIsOther <- lapply(unweightedOther, function(difference) unlist(lapply(difference, "[[", 1)))
-  unweightedOtherScores <- lapply(unweightedOther, function(difference) unlist(lapply(difference, "[[", 2)))
 
-  weightedOther <- lapply(minDifference, function(difference)
-  {
-    weightedOtherClass <- apply(otherClassScore, 1, function(sampleRow)
-    {
-      sampleRow <- sampleRow[abs(sampleRow) > difference]
-      list(sum(sampleRow) > 0, sum(sampleRow))
-    })
-  })
-  weightedIsOther <- lapply(weightedOther, function(difference) unlist(lapply(difference, "[[", 1)))
-  weightedOtherScores <- lapply(weightedOther, function(difference) unlist(lapply(difference, "[[", 2)))  
+  unweightedIsOther <- lapply(other, function(difference) unlist(lapply(difference, function(sample) sample[["unweighted"]][[1]])))
+  unweightedOtherScores <- lapply(other, function(difference) unlist(lapply(difference, function(sample) sample[["unweighted"]][[2]])))
+  weightedIsOther <- lapply(other, function(difference) unlist(lapply(difference, function(sample) sample[["weighted"]][[1]])))
+  weightedOtherScores <- lapply(other, function(difference) unlist(lapply(difference, function(sample) sample[["weighted"]][[2]])))
   
-  unweightedList <- mapply(function(other, scores)
+  predictionsList <- mapply(function(weightVarietyLabels, weightVarietyScores)
   {  
-    predictions <- rep(levels(classes)[1], ncol(test))
-    predictions[other] <- levels(classes)[2]
-    predictions <- factor(predictions, levels = levels(classes))
-    predictions
-    switch(returnType, label = predictions, score = scores,
-           both = data.frame(label = predictions, score = scores))
-  }, unweightedIsOther, unweightedOtherScores, SIMPLIFY = FALSE)
-  weightedList <- mapply(function(other, scores)
-  {  
-    predictions <- rep(levels(classes)[1], ncol(test))
-    predictions[other] <- levels(classes)[2]
-    predictions <- factor(predictions, levels = levels(classes))
-    predictions
-    switch(returnType, label = predictions, score = scores,
-           both = data.frame(label = predictions, score = scores))
-  }, weightedIsOther, weightedOtherScores, SIMPLIFY = FALSE)
-  
-  if(length(unweightedList) == 1)
-  {
-    if(class(unweightedList[[1]]) != "data.frame")
+    mapply(function(other, scores)
     {
-      unweightedList <- unlist(unweightedList)
-      weightedList <- unlist(weightedList)
+      predictions <- rep(levels(classes)[1], ncol(test))
+      predictions[other] <- levels(classes)[2]
+      predictions <- factor(predictions, levels = levels(classes))
+      predictions
+      switch(returnType, label = predictions, score = scores,
+             both = data.frame(label = predictions, score = scores))
+    }, weightVarietyLabels, weightVarietyScores, SIMPLIFY = FALSE)
+  }, list(unweightedIsOther, weightedIsOther),
+  list(unweightedOtherScores, weightedOtherScores), SIMPLIFY = FALSE)
+  
+  if(length(predictionsList[[1]]) == 1) # No minDifference range.
+  {
+    if(class(predictionsList[[1]][[1]]) != "data.frame")
+    {
+      predictionsList <- lapply(predictionsList, unlist)
     } else {
-      unweightedList <- unweightedList[[1]]
-      weightedList <- weightedList[[1]]
+      predictionsList <- lapply(predictionsList, "[[", 1)
     }
   } else {
-    names(unweightedList) <- paste("weighted=unweighted,minDifference=", minDifference, sep = '')
-    names(weightedList) <- paste("weighted=weighted,minDifference=", minDifference, sep = '')
+    names(predictionsList[[1]]) <- paste("weighted=unweighted,minDifference=", minDifference, sep = '')
+    names(predictionsList[[2]]) <- paste("weighted=weighted,minDifference=", minDifference, sep = '')
   }
   
-  switch(weighted, unweighted = unweightedList,
-         weighted = weightedList,
-         both = if(class(unweightedList) == "list")
-           unlist(list(unweightedList, weightedList), recursive = FALSE)
+  switch(weighted, unweighted = predictionsList[[1]],
+         weighted = predictionsList[[2]],
+         both = if(class(predictionsList[[1]]) == "list")
+           unlist(list(predictionsList[[1]], predictionsList[[2]]), recursive = FALSE)
          else
-           list(`weighted=unweighted` = unweightedList, `weighted=weighted` = weightedList)
-         
+           list(`weighted=unweighted` = predictionsList[[1]], `weighted=weighted` = predictionsList[[2]])
   )
 })

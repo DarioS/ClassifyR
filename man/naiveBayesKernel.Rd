@@ -26,7 +26,8 @@
                   If unweighted mode, each features's vote is worth the same. To save
                   computational time, both can be calculated simultaneously.}
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
-                       to vote. Can be a vector of cutoffs.}
+                       to vote. Can be a vector of cutoffs. If no features for a particular sample
+                       have a difference large enough, the class predicted is simply the largest class.}
   \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
