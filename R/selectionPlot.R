@@ -241,7 +241,7 @@ setMethod("selectionPlot", "list",
     selectionPlot <- selectionPlot + ggplot2::coord_flip()
   
   if(rowVariable != "None" || columnVariable != "None")
-    selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"))) + theme(strip.text = element_text(size = fontSizes[4]))
+    selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
   if(plot == TRUE)
     print(selectionPlot)

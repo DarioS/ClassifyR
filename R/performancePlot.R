@@ -10,7 +10,9 @@ setMethod("performancePlot", "list",
                    boxFillColours = NULL,
                    boxLineColouring = c("classificationName", "datasetName", "validation", "None"),
                    boxLineColours = NULL,
-                   yMax = 1, fontSizes = c(24, 16, 12), title = NULL,
+                   rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
+                   columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
+                   yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Classification", yLabel = performanceName,
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE)
 {
@@ -22,6 +24,8 @@ setMethod("performancePlot", "list",
   xVariable <- match.arg(xVariable)
   boxFillColouring <- match.arg(boxFillColouring)
   boxLineColouring <- match.arg(boxLineColouring)
+  rowVariable <- match.arg(rowVariable)
+  columnVariable <- match.arg(columnVariable)  
   if(is.null(performanceName)) stop("Please specify a performance measure to plot.")
   
   performances <- lapply(results, function(result)
@@ -65,6 +69,9 @@ setMethod("performancePlot", "list",
   performancePlot <- performancePlot + geom
   if(rotate90 == TRUE)
     performancePlot <- performancePlot + ggplot2::coord_flip()
+  
+  if(rowVariable != "None" || columnVariable != "None")
+    performancePlot <- performancePlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
   
   if(plot == TRUE)
     print(performancePlot)
