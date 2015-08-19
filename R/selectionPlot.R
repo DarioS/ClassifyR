@@ -3,17 +3,19 @@ setGeneric("selectionPlot", function(results, ...)
 
 setMethod("selectionPlot", "list", 
           function(results,
-                   comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
+                   comparison = c("within", "size", "classificationName", "validation", "datasetName", "selectionName"),
                    referenceLevel = NULL,
                    xVariable = c("classificationName", "datasetName", "validation", "selectionName"),
-                   boxFillColouring = c("classificationName", "datasetName", "validation", "selectionName", "None"),
+                   boxFillColouring = c("classificationName", "size", "datasetName", "validation", "selectionName", "None"),
                    boxFillColours = NULL,
+                   boxFillBinBoundaries = NULL,
+                   setSizeBinBoundaries = NULL,
                    boxLineColouring = c("validation", "classificationName", "datasetName", "selectionName", "None"),
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else "Feature Selection Commonality",
-                   xLabel = "Analysis", yLabel = if(is.null(referenceLevel)) "Pairwise Common Features (%)" else paste("Common Features with", referenceLevel, "(%)"),
+                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
+                   xLabel = "Analysis", yLabel = if(is.null(referenceLevel) && comparison != "size") "Pairwise Common Features (%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -83,6 +85,31 @@ setMethod("selectionPlot", "list",
                  validation = rep(validationText, length(percentOverlaps)),
                  overlap = percentOverlaps)
     }, BPPARAM = parallelParams))
+  } else if(comparison == "size")
+  {
+    plotData <- do.call(rbind, lapply(results, function(result)
+                {
+                  selectedFeatures <- features(result)
+                  setSizes <- sapply(selectedFeatures, length)
+                  validation <- .validationText(result)
+                  data.frame(analysis = rep(result@classificationName, length(setSizes)),
+                             dataset = rep(result@datasetName, length(setSizes)),
+                             selection = rep(result@selectResult@selectionName, length(setSizes)),
+                             validation = rep(validation, length(setSizes)),
+                             size = setSizes)
+                }))
+
+    plotData[, "size"] <- cut(plotData[, "size"], breaks = setSizeBinBoundaries, include.lowest = TRUE)
+    selectionColumns <- c("analysis", "dataset", "selection", "validation", "size", "Freq")
+    selectionSizes <- as.data.frame(table(plotData[, "analysis"], plotData[, "dataset"], plotData[, "selection"], plotData[, "validation"], plotData[, "size"]))
+    colnames(selectionSizes) <- selectionColumns
+
+    plotData <- do.call(rbind, by(selectionSizes, apply(selectionSizes[, c("analysis", "dataset", "selection", "validation")], 1, paste, collapse = '.'),
+                                              function(dataSubset) {
+                                                dataSubset[, "Freq"] <- dataSubset[, "Freq"] / sum(dataSubset[, "Freq"]) * 100
+                                                dataSubset                                                   
+                                              }))
+    plotData[, "Freq"] <- cut(plotData[, "Freq"], breaks = boxFillBinBoundaries, include.lowest = TRUE)
   } else { # Commonality analysis.
     compareIndices <- switch(comparison,
                              classificationName = split(1:length(results),
@@ -172,7 +199,7 @@ setMethod("selectionPlot", "list",
   }
   
   if(is.null(boxFillColours) && boxFillColouring != "None")
-    boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
+    boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"])), size = length(unique(plotData[, "Freq"]))))
   if(is.null(boxLineColours) && boxLineColouring != "None")
     boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
   
@@ -181,7 +208,7 @@ setMethod("selectionPlot", "list",
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(analyses))
   plotData[, "selection"] <- factor(plotData[, "selection"], levels = unique(selections))
   plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(validations))
-  
+
   if(rotate90 == TRUE)
   {
     switch(xVariable, 
@@ -191,14 +218,20 @@ setMethod("selectionPlot", "list",
            selection = plotData[, "selection"] <- factor(plotData[, "selection"], levels = rev(levels(plotData[, "selection"])))
   }
   
-  selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = overlap,
-                          fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL)), environment = environment()) +
-                          ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
-  
-  xData <- switch(xVariable, validation = plotData[, "validation"], datasetName = plotData[, "dataset"], classificationName = plotData[, "analysis"], selectionName = plotData[, "selection"])
-  if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_boxplot()
-  
+  if(comparison != "size")
+  {
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = overlap,
+                            fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL)), environment = environment()) +
+                            ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+                            ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
+    
+    xData <- switch(xVariable, validation = plotData[, "validation"], datasetName = plotData[, "dataset"], classificationName = plotData[, "analysis"], selectionName = plotData[, "selection"])
+    if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_boxplot()
+  } else {
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = size), environment = environment()) +
+                     ggplot2::geom_tile(ggplot2::aes(fill = Freq)) + ggplot2::ggtitle(title) + ggplot2::labs(x = xLabel, y = yLabel) + ggplot2::scale_x_discrete(expand = c(0, 0)) + ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1])) + ggplot2::guides(fill = ggplot2::guide_legend(title = "Frequency (%)"))
+  }
+
   if(!is.null(boxFillColours))
     selectionPlot <- selectionPlot + ggplot2::scale_fill_manual(values = boxFillColours)
   if(!is.null(boxLineColours))
@@ -209,7 +242,7 @@ setMethod("selectionPlot", "list",
   
   if(rowVariable != "None" || columnVariable != "None")
     selectionPlot <- selectionPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"))) + theme(strip.text = element_text(size = fontSizes[4]))
-  
+
   if(plot == TRUE)
     print(selectionPlot)
   

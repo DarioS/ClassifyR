@@ -1,7 +1,7 @@
 \name{selectionPlot}
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
-\title{Plot Pair-wise Overlap of Selected Features}
+\title{Plot Pair-wise Overlap or Selection Size Distribution of Selected Features}
 \description{Pair-wise overlaps can be done for two types of analyses. Firstly, each cross-validation iteration
 can be considered within a single classification. This explores the feature selection stability. Secondly, the
 overlap may be considered between different classification results. This approach compares the feature selection
@@ -9,22 +9,26 @@ commonality between different selection methods. Two types of commonality are po
 the average pair-wise overlap between a level of the comparison factor and the other summary is the pair-wise
 overlap of each level of the comparison factor that is not the reference level against the reference level.
 The overlaps are converted to percentages and plotted as lineplots.
+
+Additionally, a heatmap of selection size frequencies can be made.
        }
 \usage{
   \S4method{selectionPlot}{list}(results,
-                   comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
+                   comparison = c("within", "size", "classificationName", "validation", "datasetName", "selectionName"),
                    referenceLevel = NULL,
                    xVariable = c("classificationName", "datasetName", "validation", "selectionName"),
-                   boxFillColouring = c("classificationName", "datasetName", "validation", "selectionName", "None"),
+                   boxFillColouring = c("classificationName", "size", "datasetName", "validation",
+                                        "selectionName", "None"),
                    boxFillColours = NULL,
+                   boxFillBinBoundaries = NULL, setSizeBinBoundaries = NULL,
                    boxLineColouring = c("validation", "classificationName", "datasetName", "selectionName", "None"),
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12, 16),
-                   title = if(comparison == "within") "Feature Selection Stability" else "Feature Selection Commonality",
+                   title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
                    xLabel = "Analysis",
-                   yLabel = if(is.null(referenceLevel)) "Pairwise Common Features (\%)" else paste("Common Features with", referenceLevel, "(\%)"),
+                   yLabel = if(is.null(referenceLevel) && comparison != "size") "Pairwise Common Features (\%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(\%)"),
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE,
                    parallelParams = bpparam())
 }
@@ -39,9 +43,13 @@ The overlaps are converted to percentages and plotted as lineplots.
   \item{boxFillColouring}{A factor to colour the boxes by.}
   \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}. If \code{NULL},
                      a default palette is used.}
+  \item{boxFillBinBoundaries}{Used only if \code{comparison} is \code{"size"}. A vector of integers, specifying the bin
+                     boundaries of percentages of size bins observed. e.g. 0, 10, 20, 30, 40, 50.}
+  \item{setSizeBinBoundaries}{Used only if \code{comparison} is \code{"size"}. A vector of integers, specifying the bin
+                     boundaries of set size bins. e.g. 50, 100, 150, 200, 250.}                         
   \item{boxLineColouring}{A factor to colour the box lines by.}
   \item{boxLineColours}{A vector of colours, one for each level of \code{boxLineColouring}. If \code{NULL},
-                     a default palette is used.}  
+                     a default palette is used.}
   \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}     
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of boxplots.}
   \item{yMax}{The maximum value of the percentage to plot.}
@@ -59,7 +67,7 @@ The overlaps are converted to percentages and plotted as lineplots.
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{
-  Possible values for characteristics are \code{"datasetName"}, \code{"classificationName"},
+  Possible values for characteristics are \code{"datasetName"}, \code{"classificationName"}, \code{"size"},
   \code{"selectionName"}, and \code{"validation"}. If \code{"None"}, then that graphical element is not used.
   
   If \code{comparison} is \code{"within"}, then the feature selection overlaps are compared within a particular
@@ -83,10 +91,11 @@ The overlaps are converted to percentages and plotted as lineplots.
   experimental studies have a highly overlapping feature selection pattern.
   
   Calculating all pair-wise set overlaps can be time-consuming. This stage can be done on multiple CPUs by
-  providing the relevant options to \code{parallelParams}.
+  providing the relevant options to \code{parallelParams}. The percentage is calculated as the intersection
+  of two sets of features divided by the union of the sets, multiplied by 100.
   
-  The percentage is calculated as the intersection of two sets of features divided by the union of the sets,
-  multiplied by 100.
+  For the selection size mode, \code{boxFillBins} is used to create bins which include the lowest value for
+  the first bin, and the highest value for the last bin using \code{\link{cut}}.
 }
 \value{
   An object of class \code{ggplot} and a plot on the current graphics device, if \code{plot} is \code{TRUE}.
@@ -113,6 +122,9 @@ The overlaps are converted to percentages and plotted as lineplots.
                             list(predicted), actual, validation = list("fold", 2, 2))
                             
   selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName")
+  
+  selectionPlot(list(result1, result2), comparison = "size", xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "size", boxFillBinBoundaries = seq(0, 100, 10),
+  setSizeBinBoundaries = seq(0, 25, 5), boxLineColouring = "None")
   
   oneRanking <- c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)
   otherRanking <- c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)
