@@ -6,12 +6,12 @@
        }
 \usage{
   \S4method{performancePlot}{list}(results,
-                   aggregate = FALSE,
-                   xVariable = c("classificationName", "datasetName", "validation"),
+                   aggregate = character(),
+                   xVariable = c("classificationName", "datasetName", "selectionName", "validation"),
                    performanceName = NULL,
-                   boxFillColouring = c("classificationName", "datasetName", "validation", "None"),
+                   boxFillColouring = c("classificationName", "datasetName", "selectionName", "validation", "None"),
                    boxFillColours = NULL,
-                   boxLineColouring = c("classificationName", "datasetName", "validation", "None"),
+                   boxLineColouring = c("classificationName", "datasetName", "selectionName", "validation", "None"),
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
@@ -21,9 +21,9 @@
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
-  \item{aggregate}{If TRUE, and there are multiple values of a particular performance measure stored,
-                   such as when bootstrap resampling is done, the performance measure is summarised
-                   to a single number by considering all predictions simultaneously.}
+  \item{aggregate}{A character vector of the levels of \code{xVariable} to aggregate to a single number
+                   by taking the mean. This is partciularly meaningful when the cross-validation is leave-k-out,
+                   when k is small.}
   \item{xVariable}{The factor to make separate boxes for.}
   \item{performanceName}{The name of the performance measure to make comparisons of. This is
                          one of the names printed in the Performance Measures field when a
@@ -60,15 +60,22 @@
 \author{Dario Strbenac}
 
 \examples{
-  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                          label = rep(c("Healthy", "Cancer"), each = 50))
+  predicted <- list(data.frame(sample = sample(10, 20, replace = TRUE),
+                              label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
-                            list(predicted), actual, list("fold", 100, 5))
+                            predicted, actual, list("fold", 2, 2))
   result1 <- calcPerformance(result1, "f")
-  predicted[, "label"] <- sample(predicted[, "label"])
+  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+                          label = rep(c("Healthy", "Cancer"), each = 50))
   result2 <- ClassifyResult("Example", "Differential Variability", "F-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
                             list(predicted), actual, validation = list("leave", 1))
   result2 <- calcPerformance(result2, "f")                            
-  performancePlot(list(result1, result2), performanceName = "Precision-Recall F measure", title = "Comparison")
+  performancePlot(list(result1, result2), performanceName = "Precision-Recall F measure", title = "Comparison", boxLineColouring = "None")
 }

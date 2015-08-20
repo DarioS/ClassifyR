@@ -100,9 +100,7 @@ setMethod("selectionPlot", "list",
                 }))
 
     plotData[, "size"] <- cut(plotData[, "size"], breaks = setSizeBinBoundaries, include.lowest = TRUE)
-    selectionColumns <- c("analysis", "dataset", "selection", "validation", "size", "Freq")
-    selectionSizes <- as.data.frame(table(plotData[, "analysis"], plotData[, "dataset"], plotData[, "selection"], plotData[, "validation"], plotData[, "size"]))
-    colnames(selectionSizes) <- selectionColumns
+    selectionSizes <- as.data.frame(table(plotData[, 1:5]))
 
     plotData <- do.call(rbind, by(selectionSizes, apply(selectionSizes[, c("analysis", "dataset", "selection", "validation")], 1, paste, collapse = '.'),
                                               function(dataSubset) {
