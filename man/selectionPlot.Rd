@@ -26,9 +26,9 @@ Additionally, a heatmap of selection size frequencies can be made.
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12, 16),
-                   title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
+                   title = if(comparison[1] == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
                    xLabel = "Analysis",
-                   yLabel = if(is.null(referenceLevel) && comparison != "size") "Pairwise Common Features (\%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(\%)"),
+                   yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (\%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(\%)"),
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE,
                    parallelParams = bpparam())
 }

@@ -23,9 +23,9 @@ The overlaps are converted to percentages and plotted as lineplots.
                             rowVariable = c("None", "datasetName", "classificationName", "validation", "selectionName"),
                             columnVariable = c("classificationName", "datasetName", "validation", "selectionName", "None"),
                             yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16),
-                            title = if(comparison == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
+                            title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
                             xLabelPositions = seq(10, 100, 10),
-                            yLabel = if(is.null(referenceLevel)) "Average Pairwise Common Features (\%)" else paste("Average Common Features with", referenceLevel, "(\%)"),
+                            yLabel = if(is.null(referenceLevel)) "Average Common Features (\%)" else paste("Average Common Features with", referenceLevel, "(\%)"),
                             plot = TRUE, parallelParams = bpparam())
 }
 \arguments{

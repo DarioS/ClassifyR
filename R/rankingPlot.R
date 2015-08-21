@@ -12,9 +12,9 @@ setMethod("rankingPlot", "list",
                    rowVariable = c("None", "datasetName", "classificationName", "validation", "selectionName"),
                    columnVariable = c("classificationName", "datasetName", "validation", "selectionName", "None"),
                    yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16),
-                   title = if(comparison == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
+                   title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
                    xLabelPositions = seq(10, 100, 10),
-                   yLabel = if(is.null(referenceLevel)) "Average Pairwise Common Features (%)" else paste("Average Common Features with", referenceLevel, "(%)"),
+                   yLabel = if(is.null(referenceLevel)) "Average Common Features (%)" else paste("Average Common Features with", referenceLevel, "(%)"),
                    plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -86,13 +86,14 @@ setMethod("rankingPlot", "list",
                  overlap = averageOverlap)
     }, BPPARAM = parallelParams))
   } else { # Commonality analysis.
-    compareIndices <- switch(comparison,
-                             classificationName = split(1:length(results),
-                                                        paste(validations, datasets, selections, sep = " ")),
-                             validation = split(1:length(results), paste(analyses, datasets, selections, sep = " ")),
-                             datasetName = split(1:length(results), paste(analyses, validations, selections, sep = " ")),
-                             selectionName = split(1:length(results), paste(validations, datasets, sep = " "))
-                       )
+    groupingVariablesValues <- setdiff(c(lineColourVariable, pointTypeVariable, rowVariable, columnVariable), comparison)
+    groupingFactor <- paste(if("datasetName" %in% groupingVariablesValues) datasets,
+                            if("classificationName" %in% groupingVariablesValues) analyses,
+                            if("selectionName" %in% groupingVariablesValues) selections,
+                            if("validation" %in% groupingVariablesValues) validations,
+                            sep = " ")
+    if(length(groupingFactor) == 0) groupingFactor <- rep("None", length(results))
+    compareIndices <- split(1:length(results), groupingFactor)
     
     plotData <- do.call(rbind, unname(unlist(bplapply(compareIndices, function(indicesSet)
     {
@@ -101,8 +102,8 @@ setMethod("rankingPlot", "list",
         indiciesCombinations <- lapply(1:length(indicesSet),
                                        function(index) c(indicesSet[index], indicesSet[-index]))
       } else { # Compare each factor level other than the reference level to the reference level.
-        indiciesCombinations <- list(c(indicesSet[match(referenceLevel, referenceVar)],
-                                       indicesSet[setdiff(length(indicesSet), match(referenceLevel, referenceVar))]))
+        indiciesCombinations <- list(c(indicesSet[match(referenceLevel, referenceVar[indicesSet])],
+                                       indicesSet[setdiff(1:length(indicesSet), match(referenceLevel, referenceVar[indicesSet]))]))
       }
 
       unname(lapply(indiciesCombinations, function(indiciesCombination)
@@ -149,21 +150,21 @@ setMethod("rankingPlot", "list",
             validationText <- "No cross-validation"
           }
         } else { # Each other level has been compared to the reference level of the factor.
-          overlapToOther <- as.numeric(overlapToOther) # Convert matrix of overlaps to a vector.
-          datasetText <- rep(sapply(otherDatasets, function(dataset) dataset@datasetName), each = length(topRanked))
-          selectionText <- rep(sapply(otherDatasets, function(dataset) dataset@selectionName),
-                                                                       each = length(topRanked))
+          datasetText <- rep(sapply(otherDatasets, function(dataset) dataset@datasetName), each = nrow(overlapToOther))
+          selectionText <- rep(sapply(otherDatasets, function(dataset) if(resultsType == "classification") dataset@selectResult@selectionName else dataset@selectionName), each = nrow(overlapToOther))
+          
           if(resultsType == "classification")
           {
             analysisText <- rep(sapply(otherDatasets, function(dataset) dataset@classificationName),
-                                each = length(topRanked))
+                                each = nrow(overlapToOther))
             validationText <- rep(sapply(otherDatasets, function(dataset) .validationText(dataset)),
-                                  each = length(topRanked))
+                                  each = nrow(overlapToOther))
           } else { # For standalone feature selection, there is no classification.
             analysisText <- "No classification"
             validationText <- "No cross-validation"
           }
         }
+        overlapToOther <- as.numeric(overlapToOther) # Convert matrix of overlaps to a vector. UPDATE
         topRankedAll <- rep(topRanked, length.out = length(overlapToOther))
         
         data.frame(dataset = datasetText,
@@ -175,6 +176,7 @@ setMethod("rankingPlot", "list",
       }))
     }, BPPARAM = parallelParams), recursive = FALSE)))
   }
+  rownames(plotData) <- NULL # Easier for viewing during maintenance.
 
   # Order factors in which they appeared in the user's list.
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(datasets))
@@ -184,7 +186,7 @@ setMethod("rankingPlot", "list",
   
   if(is.null(lineColours) && lineColourVariable != "None")
     lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
-
+  
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap,
                           colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL),
                           shape = switch(pointTypeVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL)), environment = environment()) +

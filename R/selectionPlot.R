@@ -14,8 +14,8 @@ setMethod("selectionPlot", "list",
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
-                   xLabel = "Analysis", yLabel = if(is.null(referenceLevel) && comparison != "size") "Pairwise Common Features (%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(%)"),
+                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison[1] == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
+                   xLabel = "Analysis", yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -42,9 +42,6 @@ setMethod("selectionPlot", "list",
       result
     })
   }
-  
-  if(!is.null(referenceLevel) && !(referenceLevel %in% referenceVar))
-    stop("Reference level is neither a level of the comparison factor nor is it NULL.")
 
   if(resultsType == "classification")
   {
@@ -57,10 +54,13 @@ setMethod("selectionPlot", "list",
     validations <- rep("No cross-validation", length(results))
   }
   datasets <- sapply(results, function(result) result@datasetName)
+  
   referenceVar <- switch(comparison, classificationName = analyses,
                          selectionName = selections,
                          datasetName = datasets,
                          validation = validations)
+  if(!is.null(referenceLevel) && !(referenceLevel %in% referenceVar))
+    stop("Reference level is neither a level of the comparison factor nor is it NULL.")
   
   if(comparison == "within")
   {
@@ -109,13 +109,14 @@ setMethod("selectionPlot", "list",
                                               }))
     plotData[, "Freq"] <- cut(plotData[, "Freq"], breaks = boxFillBinBoundaries, include.lowest = TRUE)
   } else { # Commonality analysis.
-    compareIndices <- switch(comparison,
-                             classificationName = split(1:length(results),
-                                                        paste(validations, datasets, selections, sep = " ")),
-                             validation = split(1:length(results), paste(analyses, datasets, selections, sep = " ")),
-                             datasetName = split(1:length(results), paste(analyses, validations, selections, sep = " ")),
-                             selectionName = split(1:length(results), paste(validations, datasets, sep = " "))
-                      )
+    groupingVariablesValues <- setdiff(c(xVariable, boxFillColouring, boxLineColouring, rowVariable, columnVariable), comparison)
+    groupingFactor <- paste(if("datasetName" %in% groupingVariablesValues) datasets,
+                            if("classificationName" %in% groupingVariablesValues) analyses,
+                            if("selectionName" %in% groupingVariablesValues) selections,
+                            if("validation" %in% groupingVariablesValues) validations,
+                            sep = " ")
+    if(length(groupingFactor) == 0) groupingFactor <- rep("None", length(results))
+    compareIndices <- split(1:length(results), groupingFactor)
     
     plotData <- do.call(rbind, bplapply(compareIndices, function(indicesSet)
     {
@@ -124,8 +125,8 @@ setMethod("selectionPlot", "list",
         indiciesCombinations <- lapply(1:length(indicesSet),
                                        function(index) c(indicesSet[index], indicesSet[-index]))
       } else { # Compare each factor level other than the reference level to the reference level.
-        indiciesCombinations <- list(c(indicesSet[match(referenceLevel, referenceVar)],
-                                       indicesSet[setdiff(length(indicesSet), match(referenceLevel, referenceVar))]))
+        indiciesCombinations <- list(c(indicesSet[match(referenceLevel, referenceVar[indicesSet])],
+                                       indicesSet[setdiff(1:length(indicesSet), match(referenceLevel, referenceVar[indicesSet]))]))
       }
 
       do.call(rbind, unname(lapply(indiciesCombinations, function(indiciesCombination)
@@ -155,7 +156,7 @@ setMethod("selectionPlot", "list",
         
         if(is.null(referenceLevel))
         {
-          overlapToOther <- mean(unlist(overlapToOther))
+          overlapToOther <- unlist(overlapToOther)
           datasetText <- rep(aDataset@datasetName, length(overlapToOther))
           
           if(resultsType == "classification")
@@ -169,17 +170,16 @@ setMethod("selectionPlot", "list",
             validationText <- "No cross-validation"
           }
         } else { # Each other level has been compared to the reference level of the factor.
-          
-          datasetText <- rep(sapply(otherDatasets, function(dataset) dataset@datasetName), each = nrow(overlapToOther))
-          selectionText <- rep(sapply(otherDatasets, function(dataset) dataset@selectionName),
-                               each = nrow(overlapToOther))
+          otherSelections <- sapply(otherDatasets, length)
+          datasetText <- rep(sapply(otherDatasets, function(dataset) dataset@datasetName), otherSelections)
+          selectionText <- rep(sapply(otherDatasets, function(dataset) if(resultsType == "classification") dataset@selectResult@selectionName else dataset@selectionName), otherSelections)
           
           if(resultsType == "classification")
           {
             analysisText <- rep(sapply(otherDatasets, function(dataset) dataset@classificationName),
-                                each = nrow(overlapToOther))
+                                otherSelections)
             validationText <- rep(sapply(otherDatasets, function(dataset) .validationText(dataset)),
-                                  each = nrow(overlapToOther))
+                                  otherSelections)
           } else { # For standalone feature selection, there is no classification.
             analysisText <- "No classification"
             validationText <- "No cross-validation"
@@ -195,6 +195,7 @@ setMethod("selectionPlot", "list",
       })))
     }, BPPARAM = parallelParams))
   }
+  rownames(plotData) <- NULL # Easier for viewing during maintenance.
   
   if(is.null(boxFillColours) && boxFillColouring != "None")
     boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"])), size = length(unique(plotData[, "Freq"]))))
