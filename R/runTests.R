@@ -44,12 +44,12 @@ setMethod("runTests", c("ExpressionSet"),
         message("Processing sample set ", sampleNumber, '.')
       if(bootMode == "fold")
       {
-        lapply(1:length(sampleFolds), function(foldIndex)
+        bplapply(1:length(sampleFolds), function(foldIndex)
         {
           runTest(expression, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
-        })
+        }, BPPARAM = parallelParams)
       } else { # Split mode.
         runTest(expression, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
