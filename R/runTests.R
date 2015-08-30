@@ -38,23 +38,23 @@ setMethod("runTests", c("ExpressionSet"),
       samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
     }
 
-    results <- mapply(function(sampleFolds, sampleNumber)
+    results <- bpmapply(function(sampleFolds, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
       if(bootMode == "fold")
       {
-        bplapply(1:length(sampleFolds), function(foldIndex)
+        lapply(1:length(sampleFolds), function(foldIndex)
         {
           runTest(expression, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
-        }, BPPARAM = parallelParams)
+        })
       } else { # Split mode.
         runTest(expression, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
-    }, samplesFolds, as.list(1:length(samplesFolds)), SIMPLIFY = FALSE)
+    }, samplesFolds, as.list(1:length(samplesFolds)), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else # leave k out.
   {
     testSamples <- as.data.frame(combn(ncol(expression), leave))
