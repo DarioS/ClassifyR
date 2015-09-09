@@ -32,10 +32,11 @@ setMethod("performancePlot", "list",
                          {
                            if(!performanceName %in% names(result@performance))
                              stop("Performance measure not calculated for ", result@classificationName)
-    
-                           if(slot(result, xVariable) %in% aggregate) mean(result@performance[[performanceName]])
+                           if(xVariable == "selectionName") slotValue <- slot(slot(result, "selectResult"), "selectionName")
+                           else slotValue <- slot(result, xVariable)
+                           if(slotValue %in% aggregate) mean(result@performance[[performanceName]])
                            else result@performance[[performanceName]]
-                         })
+  })
   performanceLengths <- sapply(performances, length)
   
   plotData <- data.frame(dataset = rep(sapply(results, function(result) result@datasetName), performanceLengths),
