@@ -110,7 +110,7 @@ Here, a feature selection based on a ranked list from limma followed by a DLDA c
 ```{r, tidy = FALSE}
 library(sparsediscrim)
 DEresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
-                      params = list(SelectParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
                                     TrainParams(dlda, TRUE, doesTests = FALSE),
                                     PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])),
                       parallelParams = bpparam(), verbose = 1)
@@ -165,7 +165,7 @@ Fisher's LDA is suitable for the absolute value of expression values subtracted 
 ```{r, tidy = FALSE}
 DVresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Variability",
                       validation = "bootstrap", resamples = 2, folds = 4,
-                      params = list(SelectParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
                                     TransformParams(subtractFromLocation, location = "median"),
                                     TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
                                     PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, returnType = "both")),
@@ -211,11 +211,14 @@ There are also two classifiers included :
 Kullback-Leibler divergence will be used for feature selection and a naive Bayes classifier will fit a density to expression values of a gene, for each class. The prediction is then the differences in density between classes, scaled for the number of samples that were in each class in the training set, summed for all selected probes.
 
 ```{r, tidy = FALSE}
+dParams <- list(bw = "SJ", n = 4096, from = expression(min(featureValues)),
+                to = expression(max(featureValues)))
 DDresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
                       validation = "bootstrap", resamples = 2, folds = 2,
-                      params = list(SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")),
+                      params = list(SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
                                     TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
-                                    PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, weighted = "weighted", returnType = "both")),
+                                    PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, weighted = "weighted", returnType = "both",
+                                                  densityParameters = dParams)),
                                 verbose = 1)
 DDresults
 ```
@@ -225,15 +228,15 @@ Since *naiveBayesKernel* does both training and testing, an empty function is sp
 The top five probes selected for the first resampling and first fold are visualised.
 
 ```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-DDplots <- plotFeatureClasses(ovarSet, features(DDresults)[[1]][[1]][1:5])
+DDplots <- plotFeatureClasses(ovarSet, features(DDresults[[1]])[[1]][[1]][1:5])
 ```
 
-Calculate the balanced error rate for differential distribution.
+Calculate the balanced error rate for differential distribution using the crossover point distance class weighting.
 
 ```{r}
-DDresults <- calcPerformance(DDresults, "balanced")
-DDresults
-performance(DDresults)
+DDresults[["weight=crossover distance"]] <- calcPerformance(DDresults[["weight=crossover distance"]], "balanced")
+DDresults[["weight=crossover distance"]]
+performance(DDresults[["weight=crossover distance"]])
 ```
 
 The error rates are higher than for deviation or expression.
@@ -251,7 +254,7 @@ errorPlot <- errorMap(resultsList)
 The *performancePlot* function allows the comparison of overall performance measures, such as accuracy and error rate.
 
 ```{r, fig.width = 6.8, fig.height = 5}
-errorBoxes <- performancePlot(list(DEresults, DVresults, DDresults),
+errorBoxes <- performancePlot(list(DEresults, DVresults, DDresults[["weight=crossover distance"]]),
                               performanceName = "Balanced Error Rate",
                               boxFillColouring  = "None", boxLineColouring = "None",
                               title = "Errors Across Classification Types")
@@ -294,7 +297,7 @@ Once a cross-validation classification is complete, the usefulness of the featur
 Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier and Fisher discriminant analysis used previously had the *returnType* variable set to *"both"*, so labels and scores were both stored in the classification result. Setting *returnType* to *"score"* is also sufficient. Many existing classifiers in other R package also have an option that allows a score or probability to be calculated.
 
 ```{r, fig.height = 5, fig.width = 6}
-ROCcurves <- ROCplot(list(DVresults, DDresults))
+ROCcurves <- ROCplot(list(DVresults, DDresults[["weight=crossover distance"]]))
 ```
 
 ### Parameter Tuning

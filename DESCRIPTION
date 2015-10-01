@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for two-class classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 1.3.16
-Date: 2015-09-09
+Version: 1.3.17
+Date: 2015-09-30
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -13,7 +13,7 @@ Depends: R (>= 3.0.3), methods, Biobase, BiocParallel
 Imports: locfit, ROCR, grid
 Suggests: limma, edgeR, car, Rmixmod, ggplot2, gridExtra,
         BiocStyle, pamr, sparsediscrim, PoiClaClu, curatedOvarianData,
-        parathyroidSE, knitr, klaR, gtable, scales, e1071, rmarkdown
+        parathyroidSE, knitr, klaR, gtable, scales, e1071, rmarkdown, IRanges
 Description: The software formalises a framework for classification in R.
              There are four stages. Data transformation, feature selection,
              and prediction. The requirements of variable types and names are

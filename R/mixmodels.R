@@ -54,8 +54,11 @@ setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 })
 
 setMethod("mixModelsTest", c("list", "ExpressionSet"),
-          function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
+          function(models, test, densityXvalues = 1024,
+                   weighted = c("both", "unweighted", "weighted"),
+                   weight = c("both", "height difference", "crossover distance"),
+                   minDifference = 0, tolerance = 0.01,
+                   returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
   returnType <- match.arg(returnType)
@@ -65,13 +68,17 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
   if(verbose == 3)
     message("Predicting using normal mixtures.")
   
-  otherClassScore <- mapply(function(geneExpr, oneClassModel, otherClassModel)
+  otherClassScore <- mapply(function(featureValues, oneClassModel, otherClassModel)
                      {
+    browser()
+                       featureValues <- c(oneClassModel@data, otherClassModel@data)
+                       xValues <- seq(min(featureValues), max(featureValues), length.out = densityXvalues)
+                       # Convert to a density, so the crossover points can be calculated.
                        classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
                                       {
                                         Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
                                         {
-                                          model@bestResult@parameters@proportions[index] * dnorm(geneExpr, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
+                                          model@bestResult@parameters@proportions[index] * dnorm(featureValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
                                         }))
                                       })
                        models[[2]][[2]] * classScores[[2]] - models[[1]][[2]] * classScores[[1]]

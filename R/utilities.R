@@ -86,7 +86,7 @@ setOldClass("pamrtrained")
   initialClass <- class(expression)
   if(class(expression) != "list")
     expression <- list(data = expression)
-  
+
   trained <- mapply(function(expressionVariety, variety)
   {
     classes <- pData(expressionVariety)[, "class"]
@@ -104,8 +104,10 @@ setOldClass("pamrtrained")
       individiualParams <- lapply(multiplierParams, '[', 2)
       names(individiualParams) <- sapply(multiplierParams, '[', 1)
       individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
-      changeTrain <- intersect(names(individiualParams), names(trainParams@otherParams))
-      changePredict <- intersect(names(individiualParams), names(predictParams@otherParams))
+      trainFormals <- tryCatch(names(.methodFormals(trainParams@classifier@generic)), warning = function(warn) {names(formals(trainParams@classifier))})
+      predictFormals <- tryCatch(names(formals(predictParams@predictor)), warning = function(warn) {tryCatch(names(.methodFormals(predictParams@predictor)), character(0))}) 
+      changeTrain <- intersect(names(individiualParams), trainFormals)
+      changePredict <- intersect(names(individiualParams), predictFormals)
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
       predictParams@otherParams[changePredict] <- individiualParams[changePredict]
     }
@@ -218,7 +220,7 @@ setOldClass("pamrtrained")
     } else { # Some classifiers do training and testing with a single function.
       paramList <- append(paramList, list(expressionTest))
       if(length(predictParams@otherParams) > 0)
-        paramList <- c(paramList, predictParams@otherParams)
+        paramList <- c(paramList, trainParams@otherParams, predictParams@otherParams)
       paramList <- c(paramList, verbose = verbose)
             
       if(is.null(tuneCombinations))
@@ -402,7 +404,7 @@ setOldClass("pamrtrained")
       performanceValues
     }
   })
-  
+
   if(class(performances) == "numeric")
     performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
 
@@ -470,4 +472,34 @@ setOldClass("pamrtrained")
     error = function(error) {
       formals(f)
     })
-} 
+}
+
+.densityCrossover <- function(aDensity, anotherDensity, difference = 0.01)
+{
+  requireNamespace("IRanges", quietly = TRUE)
+  if(!all(aDensity[['x']] == anotherDensity[['x']]))
+    stop("x positions are not the same for the two density variables.")
+  consideredPositions <- which(aDensity[['y']] > difference & anotherDensity[['y']] > difference)
+  allDifferences <- abs(aDensity[['y']][consideredPositions] - anotherDensity[['y']][consideredPositions])
+  crosses <- which(allDifferences < difference)
+  
+  if(length(crosses) > 0)
+  {
+    crossesGroups <- as.list(IRanges::reduce(IRanges::IRanges(crosses, width = 1)))
+    indices <- unlist(lapply(crossesGroups, function(group)
+                      group[which.min(allDifferences[group])]))
+    aDensity[['x']][consideredPositions][indices]
+  } else { # Densities are completely separated.
+    allDifferences <- abs(aDensity[['y']] - anotherDensity[['y']])
+    crosses <- which(allDifferences < difference)
+    crossesGroups <- as.list(IRanges::reduce(IRanges::IRanges(crosses, width = 1)))
+    indices <- unlist(lapply(crossesGroups, function(group) 
+                      {
+                        if(min(group) == 1 || max(group) == length(allDifferences)) # Edges of distributions. Ignore.
+                          NULL
+                        else 
+                          round(median(group[which(allDifferences[group] == min(allDifferences[group]))]))
+                      }))
+    aDensity[['x']][indices]
+  }
+}
