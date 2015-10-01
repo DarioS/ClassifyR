@@ -14,7 +14,9 @@
   \S4method{mixModelsTrain}{ExpressionSet}(expression, ..., verbose = 3)
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
-            weighted = c("both", "unweighted", "weighted"), minDifference = 0,
+            weighted = c("both", "unweighted", "weighted"),
+            weight = c("both", "height difference", "crossover distance"),
+            densityXvalues = 1024, minDifference = 0, tolerance = 0.01,
             returnType = c("label", "score", "both"), verbose = 3)  
 }
 \arguments{
@@ -28,9 +30,23 @@
   \item{weighted}{In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each features's vote is worth the same. To save
                   computational time, both can be calculated simultaneously.}
-  \item{minDifference}{The minimum difference in densities for a feature to be allowed
-                       to vote. Can be a vector of cutoffs. If no features for a particular sample
-                       have a difference large enough, the class predicted is simply the largest class.}
+  \item{weight}{The type of weight to calculate. For \code{"height difference"}, the weight of
+                each prediction is equal to the sum of the verical distances for all of the
+                mixture components within one class subtracted from the sum of the components of
+                the other class, summed for each value of x. For \code{"crossover distance"},
+                the x positions where two mixture densities cross is firstly calculated.
+                The predicted class is the class with the highest mixture sum at the
+                particular value of x and the weight is the distance of x from the
+                nearest density crossover point.}
+  \item{densityXvalues}{Only relevant when \code{weight} is \code{"crossover distance"}. The number of
+                        equally-spaced locations at which to calculate y values for each mixture density.}
+  \item{minDifference}{The minimum difference in sums of mixture densities within each class for a
+                       feature to be allowed to vote. Can be a vector of cutoffs. If no features for a
+                       particular sample have a difference large enough, the class predicted is
+                       simply the largest class.}
+  \item{tolerance}{Only relevant when \code{weight} is \code{"crossover distance"}. Absolute differences in
+                   the sums of y values of two densities of this magnitude or smaller cause
+                   the densities at the corresponding x values to be considered as overlapping.}            
   \item{...}{For the training or testing function with \code{\link{matrix}} dispatch,
              arguments passed to the function with \code{\link{ExpressionSet}} dispatch.
              For the training function with \code{\link{ExpressionSet}} dispatch,
@@ -48,13 +64,20 @@
                  A higher number will produce more messages.}
 }
 \details{
-  For weighted voting, the difference between probability density, scaled for the number
-  of samples of each class used in training, is summed for all features. For unweighted voting,
-  each feature votes based on the scaled density difference with the same strength.
-  
-  For unweighted classification, the score is the number of features which voted for the second class,
-  divided by the features which voted. For weighted classification, the score is the sum of scaled
-  differences in densities.  
+  If \code{weighted} is \code{TRUE}, then a sample's predicted class is the class with
+  the largest sum of weights, scaled for the number of samples in
+  the training data of each class. Otherwise, when \code{weighted} is \code{FALSE},
+  each feature has an equal vote, and votes for the class with the largest weight, scaled for
+  class sizes in the training set.
+
+  If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
+  distance between y values of the two mixture densities at every x value. If the y values are sufficiently close,
+  the corresponding x values added to a candidate list. Consecutive x values are grouped, and the x value
+  in each group that has with the smallest distance is chosen as the representative location of
+  the crossover point. Only y values that are \code{tolerance} or greater are considered in this first stage.
+  If no crossover points are found, the y values below \code{tolerance} are considered, except for those at the
+  leftmost or rightmost region of the range of the densities. This is necessary when the densities
+  are completely separated.
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.

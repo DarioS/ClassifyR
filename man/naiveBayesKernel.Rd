@@ -33,9 +33,9 @@
                   computational time, both can be calculated simultaneously.}
   \item{weight}{The type of weight to calculate. For \code{"height difference"}, the weight of each prediction
                 is equal to the verical distance between two densities, for a particular value of x. For
-                \code{"height difference"}, the x positions where two densities cross is firstly calculated.
+                \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
-                the weight is the distance of x from the nearest density crossover point.}               
+                the weight is the distance of x from the nearest density crossover point.}              
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
@@ -56,10 +56,6 @@
   each feature has an equal vote, and votes for the class with the largest weight,
   scaled for class sizes in the training set.
   
-  For unweighted classification, the score is the number of features which voted for the second class,
-  divided by the features which voted. For weighted classification, the score is the sum of scaled
-  differences of second class densities to first class densities.
-  
   The variable name of each feature's measurements in the iteration over all features is \code{featureValues}. 
   This is important to know if each feature's measurements need to be referred to in the specification of
   \code{densityParameters}, such as for specifying the range of x values of the density function to be computed.
@@ -67,7 +63,8 @@
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
   distance between y values of the two densities at every x value. If the y values are sufficiently close, the
   corresponding x values added to a candidate list. Consecutive x values are grouped, and the x value in each group
-  that has with the smallest distance is chosen as the representative location of the crossover point. Only y values   that are \code{tolerance} or greater are considered in this first stage. If no crossover points are found,
+  that has with the smallest distance is chosen as the representative location of the crossover point. Only y
+  values that are \code{tolerance} or greater are considered in this first stage. If no crossover points are found,
   the y values below \code{tolerance} are considered, except for those at the leftmost or rightmost region of
   the range of the densities. This is necessary when the densities are completely separated.
 }
