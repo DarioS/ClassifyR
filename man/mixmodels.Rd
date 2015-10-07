@@ -15,7 +15,7 @@
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
             weighted = c("both", "unweighted", "weighted"),
-            weight = c("both", "height difference", "crossover distance"),
+            weight = c("all", "height difference", "crossover distance", "sum differences"),
             densityXvalues = 1024, minDifference = 0, tolerance = 0.01,
             returnType = c("label", "score", "both"), verbose = 3)  
 }
@@ -78,6 +78,9 @@
   If no crossover points are found, the y values below \code{tolerance} are considered, except for those at the
   leftmost or rightmost region of the range of the densities. This is necessary when the densities
   are completely separated.
+  
+  Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
+  differentially expressed and differentially variable.  
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.

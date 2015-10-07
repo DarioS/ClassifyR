@@ -13,7 +13,7 @@
             densityParameters = list(bw = "SJ", n = 1024, from = expression(min(featureValues)),
                                                           to = expression(max(featureValues))),
             weighted = c("both", "unweighted", "weighted"),
-            weight = c("both", "height difference", "crossover distance"),
+            weight = c("all", "height difference", "crossover distance", "sum differences"),
             minDifference = 0, tolerance = 0.01, returnType = c("label", "score", "both"), verbose = 3)
 }
 \arguments{
@@ -35,7 +35,9 @@
                 is equal to the verical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
-                the weight is the distance of x from the nearest density crossover point.}              
+                the weight is the distance of x from the nearest density crossover point. For
+                \code{"sum differences"}, the weight is the sum of the weights calculated by both types
+                of distances.}              
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
@@ -67,6 +69,9 @@
   values that are \code{tolerance} or greater are considered in this first stage. If no crossover points are found,
   the y values below \code{tolerance} are considered, except for those at the leftmost or rightmost region of
   the range of the densities. This is necessary when the densities are completely separated.
+  
+  Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
+  differentially expressed and differentially variable.
 }
 \value{
   A vector or list of class prediction information, as long as the number of samples in the test data,

@@ -17,7 +17,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                    densityParameters = list(bw = "SJ", n = 1024, from = expression(min(featureValues)),
                                                                  to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
-                   weight = c("both", "height difference", "crossover distance"),
+                   weight = c("all", "height difference", "crossover distance", "sum differences"),
                    minDifference = 0, tolerance = 0.01, returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
@@ -62,10 +62,13 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, densities[1], splines[1], as.data.frame(t(test))[1])
+    }, densities, splines, as.data.frame(t(test)))
 
-    posteriorsList[[1]] <- t(posteriorsHorizontal)
-    names(posteriorsList) = "crossover distance"
+    if(weight != "sum differences")
+    {
+      posteriorsList[[1]] <- t(posteriorsHorizontal)
+      names(posteriorsList) = "crossover distance"
+    }
   }
   
   if(weight != "crossover distance") # Calculate the height difference.
@@ -78,9 +81,15 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
     }, densities, splines, as.data.frame(t(test)))
     
-    posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
+    if(weight != "sum differences")
+      posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
   }
   
+  if(weight %in% c("sum differences", "all")) # Sum of the horizontal and vertical distances.
+  {
+    posteriorsList <- c(posteriorsList, `sum differences` = list(t(posteriorsHorizontal) + t(posteriorsVertical)))
+  }
+
   if(verbose == 3)
   {
     switch(returnType, label = ,
@@ -132,7 +141,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
   
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
+  if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
 

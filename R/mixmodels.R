@@ -55,7 +55,7 @@ setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 
 setMethod("mixModelsTest", c("list", "ExpressionSet"),
           function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   weight = c("both", "height difference", "crossover distance"),
+                   weight = c("all", "height difference", "crossover distance", "sum differences"),
                    densityXvalues = 1024, minDifference = 0, tolerance = 0.01,
                    returnType = c("label", "score", "both"), verbose = 3)
 {
@@ -109,8 +109,11 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
       # Second element of second list in 'models' is unimportant information added by mixmod.
     }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], crosses)
     
-    posteriorsList[[1]] <- t(posteriorsHorizontal)
-    names(posteriorsList) = "crossover distance"
+    if(weight != "sum differences")
+    {
+      posteriorsList[[1]] <- t(posteriorsHorizontal)
+      names(posteriorsList) = "crossover distance"
+    }
   }
   
   if(weight != "crossover distance") # Calculate the height difference.
@@ -131,7 +134,13 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
                             # Second element of second list in 'models' is unimportant information added by mixmod.
                            }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]])
     
-    posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
+    if(weight != "sum differences")
+      posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
+  }
+  
+  if(weight == "sum differences") # Sum of the horizontal and vertical distances.
+  {
+    posteriorsList <- c(posteriorsList, `sum differences` = list(t(posteriorsHorizontal) + t(posteriorsVertical)))
   }
   
   if(verbose == 3)
@@ -185,7 +194,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
   
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
+  if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
   
