@@ -186,7 +186,7 @@ setMethod("errorMap", "list",
     grobTable <- gtable::gtable_add_grob(grobTable, secondLegend, 3, 2)
     grobTable <- gtable::gtable_add_grob(grobTable, grob(), 4, 2)
   }
-  wholePlot <- gridExtra::arrangeGrob(grobTable, main = grid::textGrob(title, gp = grid::gpar(fontsize = fontSizes[1])))
+  wholePlot <- gridExtra::arrangeGrob(grobTable, top = grid::textGrob(title, gp = grid::gpar(fontsize = fontSizes[1])))
   
   if(plot == TRUE)               
     grid::grid.draw(wholePlot)

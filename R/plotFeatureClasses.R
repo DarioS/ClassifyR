@@ -74,9 +74,9 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                                             legend.text = ggplot2::element_text(size = fontSizes[5])) +
                              ggplot2::labs(x = NULL, y = yAxisLabels[1])
       bothGraphics <- gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
-                                              main = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
+                                              top = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
       if(plot == TRUE)
-        print(bothGraphics)
+        grid::grid.draw(bothGraphics)
       bothGraphics
     } else if(whichPlots == "density")
     {

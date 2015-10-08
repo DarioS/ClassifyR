@@ -5,6 +5,9 @@
 \section{Version 1.4.0}{\itemize{
 
 \item
+Weighted voting mode that uses the distance from an observation to the nearest crossover point
+of the class densities added.
+\item
 Bartlett Test selection function included.
 \item
 New class SelectResult. rankPlot and selectionPlot can additionally work with lists
