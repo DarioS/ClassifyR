@@ -192,6 +192,17 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
     }))
   }, posteriorsList, names(posteriorsList), SIMPLIFY = FALSE))
   
+  # Remove combinations of unweighted voting and weightings.
+  testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
+  {
+    if(weightVariety[1, "weighted"] == "unweighted")
+    {
+      do.call(rbind, by(weightVariety, weightVariety[, "minDifference"], function(differenceVariety) differenceVariety[differenceVariety[, "weight"] == "height difference", ]))
+    } else {
+      weightVariety
+    }
+  }))
+  
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
   if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
@@ -199,6 +210,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
   
   varietyFactor <- factor(do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ',')))
+  varietyFactor <- gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor)
   resultsList <- by(testPredictions, varietyFactor, function(predictionSet)
   {
     switch(returnType, label = predictionSet[, "class"],

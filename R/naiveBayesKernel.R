@@ -48,7 +48,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                                                                otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
 
   posteriorsList <- list()
-  if(weight != "height difference") # Calculate the crossover distance.
+  if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
   {
     if(verbose == 3)
       message("Calculating crossover points of class densities.")
@@ -85,7 +85,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
   }
   
-  if(weight %in% c("sum differences", "all")) # Sum of the horizontal and vertical distances.
+  if(weight %in% c("sum differences", "all") && weighted != "unweighted") # Sum of the horizontal and vertical distances.
   {
     posteriorsList <- c(posteriorsList, `sum differences` = list(t(posteriorsHorizontal) + t(posteriorsVertical)))
   }
@@ -139,6 +139,17 @@ setMethod("naiveBayesKernel", "ExpressionSet",
     }))
   }, posteriorsList, names(posteriorsList), SIMPLIFY = FALSE))
   
+  # Remove combinations of unweighted voting and weightings.
+  testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
+  {
+    if(weightVariety[1, "weighted"] == "unweighted")
+    {
+      do.call(rbind, by(weightVariety, weightVariety[, "minDifference"], function(differenceVariety) differenceVariety[differenceVariety[, "weight"] == "height difference", ]))
+    } else {
+      weightVariety
+    }
+  }))
+  
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
   if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
@@ -146,12 +157,14 @@ setMethod("naiveBayesKernel", "ExpressionSet",
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
 
   varietyFactor <- factor(do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ',')))
+  varietyFactor <- gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor)
   resultsList <- by(testPredictions, varietyFactor, function(predictionSet)
                  {
                    switch(returnType, label = predictionSet[, "class"],
                           score = predictionSet[, "score"],
                           both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
                  })
+
   attr(resultsList, "class") <- "list"
   attr(resultsList, "call") <- NULL
 
