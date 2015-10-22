@@ -187,9 +187,9 @@ setMethod("rankingPlot", "list",
   if(is.null(lineColours) && lineColourVariable != "None")
     lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
   
-  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap,
-                          colour = switch(lineColourVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL),
-                          shape = switch(pointTypeVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL)), environment = environment()) +
+  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = "top", y = "overlap",
+                          colour = switch(lineColourVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL),
+                          shape = switch(pointTypeVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL)), environment = environment()) +
                           ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = pointSize) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::scale_y_continuous(limits = c(0, yMax)) +
                           ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection")) +

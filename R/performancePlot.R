@@ -78,8 +78,8 @@ setMethod("performancePlot", "list",
       apply(plotData[, 1:4], 1, function(plotRow) all(plotRow == parameters))
     )) > 0
     multiPlotData <- plotData[multipleRows, ]
-    performancePlot <- performancePlot + ggplot2::geom_boxplot(data = multiPlotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = performance,
-                                                                                                        fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, None = NULL)))
+    performancePlot <- performancePlot + ggplot2::geom_boxplot(data = multiPlotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "performance",
+                                                                                                         fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = NULL)))
   }
   if(any(performanceCounts[, "Freq"] == 1))
   {
@@ -88,7 +88,7 @@ setMethod("performancePlot", "list",
       apply(plotData[, 1:4], 1, function(plotRow) all(plotRow == parameters))
     )) > 0
     singlePlotData <- plotData[singleRows, ]
-    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = performance, fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, selectionName = selection, classificationName = analysis, None = NULL)))    
+    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "performance", fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", selectionName = "selection", classificationName = "analysis", None = NULL)))    
   }
   
   if(rotate90 == TRUE)

@@ -7,6 +7,7 @@ and one row for each classification result.
        }
 \usage{
   \S4method{errorMap}{list}(results,
+                   comparison = c("classificationName", "datasetName", "selectionName", "validation"),
                    errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
                                        c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
@@ -16,6 +17,7 @@ and one row for each classification result.
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+  \item{comparison}{The aspect of the experimental design to compare.}
   \item{errorColours}{A vector of colours for error levels.}
   \item{classColours}{Either a vector of colours for class levels if both classes should
                       have same colour, or a list of length 2, with each component
@@ -56,6 +58,7 @@ be discretised to.
   result2 <- ClassifyResult("Example", "Differential Variability", "F-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
-  # wholePlot <- errorMap(list(Gene = result1, Protein = result2)) # Wait for namespace problems to be fixed.
-  # ggsave("wholePlot.png", wholePlot)
+  wholePlot <- errorMap(list(Gene = result1, Protein = result2))
+  if(require(ggplot2))
+    ggsave("wholePlot.png", wholePlot)
 }

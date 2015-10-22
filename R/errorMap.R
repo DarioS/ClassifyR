@@ -3,6 +3,7 @@ setGeneric("errorMap", function(results, ...)
 
 setMethod("errorMap", "list", 
           function(results,
+                   comparison = c("classificationName", "datasetName", "selectionName", "validation"),
                    errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
                                        c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
@@ -14,7 +15,8 @@ setMethod("errorMap", "list",
   if(!requireNamespace("gridExtra", quietly = TRUE))
     stop("The package 'gridExtra' could not be found. Please install it.")       
   if(!requireNamespace("gtable", quietly = TRUE))
-    stop("The package 'gtable' could not be found. Please install it.")   
+    stop("The package 'gtable' could not be found. Please install it.")
+  comparison <- match.arg(comparison)
             
   nColours <- if(is.list(errorColours)) length(errorColours[[1]]) else length(errorColours)
   errorBinEnds <- seq(0, 1, 1/nColours)
@@ -37,9 +39,14 @@ setMethod("errorMap", "list",
   ordering <- order(knownClasses)
   knownClasses <- knownClasses[ordering]
   errors <- lapply(errors, function(resultErrors) resultErrors[ordering])
+  classedErrors <- lapply(classedErrors, function(resultErrors) resultErrors[ordering])
+  compareFactor <- switch(comparison, classificationName = sapply(results, function(result) result@classificationName),
+                                      datasetName = sapply(results, function(result) result@datasetName),
+                                      selectionName = sapply(results, function(result) result@selectResult@selectionName),
+                                      validation = sapply(results, function(result) .validationText(result)))
   
   plotData <- data.frame(name = factor(rep(sampleNames(results[[1]])[ordering], length(results)), levels = sampleNames(results[[1]])[ordering]),
-                         type = factor(rep(names(results), sapply(errors, length)), levels = rev(names(results))),
+                         type = factor(rep(compareFactor, sapply(errors, length)), levels = rev(compareFactor)),
                          class = rep(knownClasses, length(results)),
                          Error = unlist(errors))
   

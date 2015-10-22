@@ -219,15 +219,15 @@ setMethod("selectionPlot", "list",
   
   if(comparison != "size")
   {
-    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = overlap,
-                            fill = switch(boxFillColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL), colour = switch(boxLineColouring, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection, None = NULL)), environment = environment()) +
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "overlap",
+                            fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL)), environment = environment()) +
                             ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                             ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
     
     xData <- switch(xVariable, validation = plotData[, "validation"], datasetName = plotData[, "dataset"], classificationName = plotData[, "analysis"], selectionName = plotData[, "selection"])
     if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_boxplot()
   } else {
-    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = switch(xVariable, validation = validation, datasetName = dataset, classificationName = analysis, selectionName = selection), y = size), environment = environment()) +
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "size"), environment = environment()) +
                      ggplot2::geom_tile(ggplot2::aes(fill = Freq)) + ggplot2::ggtitle(title) + ggplot2::labs(x = xLabel, y = yLabel) + ggplot2::scale_x_discrete(expand = c(0, 0)) + ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1])) + ggplot2::guides(fill = ggplot2::guide_legend(title = "Frequency (%)"))
   }
 
