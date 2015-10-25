@@ -220,7 +220,10 @@ setOldClass("pamrtrained")
     } else { # Some classifiers do training and testing with a single function.
       paramList <- append(paramList, list(expressionTest))
       if(length(predictParams@otherParams) > 0)
-        paramList <- c(paramList, trainParams@otherParams, predictParams@otherParams)
+      {
+        useOthers <- setdiff(names(predictParams@otherParams), names(trainParams@otherParams))
+        paramList <- c(paramList, trainParams@otherParams, predictParams@otherParams[useOthers])
+      }
       paramList <- c(paramList, verbose = verbose)
             
       if(is.null(tuneCombinations))

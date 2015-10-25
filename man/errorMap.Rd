@@ -60,5 +60,5 @@ be discretised to.
                             list(predicted), actual, validation = list("leave", 1))
   wholePlot <- errorMap(list(Gene = result1, Protein = result2))
   if(require(ggplot2))
-    ggsave("wholePlot.png", wholePlot)
+    # ggsave("wholePlot.png", wholePlot)
 }
