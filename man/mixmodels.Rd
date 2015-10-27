@@ -16,7 +16,7 @@
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
             weighted = c("both", "unweighted", "weighted"),
             weight = c("all", "height difference", "crossover distance", "sum differences"),
-            densityXvalues = 1024, minDifference = 0, tolerance = 0.01,
+            densityXvalues = 1024, minDifference = 0,
             returnType = c("label", "score", "both"), verbose = 3)  
 }
 \arguments{
@@ -44,9 +44,6 @@
                        feature to be allowed to vote. Can be a vector of cutoffs. If no features for a
                        particular sample have a difference large enough, the class predicted is
                        simply the largest class.}
-  \item{tolerance}{Only relevant when \code{weight} is \code{"crossover distance"}. Absolute differences in
-                   the sums of y values of two densities of this magnitude or smaller cause
-                   the densities at the corresponding x values to be considered as overlapping.}            
   \item{...}{For the training or testing function with \code{\link{matrix}} dispatch,
              arguments passed to the function with \code{\link{ExpressionSet}} dispatch.
              For the training function with \code{\link{ExpressionSet}} dispatch,
@@ -71,14 +68,8 @@
   class sizes in the training set.
 
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
-  distance between y values of the two mixture densities at every x value. If the y values are sufficiently close,
-  the corresponding x values added to a candidate list. Consecutive x values are grouped, and the x value
-  in each group that has with the smallest distance is chosen as the representative location of
-  the crossover point. Only y values that are \code{tolerance} or greater are considered in this first stage.
-  If no crossover points are found, the y values below \code{tolerance} are considered, except for those at the
-  leftmost or rightmost region of the range of the densities. This is necessary when the densities
-  are completely separated.
-  
+  distance between y values of the two densities at every x value. x values for which the sign of the difference
+  changes compared to the difference of the closest lower value of x are used as the crossover points.
   Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
   differentially expressed and differentially variable.  
 }

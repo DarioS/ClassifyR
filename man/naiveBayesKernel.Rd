@@ -14,7 +14,7 @@
                                                           to = expression(max(featureValues))),
             weighted = c("both", "unweighted", "weighted"),
             weight = c("all", "height difference", "crossover distance", "sum differences"),
-            minDifference = 0, tolerance = 0.01, returnType = c("label", "score", "both"), verbose = 3)
+            minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -41,9 +41,6 @@
   \item{minDifference}{The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
-  \item{tolerance}{Only relevant when \code{weight} is \code{"crossover distance"}. Absolute differences in
-                   the y values of the two densities of this magnitude or smaller cause the densities at the
-                   corresponding x values to be considered as overlapping.}
   \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
@@ -63,12 +60,8 @@
   \code{densityParameters}, such as for specifying the range of x values of the density function to be computed.
   
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
-  distance between y values of the two densities at every x value. If the y values are sufficiently close, the
-  corresponding x values added to a candidate list. Consecutive x values are grouped, and the x value in each group
-  that has with the smallest distance is chosen as the representative location of the crossover point. Only y
-  values that are \code{tolerance} or greater are considered in this first stage. If no crossover points are found,
-  the y values below \code{tolerance} are considered, except for those at the leftmost or rightmost region of
-  the range of the densities. This is necessary when the densities are completely separated.
+  distance between y values of the two densities at every x value. x values for which the sign of the difference
+  changes compared to the difference of the closest lower value of x are used as the crossover points.
   
   Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
   differentially expressed and differentially variable.

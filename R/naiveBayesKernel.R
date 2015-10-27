@@ -18,7 +18,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                                                                  to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   minDifference = 0, tolerance = 0.01, returnType = c("label", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
@@ -56,7 +56,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
     # Score for second class level.
     posteriorsHorizontal <- mapply(function(featureDensities, featureSplines, testSamples)
     {
-      crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]], tolerance)
+      crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
       otherScores <- classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
       classPredictions <- ifelse(otherScores > 0, levels(classes)[2], levels(classes)[1])
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))

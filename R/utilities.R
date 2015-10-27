@@ -477,33 +477,13 @@ setOldClass("pamrtrained")
     })
 }
 
-.densityCrossover <- function(aDensity, anotherDensity, difference = 0.01)
+.densityCrossover <- function(aDensity, anotherDensity)
 {
-  requireNamespace("IRanges", quietly = TRUE)
   if(!all(aDensity[['x']] == anotherDensity[['x']]))
     stop("x positions are not the same for the two density variables.")
-  consideredPositions <- which(aDensity[['y']] > difference & anotherDensity[['y']] > difference)
-  allDifferences <- abs(aDensity[['y']][consideredPositions] - anotherDensity[['y']][consideredPositions])
-  crosses <- which(allDifferences < difference)
-  
-  if(length(crosses) > 0)
-  {
-    crossesGroups <- as.list(IRanges::reduce(IRanges::IRanges(crosses, width = 1)))
-    indices <- unlist(lapply(crossesGroups, function(group)
-                      group[which.min(allDifferences[group])]))
-    aDensity[['x']][consideredPositions][indices]
-  } else { # Densities are completely separated.
-    allDifferences <- abs(aDensity[['y']] - anotherDensity[['y']])
-    crosses <- which(allDifferences < difference)
-    if(length(crosses) == 0) stop("No crossover found. Consider changing the 'difference' value to be smaller.")
-    crossesGroups <- as.list(IRanges::reduce(IRanges::IRanges(crosses, width = 1)))
-    indices <- unlist(lapply(crossesGroups, function(group) 
-                      {
-                        if(min(group) == 1 || max(group) == length(allDifferences)) # Edges of distributions. Ignore.
-                          NULL
-                        else 
-                          round(median(group[which(allDifferences[group] == min(allDifferences[group]))]))
-                      }))
-    aDensity[['x']][indices]
-  }
+  allDifferences <- aDensity[['y']] - anotherDensity[['y']]
+  crosses <- which(diff(sign(allDifferences)) != 0)
+  if(aDensity[['y']][crosses[1]] == 0 && aDensity[['y']][crosses[length(crosses)]] == 0)
+    crosses <- crosses[-c(1, length(crosses))] # Remove crossings at ends of densities.
+  aDensity[['x']][crosses]
 }

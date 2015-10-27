@@ -56,7 +56,7 @@ setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 setMethod("mixModelsTest", c("list", "ExpressionSet"),
           function(models, test, weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   densityXvalues = 1024, minDifference = 0, tolerance = 0.01,
+                   densityXvalues = 1024, minDifference = 0,
                    returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
