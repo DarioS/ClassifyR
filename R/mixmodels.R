@@ -166,10 +166,10 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
           {                          # Simply vote for the larger class.
             if(largerClass == levels(classes)[1])
             {
-              logicalSymbol <- FALSE
+              class <- levels(classes)[1]
               score <- -1
             } else {
-              logicalSymbol <- TRUE
+              class <- levels(classes)[2]
               score <- 1
             }
           } else { # One or more features are available to vote with.
@@ -184,7 +184,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
               score <- sum(sampleCol)
             }
           }
-          data.frame(class = class, score = score,
+          data.frame(class = factor(class, levels = levels(classes)), score = score,
                      weighted = isWeighted, weight = weightNames,
                      minDifference = difference)
         }))
