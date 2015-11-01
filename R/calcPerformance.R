@@ -11,8 +11,8 @@ setMethod("calcPerformance", c("ClassifyResult"), function(result, performanceTy
   {
     falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)
     falsePositiveRate <- sapply(ROCR::performance(classData, "fpr")@y.values, "[[", 2)
-    if(is.nan(falseNegativeRate)) falseNegativeRate <- 0
-    if(is.nan(falsePositiveRate)) falsePositiveRate <- 0
+    falseNegativeRate[is.nan(falseNegativeRate)] <- 0 # When all of the classes are of the second level.
+    falsePositiveRate[is.nan(falsePositiveRate)] <- 0 # When all of the classes are of the first level.
     performanceValues <- rowMeans(matrix(c(falseNegativeRate, falsePositiveRate), ncol = 2))
     performanceName <- "Balanced Error Rate"
   } else {
