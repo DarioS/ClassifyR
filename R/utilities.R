@@ -50,6 +50,7 @@ setOldClass("pamrtrained")
           featuresCounts <- table(unlist(varietyFeatures))
           as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
         })
+        names(selectedFeatures) <- names(featuresLists[[1]])
       }
       list(NULL, selectedFeatures)
     }

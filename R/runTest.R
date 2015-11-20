@@ -43,15 +43,15 @@ setMethod("runTest", c("ExpressionSet"),
                                topFeatures <- .doSelection(expression, training, selectParams,
                                                                 trainParams, predictParams, verbose)
 
-                               if(class(topFeatures[[1]]) == "list")
+                               if(class(topFeatures[[2]]) == "list") # Check the chosen features list element, because a ranking is not present for ensemble selection.
                                {
                                  multiSelection <- TRUE
                                } else {
                                  multiSelection <- FALSE
                                }
                                
-                               rankedFeatures <- topFeatures[[1]] # Extract for subsetting.
-                               selectedFeatures <- topFeatures[[2]]
+                               rankedFeatures <- topFeatures[[1]] # Extract for result object.
+                               selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
 
                                if(selectParams@subsetExpressionData == TRUE)
                                {
@@ -123,7 +123,7 @@ setMethod("runTest", c("ExpressionSet"),
 
   if(!is.null(.iteration)) # This function was called by runTests.
   {        
-    list(rankedFeatures, selectedFeatures, testing, predictedClasses, tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")
     {

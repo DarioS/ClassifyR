@@ -211,7 +211,7 @@ There are also two classifiers included :
 Kullback-Leibler divergence will be used for feature selection and a naive Bayes classifier will fit a density to expression values of a gene, for each class. The prediction is then the differences in density between classes, scaled for the number of samples that were in each class in the training set, summed for all selected probes.
 
 ```{r, tidy = FALSE}
-dParams <- list(bw = "SJ", n = 4096, from = expression(min(featureValues)),
+dParams <- list(bw = "nrd0", n = 4096, from = expression(min(featureValues)),
                 to = expression(max(featureValues)))
 DDresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
                       validation = "bootstrap", resamples = 2, folds = 2,

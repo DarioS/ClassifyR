@@ -14,19 +14,18 @@ setMethod("performancePlot", "list",
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
                    yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Classification", yLabel = performanceName,
-                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE)
+                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
   
-  xVariable <<- match.arg(xVariable)
-  boxFillColouring <<- match.arg(boxFillColouring)
-  boxLineColouring <<- match.arg(boxLineColouring)
-  rowVariable <<- match.arg(rowVariable)
-  columnVariable <<- match.arg(columnVariable)  
-  rm(xVariable, boxFillColouring, boxLineColouring, rowVariable, columnVariable)
+  xVariable <- match.arg(xVariable)
+  boxFillColouring <- match.arg(boxFillColouring)
+  boxLineColouring <- match.arg(boxLineColouring)
+  rowVariable <- match.arg(rowVariable)
+  columnVariable <- match.arg(columnVariable)  
   if(is.null(performanceName)) stop("Please specify a performance measure to plot.")
   performances <- lapply(results, function(result)
                          {
@@ -45,13 +44,10 @@ setMethod("performancePlot", "list",
                          validation = rep(sapply(results, function(result) .validationText(result)), performanceLengths),
                          performance = unlist(performances))
   
-  boxFillColours <<- boxFillColours
-  boxLineColours <<- boxLineColours
-  rm(boxFillColours, boxLineColours)
   if(boxFillColouring != "None")
-    if(is.null(boxFillColours)) boxFillColours <<- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selectionName"]))))
+    if(is.null(boxFillColours)) boxFillColours <- scales::hue_pal()(switch(boxFillColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
   if(boxLineColouring != "None")
-    if(is.null(boxLineColours)) boxLineColours <<- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selectionName"]))))
+    if(is.null(boxLineColours)) boxLineColours <- scales::hue_pal(direction = -1)(switch(boxLineColouring, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
   
   plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(plotData[, "dataset"]))
   plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(plotData[, "analysis"]))
@@ -66,9 +62,10 @@ setMethod("performancePlot", "list",
            classificationName = plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = rev(levels(plotData[, "analysis"]))))
   }
 
+  legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   performancePlot <- ggplot2::ggplot() +
                           ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::scale_fill_manual(values = boxFillColours) + ggplot2::scale_colour_manual(values = boxLineColours) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = "none", axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
+                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
 
   performanceCounts <- as.data.frame(table(plotData[, 1:4]))
   if(any(performanceCounts[, "Freq"] > 1))
@@ -79,7 +76,7 @@ setMethod("performancePlot", "list",
     )) > 0
     multiPlotData <- plotData[multipleRows, ]
     performancePlot <- performancePlot + ggplot2::geom_boxplot(data = multiPlotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "performance",
-                                                                                                         fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = NULL)))
+                                                                                                         fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL)))
   }
   if(any(performanceCounts[, "Freq"] == 1))
   {
@@ -93,9 +90,11 @@ setMethod("performancePlot", "list",
   
   if(rotate90 == TRUE)
     performancePlot <- performancePlot + ggplot2::coord_flip()
+  if(legendPosition != "none")
+    performancePlot <- performancePlot + ggplot2::labs(colour = switch(boxLineColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), fill = switch(boxFillColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection"))
   
   if(rowVariable != "None" || columnVariable != "None")
-    performancePlot <- performancePlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
+    performancePlot <- performancePlot + ggplot2::facet_grid(reformulate(switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = '.'), switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = '.'))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
   if(plot == TRUE)
     print(performancePlot)

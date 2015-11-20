@@ -38,8 +38,8 @@ It consists of data transformation, feature selection, training and testing.
   and \code{classificationName} need to be provided.
 }
 \value{
-  A list with five elements. The first element contained all of the features, ranked from most
-  important to least important.The second element contains the indices of genes that were selected
+  A named list with five elements. The first element contains all of the features, ranked from most
+  important to least important. The second element contains the indices of genes that were selected
   by the feature selection step. The third element contains the indices of the samples that
   were in the test set. The fourth element contains a vector of the classes predicted by the
   classifer. The fifth element contains the value of any tuning parameters tried and chosen.

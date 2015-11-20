@@ -29,8 +29,8 @@ Additionally, a heatmap of selection size frequencies can be made.
                    title = if(comparison[1] == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
                    xLabel = "Analysis",
                    yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (\%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(\%)"),
-                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE,
-                   parallelParams = bpparam())
+                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, showLegend = TRUE,
+                   plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} or \code{\link{SelectResult}} objects.}
@@ -64,6 +64,7 @@ Additionally, a heatmap of selection size frequencies can be made.
   \item{margin}{The margin to have around the plot.}
   \item{rotate90}{Logical. IF TRUE, the boxplot is horizontal.}
   \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{showLegend}{If TRUE, a legend is plotted next to the plot. If FALSE, it is hidden.}  
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{

@@ -189,7 +189,7 @@ setMethod("rankingPlot", "list",
   
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = "top", y = "overlap",
                           colour = switch(lineColourVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL),
-                          shape = switch(pointTypeVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL)), environment = environment()) +
+                          shape = switch(pointTypeVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL))) +
                           ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = pointSize) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::scale_y_continuous(limits = c(0, yMax)) +
                           ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection")) +
@@ -201,7 +201,7 @@ setMethod("rankingPlot", "list",
     overlapPlot <- overlapPlot + ggplot2::scale_colour_manual(values = lineColours)
   
   if(rowVariable != "None" || columnVariable != "None")
-    overlapPlot <- overlapPlot + ggplot2::facet_grid(paste(if(rowVariable != "None") switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"), "~", if(columnVariable != "None") switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis"))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[6]))
+    overlapPlot <- overlapPlot + ggplot2::facet_grid(reformulate(switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = '.'), switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = '.'))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[6]))
   
   if(plot == TRUE)
     print(overlapPlot)

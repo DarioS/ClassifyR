@@ -14,7 +14,7 @@ setMethod("naiveBayesKernel", "matrix",
 
 setMethod("naiveBayesKernel", "ExpressionSet", 
           function(expression, test, densityFunction = density,
-                   densityParameters = list(bw = "SJ", n = 1024, from = expression(min(featureValues)),
+                   densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
                                                                  to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),

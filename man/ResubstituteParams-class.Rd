@@ -19,7 +19,7 @@
       100, 200, 300, 400, 500. The performance measure used is the balanced error rate.
   }
     \item{}{
-      \code{ResubstituteParams(nFeatures, preformanceType, better = c("lower", "higher"))}
+      \code{ResubstituteParams(nFeatures, performanceType, better = c("lower", "higher"))}
       Creates a ResubstituteParams object, storing information about the number of top
       features to calculate the performance measure for, the performance measure to use,
       and if higher or lower values of the measure are better.

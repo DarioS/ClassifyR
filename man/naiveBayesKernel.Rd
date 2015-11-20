@@ -10,7 +10,7 @@
 \usage{
   \S4method{naiveBayesKernel}{matrix}(expression, classes, ...)
   \S4method{naiveBayesKernel}{ExpressionSet}(expression, test, densityFunction = density,
-            densityParameters = list(bw = "SJ", n = 1024, from = expression(min(featureValues)),
+            densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
                                                           to = expression(max(featureValues))),
             weighted = c("both", "unweighted", "weighted"),
             weight = c("all", "height difference", "crossover distance", "sum differences"),

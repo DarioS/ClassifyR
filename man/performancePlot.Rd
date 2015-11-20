@@ -17,7 +17,7 @@
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
                    yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Classification", yLabel = performanceName,
-                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, plot = TRUE)
+                   margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
@@ -45,6 +45,7 @@
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
   \item{margin}{The margin to have around the plot.}
   \item{rotate90}{Logical. IF TRUE, the plot is horizontal.}
+  \item{showLegend}{If TRUE, a legend is plotted next to the plot. If FALSE, it is hidden.}
   \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
 }
 \details{

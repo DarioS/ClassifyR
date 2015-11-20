@@ -21,6 +21,7 @@ setMethod("runTests", c("ExpressionSet"),
   validation <- match.arg(validation)
   bootMode <- match.arg(bootMode)
   if(!missing(seed)) set.seed(seed)
+  resultTypes <- c("ranked", "selected", "testSet", "predictions", "tune")
 
   stagesParamClasses <- sapply(params, class)
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
@@ -75,124 +76,149 @@ setMethod("runTests", c("ExpressionSet"),
   {
     if(bootMode == "fold")
     {
-      if(class(results[[1]][[1]][[4]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
-    } else {
-      if(class(results[[1]][[4]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
-    }
-    
-    resultsLists <- lapply(c(4, 3, 2, 1, 5), function(position)
-    {
-      resultList <- lapply(results, function(sample)
+      if(class(results[[1]][[1]][["predictions"]]) == "list") 
       {
-        if(position == 3 || multipleVarieties == FALSE)
+        multipleVarieties <- TRUE
+        varietyNames <- names(results[[1]][[1]][["predictions"]])
+      } else {
+        multipleVarieties <- FALSE
+        varietyNames <- "None"
+      }
+    } else {
+      if(class(results[[1]][["predictions"]]) == "list")
+      {
+        multipleVarieties <- TRUE
+        varietyNames <- names(results[[1]][["predictions"]])
+      } else {
+        multipleVarieties <- FALSE
+        varietyNames <- "None"
+      }
+    }
+
+    resultsByVariety <- lapply(varietyNames, function(varietyName)
+    {
+      resultsLists <- lapply(resultTypes, function(resultType)
+      {
+        resultList <- lapply(results, function(sample)
         {
-          if(!position %in% c(1, 2, 5))
+          if(resultType == "testSet" || multipleVarieties == FALSE)
           {
-            if(bootMode == "fold")
-            {
-              if(position == 3 || class(sample[[1]][[4]]) != "data.frame")
-                                  # First fold predictions are a not data.frame.
-                unlist(lapply(sample, function(fold) fold[[position]]))
-              else # Predictions is a data.frame with labels and scores.
-                do.call(rbind, lapply(sample, function(fold) fold[[position]]))
-            } else { #bootMode is "split".
-              sample[[position]]
-            }
-          } else {
-            if(bootMode == "fold")
-              lapply(sample, function(fold) fold[[position]])
-            else
-              sample[[position]]
-          }
-        } else {
-          if(position == 4) # Predictions with varieties.
-          {
-            if(bootMode == "fold")
-            {
-              prediction <- lapply(1:length(sample[[1]][[4]]), function(variety)
-                            {
-                              prediction <- lapply(sample, function(fold) fold[[position]][[variety]])
-                              if(class(prediction[[1]]) == "data.frame")
-                                do.call(rbind, prediction)
-                              else
-                                unlist(prediction)
-                            })
-            } else { # is 'split'.
-            lapply(1:length(sample[[1]][[4]]), function(variety)
-              sample[[position]][[variety]])
-            }
-          } else { # Ranked, selected features and test samples, with varieties.
-            if(is.function(selectParams@featureSelection))
+            if(resultType %in% c("testSet", "predictions"))
             {
               if(bootMode == "fold")
-                lapply(1:length(sample[[1]][[4]]), function(variety)
-                  lapply(sample, function(fold) fold[[position]][[variety]]))
-              else
-                lapply(1:length(sample[[1]][[4]]), function(variety)
-                  sample[[position]][[variety]])
+              {
+                if(resultType == "testSet" || class(sample[[1]][["predictions"]]) != "data.frame")
+                                              # First fold predictions are a not data.frame.
+                  unlist(lapply(sample, function(fold) fold[[resultType]]))
+                else # Predictions is a data.frame with labels and scores.
+                  do.call(rbind, lapply(sample, function(fold) fold[[resultType]]))
+              } else { # bootMode is "split".
+                sample[[resultType]]
+              }
             } else {
               if(bootMode == "fold")
-                lapply(sample, function(fold) fold[[position]])
+                lapply(sample, function(fold) fold[[resultType]])
               else
-                sample[["position"]]
+                sample[[resultType]]
+            }
+          } else { # There are multiple varieties.
+            if(resultType == "predictions") # Predictions with varieties.
+            {
+              if(bootMode == "fold")
+              {
+                prediction <- lapply(sample, function(fold) fold[[resultType]][[varietyName]])
+                if(class(prediction[[1]]) == "data.frame")
+                  do.call(rbind, prediction)
+                else
+                  unlist(prediction)
+              } else { # bootMode is "split".
+                sample[[resultType]][[varietyName]]
+              }
+            } else { # Ranked, selected features and test samples, with varieties.
+              if(bootMode == "fold")
+              {
+                if(is.null(sample[[1]][[resultType]]))
+                  NULL
+                else
+                  lapply(sample, function(fold) fold[[resultType]][[varietyName]])
+              } else {
+                if(is.null(sample[[resultType]]))
+                  NULL
+                else
+                  sample[[resultType]][[varietyName]]
+              }
             }
           }
-        }
+        })
       })
-      
-      if(multipleVarieties == TRUE && position != 3) # Rearrange lists by variety.
-        resultList <- lapply(1:length(resultList[[1]]), function(variety)
-                        lapply(resultList, "[[", variety))
-      else
-        resultList
+      names(resultsLists) <- resultTypes
+      resultsLists
     })
+    names(resultsByVariety) <- varietyNames
   } else { # leave k out.
-    if(class(results[[1]][[2]]) == "list") multipleVarieties <- TRUE else multipleVarieties <- FALSE
-    resultsLists <- lapply(c(4, 3, 2, 1, 5), function(position)
+    if(class(results[[1]][["predictions"]]) == "list")
     {
-      resultList <- lapply(results, function(sample) sampleResult <- sample[[position]])
-      
-      if(position == 3 || position == 4 && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
-        resultList <- unlist(resultList)
-      else if (position == 4 && multipleVarieties == FALSE) # Predictions are in a data.frame.
-        resultList <- do.call(rbind, resultList)
-      else if(multipleVarieties == TRUE && position == 4 && class(resultList[[1]]) != "data.frame")
-        lapply(1:length(resultList[[1]]), function(variety) unlist(lapply(resultList, "[[", variety)))
-      else if(multipleVarieties == TRUE && position == 4)
-        lapply(1:length(resultList[[1]]), function(variety) do.call(rbind, lapply(resultList, "[[", variety)))
-      else if(multipleVarieties == TRUE && position %in% c(1, 2, 5) && is.function(selectParams@featureSelection))
-        lapply(1:length(resultList[[1]]), function(variety) lapply(resultList, "[[", variety))
-      else
-        resultList
+      multipleVarieties <- TRUE
+      varietyNames <- names(results[[1]][["predictions"]])
+    } else {
+      multipleVarieties <- FALSE
+      varietyNames <- "None"
+    }
+    
+    resultsByVariety <- lapply(varietyNames, function(varietyName)
+    {
+      resultsLists <- lapply(resultTypes, function(resultType)
+      {
+        resultList <- lapply(results, function(sample) sample[[resultType]])
+        
+        if(resultType == "testSet" || resultType == "predictions" && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
+          resultList <- unlist(resultList)
+        else if (resultType == "predictions" && multipleVarieties == FALSE) # Predictions are in a data.frame.
+          resultList <- do.call(rbind, resultList)
+        else if(multipleVarieties == TRUE && resultType == "predictions" && class(resultList[[1]]) != "data.frame")
+          unlist(lapply(resultList, "[[", varietyName))
+        else if(multipleVarieties == TRUE && resultType == "predictions") # Predictions are factor or numeric.
+          do.call(rbind, lapply(resultList, "[[", varietyName))
+        else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune"))
+          lapply(resultList, "[[", varietyName)
+        else # For multipleVarieties being FALSE, and not the predicted classes.
+          resultList
+      })
+      names(resultsLists) <- resultTypes
+      resultsLists
     })
-  }    
-  
-  if(multipleVarieties == FALSE)
-    predictionsListed <- list(resultsLists[[1]]) else predictionsListed <- resultsLists[[1]]
+    names(resultsByVariety) <- varietyNames
+  }
 
-  predictionTables <- lapply(1:length(predictionsListed), function(variety)
+  predictionTablesByVariety <- lapply(resultsByVariety, function(resultVariety)
   {
     if(validation == "bootstrap")
     {
-      lapply(1:length(predictionsListed[[1]]), function(resample)
+      lapply(1:resamples, function(resample)
       {
-        switch(class(predictionsListed[[variety]][[resample]]),
-               factor = data.frame(sample = resultsLists[[2]][[resample]], label = predictionsListed[[variety]][[resample]]),
-               numeric = data.frame(sample = resultsLists[[2]][[resample]], score = predictionsListed[[variety]][[resample]]),
-               data.frame = data.frame(sample = resultsLists[[2]][[resample]],
-                                       label = predictionsListed[[variety]][[resample]][, sapply(predictionsListed[[variety]][[resample]], class) == "factor"],
-                                       score = predictionsListed[[variety]][[resample]][, sapply(predictionsListed[[variety]][[resample]], class) == "numeric"]))
+        switch(class(resultVariety[["predictions"]][[resample]]),
+               factor = data.frame(sample = resultVariety[["testSet"]][[resample]], label = resultVariety[["predictions"]][[resample]]),
+               numeric = data.frame(sample = resultVariety[["testSet"]][[resample]], score = resultVariety[["predictions"]][[resample]]),
+               data.frame = data.frame(sample = resultVariety[["testSet"]][[resample]],
+                                       label = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"],
+                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"]))
                 
       })
-    } else {
-      list(switch(class(predictionsListed[[variety]]),
-             factor = data.frame(sample = resultsLists[[2]], label = predictionsListed[[variety]]),
-             numeric = data.frame(sample = resultsLists[[2]], score = predictionsListed[[variety]]),
-             data.frame = data.frame(sample = resultsLists[[2]],
-                                     label = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "factor"],
-                                     score = predictionsListed[[variety]][, sapply(predictionsListed[[variety]], class) == "numeric"])))
+    } else { 
+      list(switch(class(resultVariety[["predictions"]]),
+             factor = data.frame(sample = resultVariety[["testSet"]], label = resultVariety[["predictions"]]),
+             numeric = data.frame(sample = resultVariety[["testSet"]], score = resultVariety[["predictions"]]),
+             data.frame = data.frame(sample = resultVariety[["testSet"]],
+                                     label = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"],
+                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"])))
     }
   })
+
+  resultsByVariety <- mapply(function(resultVariety, predictionVariety) # Put formatted prediction tables into results list.
+  {
+    resultVariety[["predictions"]] <- predictionVariety
+    resultVariety
+  }, resultsByVariety, predictionTablesByVariety, SIMPLIFY = FALSE)
   
   if(validation == "bootstrap")
   {
@@ -203,27 +229,24 @@ setMethod("runTests", c("ExpressionSet"),
   } else {
     validationInfo <- list("leave", leave)
   }
-  
-  if(multipleVarieties == FALSE)
+
+  if(!"tuneParams" %in% names(params[[match("TrainParams", stagesParamClasses)]]@otherParams)) # No tuning specified.
+    resultsByVariety <- lapply(resultsByVariety, function(result) {result[["tune"]] <- list(NULL); result;}) # Shorten it.
+  resultsByVariety <- lapply(resultsByVariety, function(result) # Check for empty rankings, and shorten the list.
   {
-    if(length(unlist(resultsLists[[5]])) == 0) # All tune values are NULL.
-      resultsLists[[5]] <- list(NULL)
+    if(length(unlist(result[["ranked"]])) == 0)
+      result[["ranked"]] <- list(NULL)
+    result
+  })
+
+  classifyResults <- lapply(varietyNames, function(variety)
+  {
     ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
-                   resultsLists[[4]], resultsLists[[3]], predictionTables[[1]],
-                   pData(expression)[, "class"], validationInfo, resultsLists[[5]])
-  } else {
-    classifyResults <- lapply(1:length(predictionTables), function(variety)
-    {
-      if(length(unlist(resultsLists[[5]][[variety]])) == 0) # All tune values are NULL.
-        resultsLists[[5]][[variety]] <- list(NULL)
-      ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
-                     resultsLists[[4]][[variety]], resultsLists[[3]][[variety]],
-                     predictionTables[[variety]], pData(expression)[, "class"], validationInfo, resultsLists[[5]][[variety]])
-    })
-    if(validation == "bootstrap")
-      names(classifyResults) <- names(results[[1]][[1]][[4]])
-    else
-      names(classifyResults) <- names(results[[1]][[4]])
-    classifyResults
-  }
+                   resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["predictions"]],
+                   pData(expression)[, "class"], validationInfo, resultsByVariety[[variety]][["tune"]])
+  })
+
+  names(classifyResults) <- varietyNames
+  if(multipleVarieties == FALSE) classifyResults <- classifyResults[[1]]
+  classifyResults
 })

@@ -56,22 +56,29 @@ setMethod("ROCplot", "list",
   
   if(lineColourVariable != "None")
     if(is.null(lineColours))
-      lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"]))))
+      lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
   if(is.null(legendTitle))
-    legendTitle <- switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", None = NULL)
+    legendTitle <- switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Selection\nMethod", None = NULL)
   
-  if(lineColourVariable == "validation")
+  if(showAUC == TRUE)
   {
-    plotData[, "validation"] <- paste(plotData[, "validation"], " (AUC", plotData[, "AUC"], ')', sep = '')
-    plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(plotData[, "validation"]))
-  } else if(lineColourVariable == "datasetName")
-  {
-    plotData[, "dataset"] <- paste(plotData[, "dataset"], " (AUC", plotData[, "AUC"], ')', sep = '')
-    plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(plotData[, "dataset"]))
-  } else if(lineColourVariable == "classificationName")
-  {
-    plotData[, "analysis"] <- paste(plotData[, "analysis"], " (AUC ", plotData[, "AUC"], ')', sep = '')
-    plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(plotData[, "analysis"]))
+    if(lineColourVariable == "validation")
+    {
+      plotData[, "validation"] <- paste(plotData[, "validation"], " (AUC", plotData[, "AUC"], ')', sep = '')
+      plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(plotData[, "validation"]))
+    } else if(lineColourVariable == "datasetName")
+    {
+      plotData[, "dataset"] <- paste(plotData[, "dataset"], " (AUC", plotData[, "AUC"], ')', sep = '')
+      plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(plotData[, "dataset"]))
+    } else if(lineColourVariable == "classificationName")
+    {
+      plotData[, "analysis"] <- paste(plotData[, "analysis"], " (AUC ", plotData[, "AUC"], ')', sep = '')
+      plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(plotData[, "analysis"]))
+    } else if(lineColourVariable == "selectionName")
+    {
+      plotData[, "selection"] <- paste(plotData[, "selection"], " (AUC ", plotData[, "AUC"], ')', sep = '')
+      plotData[, "selection"] <- factor(plotData[, "selection"], levels = unique(plotData[, "selection"]))
+    }      
   }
 
   ROCplot <- ggplot2::ggplot(data.frame(plotData), ggplot2::aes_string(x = "FPR", y = "TPR", colour = switch(lineColourVariable, validation = "validation", selectionName = "selection", datasetName = "dataset", classificationName = "analysis", None = NULL)), environment = environment()) +
