@@ -63,10 +63,15 @@ setMethod("performancePlot", "list",
   }
 
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
-  performancePlot <- ggplot2::ggplot() +
-                          ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::scale_fill_manual(values = boxFillColours) + ggplot2::scale_colour_manual(values = boxLineColours) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+  performancePlot <- ggplot2::ggplot() + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
 
+  # Compatible with ggplot2 1.0.1.
+  if(!is.null(boxFillColours))
+    performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = boxFillColours)
+  if(!is.null(boxLineColours))
+    performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = boxLineColours)
+  
   performanceCounts <- as.data.frame(table(plotData[, 1:4]))
   if(any(performanceCounts[, "Freq"] > 1))
   {

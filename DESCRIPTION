@@ -4,7 +4,7 @@ Title: A framework for two-class classification problems, with
         applications to differential variability and differential
         distribution testing
 Version: 1.5.7
-Date: 2015-11-12
+Date: 2015-11-26
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
