@@ -16,7 +16,7 @@
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
                    yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
-                   xLabel = "Classification", yLabel = performanceName,
+                   xLabel = "Analysis", yLabel = performanceName,
                    margin = grid::unit(c(0, 1, 1, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 }
 \arguments{
