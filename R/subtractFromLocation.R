@@ -11,7 +11,7 @@ setMethod("subtractFromLocation", "matrix",
 
 setMethod("subtractFromLocation", "ExpressionSet", 
           function(expression, training, location = c("mean", "median"),
-                   verbose = 3)
+                   absolute = TRUE, verbose = 3)
 {
   location <- match.arg(location)
   expressionTrain <- exprs(expression)[, training]
@@ -20,9 +20,12 @@ setMethod("subtractFromLocation", "ExpressionSet",
   else # median.
     geneTrainingLocations <- apply(expressionTrain, 1, median)
   transformed <- apply(exprs(expression), 2, '-', geneTrainingLocations)
+  if(absolute == TRUE)
+    transformed <- abs(transformed)
   exprs(expression) <- transformed
   if(verbose == 3)
-    message("Subtraction from ", location, " completed.")
+    message("Subtraction from ", location,
+            {if(absolute == TRUE) " and absolute transformation"}, " completed.")
   
   expression
 })

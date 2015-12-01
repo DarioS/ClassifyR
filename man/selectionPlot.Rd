@@ -62,9 +62,9 @@ Additionally, a heatmap of selection size frequencies can be made.
   \item{xLabel}{Label to be used for the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
   \item{margin}{The margin to have around the plot.}
-  \item{rotate90}{Logical. IF TRUE, the boxplot is horizontal.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
-  \item{showLegend}{If TRUE, a legend is plotted next to the plot. If FALSE, it is hidden.}  
+  \item{rotate90}{Logical. If \code{TRUE}, the boxplot is horizontal.}
+  \item{plot}{Logical. If \code{TRUE}, a plot is produced on the current graphics device.}
+  \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If FALSE, it is hidden.}  
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{

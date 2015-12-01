@@ -48,9 +48,9 @@
 
 \author{Dario Strbenac}
 \examples{
-  SelectParams(limmaSelection, nFeatures = c(25, 50, 75, seq(100, 1000, 100)))
+  SelectParams(limmaSelection, "t-test", TrainParams(), PredictParams(), ResubstituteParams())
   
   # For pamr shrinkage selection.
-  SelectParams(nearestShrunkenCentroidSelectionInterface, intermediate = "trained",
-                  subsetExpressionData = FALSE)
+  SelectParams(nearestShrunkenCentroidSelectionInterface, datasetName = "Ovarian Cancer",
+               intermediate = "trained", subsetExpressionData = FALSE)
 }

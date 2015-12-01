@@ -44,9 +44,9 @@
   \item{xLabel}{Label to be used for the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
   \item{margin}{The margin to have around the plot.}
-  \item{rotate90}{Logical. IF TRUE, the plot is horizontal.}
-  \item{showLegend}{If TRUE, a legend is plotted next to the plot. If FALSE, it is hidden.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{rotate90}{Logical. IF \code{TRUE}, the plot is horizontal.}
+  \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If FALSE, it is hidden.}
+  \item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current graphics device.}
 }
 \details{
   Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and \code{"validation"}.

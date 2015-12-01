@@ -37,7 +37,7 @@ identifying outlier samples that are difficult to classify.
   chosen at least once containing the number of times the feature was chosen in cross
   validations or the percentage of times chosen. If \code{type} is "samples",
   a vector as long as the number of samples, containing the cross-validation error rate
-  of the sample. If \code{plot} is TRUE, then a plot is also made on the current
+  of the sample. If \code{plot} is \code{TRUE}, then a plot is also made on the current
   graphics device.
 }
 \author{Dario Strbenac}

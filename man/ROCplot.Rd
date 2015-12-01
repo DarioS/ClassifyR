@@ -31,8 +31,8 @@
                    be provided.}
   \item{xLabel}{Label to be used for the x-axis of false positive rate.}
   \item{yLabel}{Label to be used for the y-axis of true positive rate.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
-  \item{showAUC}{Logical. IF TRUE, the AUC value of each result is added to its legend text.}
+  \item{plot}{Logical. If \code{TRUE}, a plot is produced on the current graphics device.}
+  \item{showAUC}{Logical. If \code{TRUE}, the AUC value of each result is added to its legend text.}
 }
 \details{
   Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and
@@ -41,7 +41,7 @@
   The scores stored in the results should be higher if the sample is more likely to be from the second class,
   based on the levels of the actual classes. The scores must be in a column named "score".
   
-  For cross-validated classification, all predictions from all iterations are considered simulatenously,
+  For cross-validated classification, all predictions from all iterations are considered simultaneously,
   to calculate one curve per classification.
   
   The number of bins determines how many pairs of TPR and FPR points will be used to draw the plot.

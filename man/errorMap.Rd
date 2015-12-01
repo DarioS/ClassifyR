@@ -35,7 +35,7 @@ and one row for each classification result.
   \item{showYtickLabels}{Logical. IF FALSE, the y-axis labels are hidden.}
   \item{yAxisLabel}{The name plotted for the y-axis. NULL suppresses label.}
   \item{legendSize}{The size of the boxes in the legends.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current graphics device.}
 }
 \details{
 The names of \code{results} determine the row names that will be in the plot.

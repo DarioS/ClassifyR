@@ -40,7 +40,7 @@ selection method.
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}  
   \item{colours}{The colours to plot data of each class in.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}  
+  \item{plot}{Logical. If \code{TRUE}, a plot is produced on the current graphics device.}  
 }
 \value{
   Plots.

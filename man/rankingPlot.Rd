@@ -59,7 +59,7 @@ The overlaps are converted to percentages and plotted as lineplots.
   \item{title}{An overall title for the plot.}
   \item{xLabelPositions}{Locations where to put labels on the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
-  \item{plot}{Logical. IF TRUE, a plot is produced on the current graphics device.}
+  \item{plot}{Logical. If \code{TRUE}, a plot is produced on the current graphics device.}
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }
 \details{

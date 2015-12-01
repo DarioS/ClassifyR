@@ -9,7 +9,7 @@ that location.
 \usage{
   \S4method{subtractFromLocation}{matrix}(expression, ...)
   \S4method{subtractFromLocation}{ExpressionSet}(expression, training, location = c("mean", "median"),
-                                  verbose = 3)
+                                  absolute = TRUE, verbose = 3)
 }
 \arguments{
   \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
@@ -19,6 +19,7 @@ that location.
              \code{\link{ExpressionSet}} method.}                    
   \item{training}{A vector specifying which samples are in the training set.}                   
   \item{location}{Character. Either "mean" or "median".}
+  \item{absolute}{If \code{TRUE}, then absolute values of the differences are returned.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages.}
 }
