@@ -48,6 +48,7 @@ setMethod("plotFeatureClasses", "ExpressionSet",
         ggplot2::scale_x_continuous(limits = expressionLimits, breaks = xLabelPositions) + 
         ggplot2::scale_y_continuous(breaks = yLabelPositions)
     }
+
     if(whichPlots %in% c("both", "stripchart"))
     {
       stripPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = classes, y = expr)) +
@@ -73,7 +74,7 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                                             legend.title = ggplot2::element_text(size = fontSizes[4]),
                                             legend.text = ggplot2::element_text(size = fontSizes[5])) +
                              ggplot2::labs(x = NULL, y = yAxisLabels[1])
-      bothGraphics <- gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
+      bothGraphics <- gridExtra::arrangeGrob(densPlot, stripPlot, nrow = 2,
                                               top = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
       if(plot == TRUE)
         grid::grid.draw(bothGraphics)
