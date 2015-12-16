@@ -36,7 +36,7 @@ setMethod("likelihoodRatioSelection", "ExpressionSet",
   sum(dnorm(geneRow, scale, location, log = TRUE)),
   as.data.frame(t(oneClassExpression)),
   switch(alternative[["location"]], same = allDistribution[[1]], different = oneClassDistribution[[1]]),
-  switch(alternative[["scale"]], same = allDistribution[[2]], different = oneClassDistribution[[2]]))) +
+  switch(alternative[["scale"]], same = allDistribution[[2]], different = oneClassDistribution[[2]]))) -
   unlist(mapply(function(geneRow, scale, location)
   sum(dnorm(geneRow, scale, location, log = TRUE)),
   as.data.frame(t(otherClassExpression)),
