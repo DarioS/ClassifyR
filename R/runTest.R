@@ -33,15 +33,17 @@ setMethod("runTest", c("ExpressionSet"),
                                  transformParams@otherParams <- c(transformParams@otherParams, mget(transformParams@intermediate))
 
                                transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
-                               expression <- .doTransform(expression, transformParams, verbose)
+                               expression <- tryCatch(.doTransform(expression, transformParams, verbose), error = function(error) error[["message"]])
+                               if(is.character(expression)) return(expression)
                                newSize <- if(class(expression) == "list") length(expression) else 1
                              },
                  SelectParams = {
                                if(length(selectParams@intermediate) != 0)
                                  selectParams@otherParams <- c(selectParams@otherParams, mget(selectParams@intermediate))
 
-                               topFeatures <- .doSelection(expression, training, selectParams,
-                                                                trainParams, predictParams, verbose)
+                               topFeatures <- tryCatch(.doSelection(expression, training, selectParams,
+                                                                trainParams, predictParams, verbose), error = function(error) error[["message"]])
+                               if(is.character(topFeatures)) return(topFeatures)
 
                                if(class(topFeatures[[2]]) == "list") # Check the chosen features list element, because a ranking is not present for ensemble selection.
                                {
@@ -93,7 +95,9 @@ setMethod("runTest", c("ExpressionSet"),
                               if(length(trainParams@intermediate) != 0)
                                 trainParams@otherParams <- c(trainParams@otherParams, mget(trainParams@intermediate))
 
-                              trained <- .doTrain(expression, training, testing, trainParams, predictParams, verbose)
+                              trained <- tryCatch(.doTrain(expression, training, testing, trainParams, predictParams, verbose),
+                                                  error = function(error) error[["message"]])
+                              if(is.character(trained)) return(trained)
 
                               newSize <- if(class(trained) == "list") length(trained) else 1
                               if(newSize / lastSize != 1)
@@ -114,7 +118,10 @@ setMethod("runTest", c("ExpressionSet"),
                  PredictParams = {
                                  if(length(predictParams@intermediate) != 0)
                                    predictParams@otherParams <- c(predictParams@otherParams, mget(predictParams@intermediate))
-                                  predictedClasses <- .doTest(trained, expression, testing, predictParams, verbose)
+                                  predictedClasses <- tryCatch(.doTest(trained, expression, testing, predictParams, verbose),
+                                                               error = function(error) error[["message"]])
+                                  if(is.character(predictedClasses) && grepl("^Error", predictedClasses))
+                                    return(predictedClasses)
                                  }
            )
     

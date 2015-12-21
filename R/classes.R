@@ -193,10 +193,21 @@ setMethod("show", c("ClassifyResult"),
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
             if(object@validation[[1]] %in% c("split", "leave", "independent"))
+            {
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of row indices.\n", sep = '')
-            else # Resample and fold. Nested lists.
-              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of length ",
-                  length(object@selectResult@chosenFeatures[[1]]), " of row indices.\n", sep = '')
+            } else # Resample and fold. Nested lists.
+            {
+              elementsLengths <- sapply(object@selectResult@chosenFeatures, length)
+              if(diff(range(elementsLengths)) == 0)
+              {
+                subListText <- paste("length", unique(elementsLengths))
+              } else
+              {
+                subListText <- paste("lengths between", min(elementsLengths), "and", max(elementsLengths))
+              }
+              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of ",
+                  subListText, " of row indices.\n", sep = '')
+            }            
             cat("Validation: ")
             if(object@validation[[1]] == "leave")
               cat("Leave ", object@validation[[2]], " out cross-validation.\n", sep = '')

@@ -20,14 +20,14 @@ setMethod("previousSelection", "ExpressionSet",
               message("Choosing previous features.")
             
             if(length(.iteration) == 1)
-              previousIDs <- features(classifyResult)[[.iteration]]
+              previousIDs <- featureNames(classifyResult)[features(classifyResult)[[.iteration]]]
             else # Resample index and fold index.
-              previousIDs <- features(classifyResult)[[.iteration[[1]]]][[.iteration[[2]]]]
+              previousIDs <- featureNames(classifyResult)[features(classifyResult)[[.iteration[[1]]]][[.iteration[[2]]]]]
             
             indicesInCurrent <- match(previousIDs, rownames(expression))
             commonFeatures <- sum(!is.na(indicesInCurrent)) / length(indicesInCurrent) * 100
             if(commonFeatures < minimumOverlapPercent)
-              stop("Number of features in common between previous and current dataset is lower than 'minimumOverlapPercent'.")
+              signalCondition(simpleError("Number of features in common between previous and current dataset is lower than 'minimumOverlapPercent'."))
             
-            SelectResult(datasetName, selectionName, list(), list(indicesInCurrent)) # Ranking isn't transferred across.
+            SelectResult(datasetName, selectionName, list(), list(na.omit(indicesInCurrent))) # Ranking isn't transferred across.
           })

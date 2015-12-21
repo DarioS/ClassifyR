@@ -69,6 +69,30 @@ setMethod("runTests", c("ExpressionSet"),
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   }
+  
+  if(bootMode %in% c("split", "leave"))
+  {
+    resultErrors <- sapply(results, function(result) is.character(result))
+    if(sum(resultErrors) == length(results))
+    {
+      message("Error: All cross-validations had an error.")
+      return(results)
+    } else if(sum(resultErrors) != 0) # Filter out error cross-validations.
+    {
+      results <- results[!resultErrors]
+    }
+  } else { # "fold" has nested lists.
+    resultErrors <- lapply(results, function(resample) lapply(resample, is.character))
+    if(sum(unlist(resultErrors)) == resamples * folds)
+    {
+      message("Error: All cross-validations had an error.")
+      return(results)
+    } else if(sum(unlist(resultErrors)) != 0) # Filter out error cross-validations.
+    {
+      results <- results[sapply(results, function(resample) !all(sapply(resample, is.character)))]
+      results <- lapply(results, function(resample) resample[!sapply(resample, is.character)])
+    }
+  }
 
   selectParams <- params[[match("SelectParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
@@ -194,7 +218,7 @@ setMethod("runTests", c("ExpressionSet"),
   {
     if(validation == "bootstrap")
     {
-      lapply(1:resamples, function(resample)
+      lapply(1:length(results), function(resample)
       {
         switch(class(resultVariety[["predictions"]][[resample]]),
                factor = data.frame(sample = resultVariety[["testSet"]][[resample]], label = resultVariety[["predictions"]][[resample]]),
