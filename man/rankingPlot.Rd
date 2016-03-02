@@ -26,7 +26,8 @@ The overlaps are converted to percentages and plotted as lineplots.
                             title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
                             xLabelPositions = seq(10, 100, 10),
                             yLabel = if(is.null(referenceLevel)) "Average Common Features (\%)" else paste("Average Common Features with", referenceLevel, "(\%)"),
-                            plot = TRUE, parallelParams = bpparam())
+                            margin = grid::unit(c(0, 0, 0, 0), "lines"),
+                            showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} or \code{\link{SelectResult}} objects.}
@@ -59,6 +60,8 @@ The overlaps are converted to percentages and plotted as lineplots.
   \item{title}{An overall title for the plot.}
   \item{xLabelPositions}{Locations where to put labels on the x-axis.}
   \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
+  \item{margin}{The margin to have around the plot.}
+  \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If FALSE, it is hidden.}  
   \item{plot}{Logical. If \code{TRUE}, a plot is produced on the current graphics device.}
   \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}
 }

@@ -56,9 +56,8 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                    ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::xlab(yAxisLabels[2]) + ggplot2::ylab(xAxisLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
                    ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]),
                                   axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
-                                  axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
+                                  axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank(),
                                   axis.ticks.x = if(showXtickLabels == TRUE) ggplot2::element_line() else ggplot2::element_blank(),
-                                  axis.ticks.y = if(showYtickLabels == TRUE) ggplot2::element_line() else ggplot2::element_blank(),
                                   axis.title = ggplot2::element_text(size = fontSizes[2], colour = "black"), legend.title = ggplot2::element_text(size = fontSizes[4]),
                                   legend.text = ggplot2::element_text(size = fontSizes[5]))
       stripPlot <- stripPlot + ggplot2::coord_flip()
@@ -74,10 +73,20 @@ setMethod("plotFeatureClasses", "ExpressionSet",
                                             legend.title = ggplot2::element_text(size = fontSizes[4]),
                                             legend.text = ggplot2::element_text(size = fontSizes[5])) +
                              ggplot2::labs(x = NULL, y = yAxisLabels[1])
-      bothGraphics <- gridExtra::arrangeGrob(densPlot, stripPlot, nrow = 2,
+      densityGraphicsTable <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(densPlot))
+      stripGraphicsTable <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(stripPlot))
+      maxWidth = grid::unit.pmax(densityGraphicsTable[["widths"]][2:3], stripGraphicsTable[["widths"]][2:3])
+      densityGraphicsTable[["widths"]][2:3] <- maxWidth
+      stripGraphicsTable[["widths"]][2:3] <- maxWidth
+      
+      bothGraphics <- gridExtra::arrangeGrob(densityGraphicsTable, stripGraphicsTable, nrow = 2,
                                               top = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
       if(plot == TRUE)
+      {
         grid::grid.draw(bothGraphics)
+        if(featureRow != rows[length(rows)])
+          grid::grid.newpage()
+      }
       bothGraphics
     } else if(whichPlots == "density")
     {
