@@ -44,9 +44,8 @@ setMethod("plotFeatureClasses", "ExpressionSet",
     {
       densPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = expr, colour = classes)) +
         ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = 1) +
-        ggplot2::scale_colour_manual("Class", values = c("red", "blue")) +
-        ggplot2::scale_x_continuous(limits = expressionLimits, breaks = xLabelPositions) + 
-        ggplot2::scale_y_continuous(breaks = yLabelPositions)
+        ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::coord_cartesian(xlim = expressionLimits) +
+        ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(breaks = yLabelPositions)
     }
 
     if(whichPlots %in% c("both", "stripchart"))
