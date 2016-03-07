@@ -15,7 +15,7 @@
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
+                   yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Analysis", yLabel = performanceName,
                    margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 }
@@ -32,9 +32,9 @@
   \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}.}
   \item{boxLineColouring}{A factor to colour the box lines by.}
   \item{boxLineColours}{A vector of colours, one for each level of \code{boxLineColouring}.}
-  \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}     
+  \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}    
   \item{columnVariable}{The slot name that different levels of are plotted as separate columns of boxplots.}
-  \item{yMax}{The maximum value of the percentage to plot.}
+  \item{yLimits}{The minimum and maximum value of the performance metric to plot.}
   \item{fontSizes}{A vector of length 4. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the font size of the

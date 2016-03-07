@@ -222,7 +222,7 @@ setMethod("selectionPlot", "list",
     legendPosition <- ifelse(showLegend == TRUE, "right", "none")
     selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "overlap",
                             fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL))) +
-                            ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+                            ggplot2::coord_cartesian(ylim = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                             ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
     if(legendPosition != "none")
       selectionPlot <- selectionPlot + ggplot2::labs(colour = switch(boxLineColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), fill = switch(boxFillColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection"))

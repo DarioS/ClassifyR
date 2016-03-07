@@ -12,7 +12,7 @@ setMethod("performancePlot", "list",
                    boxLineColours = NULL,
                    rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
                    columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   yMax = 1, fontSizes = c(24, 16, 12, 12), title = NULL,
+                   yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Analysis", yLabel = performanceName,
                    margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 {
@@ -63,7 +63,7 @@ setMethod("performancePlot", "list",
   }
 
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
-  performancePlot <- ggplot2::ggplot() + ggplot2::scale_y_continuous(limits = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+  performancePlot <- ggplot2::ggplot() + ggplot2::coord_cartesian(ylim = yLimits) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
 
   # Compatible with ggplot2 1.0.1.
