@@ -3,7 +3,7 @@
 \alias{distribution,ClassifyResult-method}
 \title{Get Frequencies of Feature Selection and Sample Errors}
 \description{There are two modes. For aggregating feature selection results, the function
-counts the number of times each feature was selected in all cross validations. For aggregating
+counts the number of times each feature was selected in all cross-validations. For aggregating
 classification results, the error rate for each sample is calculated. This is useful in
 identifying outlier samples that are difficult to classify.
 }

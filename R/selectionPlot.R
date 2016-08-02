@@ -37,7 +37,7 @@ setMethod("selectionPlot", "list",
   {
     results <- lapply(results, function(result)
     {
-      if(result@validation[[1]] == "fold")  # Unlist the folds of Resample and Fold.
+      if(result@validation[[1]] == "resampleFold")  # Unlist the folds of Resample and Fold.
         result@selectResult@chosenFeatures <- unlist(features(result), recursive = FALSE)
       result
     })

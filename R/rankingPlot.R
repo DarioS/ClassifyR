@@ -53,7 +53,7 @@ setMethod("rankingPlot", "list",
   {
     results <- lapply(results, function(result)
     {
-      if(result@validation[[1]] == "fold")  # Unlist the folds of Resample and Fold.
+      if(result@validation[[1]] == "resampleFold")  # Unlist the folds of Resample and Fold.
         result@selectResult@rankedFeatures <- unlist(result@selectResult@rankedFeatures, recursive = FALSE)
       result
     })

@@ -71,7 +71,7 @@
                                label = rep(c("Healthy", "Cancer"), each = 10)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
-                            predicted, actual, list("fold", 2, 2))
+                            predicted, actual, list("resampleFold", 2, 2))
   result1 <- calcPerformance(result1, "f")
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                           label = rep(c("Healthy", "Cancer"), each = 50))

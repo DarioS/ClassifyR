@@ -192,7 +192,7 @@ setMethod("show", c("ClassifyResult"),
             cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
-            if(object@validation[[1]] %in% c("split", "leave", "independent"))
+            if(object@validation[[1]] != "resampleFold")
             {
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of row indices.\n", sep = '')
             } else # Resample and fold. Nested lists.
@@ -214,6 +214,8 @@ setMethod("show", c("ClassifyResult"),
             else if(object@validation[[1]] == "split")
               cat("Split cross-validation, ", object@validation[[2]], " percent of samples in test set.\n",
                   sep = '')
+            else if(object@validation[[1]] == "resampleFold")
+              cat(object@validation[[2]], "-fold cross-validation.\n", sep = '')
             else if(object@validation[[1]] == "independent")
               cat("Independent test set.\n")
             else

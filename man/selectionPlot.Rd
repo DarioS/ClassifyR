@@ -112,7 +112,7 @@ Additionally, a heatmap of selection size frequencies can be made.
                             rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(predicted), actual, list("fold", 2, 2))
+                            list(predicted), actual, list("resampleFold", 2, 2))
   
   predicted[, "label"] <- sample(predicted[, "label"])
   rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
@@ -120,7 +120,7 @@ Additionally, a heatmap of selection size frequencies can be made.
                             rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(predicted), actual, validation = list("fold", 2, 2))
+                            list(predicted), actual, validation = list("resampleFold", 2, 2))
                             
   selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName")
   

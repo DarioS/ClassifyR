@@ -11,7 +11,7 @@ setMethod("runTests", c("matrix"),
 })
 
 setMethod("runTests", c("ExpressionSet"),
-    function(expression, datasetName, classificationName, validation = c("bootstrap", "leaveOut"),
+    function(expression, datasetName, classificationName, validation = c("bootstrap", "leaveOut", "fold"),
              bootMode = c("fold", "split"),
              resamples = 100, percent = 25, folds = 5, leave = 2,
              seed, parallelParams = bpparam(),
@@ -45,7 +45,7 @@ setMethod("runTests", c("ExpressionSet"),
         message("Processing sample set ", sampleNumber, '.')
       if(bootMode == "fold")
       {
-        lapply(1:length(sampleFolds), function(foldIndex)
+        lapply(1:folds, function(foldIndex)
         {
           runTest(expression, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
@@ -55,8 +55,8 @@ setMethod("runTests", c("ExpressionSet"),
         runTest(expression, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
-    }, samplesFolds, as.list(1:length(samplesFolds)), BPPARAM = parallelParams, SIMPLIFY = FALSE)
-  } else # leave k out.
+    }, samplesFolds, as.list(1:resamples), BPPARAM = parallelParams, SIMPLIFY = FALSE)
+  } else if(validation == "leave") # leave k out.
   {
     testSamples <- as.data.frame(combn(ncol(expression), leave))
     trainingSamples <- lapply(testSamples, function(sample) setdiff(1:ncol(expression), sample))
@@ -68,20 +68,32 @@ setMethod("runTests", c("ExpressionSet"),
               params = params, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
+  } else { # Unresampled, ordinary k-fold cross-validation.
+    sampleFold <- rep(1:folds, length.out = ncol(expression))
+    samplesFolds <- split(1:ncol(expression), sampleFold)
+    
+    if(verbose >= 1)
+      message("Processing ", folds, "-fold cross-validation.")
+    results <- bplapply(1:folds, function(foldIndex)
+    {
+      runTest(expression, training = unlist(samplesFolds[-foldIndex]),
+              testing = samplesFolds[[foldIndex]], params = params, verbose = verbose,
+              .iteration = foldIndex)
+    }, BPPARAM = parallelParams)
   }
   
-  if(bootMode %in% c("split", "leave"))
+  if(validation == "bootstrap" && bootMode == "split" || validation %in% c("leaveOut", "fold"))
   {
     resultErrors <- sapply(results, function(result) is.character(result))
     if(sum(resultErrors) == length(results))
     {
       message("Error: All cross-validations had an error.")
       return(results)
-    } else if(sum(resultErrors) != 0) # Filter out error cross-validations.
+    } else if(sum(resultErrors) != 0) # Filter out cross-validations resulting in error.
     {
       results <- results[!resultErrors]
     }
-  } else { # "fold" has nested lists.
+  } else { # Result has nested lists, because of bootstrap resampling with folding.
     resultErrors <- lapply(results, function(resample) lapply(resample, is.character))
     if(sum(unlist(resultErrors)) == resamples * folds)
     {
@@ -179,7 +191,7 @@ setMethod("runTests", c("ExpressionSet"),
       resultsLists
     })
     names(resultsByVariety) <- varietyNames
-  } else { # leave k out.
+  } else { # leave k out or ordinary, unresampled k-fold cross-validation.
     if(class(results[[1]][["predictions"]]) == "list")
     {
       multipleVarieties <- TRUE
@@ -228,7 +240,7 @@ setMethod("runTests", c("ExpressionSet"),
                                        score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"]))
                 
       })
-    } else { 
+    } else { # leave k out or ordinary, unresampled k-fold cross-validation.
       list(switch(class(resultVariety[["predictions"]]),
              factor = data.frame(sample = resultVariety[["testSet"]], label = resultVariety[["predictions"]]),
              numeric = data.frame(sample = resultVariety[["testSet"]], score = resultVariety[["predictions"]]),
@@ -247,11 +259,13 @@ setMethod("runTests", c("ExpressionSet"),
   if(validation == "bootstrap")
   {
     if(bootMode == "fold")
-      validationInfo <- list("fold", resamples, folds)
+      validationInfo <- list("resampleFold", resamples, folds)
     else
       validationInfo <- list("split", resamples, percent)
-  } else {
+  } else if(validation == "leave") {
     validationInfo <- list("leave", leave)
+  } else {
+    validationInfo <- list("fold", folds)
   }
 
   if(!"tuneParams" %in% names(params[[match("TrainParams", stagesParamClasses)]]@otherParams)) # No tuning specified.

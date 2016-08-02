@@ -34,7 +34,7 @@ It consists of data transformation, feature selection, training and testing.
 }
 \details{
   This function only performs one classification and prediction. See \code{\link{runTests}}
-  for a driver function that does cross validation and uses this function. \code{datasetName}
+  for a driver function that does cross-validation and uses this function. \code{datasetName}
   and \code{classificationName} need to be provided.
 }
 \value{

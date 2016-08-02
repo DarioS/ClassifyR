@@ -53,7 +53,7 @@ be discretised to.
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
-                            list(predicted), actual, list("fold", 100, 5))
+                            list(predicted), actual, list("resampleFold", 100, 5))
   predicted[, "label"] <- sample(predicted[, "label"])
   result2 <- ClassifyResult("Example", "Differential Variability", "F-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),

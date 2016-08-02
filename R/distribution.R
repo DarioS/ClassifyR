@@ -37,7 +37,7 @@ setMethod("distribution", "ClassifyResult",
   if(dataType == "features" && summaryType == "percentage")
   {
     crossValidations <- length(features(result))
-    if(result@validation[[1]] == "fold")
+    if(result@validation[[1]] == "resampleFold")
       crossValidations <- crossValidations * length(features(result)[[1]])
     scores <- scores / crossValidations * 100
   }
