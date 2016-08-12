@@ -209,18 +209,7 @@ setMethod("show", c("ClassifyResult"),
                   subListText, " of row indices.\n", sep = '')
             }            
             cat("Validation: ")
-            if(object@validation[[1]] == "leave")
-              cat("Leave ", object@validation[[2]], " out cross-validation.\n", sep = '')
-            else if(object@validation[[1]] == "split")
-              cat("Split cross-validation, ", object@validation[[2]], " percent of samples in test set.\n",
-                  sep = '')
-            else if(object@validation[[1]] == "resampleFold")
-              cat(object@validation[[2]], "-fold cross-validation.\n", sep = '')
-            else if(object@validation[[1]] == "independent")
-              cat("Independent test set.\n")
-            else
-              cat(object@validation[[3]], " fold cross-validation of ", object@validation[[2]],
-                  " resamples.\n", sep = '')
+            cat(.validationText(object), ".\n", sep = '')
             cat("Predictions: List of data frames of length ", length(object@predictions),
                 ".\n", sep = '')
             if(length(object@performance) > 0)

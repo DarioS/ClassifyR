@@ -37,7 +37,7 @@ setMethod("performancePlot", "list",
                            else result@performance[[performanceName]]
   })
   performanceLengths <- sapply(performances, length)
-  
+
   plotData <- data.frame(dataset = rep(sapply(results, function(result) result@datasetName), performanceLengths),
                          analysis = rep(sapply(results, function(result) result@classificationName), performanceLengths),
                          selection = rep(sapply(results, function(result) result@selectResult@selectionName), performanceLengths),
@@ -71,25 +71,18 @@ setMethod("performancePlot", "list",
     performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = boxFillColours)
   if(!is.null(boxLineColours))
     performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = boxLineColours)
-  
-  performanceCounts <- as.data.frame(table(plotData[, 1:4]))
-  if(any(performanceCounts[, "Freq"] > 1))
+
+  analysisVarieties <- split(plotData, plotData[, 1:4])
+  performancesByVariety <- sapply(analysisVarieties, nrow)
+  if(any(performancesByVariety > 1))
   {
-    multiplePerformance <- subset(performanceCounts, Freq > 1)
-    multipleRows <- rowSums(apply(multiplePerformance[, 1:4], 1, function(parameters)
-      apply(plotData[, 1:4], 1, function(plotRow) all(plotRow == parameters))
-    )) > 0
-    multiPlotData <- plotData[multipleRows, ]
+    multiPlotData <- do.call(rbind, analysisVarieties[performancesByVariety > 1])
     performancePlot <- performancePlot + ggplot2::geom_boxplot(data = multiPlotData, ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "performance",
                                                                                                          fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL)))
   }
-  if(any(performanceCounts[, "Freq"] == 1))
+  if(any(performancesByVariety == 1))
   {
-    singlePerformance <- subset(performanceCounts, Freq == 1)
-    singleRows <- rowSums(apply(singlePerformance[, 1:4], 1, function(parameters)
-      apply(plotData[, 1:4], 1, function(plotRow) all(plotRow == parameters))
-    )) > 0
-    singlePlotData <- plotData[singleRows, ]
+    singlePlotData <- do.call(rbind, analysisVarieties[performancesByVariety == 1])
     performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes_string(x = switch(xVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection"), y = "performance", fill = switch(boxFillColouring, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL), colour = switch(boxLineColouring, validation = "validation", datasetName = "dataset", selectionName = "selection", classificationName = "analysis", None = NULL)))    
   }
   

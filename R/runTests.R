@@ -56,7 +56,7 @@ setMethod("runTests", c("ExpressionSet"),
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:resamples), BPPARAM = parallelParams, SIMPLIFY = FALSE)
-  } else if(validation == "leave") # leave k out.
+  } else if(validation == "leaveOut") # leave k out.
   {
     testSamples <- as.data.frame(combn(ncol(expression), leave))
     trainingSamples <- lapply(testSamples, function(sample) setdiff(1:ncol(expression), sample))
@@ -262,7 +262,7 @@ setMethod("runTests", c("ExpressionSet"),
       validationInfo <- list("resampleFold", resamples, folds)
     else
       validationInfo <- list("split", resamples, percent)
-  } else if(validation == "leave") {
+  } else if(validation == "leaveOut") {
     validationInfo <- list("leave", leave)
   } else {
     validationInfo <- list("fold", folds)
