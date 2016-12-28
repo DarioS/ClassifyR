@@ -61,7 +61,7 @@ setMethod("errorMap", "list",
   
   classData <- data.frame(Class = knownClasses)
   classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
-    ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class, height = 10)) +
+    ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
     ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
     ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
     ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, -1, 0), "lines"),
@@ -96,7 +96,7 @@ setMethod("errorMap", "list",
     errorColours <- originalErrorColours
     
     classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
-      ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class, height = 10)) +
+      ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
       ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
       ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
       ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, -1, 0), "lines"),
@@ -153,7 +153,7 @@ setMethod("errorMap", "list",
   if(showLegends == TRUE)
   {
     legendWidth <- sum(classLegend[["widths"]])
-    legendHeight <- firstLegend[["heights"]][2]
+    legendHeight <- firstLegend[["heights"]][3]
     widths <- unit.c(unit(1, "npc") - legendWidth, legendWidth)
     heights <- unit.c(unit(1 / (mapHeight + 1), "npc"), legendHeight)
     if(is.list(errorColours))
