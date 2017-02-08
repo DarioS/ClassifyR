@@ -25,11 +25,10 @@
   \describe{
             \item{\code{classifier}}{A function which will construct a classifier, and also
             possibly make the predictions. The first argument must be a \code{\link{matrix}}
-            object. The second argument must be a vector of classes. The third argument must be
-            \code{verbose}. If doesTests is \code{TRUE}, the third argument must be a \code{matrix}
-            of test data and the fourth argument is \code{verbose}. The function's return value can
-            be either a trained classifier when \code{doesTests} is \code{FALSE} or a
-            vector of class predictions if \code{doesTests} is \code{TRUE}.}
+            object. The second argument must be a vector of classes. If doesTests is \code{TRUE}, the third
+            argument must be a \code{matrix} of test data. The function must also accept a parameter named
+            \code{verbose} The function's return value can be either a trained classifier when
+            \code{doesTests} is \code{FALSE} or a vector of class predictions if \code{doesTests} is \code{TRUE}.}
 	          \item{\code{transposeExpression}}{Set to \code{TRUE} if \code{classifier} expects
             features as columns.}
             \item{\code{doesTests}}{Set to \code{TRUE} if \code{classifier} also performs
@@ -47,4 +46,5 @@ if(require(sparsediscrim))
   trainParams <- TrainParams(dlda, transposeExpression = TRUE, doesTests = FALSE)
 # sparsediscrim has a separate predict method for trained DLDA objects.
 # dlda expects features in columns, and samples in rows.
+# It doesn't formally have a verbose parameter, but it is effectively consumed by ... in its formal definition.
 }

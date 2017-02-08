@@ -14,7 +14,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{SelectResult(datasetName, selectionName, rankedFeatures, chosenFeatures}}
+      \code{SelectResult(datasetName, selectionName, rankedFeatures, chosenFeatures)}}
     }
   \describe{
             \item{\code{datasetName}}{A name associated with the dataset used.}

@@ -159,7 +159,7 @@ setMethod("show", c("SelectResult"),
             if(length(selectionSizes) > 1)
               cat("Selection Size Range: Between ", min(selectionSizes), " and ", max(selectionSizes), " features.\n", sep = '')
             else
-              cat("Selection Size : ", selectionSizes[[1]], " features.\n", sep = '')
+              cat("Selection Size: ", selectionSizes[[1]], " features.\n", sep = '')
           })
 
 setGeneric("ClassifyResult", function(datasetName, classificationName, selectionName, originalNames, originalFeatures, ...)

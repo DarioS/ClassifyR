@@ -187,6 +187,7 @@ setMethod("rankingPlot", "list",
   
   if(is.null(lineColours) && lineColourVariable != "None")
     lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
+  legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   
   overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = "top", y = "overlap",
                           colour = switch(lineColourVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL),
@@ -194,7 +195,7 @@ setMethod("rankingPlot", "list",
                           ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = pointSize) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::coord_cartesian(ylim = c(0, yMax)) +
                           ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
                           ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection")) +
-                          ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin) +
+                          ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = legendPosition, legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin) +
                           ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)),
                                           shape = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)))
   

@@ -28,7 +28,7 @@
             \item{\code{featureSelection}}{Either a function which will do the selection
             or a list of such functions. For a particular function, the first argument must
             be an \code{\link[Biobase]{ExpressionSet}} object. The function's
-            return value must be a vector of row indices of genes that were selected.}
+            return value must be a \code{\link{SelectResult}} object.}
             \item{\code{selectionName}}{A name to identify this selection method by.}
             \item{\code{minPresence}}{If a list of functions was provided, how many of those
             must a feature have been selected by to be used in classification. 1 is equivalent
