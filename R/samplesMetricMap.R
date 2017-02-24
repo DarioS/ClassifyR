@@ -1,10 +1,11 @@
-setGeneric("errorMap", function(results, ...)
-{standardGeneric("errorMap")})
+setGeneric("samplesMetricMap", function(results, ...)
+{standardGeneric("samplesMetricMap")})
 
-setMethod("errorMap", "list", 
+setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = c("classificationName", "datasetName", "selectionName", "validation"),
-                   errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
+                   metric = c("error", "accuracy"),
+                   metricColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
                                        c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
@@ -16,47 +17,58 @@ setMethod("errorMap", "list",
     stop("The package 'gridExtra' could not be found. Please install it.")       
   if(!requireNamespace("gtable", quietly = TRUE))
     stop("The package 'gtable' could not be found. Please install it.")
-  comparison <- match.arg(comparison)
             
-  nColours <- if(is.list(errorColours)) length(errorColours[[1]]) else length(errorColours)
-  errorBinEnds <- seq(0, 1, 1/nColours)
+  comparison <- match.arg(comparison)
+  metric <- match.arg(metric)
+  metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
+            
+  nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
+  metricBinEnds <- seq(0, 1, 1/nColours)
   knownClasses <- actualClasses(results[[1]])
   
-  errors <- lapply(results, function(result)
+  metricValues <- lapply(results, function(result)
   {
     resultTable <- do.call(rbind, predictions(result))
-    sampleErrors <- by(resultTable, resultTable[, "sample"],
-                       function(samplePredictions)
-                         sum(samplePredictions[, "label"] != result@actualClasses[samplePredictions[1, "sample"]]))
-    cut(sampleErrors / table(resultTable[, "sample"]), errorBinEnds, include.lowest = TRUE)
+    sampleMetricValues <- by(resultTable, resultTable[, "sample"],
+                          function(samplePredictions)
+                          {
+                            predictedClasses <- samplePredictions[, "label"]
+                            actualClasses <- result@actualClasses[samplePredictions[1, "sample"]]
+                            if(metric == "error")
+                              sum(predictedClasses != actualClasses)
+                            else
+                              sum(predictedClasses == actualClasses)
+                          })
+                         
+    cut(sampleMetricValues / table(resultTable[, "sample"]), metricBinEnds, include.lowest = TRUE)
   })
-  classedErrors <- lapply(errors, function(errorSet)
+  classedMetricValues <- lapply(metricValues, function(metricSet)
   {
-    errorSet <- factor(paste(knownClasses, errorSet, sep = ','),
-                       levels = c(t(outer(levels(knownClasses), levels(errorSet), paste, sep = ','))))
+    metricSet <- factor(paste(knownClasses, metricSet, sep = ','),
+                       levels = c(t(outer(levels(knownClasses), levels(metricSet), paste, sep = ','))))
   })
   
   ordering <- order(knownClasses)
   knownClasses <- knownClasses[ordering]
-  errors <- lapply(errors, function(resultErrors) resultErrors[ordering])
-  classedErrors <- lapply(classedErrors, function(resultErrors) resultErrors[ordering])
+  metricValues <- lapply(metricValues, function(resultmetricValues) resultmetricValues[ordering])
+  classedMetricValues <- lapply(classedMetricValues, function(resultmetricValues) resultmetricValues[ordering])
   compareFactor <- switch(comparison, classificationName = sapply(results, function(result) result@classificationName),
                                       datasetName = sapply(results, function(result) result@datasetName),
                                       selectionName = sapply(results, function(result) result@selectResult@selectionName),
                                       validation = sapply(results, function(result) .validationText(result)))
   
   plotData <- data.frame(name = factor(rep(sampleNames(results[[1]])[ordering], length(results)), levels = sampleNames(results[[1]])[ordering]),
-                         type = factor(rep(compareFactor, sapply(errors, length)), levels = rev(compareFactor)),
+                         type = factor(rep(compareFactor, sapply(metricValues, length)), levels = rev(compareFactor)),
                          class = rep(knownClasses, length(results)),
-                         Error = unlist(errors))
+                         Metric = unlist(metricValues))
   
   originalLegends <- showLegends                       
-  originalErrorColours <- errorColours
+  originalmetricColours <- metricColours
   showLegends <- FALSE
-  if(is.list(errorColours))
+  if(is.list(metricColours))
   {
-    errorColours <- unlist(errorColours)
-    plotData[, "Error"] <- unlist(classedErrors)
+    metricColours <- unlist(metricColours)
+    plotData[, "Metric"] <- unlist(classedMetricValues)
   }                         
   
   classData <- data.frame(Class = knownClasses)
@@ -70,8 +82,8 @@ setMethod("errorMap", "list",
                                                    legend.position = ifelse(showLegends, "right", "none"),
                                                    legend.key.size = legendSize)
                                                            
-  errorPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Error)) +
-    ggplot2::scale_fill_manual(values = errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+  metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
+    ggplot2::scale_fill_manual(values = metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
     ggplot2::theme(axis.ticks = ggplot2::element_blank(),
                    axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
@@ -85,15 +97,15 @@ setMethod("errorMap", "list",
                    legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
   
   classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
-  errorGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
-  commonWidth <- grid::unit.pmax(classGrob[["widths"]], errorGrob[["widths"]])
+  metricGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot))
+  commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]])
   classGrob[["widths"]] <- commonWidth
-  errorGrob[["widths"]] <- commonWidth
+  metricGrob[["widths"]] <- commonWidth
   
   if(originalLegends == TRUE)
   {
     showLegends <- TRUE
-    errorColours <- originalErrorColours
+    metricColours <- originalmetricColours
     
     classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
       ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
@@ -106,10 +118,10 @@ setMethod("errorMap", "list",
                                                      legend.key.size = legendSize)
     
     classGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))            
-    plotData[, "Error"] <- unlist(errors)
-    errorPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Error)) +
-      ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[1], "Error"),
-                                 values = if(is.list(errorColours)) errorColours[[1]] else errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+    plotData[, "Metric"] <- unlist(metricValues)
+    metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
+      ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[1], metricText),
+                                 values = if(is.list(metricColours)) metricColours[[1]] else metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
                      axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
@@ -122,17 +134,17 @@ setMethod("errorMap", "list",
                      legend.position = ifelse(showLegends, "right", "none"),
                      legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
     
-    errorGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot))
-    commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], errorGrobUnused[["widths"]])                   
-    errorGrobUnused[["widths"]] <- commonWidth  
+    metricGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot))
+    commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], metricGrobUnused[["widths"]])                   
+    metricGrobUnused[["widths"]] <- commonWidth  
     classGrobUnused[["widths"]] <- commonWidth  
     classLegend <- classGrobUnused[["grobs"]][[which(sapply(classGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     if(showLegends == TRUE)    
-      firstLegend <- errorGrobUnused[["grobs"]][[which(sapply(errorGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
+      firstLegend <- metricGrobUnused[["grobs"]][[which(sapply(metricGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     
-    errorPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Error)) +
-      ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[2], "Error"),
-                                 values = if(is.list(errorColours)) errorColours[[2]] else errorColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+    metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
+      ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[2], metricText),
+                                 values = if(is.list(metricColours)) metricColours[[2]] else metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
                      axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
@@ -145,18 +157,18 @@ setMethod("errorMap", "list",
                      legend.position = ifelse(showLegends, "right", "none"),
                      legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
     
-    errorGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(errorPlot)) 
-    errorGrobUnused[["widths"]] <- commonWidth  
-    secondLegend <- errorGrobUnused[["grobs"]][[which(sapply(errorGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
+    metricGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot)) 
+    metricGrobUnused[["widths"]] <- commonWidth  
+    secondLegend <- metricGrobUnused[["grobs"]][[which(sapply(metricGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
   }
   
   if(showLegends == TRUE)
   {
-    legendWidth <- sum(classLegend[["widths"]])
+    legendWidth <- max(sum(classLegend[["widths"]]), sum(firstLegend[["widths"]]))
     legendHeight <- firstLegend[["heights"]][3]
     widths <- unit.c(unit(1, "npc") - legendWidth, legendWidth)
     heights <- unit.c(unit(1 / (mapHeight + 1), "npc"), legendHeight)
-    if(is.list(errorColours))
+    if(is.list(metricColours))
     {
       heights <- unit.c(heights, legendHeight)
       heights <- unit.c(heights, unit(1, "npc") - 2 * legendHeight - unit(1 / (mapHeight + 1), "npc"))
@@ -175,20 +187,20 @@ setMethod("errorMap", "list",
   grobTable <- gtable::gtable_add_grob(grobTable, classGrob, 1, 1)
   if(showLegends == TRUE)
   {
-    if(is.list(errorColours))
-      grobTable <- gtable::gtable_add_grob(grobTable, errorGrob, 2, 1, 4, 1)
+    if(is.list(metricColours))
+      grobTable <- gtable::gtable_add_grob(grobTable, metricGrob, 2, 1, 4, 1)
     else
-      grobTable <- gtable::gtable_add_grob(grobTable, errorGrob, 2, 1, 3, 1)
+      grobTable <- gtable::gtable_add_grob(grobTable, metricGrob, 2, 1, 3, 1)
   } else
   {
-    grobTable <- gtable::gtable_add_grob(grobTable, errorGrob, 2, 1)
+    grobTable <- gtable::gtable_add_grob(grobTable, metricGrob, 2, 1)
   }
   if(showLegends == TRUE)
   {  
     grobTable <- gtable::gtable_add_grob(grobTable, classLegend, 1, 2)
     grobTable <- gtable::gtable_add_grob(grobTable, firstLegend, 2, 2)
   }
-  if(showLegends == TRUE && is.list(errorColours))
+  if(showLegends == TRUE && is.list(metricColours))
   {
     grobTable <- gtable::gtable_add_grob(grobTable, secondLegend, 3, 2)
     grobTable <- gtable::gtable_add_grob(grobTable, grob(), 4, 2)

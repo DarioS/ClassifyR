@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for two-class classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 1.9.2
-Date: 2017-02-08
+Version: 1.9.3
+Date: 2017-02-24
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -24,14 +24,14 @@ Description: The software formalises a framework for classification in R.
              and differential distribution are included. Additional functions
              may be developed by the user, by creating an interface to the framework.
 Collate: bartlettSelection.R classes.R utilities.R calcPerformance.R classifyInterface.R
-         DMDselection.R edgeRselection.R errorMap.R fisherDiscriminant.R distribution.R
-        getLocationsAndScales.R KolmogorovSmirnovSelection.R
-        KullbackLeiblerSelection.R leveneSelection.R
-        likelihoodRatioSelection.R limmaSelection.R medianDifferenceSelection.R mixmodels.R
-        naiveBayesKernel.R nearestShrunkenCentroidSelectionInterface.R
-        nearestShrunkenCentroidTrainInterface.R
-        nearestShrunkenCentroidPredictInterface.R performancePlot.R
-        plotFeatureClasses.R previousSelection.R rankingPlot.R ROCplot.R
-        runTest.R runTests.R selectionPlot.R subtractFromLocation.R
+         DMDselection.R edgeRselection.R fisherDiscriminant.R distribution.R
+         getLocationsAndScales.R KolmogorovSmirnovSelection.R
+         KullbackLeiblerSelection.R leveneSelection.R
+         likelihoodRatioSelection.R limmaSelection.R medianDifferenceSelection.R mixmodels.R
+         naiveBayesKernel.R nearestShrunkenCentroidSelectionInterface.R
+         nearestShrunkenCentroidTrainInterface.R
+         nearestShrunkenCentroidPredictInterface.R performancePlot.R
+         plotFeatureClasses.R previousSelection.R rankingPlot.R ROCplot.R
+         runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

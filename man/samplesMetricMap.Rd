@@ -1,15 +1,16 @@
-\name{errorMap}
-\alias{errorMap}
-\alias{errorMap,list-method}
-\title{Plot a Grid of Sample Error Rates}
+\name{samplesMetricMap}
+\alias{samplesMetricMap}
+\alias{samplesMetricMap,list-method}
+\title{Plot a Grid of Sample Error Rates or Accuracies}
 \description{A grid of coloured tiles is drawn. There is one column for each sample
 and one row for each classification result.
        }
 \usage{
-  \S4method{errorMap}{list}(results,
+  \S4method{samplesMetricMap}{list}(results,
                    comparison = c("classificationName", "datasetName", "selectionName", "validation"),
-                   errorColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
-                                       c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
+                   metric = c("error", "accuracy"),
+                   metricColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
+                                        c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
                    classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", 
                    showXtickLabels = TRUE, showYtickLabels = TRUE, yAxisLabel = "Analysis",
@@ -18,7 +19,8 @@ and one row for each classification result.
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{comparison}{The aspect of the experimental design to compare.}
-  \item{errorColours}{A vector of colours for error levels.}
+  \item{metric}{The sample-wise metric to calculate and plot.}
+  \item{metricColours}{A vector of colours for metric levels.}
   \item{classColours}{Either a vector of colours for class levels if both classes should
                       have same colour, or a list of length 2, with each component
                       being a vector of the same length. The vector has the colour gradient
@@ -39,7 +41,7 @@ and one row for each classification result.
 }
 \details{
 The names of \code{results} determine the row names that will be in the plot.
-The length of \code{errorColours} determines how many bins the error rates will
+The length of \code{metricColours} determines how many bins the metric values will
 be discretised to.
 }
 \value{
@@ -58,7 +60,7 @@ be discretised to.
   result2 <- ClassifyResult("Example", "Differential Variability", "F-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
-  wholePlot <- errorMap(list(Gene = result1, Protein = result2))
+  wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2))
   # if(require(ggplot2))
     # ggsave("wholePlot.png", wholePlot)
 }

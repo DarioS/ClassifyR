@@ -243,12 +243,13 @@ The error rates are higher than for deviation or expression.
 
 ### Comparison of Methods
 
-The *errorMap* function allows the visual comparison of sample-wise performance measures from different *ClassifyResult* objects.
+The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects.
 
 ```{r, fig.width = 10, fig.height = 7}
 library(grid)
 resultsList <- list(Expression = DEresults, Variability = DVresults)
-errorPlot <- errorMap(resultsList)
+errorPlot <- samplesMetricMap(resultsList)
+accuracyPlot <- samplesMetricMap(resultsList, metric = "accuracy")
 ```
 
 The *performancePlot* function allows the comparison of overall performance measures, such as accuracy and error rate.

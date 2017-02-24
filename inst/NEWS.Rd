@@ -2,6 +2,11 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 1.10.0}{\itemize{
+  \item
+  errorMap replaced by samplesMetricMap. The plot can now show either error rate or accuracy.
+}}
+
 \section{Version 1.8.0}{\itemize{
   \item
   Ordinary k-fold cross-validation option added.
