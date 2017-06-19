@@ -90,7 +90,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
     
     crosses <- lapply(densities, function(densityPair) .densityCrossover(densityPair[[1]], densityPair[[2]]))
     
-    posteriorsHorizontal <- mapply(function(testSamples, oneClassModel, otherClassModel, featureCrosses)
+    posteriorsHorizontal <- do.call(cbind, mapply(function(testSamples, oneClassModel, otherClassModel, featureCrosses)
     {
       featureValues <- c(oneClassModel@data, otherClassModel@data)
       classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
@@ -107,7 +107,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
       # Second element of second list in 'models' is unimportant information added by mixmod.
-    }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], crosses)
+    }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], crosses, SIMPLIFY = FALSE))
     
     if(weight != "sum differences")
     {
@@ -120,7 +120,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
   {
     if(verbose == 3)
       message("Calculating vertical differences between normal mixture densities.")
-    posteriorsVertical <- mapply(function(featureValues, oneClassModel, otherClassModel)
+    posteriorsVertical <- do.call(cbind, mapply(function(featureValues, oneClassModel, otherClassModel)
                           {
                             classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
                                            {
@@ -132,7 +132,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
                             classScores <- models[[2]][[2]] * classScores[[2]] - models[[1]][[2]] * classScores[[1]]
 
                             # Second element of second list in 'models' is unimportant information added by mixmod.
-                           }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]])
+                           }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], SIMPLIFY = FALSE))
     
     if(weight != "sum differences")
       posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
@@ -216,7 +216,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
     switch(returnType, label = predictionSet[, "class"],
            score = predictionSet[, "score"],
            both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
-  })
+  }, simplify = FALSE)
   attr(resultsList, "class") <- "list"
   attr(resultsList, "call") <- NULL
   
