@@ -64,7 +64,7 @@ setMethod("performancePlot", "list",
 
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   performancePlot <- ggplot2::ggplot() + ggplot2::coord_cartesian(ylim = yLimits) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1]), plot.margin = margin)
+                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
 
   # Compatible with ggplot2 1.0.1.
   if(!is.null(boxFillColours))

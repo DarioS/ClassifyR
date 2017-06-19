@@ -69,7 +69,7 @@ setMethod("distribution", "ClassifyResult",
           ggplot2::xlab(xLabel) + ggplot2::labs(x = xLabel, y = yLabel) + ggplot2::ggtitle(title) +
           ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]),
                          axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]),
-                         plot.title = ggplot2::element_text(size = fontSizes[1])))
+                         plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5)))
   }
   
   scores

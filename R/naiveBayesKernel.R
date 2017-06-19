@@ -54,7 +54,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       message("Calculating crossover points of class densities.")
     
     # Score for second class level.
-    posteriorsHorizontal <- mapply(function(featureDensities, featureSplines, testSamples)
+    posteriorsHorizontal <- do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
       otherScores <- classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
@@ -62,7 +62,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, densities, splines, as.data.frame(t(test)))
+    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE))
 
     if(weight != "sum differences")
     {
@@ -76,10 +76,10 @@ setMethod("naiveBayesKernel", "ExpressionSet",
     if(verbose == 3)
       message("Calculating vertical differences between densities.")
     
-    posteriorsVertical <- mapply(function(featureDensities, featureSplines, testSamples)
+    posteriorsVertical <- do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(t(test)))
+    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE))
     
     if(weight != "sum differences")
       posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
@@ -163,7 +163,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
                    switch(returnType, label = predictionSet[, "class"],
                           score = predictionSet[, "score"],
                           both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
-                 })
+                 }, simplify = FALSE)
 
   attr(resultsList, "class") <- "list"
   attr(resultsList, "call") <- NULL
