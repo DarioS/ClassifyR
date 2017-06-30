@@ -44,7 +44,7 @@ setMethod("plotFeatureClasses", "ExpressionSet",
     {
       densPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = expr, colour = classes)) +
         ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = 1) +
-        ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::coord_cartesian(xlim = expressionLimits) +
+        ggplot2::scale_colour_manual("Class", values = colours) + ggplot2::coord_cartesian(xlim = expressionLimits) +
         ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(breaks = yLabelPositions)
     }
 
@@ -52,8 +52,8 @@ setMethod("plotFeatureClasses", "ExpressionSet",
     {
       stripPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = classes, y = expr)) +
                    ggplot2::geom_dotplot(dotsize = 0.5, binaxis = "y", stackdir = "center", position = "dodge", ggplot2::aes(colour = classes)) +
-                   ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::xlab(yAxisLabels[2]) + ggplot2::ylab(xAxisLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
-                   ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]),
+                   ggplot2::scale_colour_manual("Class", values = colours) + ggplot2::xlab(yAxisLabels[2]) + ggplot2::ylab(xAxisLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
+                   ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5),
                                   axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                                   axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank(),
                                   axis.ticks.x = if(showXtickLabels == TRUE) ggplot2::element_line() else ggplot2::element_blank(),
@@ -90,7 +90,7 @@ setMethod("plotFeatureClasses", "ExpressionSet",
     } else if(whichPlots == "density")
     {
       densPlot <- densPlot + ggplot2::xlab(xAxisLabel) +  ggplot2::ylab(yAxisLabels[1]) +
-                  ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]),
+                  ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5),
                                  axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                                  axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                                  axis.ticks.x = if(showXtickLabels == TRUE) ggplot2::element_line() else ggplot2::element_blank(),
