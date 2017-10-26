@@ -21,26 +21,19 @@ setMethod("samplesMetricMap", "list",
   comparison <- match.arg(comparison)
   metric <- match.arg(metric)
   metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
-            
+  metricID <- switch(metric, error = "Sample-wise Error Rate", accuracy = "Sample-wise Accuracy")
+  allCalculated <- all(sapply(results, function(result) metricID %in% names(performance(result))))
+  if(!allCalculated)
+    stop("One or more classification results lack the calculated sample-specific metric.")
+  
   nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
   metricBinEnds <- seq(0, 1, 1/nColours)
   knownClasses <- actualClasses(results[[1]])
-  
+
   metricValues <- lapply(results, function(result)
   {
-    resultTable <- do.call(rbind, predictions(result))
-    sampleMetricValues <- by(resultTable, resultTable[, "sample"],
-                          function(samplePredictions)
-                          {
-                            predictedClasses <- samplePredictions[, "label"]
-                            actualClasses <- result@actualClasses[samplePredictions[1, "sample"]]
-                            if(metric == "error")
-                              sum(predictedClasses != actualClasses)
-                            else
-                              sum(predictedClasses == actualClasses)
-                          })
-                         
-    cut(sampleMetricValues / table(resultTable[, "sample"]), metricBinEnds, include.lowest = TRUE)
+    sampleMetricValues <- result@performance[[metricID]]
+    cut(sampleMetricValues, metricBinEnds, include.lowest = TRUE)
   })
   classedMetricValues <- lapply(metricValues, function(metricSet)
   {
@@ -61,7 +54,7 @@ setMethod("samplesMetricMap", "list",
                          type = factor(rep(compareFactor, sapply(metricValues, length)), levels = rev(compareFactor)),
                          class = rep(knownClasses, length(results)),
                          Metric = unlist(metricValues))
-  
+
   originalLegends <- showLegends                       
   originalmetricColours <- metricColours
   showLegends <- FALSE
@@ -81,13 +74,13 @@ setMethod("samplesMetricMap", "list",
                                                    legend.text = ggplot2::element_text(size = fontSizes[5]),
                                                    legend.position = ifelse(showLegends, "right", "none"),
                                                    legend.key.size = legendSize)
-                                                           
+                                                   
   metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
-    ggplot2::scale_fill_manual(values = metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+    ggplot2::scale_fill_manual(values = metricColours, na.value = "grey", drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
     ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                   axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                   axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                   axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
+                   axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                    axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                    axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                    plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
@@ -95,7 +88,7 @@ setMethod("samplesMetricMap", "list",
                    legend.text = ggplot2::element_text(size = fontSizes[5]),
                    legend.position = ifelse(showLegends, "right", "none"),
                    legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
-  
+
   classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
   metricGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot))
   commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]])
@@ -121,11 +114,11 @@ setMethod("samplesMetricMap", "list",
     plotData[, "Metric"] <- unlist(metricValues)
     metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
       ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[1], metricText),
-                                 values = if(is.list(metricColours)) metricColours[[1]] else metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+                                 values = if(is.list(metricColours)) metricColours[[1]] else metricColours, na.value = "grey", drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
+                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                      axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                      axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                      plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),
@@ -144,11 +137,11 @@ setMethod("samplesMetricMap", "list",
     
     metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
       ggplot2::scale_fill_manual(name = paste(levels(knownClasses)[2], metricText),
-                                 values = if(is.list(metricColours)) metricColours[[2]] else metricColours, drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+                                 values = if(is.list(metricColours)) metricColours[[2]] else metricColours, na.value = "grey", drop = FALSE) + ggplot2::scale_x_discrete(expand = c(0, 0)) +
       ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme_bw() +
       ggplot2::theme(axis.ticks = ggplot2::element_blank(),
-                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3]) else ggplot2::element_blank(),
-                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3]) else ggplot2::element_blank(),
+                     axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(angle = 45, hjust = 1, size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
+                     axis.text.y = if(showYtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
                      axis.title.x = ggplot2::element_text(size = fontSizes[2]),
                      axis.title.y = ggplot2::element_text(size = fontSizes[2]),
                      plot.margin = grid::unit(c(0, 1, 1, 1), "lines"),

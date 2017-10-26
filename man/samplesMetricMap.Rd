@@ -42,7 +42,9 @@ and one row for each classification result.
 \details{
 The names of \code{results} determine the row names that will be in the plot.
 The length of \code{metricColours} determines how many bins the metric values will
-be discretised to.
+be discretised to. Samples not present in any of the cross-validation's datasets
+(sometimes if a resampling with replacement scheme is used with few resamples)
+are coloured grey and labelled NA.
 }
 \value{
   A plot is produced and a grob is returned that can be saved to a graphics device.
@@ -52,7 +54,7 @@ be discretised to.
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                           label = rep(c("Healthy", "Cancer"), each = 50))
-  actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
+  actual <- factor(rep(c("Healthy", "Cancer"), each = 5), levels = c("Healthy", "Cancer"))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, list("resampleFold", 100, 5))
@@ -60,6 +62,8 @@ be discretised to.
   result2 <- ClassifyResult("Example", "Differential Variability", "F-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100), list(sample(10, 10)),
                             list(predicted), actual, validation = list("leave", 1))
+  result1 <- calcPerformance(result1, "sample error")
+  result2 <- calcPerformance(result2, "sample error")
   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2))
   # if(require(ggplot2))
     # ggsave("wholePlot.png", wholePlot)

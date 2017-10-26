@@ -2,6 +2,18 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 1.12.0}{\itemize{
+  \item
+  Alterations to make plots compatible with ggplot versions 2.2 and greater.
+  \item
+  calcPerformance can calculate some performance metrics for classification tasks based on datasets
+  with more than two classes.
+  \item
+  Sample-wise metrics, like sample-specific error rate and sample-specific accuracy are calculated by
+  calcPerformance and added to the ClassifyResult object, rather than by samplesMetricMap and being
+  inaccessible to the end-user.
+}}
+
 \section{Version 1.10.0}{\itemize{
   \item
   errorMap replaced by samplesMetricMap. The plot can now show either error rate or accuracy.
