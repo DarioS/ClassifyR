@@ -4,8 +4,7 @@ setGeneric("runTest", function(expression, ...)
 setMethod("runTest", c("matrix"),
   function(expression, classes, ...)
 {
-    groupsTable <- data.frame(class = classes)
-    rownames(groupsTable) <- colnames(expression)
+    groupsTable <- data.frame(class = classes, row.names = colnames(expression))
     exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
     runTest(exprSet, ...)
 })

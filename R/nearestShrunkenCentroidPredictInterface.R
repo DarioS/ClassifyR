@@ -6,7 +6,6 @@ setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "matrix"),
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")
   
-  colnames(test) <- NULL # Might be duplicates because of sampling with replacement.  
   nearestShrunkenCentroidPredictInterface(trained, ExpressionSet(test), ...)
 })
 

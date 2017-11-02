@@ -4,22 +4,21 @@ setGeneric("runTests", function(expression, ...)
 setMethod("runTests", c("matrix"),
   function(expression, classes, ...)
 {
-    groupsTable <- data.frame(class = classes)
-    rownames(groupsTable) <- colnames(expression)
+    groupsTable <- data.frame(class = classes, row.names = colnames(expression))
     exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
     runTests(exprSet, ...)
 })
 
 setMethod("runTests", c("ExpressionSet"),
-    function(expression, datasetName, classificationName, validation = c("bootstrap", "leaveOut", "fold"),
-             bootMode = c("fold", "split"),
-             resamples = 100, percent = 25, folds = 5, leave = 2,
+    function(expression, datasetName, classificationName, validation = c("permute", "leaveOut", "fold"),
+             permutePartition = c("fold", "split"),
+             permutations = 100, percent = 25, folds = 5, leave = 2,
              seed, parallelParams = bpparam(),
              params = list(SelectParams(), TrainParams(), PredictParams()),
              verbose = 1)
 {
   validation <- match.arg(validation)
-  bootMode <- match.arg(bootMode)
+  permutePartition <- match.arg(permutePartition)
   if(!missing(seed)) set.seed(seed)
   resultTypes <- c("ranked", "selected", "testSet", "predictions", "tune")
 
@@ -27,23 +26,23 @@ setMethod("runTests", c("ExpressionSet"),
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"testing\" must not be before \"training\" in 'params'.")
   
-  if(validation == "bootstrap")
+  if(validation == "permute")
   {
-    bootstrap <- lapply(1:resamples, function(bootstrap) sample(ncol(expression), replace = TRUE))
-    if(bootMode == "fold")
+    sampleOrdering <- lapply(1:permutations, function(permutation) sample(ncol(expression)))
+    if(permutePartition == "fold")
     {
       sampleFold <- rep(1:folds, length.out = ncol(expression))
-      samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
+      samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
     } else {
       sampleFold <- rep(1:2, c(round(ncol(expression) * (100 - percent) / 100), round(ncol(expression) * percent / 100)))
-      samplesFolds <- lapply(bootstrap, function(sample) split(sample, sampleFold))
+      samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
     }
 
     results <- bpmapply(function(sampleFolds, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      if(bootMode == "fold")
+      if(permutePartition == "fold")
       {
         lapply(1:folds, function(foldIndex)
         {
@@ -55,7 +54,7 @@ setMethod("runTests", c("ExpressionSet"),
         runTest(expression, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
-    }, samplesFolds, as.list(1:resamples), BPPARAM = parallelParams, SIMPLIFY = FALSE)
+    }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else if(validation == "leaveOut") # leave k out.
   {
     testSamples <- as.data.frame(combn(ncol(expression), leave))
@@ -82,7 +81,7 @@ setMethod("runTests", c("ExpressionSet"),
     }, BPPARAM = parallelParams)
   }
   
-  if(validation == "bootstrap" && bootMode == "split" || validation %in% c("leaveOut", "fold"))
+  if(validation == "permute" && permutePartition == "split" || validation %in% c("leaveOut", "fold"))
   {
     resultErrors <- sapply(results, function(result) is.character(result))
     if(sum(resultErrors) == length(results))
@@ -93,9 +92,9 @@ setMethod("runTests", c("ExpressionSet"),
     {
       results <- results[!resultErrors]
     }
-  } else { # Result has nested lists, because of bootstrap resampling with folding.
+  } else { # Result has nested lists, because of permutation reordering with folding.
     resultErrors <- lapply(results, function(resample) lapply(resample, is.character))
-    if(sum(unlist(resultErrors)) == resamples * folds)
+    if(sum(unlist(resultErrors)) == permutations * folds)
     {
       message("Error: All cross-validations had an error.")
       return(results)
@@ -108,9 +107,9 @@ setMethod("runTests", c("ExpressionSet"),
 
   selectParams <- params[[match("SelectParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
-  if(validation == "bootstrap")
+  if(validation == "permute")
   {
-    if(bootMode == "fold")
+    if(permutePartition == "fold")
     {
       if(class(results[[1]][[1]][["predictions"]]) == "list") 
       {
@@ -141,18 +140,18 @@ setMethod("runTests", c("ExpressionSet"),
           {
             if(resultType %in% c("testSet", "predictions"))
             {
-              if(bootMode == "fold")
+              if(permutePartition == "fold")
               {
                 if(resultType == "testSet" || class(sample[[1]][["predictions"]]) != "data.frame")
                                               # First fold predictions are a not data.frame.
                   unlist(lapply(sample, function(fold) fold[[resultType]]))
                 else # Predictions is a data.frame with labels and scores.
                   do.call(rbind, lapply(sample, function(fold) fold[[resultType]]))
-              } else { # bootMode is "split".
+              } else { # permutePartition is "split".
                 sample[[resultType]]
               }
             } else {
-              if(bootMode == "fold")
+              if(permutePartition == "fold")
                 lapply(sample, function(fold) fold[[resultType]])
               else
                 sample[[resultType]]
@@ -160,18 +159,18 @@ setMethod("runTests", c("ExpressionSet"),
           } else { # There are multiple varieties.
             if(resultType == "predictions") # Predictions with varieties.
             {
-              if(bootMode == "fold")
+              if(permutePartition == "fold")
               {
                 prediction <- lapply(sample, function(fold) fold[[resultType]][[varietyName]])
                 if(class(prediction[[1]]) == "data.frame")
                   do.call(rbind, prediction)
                 else
                   unlist(prediction)
-              } else { # bootMode is "split".
+              } else { # permutePartition is "split".
                 sample[[resultType]][[varietyName]]
               }
             } else { # Ranked, selected features and test samples, with varieties.
-              if(bootMode == "fold")
+              if(permutePartition == "fold")
               {
                 if(is.null(sample[[1]][[resultType]]))
                   NULL
@@ -228,7 +227,7 @@ setMethod("runTests", c("ExpressionSet"),
 
   predictionTablesByVariety <- lapply(resultsByVariety, function(resultVariety)
   {
-    if(validation == "bootstrap")
+    if(validation == "permute")
     {
       lapply(1:length(results), function(resample)
       {
@@ -256,12 +255,12 @@ setMethod("runTests", c("ExpressionSet"),
     resultVariety
   }, resultsByVariety, predictionTablesByVariety, SIMPLIFY = FALSE)
   
-  if(validation == "bootstrap")
+  if(validation == "permute")
   {
-    if(bootMode == "fold")
-      validationInfo <- list("resampleFold", resamples, folds)
+    if(permutePartition == "fold")
+      validationInfo <- list("resampleFold", permutations, folds)
     else
-      validationInfo <- list("split", resamples, percent)
+      validationInfo <- list("split", permutations, percent)
   } else if(validation == "leaveOut") {
     validationInfo <- list("leave", leave)
   } else {

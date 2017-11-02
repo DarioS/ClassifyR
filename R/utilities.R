@@ -442,10 +442,10 @@ setOldClass("pamrtrained")
 .validationText <- function(result)
 {
   switch(result@validation[[1]],
-  resampleFold = paste(result@validation[[2]], "Resamples,", result@validation[[3]], "Folds"),
+  resampleFold = paste(result@validation[[2]], "Permutations,", result@validation[[3]], "Folds"),
   fold = paste(result@validation[[2]], "-fold cross-validation", sep = ''),
   leave = paste("Leave", result@validation[[2]], "Out"),
-  split = paste(result@validation[[2]], "Resamples,", result@validation[[3]], "% Test"),
+  split = paste(result@validation[[2]], "Permutations,", result@validation[[3]], "% Test"),
   independent = "Independent Set")
 }
 

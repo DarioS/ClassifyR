@@ -4,10 +4,8 @@ setGeneric("plotFeatureClasses", function(expression, ...)
 setMethod("plotFeatureClasses", "matrix", 
           function(expression, classes, ...)
 {
-  groupsTable <- data.frame(class = classes)
+  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
   features <- rownames(expression)
-  rownames(expression) <- NULL
-  rownames(groupsTable) <- colnames(expression)
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
   plotFeatureClasses(exprSet, ...)

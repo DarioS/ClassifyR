@@ -43,7 +43,7 @@ for the current classification task.
     resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
                                        performanceType = "err", better = "lower")
     result <- runTests(genesMatrix, classes, "Ovarian Cancer", "Differential Expression",
-                       resamples = 2, fold = 2,
+                       permutations = 2, fold = 2,
                        params = list(SelectParams(limmaSelection, resubstituteParams = resubstitute),
                        TrainParams(dlda, TRUE, FALSE),
                        PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])))
@@ -55,7 +55,7 @@ for the current classification task.
                                            sapply(1:25, function(sample) rnorm(2, 14, 2))))
                                            
     newerResult <- runTests(newDataset, classes, "Ovarian Cancer Updated", "Differential Expression",
-                       resamples = 2, fold = 2,
+                       permutations = 2, fold = 2,
                        params = list(SelectParams(previousSelection, intermediate = ".iteration",
                                     classifyResult = result),
                        TrainParams(dlda, TRUE, FALSE),

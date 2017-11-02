@@ -42,9 +42,7 @@ and one row for each classification result.
 \details{
 The names of \code{results} determine the row names that will be in the plot.
 The length of \code{metricColours} determines how many bins the metric values will
-be discretised to. Samples not present in any of the cross-validation's datasets
-(sometimes if a resampling with replacement scheme is used with few resamples)
-are coloured grey and labelled NA.
+be discretised to.
 }
 \value{
   A plot is produced and a grob is returned that can be saved to a graphics device.

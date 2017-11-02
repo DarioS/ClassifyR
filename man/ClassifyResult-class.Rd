@@ -20,7 +20,7 @@
 \title{Container for Storing Classification Results}
 \description{
   Contains a table of actual sample classes and predicted classes, the indices of
-  features selected for each fold of each bootstrap resampling or each hold-out
+  features selected for each fold of each permutation or each hold-out
   classification, and error rates. This class is not intended to be created by
   the user, but could be used in another package. It is created by \code{\link{runTests}}.
 }
@@ -95,7 +95,7 @@
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
     classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
     pData(TCGA_eset)[, "class"] <- classes
-    results <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", resamples = 2, folds = 2)
+    results <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", permutations = 2, folds = 2)
     show(results)
     predictions(results)
     actualClasses(results)
