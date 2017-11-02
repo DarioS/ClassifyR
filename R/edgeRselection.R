@@ -4,9 +4,8 @@ setGeneric("edgeRselection", function(expression, ...)
 setMethod("edgeRselection", "matrix", 
           function(expression, classes, ...)
 {
-  colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.            
   features <- rownames(expression)
-  groupsTable <- data.frame(class = classes)
+  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
   edgeRselection(exprSet, ...)
@@ -25,7 +24,6 @@ setMethod("edgeRselection", "ExpressionSet",
   
   allFeatures <- featureNames(expression)
   exprMatrix <- exprs(expression)
-  colnames(exprMatrix) <- NULL # Might be duplicates because of sampling with replacement.  
   classes <- pData(expression)[, "class"]
   expressionList <- edgeR::DGEList(exprMatrix, group = classes)
   paramList <- list(expressionList)

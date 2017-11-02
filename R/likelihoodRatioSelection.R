@@ -2,10 +2,9 @@ setGeneric("likelihoodRatioSelection", function(expression, ...)
            {standardGeneric("likelihoodRatioSelection")})
 
 setMethod("likelihoodRatioSelection", "matrix", function(expression, classes, ...)
-{ 
-  colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.  
+{
   features <- rownames(expression)
-  groupsTable <- data.frame(class = classes)
+  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
   likelihoodRatioSelection(exprSet, ...)

@@ -10,10 +10,13 @@ setMethod("calcPerformance", c("ClassifyResult"), function(result, performanceTy
   classData <- ROCR::prediction(lapply(predictions, as.numeric), correctClasses)
   if(performanceType == "balanced") # ROCR can't do this.
   { # Can calculate with two or more class levels.
-    confusionMatrix <- table(unlist(correctClasses), unlist(predictions))
-    classSizes <- rowSums(confusionMatrix)
-    classErrors <- classSizes - diag(confusionMatrix)
-    performanceValues <- mean(classErrors / classSizes)
+    performanceValues <- unlist(mapply(function(iterationCorrectClasses, iterationPredictions)
+    {
+      confusionMatrix <- table(iterationCorrectClasses, iterationPredictions)
+      classSizes <- rowSums(confusionMatrix)
+      classErrors <- classSizes - diag(confusionMatrix)
+      mean(classErrors / classSizes)
+    }, correctClasses, predictions, SIMPLIFY = FALSE))
     performanceName <- "Balanced Error Rate"
   } else if(performanceType %in% c("sample error", "sample accuracy"))
   {

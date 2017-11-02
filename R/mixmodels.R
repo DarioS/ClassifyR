@@ -2,10 +2,9 @@ setGeneric("mixModelsTrain", function(expression, ...)
            {standardGeneric("mixModelsTrain")})
 
 setMethod("mixModelsTrain", "matrix", function(expression, classes, ...)
-{ 
-  colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.
+{
   features <- rownames(expression)
-  groupsTable <- data.frame(class = classes)
+  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
   mixModelsTrain(exprSet, ...)
@@ -47,8 +46,7 @@ setGeneric("mixModelsTest", function(models, test, ...)
            {standardGeneric("mixModelsTest")})
 
 setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
-{ 
-  colnames(test) <- NULL # Might be duplicates because of sampling with replacement.  
+{
   exprSet <- ExpressionSet(test)
   mixModelsTest(models, exprSet, ...)
 })

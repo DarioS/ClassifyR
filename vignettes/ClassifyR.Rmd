@@ -1,8 +1,7 @@
 ---
 title: "An Introduction to **ClassifyR**"
-author: "Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod \\
-
-The University of Sydney, Australia."
+author: Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod
+institute: The University of Sydney, Australia
 output: 
   BiocStyle::html_document:
     toc: true
@@ -13,13 +12,12 @@ vignette: >
 
 ```{r, echo = FALSE, results = "asis"}
 options(width = 130)
-BiocStyle::markdown()
 set.seed(44)
 ```
 
 ## Overview
 
-**ClassifyR** provides two contributions. Firstly, there is a structured pipeline for two-class classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The stages can be run in any order that is sensible. Each step can be provided with functions that follow some rules about parameters. Additionally, the driver function implements ordinary k-fold cross-validation, resampling with replacement followed by k-fold or x% test set cross-validation, and leave k out cross-validation. This function can use parallel processing capabilities in R to speed up cross-validations when many CPUs are available. Some convenience function interfaces are provided for microarray and RNA-seq data, while other functions work directly with the framework without the need for an interface.
+**ClassifyR** provides two contributions. Firstly, there is a structured pipeline for two-class classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The stages can be run in any order that is sensible. Each step can be provided with functions that follow some rules about parameters. Additionally, the driver function implements ordinary k-fold cross-validation, permutation of the order of samples followed by k-fold or x% test set cross-validation, and leave-k-out cross-validation. This function can use parallel processing capabilities in R to speed up cross-validations when many CPUs are available. Some convenience function interfaces are provided for microarray and RNA-seq data, while other functions work directly with the framework without the need for an interface.
 
 Secondly, it implements a number of methods for classification using different feature types. Most classifiers work with features where the means are different. In addition to differential expression, **ClassifyR** also considers differential deviation and differential distribution.
 
@@ -105,11 +103,11 @@ Interfaces to existing feature selection and classification algorithms for this 
 
 *limmaSelection* is suited to microarray data and *edgeRselection* is suited to RNA-seq data where the expression values are raw counts.
 
-Here, a feature selection based on a ranked list from limma followed by a DLDA classifier will be used to do 10 resamples and four folds of cross-validation. The *dlda* function is directly used from the **sparsediscrim** package in the **ClassifyR** framework, without any interface being necessary.
+Here, a feature selection based on a ranked list from limma followed by a DLDA classifier will be used to do 10 permutations and four folds of cross-validation. The *dlda* function is directly used from the **sparsediscrim** package in the **ClassifyR** framework, without any interface being necessary.
 
 ```{r, tidy = FALSE}
 library(sparsediscrim)
-DEresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
+DEresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "permute", permutations = 5, folds = 3,
                       params = list(SelectParams(limmaSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
                                     TrainParams(dlda, TRUE, doesTests = FALSE),
                                     PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])),
@@ -123,9 +121,9 @@ This example introduces the classes *SelectionParams*, *TrainParams*, and *Predi
 
 The *limmaSelection* function specified to *selectionParams* ranks probes based on p-value and uses the classifier specified for *trainParams* and calculates the resubstitution error rate for the top *nFeatures*, picking the value with the lowest error rate.
 
-*TrainParams* has four mandatory arguments. The first is the function that trains a classifier. The second is a logical value that specifies whether expression should be transposed, before being passed to the classifier function. Many classification functions in existing R packages in the CRAN repository need the features to be the columns and samples to be the rows. In **ClassifyR**, the expression data that is passed to runTests or runTest must have features as rows and samples as columns. This is more common in bioinformatics. In this example, the function *dlda* expects columns to be features, so *transposeExpression* is TRUE. Another common difference between classifiers on CRAN is that some of them do training and testing separately, whereas in other packages, one function does training and testing. In the case of *dlda*, it only does training, so *doesTests*, the third argument to the constructor, is set to FALSE.
+*TrainParams* has four mandatory arguments. The first is the function that trains a classifier. The second is a logical value that specifies whether expression should be transposed, before being passed to the classifier function. Many classification functions in existing R packages in the CRAN repository need the features to be the columns and samples to be the rows. In **ClassifyR**, the data that is passed to runTests or runTest must have features as rows and samples as columns. This is more common in bioinformatics. In this example, the function *dlda* expects columns to be features, so *transposeExpression* is TRUE. Another common difference between classifiers on CRAN is that some of them do training and testing separately, whereas in other packages, one function does training and testing. In the case of *dlda*, it only does training, so *doesTests*, the third argument to the constructor, is set to FALSE.
 
-*PredictParams* has three mandatory arguments. The first is a function which takes a built classifier and does predictions on unseen data. The second is a function which extracts a vector of predicted class labels, from the object returned from the function. In this case, the *predict* method returns an object which stores predictions in a list element called *class*. Additionally, *transposeExpression* is mandatory. Like for *TrainParams*, it specifies whether the numeric measurements need to be transposed.
+*PredictParams* has three mandatory arguments. The first is a function which takes a built classifier and does predictions on unseen data. The second is a function which extracts a vector of predicted class labels, from the object returned from the function. In this case, the *predict* method returns an object which stores predictions in a list element called *class*. Additionally, *transposeExpression* is mandatory. Like for *TrainParams*, it specifies whether the numeric measurements need to be transposed and is almost always set to the same value as it has been given for training.
 
 The top five probes selected in the feature selection step can be checked visually. *DEresults* is a *ClassifyResult* object returned by *runTests*. *features* is a function that allows access to the row indices that were chosen for each fold.
 
@@ -135,7 +133,7 @@ DEplots <- plotFeatureClasses(ovarSet, features(DEresults)[[1]][[2]][1:5])
 
 This plots the distribution of microarray intensities for the two survival classes for features that were chosen in the first fold of the first resampling. As seen, the means of the probes are not much different.
 
-Classification error rates, as well as many other prediction performance measures, can be calculated with *calcPerformance*. Next, the balanced error rate is calculated for all ten resamplings. The balanced error rate is defined as the average of the classification errors of each class.
+Classification error rates, as well as many other prediction performance measures, can be calculated with *calcPerformance*. Next, the balanced error rate is calculated for all ten cross-validated permutations. The balanced error rate is defined as the average of the classification errors of each class.
 
 ```{r}
 DEresults <- calcPerformance(DEresults, "balanced")
@@ -143,7 +141,7 @@ DEresults
 performance(DEresults)
 ```
 
-The error rates are reasonable. Any performance measure can be calculated that the [ROCR](http://cran.r-project.org/web/packages/ROCR/index.html) function *performance* calculates. For example, the Matthews correlation coefficient can also be calculated.
+The error rates are large, and the computed predictions are hardly better than guessing at random. Any performance measure can be calculated that the [ROCR](http://cran.r-project.org/web/packages/ROCR/index.html) function *performance* calculates. For example, the Matthews correlation coefficient can also be calculated.
 
 ```{r}
 DEresults <- calcPerformance(DEresults, "mat")
@@ -160,12 +158,13 @@ Interfaces to existing feature selection and classification algorithms for this 
 * leveneSelection
 * fisherDiscriminant
 
-Fisher's LDA is suitable for the absolute value of expression values subtracted from a location, because it does not assume normality, unlike ordinary LDA. Fisher's LDA is applied to the ovarian cancer data. Only two resamples are done.
+Fisher's LDA is suitable for the absolute value of expression values subtracted from a location, because it does not assume normality, unlike ordinary LDA. Fisher's LDA is applied to the ovarian cancer data. Only two permutations are done.
 
 ```{r, tidy = FALSE}
+resubstituteParamSet <- ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")
 DVresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Variability",
-                      validation = "bootstrap", resamples = 2, folds = 4,
-                      params = list(SelectParams(leveneSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
+                      validation = "permute", permutations = 2, folds = 4,
+                      params = list(SelectParams(leveneSelection, resubstituteParams = resubstituteParamSet),
                                     TransformParams(subtractFromLocation, location = "median"),
                                     TrainParams(fisherDiscriminant, FALSE, doesTests = TRUE),
                                     PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, returnType = "both")),
@@ -189,7 +188,7 @@ DVresults
 performance(DVresults)
 ```
 
-The errors are reasonable.
+The errors are equivalent to what would be obtained by guessing classes at random.
 
 ### Differential Distribution
 
@@ -202,9 +201,8 @@ Differential distribution describes classification based on differences in eithe
 * Kullback-Leibler distance.
 * Differences of Means/Medians and Deviations (DMD).
 
-<!-- -->
-
 There are also two classifiers included :
+
 * Naive Bayes.
 * Mixtures of normals.
 
@@ -214,11 +212,14 @@ Kullback-Leibler divergence will be used for feature selection and a naive Bayes
 dParams <- list(bw = "nrd0", n = 4096, from = expression(min(featureValues)),
                 to = expression(max(featureValues)))
 DDresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Distribution",
-                      validation = "bootstrap", resamples = 2, folds = 2,
-                      params = list(SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100), performanceType = "balanced", better = "lower")),
+                      validation = "permute", permutations = 2, folds = 2,
+                      params = list(SelectParams(KullbackLeiblerSelection,
+                                                 resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, 100),
+                                                                                         performanceType = "balanced",
+                                                                                         better = "lower")),
                                     TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
-                                    PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result, weighted = "weighted", returnType = "both",
-                                                  densityParameters = dParams)),
+                                    PredictParams(predictor = function(){}, FALSE, getClasses = function(result) result,
+                                                  weighted = "weighted", returnType = "both", densityParameters = dParams)),
                                 verbose = 1)
 DDresults
 ```
@@ -253,10 +254,12 @@ DVresults <- calcPerformance(DVresults, "sample error")
 DVresults <- calcPerformance(DVresults, "sample accuracy")
 resultsList <- list(Expression = DEresults, Variability = DVresults)
 errorPlot <- samplesMetricMap(resultsList, metric = "error")
-accuracyPlot <- samplesMetricMap(resultsList, metric = "accuracy")
+grid.draw(errorPlot)
 ```
 
-Grey rectangles appear for samples which were not selected to be in any of the five resampled datasets.
+```{r, fig.width = 10, fig.height = 7}
+accuracyPlot <- samplesMetricMap(resultsList, metric = "accuracy")
+```
 
 The *performancePlot* function allows the comparison of overall performance measures, such as accuracy and error rate.
 
@@ -297,7 +300,7 @@ independentResult
 
 ### Cross-validating on a Different Dataset
 
-Once a cross-validation classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing ClassifyResult object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset. The classifier training should be redone.
+Once a cross-validation classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing ClassifyResult object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset. The classifier training is redone.
 
 ### Generating a ROC Plot
 
@@ -317,12 +320,15 @@ A linear SVM is demonstrated. It only has one tuning parameter, the cost value.
 
 ```{r}
 library(e1071) # Provides SVM functions.
-resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)), performanceType = "balanced", better = "lower")
-SVMresults <- suppressWarnings(runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "bootstrap", resamples = 5, folds = 3,
-                      params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
-                                    TrainParams(svm, TRUE, doesTests = FALSE, kernel = "linear", resubstituteParams = resubstituteParams, tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
-                                    PredictParams(predict, TRUE, getClasses = function(result) result)),
-                      parallelParams = bpparam(), verbose = 1))
+resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)),
+                                        performanceType = "balanced", better = "lower")
+SVMresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "permute",
+                       permutations = 5, folds = 3,
+                       params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
+                                     TrainParams(svm, TRUE, doesTests = FALSE, kernel = "linear",                                                             resubstituteParams = resubstituteParams,
+                                                 tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
+                                     PredictParams(predict, TRUE, getClasses = function(result) result)),
+                       parallelParams = bpparam(), verbose = 1)
 ```
 
 The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
@@ -332,7 +338,7 @@ length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[[1]]
 ```
 
-These are the cost values chosen for the three folds of the first resampling. In the first fold, the best value was `r tunedParameters(SVMresults)[[1]][[1]][[1]]`, whereas for the second and third folds, it was `r tunedParameters(SVMresults)[[1]][[2]][[1]]`.
+These are the cost values chosen for the three folds of the first resampling.
 
 ### Conclusion
 
@@ -341,7 +347,7 @@ When many replicates per class are available, differential variability or distri
 ## Rules for New Functions
 
 **Transform Function** : The first argument must be an *ExpressionSet*. Other arguments may be anything. The argument *verbose* is sent from *runTest*, so it must handle it. It returns an *ExpressionSet* of the same dimensions as the input *ExpressionSet*.  
-**Selection Function** : The first argument must be an *ExpressionSet*. It returns a *SelectResult* object.
+**Selection Function** : The first argument must be an *ExpressionSet*. It returns a *SelectResult* object.  
 **Training Function** : The first argument must be a *matrix*. This is because most other R classifiers on CRAN take matrices. This avoids having to write interfaces for them. The second argument must be a vector of classes. If *doesTests* is TRUE, then the third argument must be a matrix of test data. Other arguments may be anything. The argument *verbose* is sent from *runTest*, so it must handle it. It returns a classifier.  
 **Prediction Function** : The first argument must be a trained model that was generated by the training step. The second argument must be a *matrix* of test data. Other arguments may be anything. The argument *verbose* is sent from *runTest*, so it must handle it. It returns an object containing predictions.
 

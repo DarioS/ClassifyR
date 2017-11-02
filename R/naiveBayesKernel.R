@@ -3,10 +3,9 @@ setGeneric("naiveBayesKernel", function(expression, ...)
 
 setMethod("naiveBayesKernel", "matrix", 
           function(expression, classes, ...)
-{ 
-  colnames(expression) <- NULL # Might be duplicates because of sampling with replacement.            
+{
   features <- rownames(expression)
-  groupsTable <- data.frame(class = classes)  
+  groupsTable <- data.frame(class = classes, row.names = colnames(expression))  
   exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
   if(length(features) > 0) featureNames(exprSet) <- features
   naiveBayesKernel(exprSet, ...)
@@ -47,14 +46,13 @@ setMethod("naiveBayesKernel", "ExpressionSet",
   splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
                                                                otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
 
-  posteriorsList <- list()
   if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
   {
     if(verbose == 3)
-      message("Calculating crossover points of class densities.")
+      message("Calculating horizontal distances to crossover points of class densities.")
     
     # Score for second class level.
-    posteriorsHorizontal <- do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    distancesHorizontal <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
       otherScores <- classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
@@ -62,32 +60,26 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE))
-
-    if(weight != "sum differences")
-    {
-      posteriorsList[[1]] <- t(posteriorsHorizontal)
-      names(posteriorsList) = "crossover distance"
-    }
+    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
+    
+    class1RelativeSize <- classesSizes[1] / classesSizes[2]
+    posteriorsHorizontal <- ifelse(distancesHorizontal < 0, distancesHorizontal * class1RelativeSize, distancesHorizontal * 1/class1RelativeSize)
   }
   
   if(weight != "crossover distance") # Calculate the height difference.
   {
     if(verbose == 3)
-      message("Calculating vertical differences between densities.")
+      message("Calculating class densities.")
     
-    posteriorsVertical <- do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    distancesVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    {
+      featureSplines[["otherClass"]](testSamples) - featureSplines[["oneClass"]](testSamples)
+    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
+    
+    posteriorsVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE))
-    
-    if(weight != "sum differences")
-      posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
-  }
-  
-  if(weight %in% c("sum differences", "all") && weighted != "unweighted") # Sum of the horizontal and vertical distances.
-  {
-    posteriorsList <- c(posteriorsList, `sum differences` = list(t(posteriorsHorizontal) + t(posteriorsVertical)))
+    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
   }
 
   if(verbose == 3)
@@ -98,18 +90,36 @@ setMethod("naiveBayesKernel", "ExpressionSet",
           )
   }
   
+  if(weight == "all")
+    weightExpanded <-  c("height difference", "crossover distance", "sum differences")
+  else weightExpanded <- weight
+  allPosteriors <- lapply(weightExpanded, function(type)
+                   {
+                     switch(type, `height difference` = posteriorsVertical,
+                                  `crossover distance` = posteriorsHorizontal,
+                                  `sum differences` = posteriorsVertical + posteriorsHorizontal
+                            )
+                   })
+  allDistances <- lapply(weightExpanded, function(type)
+                  {
+                    switch(type, `height difference` = distancesVertical,
+                                 `crossover distance` = distancesHorizontal,
+                                  `sum differences` = distancesVertical + distancesHorizontal
+                          )
+  })
+
   weightingText <- weighted
   if(weightingText == "both") weightingText <- c("unweighted", "weighted")
-  testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames)
+  testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames, distances)
   {
     do.call(rbind, lapply(weightingText, function(isWeighted)
     {
       do.call(rbind, lapply(minDifference, function(difference)
       {
-        do.call(rbind, apply(weightPredictions, 2, function(sampleCol)
+        do.call(rbind, lapply(1:ncol(weightPredictions), function(sampleCol)
         {
-          sampleCol <- sampleCol[abs(sampleCol) > difference]
-          if(length(sampleCol) == 0) # No features have a large enough density difference.
+          useFeatures <- abs(distances[, sampleCol]) > difference
+          if(length(useFeatures) == 0) # No features have a large enough density difference.
           {                          # Simply vote for the larger class.
             if(largerClass == levels(classes)[1])
             {
@@ -120,15 +130,16 @@ setMethod("naiveBayesKernel", "ExpressionSet",
               score <- 1
             }
           } else { # One or more features are available to vote with.
+            posteriorsUsed <- weightPredictions[useFeatures, sampleCol]
             if(isWeighted == "unweighted")
             {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleCol > 0) > length(sampleCol) / 2) + 1]
-              score <- sum(sampleCol > 0) / length(sampleCol)
+              class <- levels(classes)[(sum(posteriorsUsed > 0) > length(posteriorsUsed) / 2) + 1]
+              score <- sum(posteriorsUsed > 0) / length(posteriorsUsed)
             } else {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleCol) > 0) + 1]
-              score <- sum(sampleCol)
+              class <- levels(classes)[(sum(posteriorsUsed) > 0) + 1]
+              score <- sum(posteriorsUsed)
             }
           }
           data.frame(class = factor(class, levels = levels(classes)), score = score,
@@ -137,8 +148,8 @@ setMethod("naiveBayesKernel", "ExpressionSet",
         }))
       }))
     }))
-  }, posteriorsList, names(posteriorsList), SIMPLIFY = FALSE))
-  
+  }, allPosteriors, weightExpanded, allDistances, SIMPLIFY = FALSE))
+
   # Remove combinations of unweighted voting and weightings.
   testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
   {
