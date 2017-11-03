@@ -126,9 +126,12 @@ setMethod("runTest", c("ExpressionSet"),
     
   }
   if(class(testing) == "logical") testing <- which(testing)
-
+  # Rankings and selections might not be explicitly returned, such as for random forest classifier.
+  if(!exists("rankedFeatures")) rankedFeatures <- NULL
+  if(!exists("selectedFeatures")) selectedFeatures <- NULL
+  
   if(!is.null(.iteration)) # This function was called by runTests.
-  {        
+  {
     list(ranked = rankedFeatures, selected = selectedFeatures, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")

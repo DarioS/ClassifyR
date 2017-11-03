@@ -278,7 +278,9 @@ setMethod("runTests", c("ExpressionSet"),
 
   classifyResults <- lapply(varietyNames, function(variety)
   {
-    ClassifyResult(datasetName, classificationName, selectParams@selectionName, sampleNames(expression), featureNames(expression),
+    # Might be NULL if selection is done within training.
+    selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)    
+    ClassifyResult(datasetName, classificationName, selectionName, sampleNames(expression), featureNames(expression),
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["predictions"]],
                    pData(expression)[, "class"], validationInfo, resultsByVariety[[variety]][["tune"]])
   })
