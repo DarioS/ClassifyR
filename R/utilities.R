@@ -357,7 +357,8 @@ setOldClass("pamrtrained")
   predicted
 }
 
-.pickRows <- function(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
+.pickFeatures <- function(expression, datasetName, trainParams, predictParams,
+                          resubstituteParams, orderedFeatures, selectionName, verbose)
 {
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {

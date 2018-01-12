@@ -1,25 +1,41 @@
-setGeneric("bartlettSelection", function(expression, ...)
+setGeneric("bartlettSelection", function(measurements, ...)
 {standardGeneric("bartlettSelection")})
 
 setMethod("bartlettSelection", "matrix", 
-          function(expression, classes, ...)
+          function(measurements, classes, ...)
           {
-            features <- rownames(expression)
-            groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-            exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-            if(length(features) > 0) featureNames(exprSet) <- features  
-            bartlettSelection(ExpressionSet(expression, AnnotatedDataFrame(groupsTable)), ...)
+            groupsTable <- data.frame(class = classes, row.names = names(classes))
+            measurementsSet <- MultiAssayExperiment(list(dataTable = measurements),
+                                                    S4Vectors::DataFrame(groupsTable)
+                                                   )
+            bartlettSelection(measurementsSet, ...)
           })
 
-setMethod("bartlettSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams, selectionName = "Bartlett Test", verbose = 3)
+setMethod("bartlettSelection", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
           {
-            if(verbose == 3)
-              message("Calculating Bartlett statistic.")
-            exprMatrix <- exprs(expression)
-            classes <- pData(expression)[, "class"]
-            pValues <- apply(exprMatrix, 1, function(geneRow) bartlett.test(geneRow, classes)[["p.value"]])
-            orderedFeatures <- order(pValues)
+
+          })
+
+setMethod("bartlettSelection", "MultiAssayExperiment", # One or more omics datasets, possibly with clinical data.
+          function(measurements, targets = names(measurements),
+                   datasetName, trainParams, predictParams, resubstituteParams,
+                   selectionName = "Bartlett Test", verbose = 3)
+          {
+            measurements <- measurements[, , targets]
             
-            .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
+            if(!all(sapply(experiments(measurements), is.numeric)))
+               stop("At least one target table is not numeric but each target table must be.")
+            if(verbose == 3)
+              message("Calculating Bartlett statistic for each feature.")
+            browser()
+            allFeaturesMatrix <- wideFormat(measurements, colDataCols = "class", check.names = FALSE)
+            classes <- allFeaturesMatrix[, "class"]
+            allFeaturesMatrix <- allFeaturesMatrix[, -match(c("primary", "class"),
+                                                           colnames(allFeaturesMatrix))]
+            pValues <- apply(allFeaturesMatrix, 2, function(featureRow)
+                                        bartlett.test(featureRow, classes)[["p.value"]])
+            orderedFeatures <- order(pValues)
+            .pickFeatures(allFeaturesMatrix, datasetName, trainParams, predictParams,
+                          resubstituteParams, orderedFeatures, selectionName, verbose)
           })

@@ -1,3 +1,3 @@
 exportPattern("^[[:alpha:]]+")
 
-import(methods, Biobase, ROCR, BiocParallel, locfit, grid)
+import(methods, S4Vectors, MultiAssayExperiment, BiocParallel, locfit, grid)

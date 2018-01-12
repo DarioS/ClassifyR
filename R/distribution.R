@@ -9,7 +9,10 @@ setMethod("distribution", "ClassifyResult",
                    fontSizes = c(24, 16, 12), ...)
 {
   if(plot == TRUE && !requireNamespace("ggplot2", quietly = TRUE))
-    stop("The package 'ggplot2' could not be found. Please install it.")            
+    stop("The package 'ggplot2' could not be found. Please install it.")
+            
+  if(plot == TRUE)
+    theme_set(theme_classic() + theme(panel.border = element_rect(fill = NA)))
             
   dataType <- match.arg(dataType)
   plotType <- match.arg(plotType)

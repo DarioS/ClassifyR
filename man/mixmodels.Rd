@@ -83,8 +83,10 @@
 
 \examples{
   # First 25 samples are mixtures of two normals. Last 25 samples are one normal.
-  genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(50, 5, 1), rnorm(50, 15, 1)))
-  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) rnorm(100, 9, 3)))
+  genesMatrix <- sapply(1:15, function(geneColumn) c(rnorm(5, 5, 1)))
+  genesMatrix <- cbind(genesMatrix, sapply(1:10, function(geneColumn) c(rnorm(5, 15, 1))))
+  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 4))))
+  genesMatrix <- rbind(genesMatrix, sapply(1:50, function(geneColumn) rnorm(95, 9, 3)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   trained <- mixModelsTrain(genesMatrix, classes, nbCluster = 1:3)
   mixModelsTest(trained, genesMatrix, minDifference = 1:3)

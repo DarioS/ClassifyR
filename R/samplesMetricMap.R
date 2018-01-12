@@ -5,11 +5,11 @@ setMethod("samplesMetricMap", "list",
           function(results,
                    comparison = c("classificationName", "datasetName", "selectionName", "validation"),
                    metric = c("error", "accuracy"),
-                   metricColours = list(c("#0000FF", "#3F3FFF", "#7F7FFF", "#BFBFFF", "#FFFFFF"),
-                                       c("#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF")),
-                   classColours = c("blue", "red"), fontSizes = c(24, 16, 12, 12, 12),
+                   metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
+                                        c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
+                   classColours = c("#3F48CC", "#880015"), fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
-                   showYtickLabels = TRUE, yAxisLabel = "Analysis", legendSize = grid::unit(1, "lines"), plot = TRUE)
+                   yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"), plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  

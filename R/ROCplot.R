@@ -12,7 +12,9 @@ setMethod("ROCplot", "list",
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")   
+            
   lineColourVariable <- match.arg(lineColourVariable)
+  theme_set(theme_classic() + theme(panel.border = element_rect(fill = NA)))
 
   plotData <- mapply(function(result, resultBins)
   {

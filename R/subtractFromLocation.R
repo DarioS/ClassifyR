@@ -1,31 +1,33 @@
-setGeneric("subtractFromLocation", function(expression, ...)
+setGeneric("subtractFromLocation", function(measurements, ...)
            {standardGeneric("subtractFromLocation")})
 
 setMethod("subtractFromLocation", "matrix", 
-          function(expression, ...)
-{ 
-  colnames(expression) <- NULL
-  rownames(expression) <- NULL
-  subtractFromLocation(ExpressionSet(expression), ...)
+          function(measurements, ...)
+{
+  groupsTable <- data.frame(row.names = names(classes)) # Classes are irrelevant.     
+  subtractFromLocation(MultiAssayExperiment(ExperimentList(list(dataTable = measurements)),
+                                            S4Vectors::DataFrame(groupsTable)), ...)
 })
 
-setMethod("subtractFromLocation", "ExpressionSet", 
-          function(expression, training, location = c("mean", "median"),
-                   absolute = TRUE, verbose = 3)
+setMethod("subtractFromLocation", "MultiAssayExperiment", 
+          function(measurements, training, targets = names(measurements),
+                   location = c("mean", "median"), absolute = TRUE, verbose = 3)
 {
   location <- match.arg(location)
-  expressionTrain <- exprs(expression)[, training]
+  measurementsTrain <- measurements[, training, targets]
   if(location == "mean")
-    geneTrainingLocations <- rowMeans(expressionTrain)
+    featureTrainingLocations <- lapply(experiments(measurementsTrain), rowMeans)
   else # median.
-    geneTrainingLocations <- apply(expressionTrain, 1, median)
-  transformed <- apply(exprs(expression), 2, '-', geneTrainingLocations)
+    featureTrainingLocations <- lapply(experiments(measurementsTrain), function(dataTable)
+                                                              apply(dataTable, 1, median))
+  transformed <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
+                        experiments(measurements[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
   if(absolute == TRUE)
-    transformed <- abs(transformed)
-  exprs(expression) <- transformed
+    transformed <- lapply(transformed, abs)
+  experiments(measurements)[targets] <- ExperimentList(transformed)
   if(verbose == 3)
     message("Subtraction from ", location,
             {if(absolute == TRUE) " and absolute transformation"}, " completed.")
   
-  expression
+  measurements
 })
