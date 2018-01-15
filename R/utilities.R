@@ -1,5 +1,22 @@
 setOldClass("pamrtrained")
 
+.splitDataAndClasses <- function(measurements, classes)
+{ # DataFrame methods' class variable can be character or factor, so it's a bit involved.
+  if(class(classes) == "character" && length(classes) > 1)
+    stop("'classes' is a character variable but has more than one element. Either provide a\n",
+         "       single column name or a factor of the same length as the number of samples.")
+  
+  if(class(classes) == "character")
+  {
+    classColumn <- match(classes, colnames(measurements))
+    if(is.na(classColumn))
+      stop("Specified column name of classes is not present in the data table.")
+    classes <- measurements[, classColumn]
+    measurements <- measurements[, -classColumn]
+  }
+  list(measurements = measurements, classes = classes)
+}
+
 .doSelection <- function(expression, training, selectParams, trainParams,
                          predictParams, verbose)
 {

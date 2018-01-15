@@ -13,7 +13,7 @@
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
                      \code{\link{MultiAssayExperiment}} object containing the data.
-                     For a matrix, the rows are for features and the columns are for samples.\
+                     For a matrix, the rows are for features and the columns are for samples.
                      A column with name \code{"class"} must be present in the \code{DataFrame}
                      stored in the \code{colData} slot.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} or if

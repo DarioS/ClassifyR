@@ -3,23 +3,16 @@ setGeneric("plotFeatureClasses", function(measurements, ...)
 
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {
-  .plotFeatureClasses(S4Vectors::DataFrame(t(measurements[targets, , drop = FALSE]), check.names = FALSE), classes, ...)
+  if(missing(targets))
+    stop("'targets' must be specified by the user.")
+  
+  .plotFeatureClasses(DataFrame(t(measurements[targets, , drop = FALSE]), check.names = FALSE), classes, ...)
 })
 
 setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL, ...)
 {
-  if(class(classes) == "character" && length(classes) > 1)
-    stop("'classes' is a character variable but has more than one element. Either provide a\n",
-         "       single column name or a factor of the same length as the number of samples.")
-
-  if(class(classes) == "character")
-  {
-    classColumn <- match(classes, colnames(measurements))
-    if(is.na(classColumn))
-      stop("Specified column name of classes is not present in the data table.")
-    classes <- measurements[, classColumn]
-    measurements <- measurements[, -classColumn]
-  }
+  if(missing(targets))
+    stop("'targets' must be specified by the user.")
   
   groupingName <- NULL
   if(!is.null(groupBy))
@@ -28,13 +21,20 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
     groupBy <- measurements[, groupBy]
   }
 
-  .plotFeatureClasses(measurements[, targets, drop = FALSE], classes, groupBy = groupBy,
-                      groupingName = groupingName, ...)
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  .plotFeatureClasses(splitDataset[["measurements"]][, targets, drop = FALSE],
+                      splitDataset[["classes"]],
+                      groupBy = groupBy, groupingName = groupingName, ...)
 })
 
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
                                 function(measurements, targets, groupBy = NULL, ...)
-{browser()
+{
+  if(missing(targets))
+    stop("'targets' must be specified by the user.")
+  if(!all(targets[, 1] %in% c(names(measurements), "colData")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"colData\".")  
+                                  
   assaysTargets <- targets[targets[, 1] != "colData", ]
   sampleInfoTargets <- targets[targets[, 1] == "colData", ]
   measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
@@ -53,7 +53,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   }
   colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
   measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
-  measurements <- measurements[, -1] # Remove sample IDs.
+  measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
   .plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, ...)
 })
 
@@ -81,7 +81,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
     xLabelPositions <- ggplot2::waiver()
   if(yLabelPositions[1] == "auto")
     yLabelPositions <- ggplot2::waiver()
-  
+
   invisible(lapply(seq_along(measurements), function(columnIndex)
   {
     plotData <- data.frame(measurement = measurements[, columnIndex], class = classes)
@@ -112,7 +112,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
 
         if(!is.null(groupBy))
         {
-          densPlot <- densPlot + ggplot2::aes(linetype = grouping) + scale_linetype_discrete(name = groupingName)
+          densPlot <- densPlot + ggplot2::aes(linetype = grouping) + ggplot2::scale_linetype_discrete(name = groupingName)
         }
       }
       
@@ -132,7 +132,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
         
         if(!is.null(groupBy))
         {
-          stripPlot <- stripPlot + facet_wrap(~ grouping, ncol = 1, strip.position = "left")
+          stripPlot <- stripPlot + ggplot2::facet_wrap(~ grouping, ncol = 1, strip.position = "left")
         }
       }
       
@@ -183,7 +183,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
       }
     } else { # Plotting variable is a factor.
       barPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = measurement, fill = class)) +
-                  geom_bar() + ggplot2::xlab(xAxisLabel) + ggplot2::ylab("Number of Samples") +
+                  ggplot2::geom_bar() + ggplot2::xlab(xAxisLabel) + ggplot2::ylab("Number of Samples") +
                   ggplot2::scale_fill_manual("Class", values = colours) +
         ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5),
                        axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),
@@ -194,7 +194,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
                        legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::ggtitle(featureText)
       if(!is.null(groupBy))
       {
-        barPlot <- barPlot + facet_wrap(~ grouping, ncol = 1, strip.position = "left")
+        barPlot <- barPlot + ggplot2::facet_wrap(~ grouping, ncol = 1, strip.position = "left")
       }
       if(plot == TRUE)
         print(barPlot)
