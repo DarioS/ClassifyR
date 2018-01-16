@@ -26,22 +26,22 @@ setMethod("subtractFromLocation", "DataFrame",
           function(measurements, training, location = c("mean", "median"),
                    absolute = TRUE, verbose = 3)
           {
-            whichNumeric <- sapply(measurements, is.numeric)
-            if(sum(whichNumeric) == 0)
+            isNumeric <- sapply(measurements, is.numeric)
+            if(sum(isNumeric) == 0)
               stop("All features are not numeric but at least one must be.")
             
-            if(sum(whichNumeric) != ncol(measurements) && verbose == 3)
+            if(sum(isNumeric) != ncol(measurements) && verbose == 3)
               message("Some columns are not numeric. Only subtracting values from location for\n", 
                       "the columns containing numeric data.")
             
             location <- match.arg(location)
-            measurementsTrain <- measurements[training, whichNumeric]
+            measurementsTrain <- measurements[training, isNumeric]
             if(location == "mean")
               featureTrainingLocations <- colMeans(measurementsTrain, na.rm = TRUE)
             else # median.
               featureTrainingLocations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
             transformed <- measurements
-            transformed[, whichNumeric] <- apply(measurements[, whichNumeric], 1, '-', featureTrainingLocations)
+            transformed[, isNumeric] <- apply(measurements[, isNumeric], 1, '-', featureTrainingLocations)
             if(absolute == TRUE)
               transformed <- abs(transformed)
             
@@ -63,8 +63,8 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
   if("colData" %in% targets)
   {
     targets <- targets[-which(match, "colData")]
-    whichNumeric <- sapply(colData(measurements), is.numeric)
-    clinicalTrain <- colData(measurements)[training, whichNumeric]
+    isNumeric <- sapply(colData(measurements), is.numeric)
+    clinicalTrain <- colData(measurements)[training, isNumeric]
     if(location == "mean")
       featureTrainingLocations <- colMeans(clinicalTrain, na.rm = TRUE)
     else # median.
@@ -72,7 +72,7 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
     transformedClinical <- apply(colData(measurements), 1, '-', locations)
     if(absolute == TRUE)
       transformedClinical <- abs(transformedClinical)
-    colData(measurements)[, whichNumeric] <- transformedClinical
+    colData(measurements)[, isNumeric] <- transformedClinical
   }
   
   measurementsTrain <- measurements[, training, targets]

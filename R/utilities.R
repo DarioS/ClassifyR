@@ -97,24 +97,18 @@ setOldClass("pamrtrained")
   transformed
 }
 
-.doTrain <- function(expression, training, testing, trainParams,
+.doTrain <- function(measurements, classes, training, testing, trainParams,
                             predictParams, verbose)
   # Re-use inside feature selection.
 {
-  initialClass <- class(expression)
-  if(class(expression) != "list")
-    expression <- list(data = expression)
+  initialClass <- class(measurements)
+  if(class(expression) != "list") # Will be a DataFrame.
+    measurements <- list(data = measurements)
 
-  trained <- mapply(function(expressionVariety, variety)
+  trained <- mapply(function(measurementsVariety, variety)
   {
-    classes <- pData(expressionVariety)[, "class"]
-    expressionTrain <- exprs(expressionVariety[, training])
-    expressionTest <- exprs(expressionVariety[, testing])
-    if(trainParams@transposeExpression == TRUE) # For classifiers that consider columns as samples and genes as rows.
-    {
-      expressionTrain <- t(expressionTrain)
-      expressionTest <- t(expressionTest)
-    }
+    measurementsTrain <- measurementsVariety[training, ]
+    measurementsTest <- measurementsVariety[testing, ]
     
     if(variety != "data") # Single expression set is in a list with name 'data'.
     {
@@ -136,7 +130,7 @@ setOldClass("pamrtrained")
       tuneCombinations <- expand.grid(trainParams@otherParams[[tuneIndex]])
       trainParams@otherParams <- trainParams@otherParams[-tuneIndex]
     } else tuneCombinations <- NULL
-    paramList <- list(expressionTrain, classes[training])
+    paramList <- list(measurementsTrain, classes[training])
     if(trainParams@doesTests == FALSE) # Training and prediction are separate.
     {
       if(is.null(tuneCombinations))
@@ -168,7 +162,7 @@ setOldClass("pamrtrained")
           
           lapply(trained, function(model)
           {            
-            paramList <- list(model, expressionTrain) # Model and test set same as training set.
+            paramList <- list(model, measurementsTrain) # Model and test set same as training set.
             if(length(predictParams@otherParams) > 0)
               paramList <- c(paramList, predictParams@otherParams)
             paramList <- c(paramList, tuneParams, verbose = verbose)
@@ -183,19 +177,7 @@ setOldClass("pamrtrained")
                stop("Only numeric predictions are available. Predicted class labels must be provided.")
             lapply(predicted, function(predictions)
             {
-              classData <- ROCR::prediction(as.numeric(predictions), factor(classes[training], ordered = TRUE))
-              if(resubstituteParams@performanceType == "balanced")
-              {
-                  falseNegativeRate <- ROCR::performance(classData, "fnr")@y.values[[1]][2]
-                  falsePositiveRate <- ROCR::performance(classData, "fpr")@y.values[[1]][2]
-                  performanceValue <- mean(falseNegativeRate, falsePositiveRate)
-              } else
-              {
-                performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
-                performanceData <- do.call(ROCR::performance, performanceList)
-                performanceValue <- performanceData@y.values[[1]][2]
-              }
-                performanceValue
+              calcPerformance(classes[training], predictions, resubstituteParams@performanceType)
             })
           })
         })
@@ -236,7 +218,7 @@ setOldClass("pamrtrained")
         returnResult <- chosenModels
       }
     } else { # Some classifiers do training and testing with a single function.
-      paramList <- append(paramList, list(expressionTest))
+      paramList <- append(paramList, list(measurementsTest))
       if(length(predictParams@otherParams) > 0)
       {
         useOthers <- setdiff(names(predictParams@otherParams), names(trainParams@otherParams))
@@ -267,23 +249,12 @@ setOldClass("pamrtrained")
           else if(class(trained[[1]]) == "factor")
             predictedFactor <- trained
           else if(is.numeric(class(trained[[1]]))) # Can't automatically decide on a threshold. Stop processing.
-          stop("Only numeric predictions are available. Predicted class labels must be provided.")
+            stop("Only numeric predictions are available. Predicted class labels must be provided.")
           
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
-            classData <- ROCR::prediction(as.numeric(predictedFactor[[predictIndex]]), factor(classes[training], ordered = TRUE))
-            
-            if(resubstituteParams@performanceType == "balanced")
-            {
-              falseNegativeRate <- ROCR::performance(classData, "fnr")@y.values[[1]][2]
-              falsePositiveRate <- ROCR::performance(classData, "fpr")@y.values[[1]][2]
-              performanceValue <- mean(falseNegativeRate, falsePositiveRate)
-            } else
-            {
-              performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
-              performanceData <- do.call(ROCR::performance, performanceList)
-              performanceValue <- performanceData@y.values[[1]][2]
-            }
+            performanceValue <- calcPerformance(classes[training], predictedFactor[[predictIndex]],
+                                                resubstituteParams@performanceType)
             list(predictedClasses[[predictIndex]], performanceValue)
           })
         })
@@ -292,9 +263,9 @@ setOldClass("pamrtrained")
         {
           performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[predictVariety]][[2]]) # Value is in second position.
           if(resubstituteParams@better == "lower")
-            chosenTune <- which.min(performanceValues)
+            chosenTune <- which.min(performanceValues)[1]
           else
-            chosenTune <- which.max(performanceValues)
+            chosenTune <- which.max(performanceValues)[1]
             
           chosenPredict <- performances[[chosenTune]][[predictVariety]][[1]] # Prediction object is in position 1.
           attr(chosenPredict, "tune") <- as.list(tuneCombinations[chosenTune, , drop = FALSE])
@@ -307,7 +278,7 @@ setOldClass("pamrtrained")
       }
     }
     returnResult
-  }, expression, names(expression), SIMPLIFY = FALSE)
+  }, measurements, names(measurements), SIMPLIFY = FALSE)
 
   if(initialClass != "list") trained <- trained[[1]]
   if(class(trained[[1]]) == "list") 
@@ -374,25 +345,24 @@ setOldClass("pamrtrained")
   predicted
 }
 
-.pickFeatures <- function(expression, datasetName, trainParams, predictParams,
+.pickFeatures <- function(measurements, classes, datasetName, trainParams, predictParams,
                           resubstituteParams, orderedFeatures, selectionName, verbose)
 {
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
-    expressionSubset <- expression[orderedFeatures[1:topFeatures], ]
-    trained <- .doTrain(expressionSubset, 1:ncol(expressionSubset), 1:ncol(expressionSubset),
+    measurementsSubset <- measurements[, orderedFeatures[1:topFeatures]]
+    trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                         trainParams, predictParams, verbose)
-    
+    browser()
     if(trainParams@doesTests == FALSE)
     {
-        predictions <- .doTest(trained, expressionSubset, 1:ncol(expressionSubset),
+        predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
                                predictParams, verbose)
-    } else {
+    } else { # Same function does training and testing.
       if(class(trained) != "list" || sum(grepl('=', names(trained))) == 0)
         predictions <- predictParams@getClasses(trained)
       else
-        predictions <- lapply(trained, function(model) .doTest(model, expressionSubset, 1:ncol(expressionSubset),
-                                                               predictParams, verbose))
+        predictions <- lapply(trained, function(trainedModel) predictParams@getClasses(trainedModel))
     }
     if(class(predictions) == "list") # Mutiple varieties of predictions.
     {
@@ -400,59 +370,55 @@ setOldClass("pamrtrained")
         labels <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
       else
         labels <- predictions
-      classData <- ROCR::prediction(lapply(labels, as.numeric), lapply(1:length(predictions), function(variety) factor(pData(expression)[, "class"], ordered = TRUE)))
-    } else {
+    } else { # A single variety of prediction.
       if(class(predictions) == "data.frame")
         labels <- predictions[, sapply(predictions, class) == "factor"]
       else
         labels <- predictions
-      classData <- ROCR::prediction(as.numeric(labels), factor(pData(expression)[, "class"], ordered = TRUE))
     }
     
-    if(resubstituteParams@performanceType == "balanced")
+    if(class(labels) == "list")
     {
-      falseNegativeRate <- sapply(ROCR::performance(classData, "fnr")@y.values, "[[", 2)
-      falsePositiveRate <- sapply(ROCR::performance(classData, "fpr")@y.values, "[[", 2)
-      performanceValues <- rowMeans(matrix(c(falseNegativeRate, falsePositiveRate), ncol = 2))
-      if(length(performanceValues) > 1)
-        names(performanceValues) <- names(predictions)
-      performanceValues
+      performanceValues <- lapply(labels, function(labelSet) calcPerformance(classes, labelSet, resubstituteParams@performanceType))
+      
     } else {
-      performanceList <- append(list(classData, resubstituteParams@performanceType), resubstituteParams@otherParams)
-      performanceData <- do.call(ROCR::performance, performanceList)
-      performanceValues <- sapply(performanceData@y.values, "[[", 2)
-      if(length(performanceValues) > 1)
-        names(performanceValues) <- names(predictions)
-      performanceValues
+      performanceValues <- calcPerformance(classes, labels, resubstituteParams@performanceType)
     }
   })
 
   if(class(performances) == "numeric")
     performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
 
-  pickedRows <- apply(performances, 1, function(varietyPerformances)
-                {
-                  if(resubstituteParams@better == "lower")
-                    1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
-                  else
-                    1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
-                })
+  pickedFeatures <- apply(performances, 1, function(varietyPerformances)
+                    {
+                      if(resubstituteParams@better == "lower")
+                        1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
+                      else
+                        1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
+                    })
 
-  if(is.matrix(pickedRows))
-    pickedRows <- as.list(as.data.frame(pickedRows))
+  if(is.matrix(pickedFeatures)) # Same number of features picked for each variety. Coerce to list.
+    pickedFeatures <- as.list(as.data.frame(pickedFeatures))
   
   if(verbose == 3)
     message("Features selected.")
   
-  rankedFeatures <- lapply(1:length(pickedRows), function(variety) orderedFeatures)
-  pickedFeatures <- lapply(pickedRows, function(pickedSet) orderedFeatures[pickedSet])
+  rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) orderedFeatures)
+  pickedFeatures <- lapply(pickedFeatures, function(pickedSet) orderedFeatures[pickedSet])
+  
+  if(!is.null(mcols(measurements))) # Table describing source table and variable name is present.
+  {
+    varInfo <- mcols(measurements)
+    rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])
+    pickedFeatures <- lapply(pickedFeatures, function(features) varInfo[features, ])
+  }
   
   selectResults <- lapply(1:length(rankedFeatures), function(variety)
   {
     SelectResult(datasetName, selectionName,
                  list(rankedFeatures[[variety]]), list(pickedFeatures[[variety]]))
   })
-  names(selectResults) <- names(pickedRows)
+  names(selectResults) <- names(pickedFeatures)
   
   if(length(selectResults) == 1) selectResults <- selectResults[[1]] else selectResults
 }

@@ -19,6 +19,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   {
     groupingName <- groupBy
     groupBy <- measurements[, groupBy]
+    levelsOrder <- levels(groupBy)
+    groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
+                    facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
 
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -39,18 +42,27 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   sampleInfoTargets <- targets[targets[, 1] == "colData", ]
   measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
   classes <- colData(measurements)[, "class"]
-  
+ 
   groupingName <- NULL
   if(!is.null(groupBy))
   {
     groupingName <- groupBy[2]
-    if(groupBy[1] == "colData")
+    groupingTable <- groupBy[1]
+    if(groupingTable == "colData")
     {
-      groupBy <- colData(measurements)[, groupBy[2]]
-    } else {
-      groupBy <- measurements[groupBy[2], , groupBy[1]]
+      groupBy <- colData(measurements)[, groupingName]
+
+    } else { # One of the omics tables. Include table name.
+      groupBy <- measurements[groupingName, , groupingTable]
+      groupingName <- paste(groupingName, groupingTable)
     }
+    levelsOrder <- levels(groupBy)
+    groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
+                    facets = {groupText <- paste(groupingName, "is", groupBy)
+                             factor(groupText, levels = paste(groupingName, "is", levelsOrder))}
+                    )
   }
+
   colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
   measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
@@ -87,9 +99,10 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
     plotData <- data.frame(measurement = measurements[, columnIndex], class = classes)
     if(!is.null(groupBy))
     {
-      plotData[, "grouping"] <- groupBy
+      plotData[, "legends grouping"] <- groupBy[["legends"]]
+      plotData[, "facets grouping"] <- groupBy[["facets"]]
     }
-    
+
     if(is.null(varInfo))
     {
       featureText <- colnames(measurements)[columnIndex]
@@ -112,7 +125,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
 
         if(!is.null(groupBy))
         {
-          densPlot <- densPlot + ggplot2::aes(linetype = grouping) + ggplot2::scale_linetype_discrete(name = groupingName)
+          densPlot <- densPlot + ggplot2::aes(linetype = `legends grouping`) + ggplot2::scale_linetype_discrete(name = groupingName)
         }
       }
       
@@ -132,7 +145,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
         
         if(!is.null(groupBy))
         {
-          stripPlot <- stripPlot + ggplot2::facet_wrap(~ grouping, ncol = 1, strip.position = "left")
+          stripPlot <- stripPlot + ggplot2::facet_wrap(~ `facets grouping`, ncol = 1, strip.position = "left")
         }
       }
       
@@ -194,7 +207,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
                        legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::ggtitle(featureText)
       if(!is.null(groupBy))
       {
-        barPlot <- barPlot + ggplot2::facet_wrap(~ grouping, ncol = 1, strip.position = "left")
+        barPlot <- barPlot + ggplot2::facet_wrap(~ `facets grouping`, ncol = 1, strip.position = "left")
       }
       if(plot == TRUE)
         print(barPlot)

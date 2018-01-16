@@ -1,33 +1,55 @@
-setGeneric("calcPerformance", function(result, performanceType)
+setGeneric("calcPerformance", function(actualClasses, predictedClasses)
 {standardGeneric("calcPerformance")})
+
+setMethod("calcPerformance", c("factor", "factor"),
+          function(actualClasses, predictedClasses,
+                   performanceType = c("error", "balanced error", "average accuracy",
+                                       "micro precision", "micro recall",
+                                       "micro F1", "macro precision",
+                                       "macro recall", "macro F1"))
+{
+  performanceType <- match.arg(performanceType)
+  .calcPerformance(actualClasses, predictedClasses, performanceType = performanceType)
+})
 
 setMethod("calcPerformance", c("ClassifyResult"),
           function(result, performanceType = c("error", "balanced error", "sample error",
-                                               "sample error", "average accuracy",
+                                               "sample accuracy", "average accuracy",
                                                "micro precision", "micro recall",
                                                "micro F1", "macro precision",
                                                "macro recall", "macro F1"))
 {
   performanceType <- match.arg(performanceType)
   classLevels <- levels(actualClasses(result))
-  predictions <- lapply(result@predictions, function(sample) sample[, "label"])
-  correctClasses <- lapply(result@predictions, function(sample)
+  samples <- lapply(result@predictions, function(sample) factor(sample[, "sample"], levels = ))
+  predictedClasses <- lapply(result@predictions, function(sample) sample[, "label"])
+  actualClasses <- lapply(result@predictions, function(sample)
     factor(actualClasses(result)[sample[, "sample"]], levels = classLevels, ordered = TRUE))
+  
+  .calcPerformance(actualClasses, predictedClasses, samples, performanceType)
+  
+  result@performance[[performanceName]] <- performanceValues
+  result
+})
+
+.calcPerformance <- function(actualClasses, predictedClasses, samples, performanceType)
+{
   if(performanceType %in% c("sample error", "sample accuracy"))
   {
-    resultTable <- data.frame(do.call(rbind, result@predictions))
-    resultTable[, "actual"] <- result@actualClasses[resultTable[, "sample"]]
-    allIDs <- 1:length(sampleNames(result))
+    resultTable <- data.frame(sample = unlist(samples),
+                              actual = unlist(actualClasses),
+                              predicted = unlist(predictedClasses))
+    allIDs <- levels(resultTable[, "sample"])
     sampleMetricValues <- sapply(allIDs, function(sampleID)
-                          {
-                            sampleResult <- subset(resultTable, sample == sampleID)
-                              if(nrow(sampleResult) == 0)
-                                return(NA)
-                              if(performanceType == "sample error")
-                                sum(sampleResult[, "label"] != sampleResult[, "actual"])
-                              else
-                                sum(sampleResult[, "label"] == sampleResult[, "actual"])
-                          })
+    {
+      sampleResult <- subset(resultTable, sample == sampleID)
+      if(nrow(sampleResult) == 0)
+        return(NA)
+      if(performanceType == "sample error")
+        sum(sampleResult[, "label"] != sampleResult[, "actual"])
+      else
+        sum(sampleResult[, "label"] == sampleResult[, "actual"])
+    })
     performanceValues <- as.numeric(sampleMetricValues / table(factor(resultTable[, "sample"], levels = allIDs)))
     names(performanceValues) <- sampleNames(result)
     performanceName <- ifelse(performanceType == "sample error", "Sample-wise Error Rate", "Sample-wise Accuracy")
@@ -54,12 +76,12 @@ setMethod("calcPerformance", c("ClassifyResult"),
     performanceName <- "Balanced Error Rate"
   } else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
     performanceName <- switch(performanceType, `average accuracy` = "Average Accuracy",
-                                               `micro precision` = "Micro Precision",
-                                               `micro recall` = "Micro Recall",
-                                               `micro F1` = "Micro F1 Score",
-                                               `macro precision` = "Macro Precision",
-                                               `macro recall` = "Macro Recall",
-                                               `macro F1` = "Macro F1 Score")
+                              `micro precision` = "Micro Precision",
+                              `micro recall` = "Micro Recall",
+                              `micro F1` = "Micro F1 Score",
+                              `macro precision` = "Macro Precision",
+                              `macro recall` = "Macro Recall",
+                              `macro F1` = "Macro F1 Score")
     performanceValues <- unlist(mapply(function(iterationCorrectClasses, iterationPredictions)
     {
       confusionMatrix <- table(iterationCorrectClasses, iterationPredictions)
@@ -102,6 +124,4 @@ setMethod("calcPerformance", c("ClassifyResult"),
       }
     }, correctClasses, predictions, SIMPLIFY = FALSE))
   }
-  result@performance[[performanceName]] <- performanceValues
-  result
-})
+}

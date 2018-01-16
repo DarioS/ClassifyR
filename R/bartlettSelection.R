@@ -12,9 +12,9 @@ setMethod("bartlettSelection", "DataFrame", # Clinical data only.
           {
             splitDataset <- .splitDataAndClasses(measurements, classes)
             measurements <- splitDataset[["measurements"]]
-            whichNumeric <- apply(measurements, 2, is.numeric)
-            measurements <- measurements[, whichNumeric, drop = FALSE]
-            if(ncol(measurements) == 0)
+            isNumeric <- apply(measurements, 2, is.numeric)
+            measurements <- measurements[, isNumeric, drop = FALSE]
+            if(sum(isNumeric) == 0)
               stop("All features are not numeric but at least one must be.")
             .bartlettSelection(measurements, splitDataset[["classes"]], ...)
           })
@@ -32,10 +32,10 @@ setMethod("bartlettSelection", "MultiAssayExperiment",
             classes <- allFeaturesMatrix[, "class"]
             allFeaturesMatrix <- allFeaturesMatrix[, -match(c("primary", "class"),
                                                            colnames(allFeaturesMatrix))]
-            whichNumeric <- apply(allFeaturesMatrix, 2, is.numeric)
-            allFeaturesMatrix <- allFeaturesMatrix[, whichNumeric, drop = FALSE]
+            isNumeric <- apply(allFeaturesMatrix, 2, is.numeric)
+            allFeaturesMatrix <- allFeaturesMatrix[, isNumeric, drop = FALSE]
             if(ncol(allFeaturesMatrix) == 0)
-              stop("No variables in targets data tables are numeric.")
+              stop("No variables in data tables specified by \'targets\' are numeric.")
             else
               .bartlettSelection(allFeaturesMatrix, classes, ...)
           })
@@ -51,6 +51,6 @@ setMethod("bartlettSelection", "MultiAssayExperiment",
     bartlett.test(featureColumn, classes)[["p.value"]])
   orderedFeatures <- order(pValues)
   
-  .pickFeatures(measurements, datasetName, trainParams, predictParams,
+  .pickFeatures(measurements, classes, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedFeatures, selectionName, verbose)
 }
