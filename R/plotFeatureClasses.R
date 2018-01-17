@@ -35,11 +35,11 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
 {
   if(missing(targets))
     stop("'targets' must be specified by the user.")
-  if(!all(targets[, 1] %in% c(names(measurements), "colData")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"colData\".")  
-                                  
-  assaysTargets <- targets[targets[, 1] != "colData", ]
-  sampleInfoTargets <- targets[targets[, 1] == "colData", ]
+  if(!all(targets[, 1] %in% c(names(measurements), "clinical")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+                                
+  assaysTargets <- targets[targets[, 1] != "clinical", ]
+  sampleInfoTargets <- targets[targets[, 1] == "clinical", ]
   measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
   classes <- colData(measurements)[, "class"]
  
@@ -48,7 +48,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   {
     groupingName <- groupBy[2]
     groupingTable <- groupBy[1]
-    if(groupingTable == "colData")
+    if(groupingTable == "clinical")
     {
       groupBy <- colData(measurements)[, groupingName]
 

@@ -1,14 +1,26 @@
-setGeneric("naiveBayesKernel", function(expression, ...)
+setGeneric("naiveBayesKernel", function(measurements, ...)
            {standardGeneric("naiveBayesKernel")})
 
 setMethod("naiveBayesKernel", "matrix", 
-          function(expression, classes, ...)
+          function(measurements, classes, test, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))  
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  naiveBayesKernel(exprSet, ...)
+.naiveBayesKernel(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
+                  classes,
+                  DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+})
+
+setMethod("naiveBayesKernel", "DataFrame", 
+          function(measurements, classes, test, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
+  isNumeric <- apply(measurements, 2, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  isNumeric <- apply(test, 2, is.numeric)
+  testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
+            
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  .naiveBayesKernel(trainingMatrix, splitDataset[["classes"]], testingMatrix, ...)
 })
 
 setMethod("naiveBayesKernel", "ExpressionSet", 

@@ -32,7 +32,7 @@
                 If \code{measurements} is a \code{MultiAssayExperiment}, then a
                 character vector of length 2, which contains the name of a data table as the first
                 element and the name of a categorical feature as the second element, may be specified.
-                Additionally, the value \code{"colData"} may be used to refer to the column 
+                Additionally, the value \code{"clinical"} may be used to refer to the column 
                 annotation stored in the \code{colData} slot of the of the \code{MultiAssayExperiment}
                 object. A density plot will have additional lines of different line types for
                 each category. A strip chart plot will have a separate strip chart created for
@@ -106,6 +106,6 @@
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures,
-                     groupBy = c("colData", "Gender"),
+                     groupBy = c("clinical", "Gender"),
                      xAxisLabel = expression(log[2](expression)))
 }

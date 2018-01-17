@@ -17,6 +17,52 @@ setOldClass("pamrtrained")
   list(measurements = measurements, classes = classes)
 }
 
+.MAEtoWideTable <- function(measurements, targets, restrict = "numeric")
+{
+  if(!all(targets %in% c(names(measurements), "clinical")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+  
+  if("clinical" %in% targets)
+  {
+    clinicalColumns <- colnames(colData(measurements))
+    targets <- targets[-match("clinical", targets)]
+  } else {
+    clinicalColumns <- NULL
+  }
+  measurements <- measurements[, , targets]
+  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns,
+                                  check.names = FALSE)
+  if("class" %in% colnames(dataTable))
+    classes <- dataTable[, "class"]
+  else
+    classes <- NULL
+  if(!is.null(restrict))
+  {
+    if(restrict == "numeric")
+    {
+      isNumeric <- apply(dataTable, 2, is.numeric)
+      dataTable <- dataTable[, isNumeric, drop = FALSE]
+    } else if(restrict == "integer")
+    {
+      isInteger <- apply(dataTable, 2, is.integer)
+      dataTable <- dataTable[, isInteger, drop = FALSE]
+    }
+  }
+  if(!is.null(classes))
+  list(dataTable = dataTable[, -match(c("primary", "class"), colnames(dataTable))],
+       classes = classes)
+  else
+    dataTable[, -match("primary", colnames(dataTable))]
+}
+
+.checkVariablesAndSame <- function(trainingMatrix, testingMatrix)
+{
+  if(ncol(trainingMatrix) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else if(ncol(trainingMatrix) != ncol(testingMatrix))
+    stop("Training dataset and testing dataset contain differing numbers of features.")  
+}
+
 .doSelection <- function(expression, training, selectParams, trainParams,
                          predictParams, verbose)
 {
@@ -177,7 +223,7 @@ setOldClass("pamrtrained")
                stop("Only numeric predictions are available. Predicted class labels must be provided.")
             lapply(predicted, function(predictions)
             {
-              calcPerformance(classes[training], predictions, resubstituteParams@performanceType)
+              calcExternalPerformance(classes[training], predictions, resubstituteParams@performanceType)
             })
           })
         })
@@ -230,7 +276,7 @@ setOldClass("pamrtrained")
       {
         predictions <- do.call(trainParams@classifier, paramList)
         if(verbose >= 2)
-          message("Training and classification completed.")    
+          message("Training and prediction completed.")    
         returnResult <- predictions
       } else { # Tuning Parameter selection.
         resubstituteParams <- trainParams@otherParams[["resubstituteParams"]]
@@ -253,8 +299,8 @@ setOldClass("pamrtrained")
           
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
-            performanceValue <- calcPerformance(classes[training], predictedFactor[[predictIndex]],
-                                                resubstituteParams@performanceType)
+            performanceValue <- calcExternalPerformance(classes[training], predictedFactor[[predictIndex]],
+                                                        resubstituteParams@performanceType)
             list(predictedClasses[[predictIndex]], performanceValue)
           })
         })
@@ -274,6 +320,9 @@ setOldClass("pamrtrained")
         if(variety != "data")
           names(chosenPredictions) <- paste(variety, names(trained), sep = '')
         if(length(chosenPredictions) == 1) chosenPredictions <- chosenPredictions[[1]]
+        
+        if(verbose >= 2)
+          message("Parameter tuning and classification completed.")
         returnResult <- chosenPredictions
       }
     }
@@ -353,7 +402,7 @@ setOldClass("pamrtrained")
     measurementsSubset <- measurements[, orderedFeatures[1:topFeatures]]
     trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                         trainParams, predictParams, verbose)
-    browser()
+    
     if(trainParams@doesTests == FALSE)
     {
         predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
@@ -376,13 +425,13 @@ setOldClass("pamrtrained")
       else
         labels <- predictions
     }
-    
+
     if(class(labels) == "list")
     {
-      performanceValues <- lapply(labels, function(labelSet) calcPerformance(classes, labelSet, resubstituteParams@performanceType))
+      performanceValues <- lapply(labels, function(labelSet) calcExternalPerformance(classes, labelSet, resubstituteParams@performanceType))
       
     } else {
-      performanceValues <- calcPerformance(classes, labels, resubstituteParams@performanceType)
+      performanceValues <- calcExternalPerformance(classes, labels, resubstituteParams@performanceType)
     }
   })
 

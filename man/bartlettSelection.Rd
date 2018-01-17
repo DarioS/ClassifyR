@@ -19,14 +19,14 @@
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
     \code{\link{MultiAssayExperiment}} containing the training data. For a \code{matrix},
     the rows are features, and the columns are samples.}
-  \item{targets}{The names of the data tables to be used. \code{"clinical"} is also a valid value and specifies that numeric variables from the clinical data table will be used.}    
-  \item{classes}{Either a vector of class labels of class \code{\link{factor}} or if
-                 the measurements are of class \code{DataFrame} a character vector of
-                 length 1 containing the column name in \code{measurement} is also permitted.
-                 Not used if \code{measurements} is a \code{MultiAssayExperiment} object.}
-  \item{targets}{Specifies the data tables to consider If \code{measurements} is a
-                \code{MultiAssayExperiment}. A vector of data table names that is a subset
-                of \code{names(measurements)}.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which generates the plot(s).}
   \item{datasetName}{A name for the dataset used. Stored in the result.}

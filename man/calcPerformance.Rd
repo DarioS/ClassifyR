@@ -1,8 +1,10 @@
 \name{calcPerformance}
-\alias{calcPerformance}
-\alias{calcPerformance,ClassifyResult-method}
-\title{Add Performance Calculations to a ClassifyResult object}
-\description{Annotates the results of calling \code{\link{runTests}} with different kinds of performance measures.
+\alias{calcExternalPerformance}
+\alias{calcCVperformance}
+\alias{calcExternalPerformance,factor,factor-method}
+\alias{calcCVperformance,ClassifyResult-method}
+\title{Add Performance Calculations to a ClassifyResult Object or Calculate for a Pair of Factor Vectors}
+\description{If \code{calcExternalPerformance} is used, such as when having a vector of known classes and a vector of predicted classes determined outside of the ClassifyR package, a single metric value is calculated. If \code{calcCVperformance} is used, annotates the results of calling \code{\link{runTests}} with one of the user-specified performance measures.
 }
 \usage{
   \S4method{calcPerformance}{ClassifyResult}(result,

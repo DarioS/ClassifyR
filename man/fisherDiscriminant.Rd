@@ -1,24 +1,33 @@
 \name{fisherDiscriminant}
 \alias{fisherDiscriminant}
 \alias{fisherDiscriminant,matrix-method}
-\alias{fisherDiscriminant,ExpressionSet-method}
+\alias{fisherDiscriminant,DataFrame-method}
+\alias{fisherDiscriminant,MultiAssayExperiment-method}
 \title{Classification Using Fisher's LDA}
 \description{Finds the decision boundary using the training set, and gives predictions
 for the test set.
 }
 \usage{
-  \S4method{fisherDiscriminant}{matrix}(expression, classes, ...)
-  \S4method{fisherDiscriminant}{ExpressionSet}(expression, test, returnType = c("label", "score", "both"), verbose = 3)
+  \S4method{fisherDiscriminant}{matrix}(measurements, classes, test, ...)
+  \S4method{fisherDiscriminant}{DataFrame}(measurements, classes, test, ...)
+  \S4method{fisherDiscriminant}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{classes}{A vector of class labels.}
-  \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
-             \code{\link{ExpressionSet}} method.}  
-  \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the test data.}
+  {\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                       \code{\link{MultiAssayExperiment}} containing the training data.
+                       For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{test}{An object of the same class as \code{measurements} with no samples in common with
+              \code{measurements} and the same number of features as it.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 integer variables from the clinical data table will be used.}              
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the classification.}
   \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
@@ -37,9 +46,15 @@ for the test set.
 
 \examples{
   trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-  trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5 # Make first 30 genes D.E.
-  testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-  testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5 # Make first 30 genes D.E.
   classes <- factor(rep(c("Poor", "Good"), each = 5))
+  
+  # Make first 30 genes increased in value for poor samples.
+  trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
+  
+  testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+  
+  # Make first 30 genes increased in value for sixth to tenth samples.
+  testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
+  
   fisherDiscriminant(trainMatrix, classes, testMatrix)
 }

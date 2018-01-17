@@ -28,7 +28,7 @@ setMethod("subtractFromLocation", "DataFrame",
           {
             isNumeric <- sapply(measurements, is.numeric)
             if(sum(isNumeric) == 0)
-              stop("All features are not numeric but at least one must be.")
+              stop("No features are numeric but at least one must be.")
             
             if(sum(isNumeric) != ncol(measurements) && verbose == 3)
               message("Some columns are not numeric. Only subtracting values from location for\n", 
@@ -37,11 +37,11 @@ setMethod("subtractFromLocation", "DataFrame",
             location <- match.arg(location)
             measurementsTrain <- measurements[training, isNumeric]
             if(location == "mean")
-              featureTrainingLocations <- colMeans(measurementsTrain, na.rm = TRUE)
+              locations <- apply(measurementsTrain, 2, na.rm = TRUE)
             else # median.
-              featureTrainingLocations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
+              locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
             transformed <- measurements
-            transformed[, isNumeric] <- apply(measurements[, isNumeric], 1, '-', featureTrainingLocations)
+            transformed[, isNumeric] <- apply(measurements[, isNumeric], 1, '-', locations)
             if(absolute == TRUE)
               transformed <- abs(transformed)
             
@@ -57,22 +57,24 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
                    location = c("mean", "median"), absolute = TRUE, verbose = 3)
 {
   location <- match.arg(location)
-  if(!all(targets %in% c(names(measurements), "colData")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"colData\".")  
+  if(!all(targets %in% c(names(measurements), "clinical")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
   
-  if("colData" %in% targets)
+  transformed <- measurements
+  
+  if("clinical" %in% targets)
   {
-    targets <- targets[-which(match, "colData")]
+    targets <- targets[-which(match, "clinical")]
     isNumeric <- sapply(colData(measurements), is.numeric)
     clinicalTrain <- colData(measurements)[training, isNumeric]
     if(location == "mean")
-      featureTrainingLocations <- colMeans(clinicalTrain, na.rm = TRUE)
+      locations <- apply(clinicalTrain, 2, mean, na.rm = TRUE)
     else # median.
-      featureTrainingLocations <- apply(clinicalTrain, 2, median, na.rm = TRUE)
+      locations <- apply(clinicalTrain, 2, median, na.rm = TRUE)
     transformedClinical <- apply(colData(measurements), 1, '-', locations)
     if(absolute == TRUE)
       transformedClinical <- abs(transformedClinical)
-    colData(measurements)[, isNumeric] <- transformedClinical
+    colData(transformed)[, isNumeric] <- transformedClinical
   }
   
   measurementsTrain <- measurements[, training, targets]
@@ -80,13 +82,12 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
     featureTrainingLocations <- lapply(experiments(measurementsTrain), rowMeans, na.rm = TRUE)
   else # median.
     featureTrainingLocations <- lapply(experiments(measurementsTrain), function(dataTable)
-                                                              apply(dataTable, 1, median, na.rm = TRUE))
+                                                apply(dataTable, 1, median, na.rm = TRUE))
   transformedTables <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
-                              experiments(measurements[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
+              experiments(measurements[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
   if(absolute == TRUE)
     transformedTables <- lapply(transformedTables, abs)
   
-  transformed <- measurements
   experiments(transformed)[targets] <- ExperimentList(transformedTables)
 
   if(verbose == 3)

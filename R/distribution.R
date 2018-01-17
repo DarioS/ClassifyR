@@ -32,7 +32,20 @@ setMethod("distribution", "ClassifyResult",
     scores[as.numeric(names(errors))] <- errors
     names(scores) <- sampleNames(result)
   } else { # features
-    allFeatures <- unlist(features(result))
+    chosenFeatures <- features(result)
+    if(is.numeric(chosenFeatures)[[1]])
+      allFeatures <- unlist(chosenFeatures)
+    else if(is.data.frame(chosenFeatures)[[1]])
+      allFeatures <- do.call(rbind, chosenFeatures)
+    else if(is.numeric(chosenFeatures)[[2]])
+      allFeatures <- unlist(chosenFeatures)
+    else if(is.data.frame(chosenFeatures)[[2]])
+      allFeatures <- do.call(rbind, lapply(chosenFeatures, function(iteration) do.call(rbind, iteration)))
+    if(is.data.frame(chosenFeatures))
+    {
+      allFeatures <- paste(allFeatures[, "feature"], paste('(', allFeatures[, "dataset"], ')', sep = ''))
+      allFeatures <- gsub("colData", "clinical", allFeatures)
+    }
     scores <- table(allFeatures)
     names(scores) <- featureNames(result)[as.numeric(names(scores))]
   }

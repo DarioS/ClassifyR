@@ -73,10 +73,15 @@
 \author{Dario Strbenac, John Ormerod}
 \examples{
   trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-  trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5 # Make first 30 genes D.E.
-  testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-  testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5 # Make first 30 genes D.E.
   classes <- factor(rep(c("Poor", "Good"), each = 5))
-  # Expected: Good Good Good Good Good Poor Poor Poor Poor Poor
+  
+  # Make first 30 genes increased in value for poor samples.
+  trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
+  
+  testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+  
+  # Make first 30 genes increased in value for sixth to tenth samples.
+  testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
+  
   naiveBayesKernel(trainMatrix, classes, testMatrix)
 }
