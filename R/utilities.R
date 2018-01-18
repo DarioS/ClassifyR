@@ -21,38 +21,47 @@ setOldClass("pamrtrained")
 {
   if(!all(targets %in% c(names(measurements), "clinical")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
-  
+
   if("clinical" %in% targets)
   {
     clinicalColumns <- colnames(colData(measurements))
     targets <- targets[-match("clinical", targets)]
+  } else if("class" %in% colnames(colData(measurements))) {
+    clinicalColumns <- "class"
   } else {
     clinicalColumns <- NULL
   }
+
   measurements <- measurements[, , targets]
-  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns,
-                                  check.names = FALSE)
+  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
   else
     classes <- NULL
+  
   if(!is.null(restrict))
   {
     if(restrict == "numeric")
     {
-      isNumeric <- apply(dataTable, 2, is.numeric)
+      isNumeric <- sapply(dataTable, is.numeric)
       dataTable <- dataTable[, isNumeric, drop = FALSE]
     } else if(restrict == "integer")
     {
-      isInteger <- apply(dataTable, 2, is.integer)
+      isInteger <- sapply(dataTable, is.integer)
       dataTable <- dataTable[, isInteger, drop = FALSE]
     }
   }
+
+  # Only return independent variables in the table.
+  dropColumns <- na.omit(match("primary", colnames(dataTable)))
+  if("class" %in% colnames(dataTable))
+    dropColumns <- c(dropColumns, na.omit(match("class", colnames(dataTable))))
+  if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
+  
   if(!is.null(classes))
-  list(dataTable = dataTable[, -match(c("primary", "class"), colnames(dataTable))],
-       classes = classes)
+    list(dataTable = dataTable, classes = classes)
   else
-    dataTable[, -match("primary", colnames(dataTable))]
+    dataTable
 }
 
 .checkVariablesAndSame <- function(trainingMatrix, testingMatrix)
@@ -155,7 +164,6 @@ setOldClass("pamrtrained")
   {
     measurementsTrain <- measurementsVariety[training, ]
     measurementsTest <- measurementsVariety[testing, ]
-    
     if(variety != "data") # Single expression set is in a list with name 'data'.
     {
       multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
@@ -169,7 +177,7 @@ setOldClass("pamrtrained")
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
       predictParams@otherParams[changePredict] <- individiualParams[changePredict]
     }
-    
+
     tuneIndex <- which(names(trainParams@otherParams) == "tuneParams")
     if(length(tuneIndex) > 0)
     {
@@ -341,23 +349,21 @@ setOldClass("pamrtrained")
   trained
 }
 
-.doTest <- function(trained, expression, testing, predictParams, verbose)
+.doTest <- function(trained, measurements, testing, predictParams, verbose)
   # Re-use inside feature selection.
 {
-  initialClass <- class(expression)
+  initialClass <- class(measurements)
   if(initialClass != "list")
   {
     trained <- list(model = trained)
-    expression <- list(data = expression)
+    measurements <- list(data = measurements)
   }
   
   predicted <- mapply(function(model, data, variety)
   {
     if(!grepl("{}", paste(capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
     {
-      testExpression <- exprs(data)[, testing]
-      if(predictParams@transposeExpression == TRUE)
-        testExpression <- t(testExpression)
+      testMeasurements <- data[testing, ]
       
       if(variety != "data") # Single expression set is in a list with name 'data'.
       {
@@ -369,7 +375,7 @@ setOldClass("pamrtrained")
         predictParams@otherParams[change] <- individiualParams[change]
       }      
     
-      paramList <- list(model, testExpression)
+      paramList <- list(model, testMeasurements)
       if(length(predictParams@otherParams) > 0)
         paramList <- c(paramList, predictParams@otherParams)
       paramList <- c(paramList, verbose = verbose)
@@ -387,7 +393,7 @@ setOldClass("pamrtrained")
     if(verbose >= 2)
       message("Prediction completed.")    
     predictions
-  }, trained, expression, names(expression), SIMPLIFY = FALSE)
+  }, trained, measurements, names(measurements), SIMPLIFY = FALSE)
 
   if(initialClass != "list") predicted <- predicted[[1]]
   if(class(predicted[[1]]) == "list") predicted <- unlist(predicted, recursive = FALSE)

@@ -4,10 +4,10 @@
 \alias{classifyInterface,DataFrame-method}
 \alias{classifyInterface,MultiAssayExperiment-method}
 \title{
-An Interface for PoiClaClu Package's Classify Function
+  An Interface for PoiClaClu Package's Classify Function
 }
 \description{
-More details of Poisson LDA are available in the documentation of \code{\link[PoiClaClu]{Classify}}.
+  More details of Poisson LDA are available in the documentation of \code{\link[PoiClaClu]{Classify}}.
 }
 \usage{
   \S4method{classifyInterface}{matrix}(measurements, classes, test, ...)

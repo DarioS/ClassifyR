@@ -14,9 +14,9 @@ setMethod("fisherDiscriminant", "DataFrame",
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- apply(measurements, 2, is.numeric)
+  isNumeric <- sapply(measurements, is.numeric)
   measurements <- measurements[, isNumeric, drop = FALSE]
-  isNumeric <- apply(test, 2, is.numeric)
+  isNumeric <- sapply(test, is.numeric)
   testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
@@ -26,9 +26,9 @@ setMethod("fisherDiscriminant", "DataFrame",
 setMethod("fisherDiscriminant", "MultiAssayExperiment", 
           function(measurements, test, targets = names(measurements), ...)
 {
-  tableAndClasses <- .MAEtoWideTable(measurements, targets)
-  trainingMatrix <- tableAndClasses[["dataTable"]]
-  classes <- tableAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets)
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)

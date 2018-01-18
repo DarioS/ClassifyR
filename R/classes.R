@@ -75,7 +75,6 @@ setMethod("SelectParams", c("functionOrList"),
 
 setClass("TrainParams", representation(
   classifier = "function",
-  transposeExpression = "logical",
   doesTests = "logical",
   intermediate = "character",  
   otherParams = "list")
@@ -85,20 +84,17 @@ setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
 setMethod("TrainParams", character(0), function()
 {
-  new("TrainParams", classifier = dlda, transposeExpression = TRUE, intermediate = character(0),
-      doesTests = FALSE)
+  new("TrainParams", classifier = dlda, intermediate = character(0), doesTests = FALSE)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, transposeExpression, doesTests, intermediate = character(0), ...)
+          function(classifier, doesTests, intermediate = character(0), ...)
           {
-            new("TrainParams", classifier = classifier,
-                transposeExpression = transposeExpression, doesTests = doesTests,
+            new("TrainParams", classifier = classifier, doesTests = doesTests,
                 intermediate = intermediate, otherParams = list(...))
           })
 
 setClass("PredictParams", representation(
   predictor = "function",
-  transposeExpression = "logical",
   intermediate = "character",    
   getClasses = "function",
   otherParams = "list")
@@ -108,14 +104,14 @@ setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {
-  new("PredictParams", predictor = predict, transposeExpression = TRUE,
-      intermediate = character(0), getClasses = function(result){result[["class"]]})
+  new("PredictParams", predictor = predict, intermediate = character(0),
+      getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("function"),
-          function(predictor, transposeExpression, intermediate = character(0), getClasses, ...)
+          function(predictor, intermediate = character(0), getClasses, ...)
           {
-            new("PredictParams", predictor = predictor, transposeExpression = transposeExpression,
-                intermediate = intermediate, getClasses = getClasses, otherParams = list(...))
+            new("PredictParams", predictor = predictor, intermediate = intermediate,
+                getClasses = getClasses, otherParams = list(...))
           })
 
 setGeneric("SelectResult", function(dataset, selection, rankedFeatures, chosenFeatures, ...)

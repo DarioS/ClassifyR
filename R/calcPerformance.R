@@ -23,6 +23,7 @@ setMethod("calcCVperformance", c("ClassifyResult"),
                                                "macro recall", "macro F1"))
 {
   performanceType <- match.arg(performanceType)
+  
   classLevels <- levels(actualClasses(result))
   samples <- lapply(result@predictions, function(sample) factor(sample[, "sample"], levels = sampleNames(result)))
   predictedClasses <- lapply(result@predictions, function(sample) sample[, "label"])

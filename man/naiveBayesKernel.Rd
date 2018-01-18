@@ -1,50 +1,59 @@
 \name{naiveBayesKernel}
 \alias{naiveBayesKernel}
 \alias{naiveBayesKernel,matrix-method}
-\alias{naiveBayesKernel,ExpressionSet-method}
+\alias{naiveBayesKernel,DataFrame-method}
+\alias{naiveBayesKernel,MultiAssayExperiment-method}
 \title{Classification Using A Bayes Classifier with Kernel Density Estimates}
 \description{
   Kernel density estimates are fitted to the training data and a naive Bayes classifier
-  is used to classify samples in the test data. 
+  is used to classify samples in the test data.
 }
 \usage{
-  \S4method{naiveBayesKernel}{matrix}(expression, classes, ...)
-  \S4method{naiveBayesKernel}{ExpressionSet}(expression, test, densityFunction = density,
-            densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
-                                                          to = expression(max(featureValues))),
-            weighted = c("both", "unweighted", "weighted"),
-            weight = c("all", "height difference", "crossover distance", "sum differences"),
-            minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
+  \S4method{naiveBayesKernel}{matrix}(measurements, classes, test, ...)
+  \S4method{naiveBayesKernel}{DataFrame}(measurements, classes, test, ...)
+  \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{classes}{A vector of class labels.}
-  \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
-             \code{\link{ExpressionSet}} method.}            
-  \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the test data.}
-  \item{densityFunction}{A function which will return a probability density, which is essentially
-                         a list with x and y coordinates.}
-  \item{densityParameters}{A list of options for \code{densityFunction}.}                       
-  \item{weighted}{In weighted mode, the difference in densities is summed over all features.
-                  If unweighted mode, each feature's vote is worth the same. To save
-                  computational time, both can be calculated simultaneously.}
-  \item{weight}{The type of weight to calculate. For \code{"height difference"}, the weight of each prediction
-                is equal to the verical distance between two densities, for a particular value of x. For
+  {\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                       \code{\link{MultiAssayExperiment}} containing the training data.
+                       For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{test}{An object of the same class as \code{measurements} with no samples in common with
+              \code{measurements} and the same number of features as it.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 integer variables from the clinical data table will be used.}              
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the classification.}
+  \item{densityFunction}{Default: \code{\link{density}}. A function which will return a probability density,
+                         which is essentially a list with x and y coordinates.}
+  \item{densityParameters}{A list of options for \code{densityFunction}.
+                          Default: \code{list(bw = "nrd0", n = 1024,
+                                              from = expression(min(featureValues)),
+                                              to = expression(max(featureValues))}.}                       
+  \item{weighted}{Options: \code{"both"}, \code{"unweighted"} or \code{"weighted"}. Default: \code{"both"}.
+                  In weighted mode, the difference in densities is summed over all features.
+                  If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
+  \item{weight}{Options: \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
+                or \code{"sum differences"}. Default: \code{"all"}. The type of weight to calculate.
+                For \code{"height difference"}, the weight of each prediction is equal to the
+                verical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
                 the weight is the distance of x from the nearest density crossover point. For
                 \code{"sum differences"}, the weight is the sum of the weights calculated by both types
                 of distances.}              
-  \item{minDifference}{The minimum difference in densities for a feature to be allowed
+  \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
-  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
-                    from the prediction to either a vector of class labels, score for a sample belonging
-                    to the second class, as determined by the factor levels, or both labels and scores
-                    in a \code{\link{data.frame}}.}     
+  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Default: \code{"label"}
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the factor levels,
+                    or both labels and scores in a \code{data.frame}.}     
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -58,6 +67,7 @@
   The variable name of each feature's measurements in the iteration over all features is \code{featureValues}. 
   This is important to know if each feature's measurements need to be referred to in the specification of
   \code{densityParameters}, such as for specifying the range of x values of the density function to be computed.
+  For example, see the default value of \code{densityParameters} above.
   
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
   distance between y values of the two densities at every x value. x values for which the sign of the difference

@@ -7,23 +7,28 @@
 \description{If \code{calcExternalPerformance} is used, such as when having a vector of known classes and a vector of predicted classes determined outside of the ClassifyR package, a single metric value is calculated. If \code{calcCVperformance} is used, annotates the results of calling \code{\link{runTests}} with one of the user-specified performance measures.
 }
 \usage{
+  \S4method{calcPerformance}{factor, factor}(actualClasses, predictedClasses,
+                                             performanceType = c("balanced error", "error", "average accuracy",
+                                                                 "micro precision", "micro recall",
+                                                                 "micro F1", "macro precision",
+                                                                 "macro recall", "macro F1")
   \S4method{calcPerformance}{ClassifyResult}(result,
-  performanceType = c("error", "balanced error", "sample error",
-                      "sample error", "average accuracy",
-                      "micro precision", "micro recall",
-                      "micro F1", "macro precision",
-                      "macro recall", "macro F1")
+                                             performanceType = c("balanced error", "error", "sample error",
+                                                                 "sample accuracy", "average accuracy",
+                                                                 "micro precision", "micro recall",
+                                                                 "micro F1", "macro precision",
+                                                                 "macro recall", "macro F1")
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
-  \item{performanceType}{A character vector of length 1.
+  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}
                          Must be one of the following options:
+                         \code{"balanced error"}: balanced error rate,                         
                          \code{"error"}: ordinary error rate,
-                         \code{"balanced error"}: balanced error rate,
                          \code{"sample error"}: error rate for each sample in the dataset,
                          \code{"sample accuracy"}: accuracy for each sample in the dataset,
                          \code{"average accuracy"}: Sum of accuracies of each class,
-                                                    divided by the number of classes.}
+                                                    divided by the number of classes.
                          \code{"micro precision"}: Sum of the number of correct predictions in each class,
                                                    divided by the sum of number of samples
                                                    in each class.
@@ -39,7 +44,8 @@
                                                 in each class to the number of samples predicted to be
                                                 in each class, divided by the number of classes.
                          \code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
-                                            macro precision and macro recall.                       
+                                            macro precision and macro recall.
+                        }
 }
 \details{
   All metrics are suitable for evaluating classification scenarios with more than two classes.

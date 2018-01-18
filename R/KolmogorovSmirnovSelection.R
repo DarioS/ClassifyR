@@ -1,27 +1,49 @@
-setGeneric("KolmogorovSmirnovSelection", function(expression, ...)
+setGeneric("KolmogorovSmirnovSelection", function(measurements, ...)
            {standardGeneric("KolmogorovSmirnovSelection")})
 
-setMethod("KolmogorovSmirnovSelection", "matrix", function(expression, classes, ...)
+setMethod("KolmogorovSmirnovSelection", "matrix", function(measurements, classes, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  KolmogorovSmirnovSelection(exprSet, ...)
+  .KolmogorovSmirnovSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("KolmogorovSmirnovSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
+setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .KolmogorovSmirnovSelection(measurements, splitDataset[["classes"]], ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("KolmogorovSmirnovSelection", "MultiAssayExperiment",
+function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+            
+  if(ncol(dataTable) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    .KolmogorovSmirnovSelection(dataTable, classes, ...)
+})
+
+.KolmogorovSmirnovSelection <- function(measurements, classes,
+                               datasetName, trainParams, predictParams, resubstituteParams, ...,
+                               selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by Kolmogorov Smirnov distance")
-  classes <- pData(expression)[, "class"]
+
   oneClass <- classes == levels(classes)[1]
   otherClass <- classes == levels(classes)[2]
-  KSdistance <- apply(exprs(expression), 1, function(geneRow)
-                      ks.test(geneRow[oneClass], geneRow[otherClass], ...)[["statistic"]])
+  KSdistance <- apply(measurements, 2, function(featureColumn)
+                      ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
-  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
-})
+  .pickFeatures(measurements, classes, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
+}

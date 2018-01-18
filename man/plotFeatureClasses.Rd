@@ -47,8 +47,8 @@
                            \code{"stripchart"} for drawing only a strip chart.
   \item{measurementLimits}{The minimum and maximum expression values to plot. Default: \code{NULL}.
                            By default, the limits are automatically computed from the data values.}
-  \item{width}{Numeric value that alters the line thickness for density plots and the binning with
-               of dots of strip chart. Default: 1.}
+  \item{lineWidth}{Numeric value that alters the line thickness for density plots. Default: 1.}
+  \item{dotBinWidth}{Numeric value that alters the diameter of dots in the strip chart. Default: 1.}                  
   \item{xAxisLabel}{The axis label for the plot's horizontal axis. Default: \code{NULL}.}
   \item{yAxisLabels}{A character vector of length 1 or 2. If the feature's measurements are numeric an
                      \code{whichNumericPlots} has the value \code{"both"}, the first value is the
@@ -77,7 +77,17 @@
               current graphics device.}  
 }
 \value{
-  Plots are created on the current graphics device and a list of plot objects is invisibly returned. The classes of the plot object are determined based on the type of data plotted and the number of plots per feature generated. If the plotted variable is discrete or if the variable is numeric and one plot type was specified, the list element is an object of class \code{ggplot}. Otherwise, if the variable is numeric and both the density and stripchart plot types were made, the list element is an object of class \code{TableGrob}.
+  Plots are created on the current graphics device and a list of plot objects is
+  invisibly returned. The classes of the plot object are determined based on the
+  type of data plotted and the number of plots per feature generated. If the
+  plotted variable is discrete or if the variable is numeric and one plot type was specified,
+  the list element is an object of class \code{ggplot}. Otherwise, if the variable
+  is numeric and both the density and stripchart plot types were made, the list element
+  is an object of class \code{TableGrob}.
+  
+  Settling \code{lineWidth} and \code{dotBinWidth} to the same value doesn't result in
+  the density plot and the strip chart having elements of the same size. Some manual 
+  experimentation is required to get similarly sized plot elements.
 }
 \author{Dario Strbenac}
 

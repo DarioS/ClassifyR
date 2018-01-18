@@ -1,26 +1,33 @@
 \name{getLocationsAndScales}
 \alias{getLocationsAndScales}
 \alias{getLocationsAndScales,matrix-method}
-\alias{getLocationsAndScales,ExpressionSet-method}
+\alias{getLocationsAndScales,DataFrame-method}
+\alias{getLocationsAndScales,MultiAssayExperiment-method}
 \title{Calculate Location and Scale}
 \description{Calculates the location and scale for each feature.
 }
 \usage{
-  \S4method{getLocationsAndScales}{matrix}(expression, ...)
-  \S4method{getLocationsAndScales}{ExpressionSet}(expression, location = c("mean", "median"),
-                                   scale = c("SD", "MAD", "Qn"))
+  \S4method{getLocationsAndScales}{matrix}(measurements, ...)
+  \S4method{getLocationsAndScales}{DataFrame}(measurements, ...)
+  \S4method{getLocationsAndScales}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
-             \code{\link{ExpressionSet}} method.}
-  \item{location}{The location to be calculated.}
-  \item{scale}{The scale to be calculated.}
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which calculates the locations and scales.}  
+  \item{location}{Default: \code{"mean"}. Either \code{"mean"} or \code{"median"}. The type of
+                  location to be calculated.}
+  \item{scale}{Default: \code{"SD"}. Either \code{"SD"}, \code{"MAD"} or \code{"Qn"}
+               The type of scale to be calculated.}
 }
 \details{
-  Location can be either "mean" or "median". Scale can be standard deviation, median absolute deviation, or \eqn{Q_n}{Qn}.
+  \code{"SD"} is used to represent standard deviation and \code{"MAD"} is used to represent
+  median absolute deviation.
 }
 \value{
   A \code{\link{list}} of length 2. The first element contains the location for
@@ -32,5 +39,8 @@
 }
 \examples{
   genesMatrix <- matrix(rnorm(1000, 8, 4), ncol = 10)
-  getLocationsAndScales(genesMatrix, "median", "MAD")
+  distributionInfo <- getLocationsAndScales(genesMatrix, "median", "MAD")
+  
+  mean(distributionInfo[["median"]])
+  mean(distributionInfo[["MAD"]])
 }

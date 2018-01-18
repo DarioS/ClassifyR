@@ -72,7 +72,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
 .plotFeatureClasses <- function(measurements, classes = NULL, varInfo = NULL, groupBy = NULL,
                                 groupingName = NULL,
                                 whichNumericPlots = c("both", "density", "stripchart"),
-                                measurementLimits = NULL, width = 1,
+                                measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
                                 xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
                                 showXtickLabels = TRUE, showYtickLabels = TRUE,
                                 xLabelPositions = "auto", yLabelPositions = "auto",
@@ -119,7 +119,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
       if(whichNumericPlots %in% c("both", "density"))
       {
         densPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = measurement, colour = class)) +
-          ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = width) +
+          ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = lineWidth) +
           ggplot2::scale_colour_manual("Class", values = colours) + ggplot2::coord_cartesian(xlim = measurementLimits) +
           ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(breaks = yLabelPositions)
 
@@ -133,7 +133,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
       {
         yLabel <- ifelse(whichNumericPlots == "both", yAxisLabels[2], yAxisLabels[1])
         stripPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = class, y = measurement)) +
-          ggplot2::geom_dotplot(dotsize = 0.5 * width, binaxis = 'y', stackdir = "center", position = "dodge", ggplot2::aes(colour = class), binwidth = width) +
+          ggplot2::geom_dotplot(binaxis = 'y', stackdir = "center", position = "dodge", ggplot2::aes(colour = class), binwidth = dotBinWidth) +
           ggplot2::scale_colour_manual("Class", values = colours) + ggplot2::xlab(yLabel) + ggplot2::ylab(xAxisLabel) + ggplot2::scale_y_continuous(limits = measurementLimits) +
           ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5),
                          axis.text.x = if(showXtickLabels == TRUE) ggplot2::element_text(size = fontSizes[3], colour = "black") else ggplot2::element_blank(),

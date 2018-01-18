@@ -13,9 +13,9 @@ setMethod("classifyInterface", "DataFrame", function(measurements, classes, test
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isInteger <- apply(measurements, 2, is.integer)
+  isInteger <- sapply(measurements, is.integer)
   measurements <- measurements[, isInteger, drop = FALSE]
-  isInteger <- apply(test, 2, is.integer)
+  isInteger <- sapply(test, is.integer)
   testingMatrix <- as.matrix(test[, isInteger, drop = FALSE])
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
@@ -25,9 +25,9 @@ setMethod("classifyInterface", "DataFrame", function(measurements, classes, test
 setMethod("classifyInterface", "MultiAssayExperiment",
 function(measurements, test, targets = names(measurements), ...)
 {
-  tableAndClasses <- .MAEtoWideTable(measurements, targets, "integer")
-  trainingMatrix <- as.matrix(tableAndClasses[["dataTable"]])
-  classes <- tableAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, "integer")
+  trainingMatrix <- as.matrix(tablesAndClasses[["dataTable"]])
+  classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets, "integer")
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)

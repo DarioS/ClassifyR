@@ -14,14 +14,14 @@
   \describe{
     \item{}{
       \code{TrainParams()}
-      Creates a default TrainParams object. The classifier function is DLDA. Users
-      should create an appropriate \code{TrainParams} object for the
-      characteristics of their data, once they are familiar with this software.
+            Creates a default TrainParams object. The classifier function is DLDA. Users
+            should create an appropriate \code{TrainParams} object for the
+            characteristics of their data, once they are familiar with this software.
   }
     \item{}{
-      \code{TrainParams(classifier, transposeExpression, doesTests, ...)}
-      Creates a TrainParams object which stores the function which will do the
-      classifier building and parameters that the function will use.
+      \code{TrainParams(classifier, doesTests, intermediate = character(0), ...)}
+            Creates a TrainParams object which stores the function which will do the
+            classifier building and parameters that the function will use.
   \describe{
             \item{\code{classifier}}{A function which will construct a classifier, and also
             possibly make the predictions. The first argument must be a \code{\link{matrix}}
@@ -29,8 +29,6 @@
             argument must be a \code{matrix} of test data. The function must also accept a parameter named
             \code{verbose} The function's return value can be either a trained classifier when
             \code{doesTests} is \code{FALSE} or a vector of class predictions if \code{doesTests} is \code{TRUE}.}
-	          \item{\code{transposeExpression}}{Set to \code{TRUE} if \code{classifier} expects
-            features as columns.}
             \item{\code{doesTests}}{Set to \code{TRUE} if \code{classifier} also performs
             and returns predictions.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
@@ -43,8 +41,8 @@
 \author{Dario Strbenac}
 \examples{
 if(require(sparsediscrim))
-  trainParams <- TrainParams(dlda, transposeExpression = TRUE, doesTests = FALSE)
-# sparsediscrim has a separate predict method for trained DLDA objects.
-# dlda expects features in columns, and samples in rows.
-# It doesn't formally have a verbose parameter, but it is effectively consumed by ... in its formal definition.
+  trainParams <- TrainParams(dlda, doesTests = FALSE)
+# The package sparsediscrim has a separate predict method for trained DLDA objects.
+# It doesn't formally have a verbose parameter, but it is effectively consumed
+# by ... in its formal definition.
 }

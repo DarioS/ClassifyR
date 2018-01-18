@@ -13,7 +13,7 @@ setMethod("DMDselection", "DataFrame", # Clinical data only.
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
-  isNumeric <- apply(measurements, 2, is.numeric)
+  isNumeric <- sapply(measurements, is.numeric)
   measurements <- measurements[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
@@ -24,15 +24,10 @@ setMethod("DMDselection", "DataFrame", # Clinical data only.
 setMethod("DMDselection", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
-  tableAndClasses <- .MAEtoWideTable(measurements, targets)
-  dataTable <- tableAndClasses[["dataTable"]]
-  classes <- tableAndClasses[["classes"]]            
-  isNumeric <- apply(dataTable, 2, is.numeric)
-  dataTable <- dataTable[, isNumeric, drop = FALSE]
-  if(ncol(dataTable) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    .DMDselection(dataTable, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]            
+  .DMDselection(dataTable, classes, ...)
 })
 
 .DMDselection <- function(measurements, classes,
@@ -41,7 +36,7 @@ setMethod("DMDselection", "MultiAssayExperiment",
 {
   if(verbose == 3)
     message("Selecting features by DMD.")
-  
+
   oneClassTraining <- which(classes == levels(classes)[1])
   otherClassTraining <- which(classes == levels(classes)[2])
   oneClassMeasurements <- measurements[oneClassTraining, ]

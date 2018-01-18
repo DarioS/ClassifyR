@@ -17,8 +17,8 @@
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
-    \code{\link{MultiAssayExperiment}} containing the training data. For a \code{matrix},
-    the rows are features, and the columns are samples.}
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements} or if the measurements are
                  of class \code{DataFrame} a character vector of length 1 containing the
@@ -28,7 +28,7 @@
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
   \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which generates the plot(s).}
+             which does the feature selection.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
     classifier to use for training.}
@@ -38,7 +38,7 @@
     describing the performance measure to consider and the numbers of
     top features to try for resubstitution classification.}                               
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
     This function only prints progress messages if the value is 3.}
 }
 \details{
@@ -79,8 +79,8 @@
   resubParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
                                     performanceType = "balanced", better = "lower")
   bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
-                    trainParams = TrainParams(fisherDiscriminant, FALSE, TRUE),
-                    predictParams = PredictParams(function(){}, FALSE,
+                    trainParams = TrainParams(fisherDiscriminant, TRUE),
+                    predictParams = PredictParams(function(){},
                     getClasses = function(result) result),
                     resubstituteParams = resubParams)
 }

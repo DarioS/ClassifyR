@@ -14,50 +14,58 @@ setMethod("naiveBayesKernel", "DataFrame",
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- apply(measurements, 2, is.numeric)
+  isNumeric <- sapply(measurements, is.numeric)
   measurements <- measurements[, isNumeric, drop = FALSE]
-  isNumeric <- apply(test, 2, is.numeric)
+  isNumeric <- sapply(test, is.numeric)
   testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
-            
+  
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   .naiveBayesKernel(trainingMatrix, splitDataset[["classes"]], testingMatrix, ...)
 })
 
-setMethod("naiveBayesKernel", "ExpressionSet", 
-          function(expression, test, densityFunction = density,
-                   densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
-                                                                 to = expression(max(featureValues))),
-                   weighted = c("both", "unweighted", "weighted"),
-                   weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
+setMethod("naiveBayesKernel", "MultiAssayExperiment", 
+          function(measurements, test, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  testingMatrix <- .MAEtoWideTable(test, targets)
+            
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  .naiveBayesKernel(trainingMatrix, classes, testingMatrix, ...)
+})
+
+.naiveBayesKernel <- function(measurements, classes, test, densityFunction = density,
+                              densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
+                                                       to = expression(max(featureValues))),
+                              weighted = c("both", "unweighted", "weighted"),
+                              weight = c("all", "height difference", "crossover distance", "sum differences"),
+                              minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
-            
-  classes <- pData(expression)[, "class"]
+  
   classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
   largerClass <- names(classesSizes)[which.max(classesSizes)]
-  expression <- exprs(expression)      
-  if(class(test) == "ExpressionSet") test <- exprs(test)
   
   if(verbose == 3)
     message("Fitting densities.")
-  
-  densities <- apply(expression, 1, function(featureValues) 
+
+  densities <- apply(measurements, 2, function(featureValues)
   {
-    oneClassExpression <- featureValues[classes == levels(classes)[1]]
-    otherClassExpression <- featureValues[classes == levels(classes)[2]]
+    oneClassMeasurements <- featureValues[classes == levels(classes)[1]]
+    otherClassMeasurements <- featureValues[classes == levels(classes)[2]]
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
-    oneDensity <- do.call(densityFunction, c(list(oneClassExpression), densityParameters))
-    otherDensity <- do.call(densityFunction, c(list(otherClassExpression), densityParameters))
+    oneDensity <- do.call(densityFunction, c(list(oneClassMeasurements), densityParameters))
+    otherDensity <- do.call(densityFunction, c(list(otherClassMeasurements), densityParameters))
     
     list(oneClass = oneDensity, otherClass = otherDensity)
   })
   
   splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
                                                                otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
-
+  
   if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
   {
     if(verbose == 3)
@@ -72,8 +80,8 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
-    
+    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
+
     class1RelativeSize <- classesSizes[1] / classesSizes[2]
     posteriorsHorizontal <- ifelse(distancesHorizontal < 0, distancesHorizontal * class1RelativeSize, distancesHorizontal * 1/class1RelativeSize)
   }
@@ -83,43 +91,45 @@ setMethod("naiveBayesKernel", "ExpressionSet",
     if(verbose == 3)
       message("Calculating class densities.")
     
+    # Rows are for features, columns are for samples.
     distancesVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       featureSplines[["otherClass"]](testSamples) - featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
+    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
     
+    # Rows are for features, columns are for samples.
     posteriorsVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(t(test)), SIMPLIFY = FALSE)))
+    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
   }
 
   if(verbose == 3)
   {
     switch(returnType, label = ,
-                       both = message("Calculating class scores and determining class labels."),
-                       score = message("Calculating class scores.")
-          )
+           both = message("Calculating class scores and determining class labels."),
+           score = message("Calculating class scores.")
+    )
   }
   
   if(weight == "all")
     weightExpanded <-  c("height difference", "crossover distance", "sum differences")
   else weightExpanded <- weight
   allPosteriors <- lapply(weightExpanded, function(type)
-                   {
-                     switch(type, `height difference` = posteriorsVertical,
-                                  `crossover distance` = posteriorsHorizontal,
-                                  `sum differences` = posteriorsVertical + posteriorsHorizontal
-                            )
-                   })
-  allDistances <- lapply(weightExpanded, function(type)
-                  {
-                    switch(type, `height difference` = distancesVertical,
-                                 `crossover distance` = distancesHorizontal,
-                                  `sum differences` = distancesVertical + distancesHorizontal
-                          )
+  {
+    switch(type, `height difference` = posteriorsVertical,
+           `crossover distance` = posteriorsHorizontal,
+           `sum differences` = posteriorsVertical + posteriorsHorizontal
+    )
   })
-
+  allDistances <- lapply(weightExpanded, function(type)
+  {
+    switch(type, `height difference` = distancesVertical,
+           `crossover distance` = distancesHorizontal,
+           `sum differences` = distancesVertical + distancesHorizontal
+    )
+  })
+  
   weightingText <- weighted
   if(weightingText == "both") weightingText <- c("unweighted", "weighted")
   testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames, distances)
@@ -161,7 +171,7 @@ setMethod("naiveBayesKernel", "ExpressionSet",
       }))
     }))
   }, allPosteriors, weightExpanded, allDistances, SIMPLIFY = FALSE))
-
+  
   # Remove combinations of unweighted voting and weightings.
   testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
   {
@@ -178,21 +188,21 @@ setMethod("naiveBayesKernel", "ExpressionSet",
   if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
-
+  
   varietyFactor <- factor(do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ',')))
   varietyFactor <- gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor)
   resultsList <- by(testPredictions, varietyFactor, function(predictionSet)
-                 {
-                   switch(returnType, label = predictionSet[, "class"],
-                          score = predictionSet[, "score"],
-                          both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
-                 }, simplify = FALSE)
-
+  {
+    switch(returnType, label = predictionSet[, "class"],
+           score = predictionSet[, "score"],
+           both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
+  }, simplify = FALSE)
+  
   attr(resultsList, "class") <- "list"
   attr(resultsList, "call") <- NULL
-
+  
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]
   else
-    resultsList
-})
+    resultsList  
+}

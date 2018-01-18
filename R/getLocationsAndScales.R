@@ -10,7 +10,7 @@ setMethod("getLocationsAndScales", "matrix",
 setMethod("getLocationsAndScales", "DataFrame",
           function(measurements, ...)
 {
-  isNumeric <- apply(measurements, 2, is.numeric)
+  isNumeric <- sapply(measurements, is.numeric)
   measurements <- measurements[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
@@ -18,7 +18,7 @@ setMethod("getLocationsAndScales", "DataFrame",
 })
 
 setMethod("getLocationsAndScales", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements))
+          function(measurements, targets = names(measurements), ...)
 {
   if(!all(targets %in% c(names(measurements), "clinical")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  

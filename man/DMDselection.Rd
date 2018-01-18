@@ -22,7 +22,8 @@
                  numeric variables from the clinical data table will be used.}
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which does the selection or parameters for \code{\link{getLocationsAndScales}}.}
-  \item{datasetName}{A name for the dataset used. Stored in the result.}                  
+  \item{datasetName}{Default: \code{"Differences of Medians and Deviations"}. A name for the dataset used.
+                     Stored in the result.}                  
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -31,7 +32,7 @@
                             describing the performance measure to consider and the numbers of
                             top features to try for resubstitution classification.}                        
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
 \details{
@@ -57,8 +58,8 @@
   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   DMDselection(genesMatrix, classes, datasetName = "Example",
-               trainParams = TrainParams(naiveBayesKernel, FALSE, doesTests = TRUE),
-               predictParams = PredictParams(function(){}, FALSE,
+               trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
+               predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
                resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
                                     performanceType = "balanced", better = "lower"))
