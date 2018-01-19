@@ -1,67 +1,102 @@
-setGeneric("mixModelsTrain", function(expression, ...)
+setGeneric("mixModelsTrain", function(measurements, ...)
            {standardGeneric("mixModelsTrain")})
 
-setMethod("mixModelsTrain", "matrix", function(expression, classes, ...)
+setMethod("mixModelsTrain", "matrix", # Matrix of numeric measurements.
+          function(measurements, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  mixModelsTrain(exprSet, ...)
+  .mixModelsTrain(DataFrame(t(measurements), check.names = FALSE), ...)
 })
 
-setMethod("mixModelsTrain", "ExpressionSet",
-          function(expression, ..., verbose = 3)
+setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .mixModelsTrain(measurements, splitDataset[["classes"]], ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("mixModelsTrain", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]            
+  .mixModelsTrain(dataTable, classes, ...)
+})
+
+.mixModelsTrain <- function(measurements, classes, ..., verbose = 3)
 {
   if(verbose == 3)
     message("Fitting mixtures of normals for genes.")
   if(!requireNamespace("Rmixmod", quietly = TRUE))
     stop("The package 'Rmixmod' could not be found. Please install it.")
-  classes <- pData(expression)[, "class"]
-  expression <- exprs(expression)
+
   oneClass <- classes == levels(classes)[1]
   otherClass <- classes == levels(classes)[2]
-  oneClassExpression <- expression[, oneClass]
-  otherClassExpression <- expression[, otherClass]
+  oneClassMeasurements <- measurements[oneClass, ]
+  otherClassMeasurements <- measurements[otherClass, ]
   isExtra <- !missing(...)
   
-  models <- lapply(list(oneClassExpression, otherClassExpression), function(classExpression)
+  models <- lapply(list(oneClassMeasurements, otherClassMeasurements), function(classMeasurements)
             {
-                classExpression <- data.frame(t(classExpression))
-                list(apply(classExpression, 2, function(geneRow)
+                apply(classMeasurements, 2, function(featureColumn)
                 {
-                   mixmodParams <- list(geneRow)
+                   mixmodParams <- list(featureColumn)
                    if(isExtra) mixmodParams <- append(mixmodParams, list(...))
                    do.call(Rmixmod::mixmodCluster, mixmodParams)
-                }), nrow(classExpression))        
+                })     
             })
   
   if(verbose == 3)
     message("Done fitting normal mixtures.")
-  attr(models, "classes") <- levels(classes)
+  
+  models[["classSizes"]] <- setNames(c(sum(oneClass), sum(otherClass)), levels(classes))
   models
-})
+}
 
 setGeneric("mixModelsTest", function(models, test, ...)
            {standardGeneric("mixModelsTest")})
 
 setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 {
-  exprSet <- ExpressionSet(test)
-  mixModelsTest(models, exprSet, ...)
+  .mixModelsTest(models, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("mixModelsTest", c("list", "ExpressionSet"),
-          function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   densityXvalues = 1024, minDifference = 0,
-                   returnType = c("label", "score", "both"), verbose = 3)
+setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
+          function(models, test, ...)
+{
+  splitDataset <- .splitDataAndClasses(test, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .mixModelsTest(models, measurements, ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
+          function(models, test, targets = names(test), ...)
+{
+  testingMatrix <- .MAEtoWideTable(test, targets)
+  .mixModelsTest(models, testingMatrix, ...)
+})
+
+.mixModelsTest <- function(models, test, weighted = c("both", "unweighted", "weighted"),
+                  weight = c("all", "height difference", "crossover distance", "sum differences"),
+                  densityXvalues = 1024, minDifference = 0,
+                  returnType = c("label", "score", "both"), verbose = 3)
 {
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
-  test <- exprs(test)
-  classLevels <- attr(models, "classes")
+
+  classLevels <- names(models[["classSizes"]])
   
   if(verbose == 3)
     message("Predicting using normal mixtures.")
@@ -84,7 +119,7 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
         }))
         list(x = xValues, y = yValues)
       })
-    }, models[[1]][[1]], models[[2]][[1]], SIMPLIFY = FALSE)
+    }, models[[1]], models[[2]], SIMPLIFY = FALSE)
     
     crosses <- lapply(densities, function(densityPair) .densityCrossover(densityPair[[1]], densityPair[[2]]))
     
@@ -99,13 +134,12 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
         }))
       })
       
-      classScores <- models[[2]][[2]] * classScores[[2]] - models[[1]][[2]] * classScores[[1]]
+      classScores <- models[["classSizes"]][2] * classScores[[2]] - models[["classSizes"]][1] * classScores[[1]]
       classPredictions <- ifelse(classScores > 0, classLevels[2], classLevels[1])
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - featureCrosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-      # Second element of second list in 'models' is unimportant information added by mixmod.
-    }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], crosses, SIMPLIFY = FALSE))
+    }, test, models[[1]], models[[2]], crosses, SIMPLIFY = FALSE))
     
     if(weight != "sum differences")
     {
@@ -127,10 +161,8 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
                                                model@bestResult@parameters@proportions[index] * dnorm(featureValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
                                              }))
                                             })
-                            classScores <- models[[2]][[2]] * classScores[[2]] - models[[1]][[2]] * classScores[[1]]
-
-                            # Second element of second list in 'models' is unimportant information added by mixmod.
-                           }, data.frame(t(test)), models[[1]][[1]], models[[2]][[1]], SIMPLIFY = FALSE))
+                            classScores <- models[["classSizes"]][2] * classScores[[2]] - models[["classSizes"]][1] * classScores[[1]]
+                           }, test, models[[1]], models[[2]], SIMPLIFY = FALSE))
     
     if(weight != "sum differences")
       posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
@@ -222,4 +254,4 @@ setMethod("mixModelsTest", c("list", "ExpressionSet"),
     resultsList[[1]]
   else
     resultsList
-})
+}

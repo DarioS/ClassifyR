@@ -23,7 +23,10 @@
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which does the selection or parameters for \code{\link{getLocationsAndScales}}.}
   \item{datasetName}{Default: \code{"Differences of Medians and Deviations"}. A name for the dataset used.
-                     Stored in the result.}                  
+                     Stored in the result.}
+  \item{differences}{Default: \code{"both"}. Either \code{"both"}, \code{"location"}, or \code{"scale"}.
+                     The type of differences to consider. If both are considred then the
+                     absolute difference in location and the absolute difference in scale are summed.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -36,13 +39,15 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  DMD is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}.
+  DMD is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}. The subscripts denote the group which the parameter is calculated for.
   
-  The subscripts denote the group which the parameter is calculated for.
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
-  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was used
-  for determining resubstitution error rate made a number of prediction varieties.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was
+  used for determining the specified performance metric made a number of prediction varieties.
 }
 \author{Dario Strbenac}
 
@@ -57,11 +62,14 @@
                        )
   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
+  
+ resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                             performanceType = "balanced error",
+                                             better = "lower")
   DMDselection(genesMatrix, classes, datasetName = "Example",
                trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
                predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
-               resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                    performanceType = "balanced", better = "lower"))
+               resubstituteParams = resubstituteSettings)
   }
 }

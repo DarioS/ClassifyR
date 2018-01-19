@@ -2,16 +2,25 @@
 \alias{mixmodels}
 \alias{mixModelsTrain}
 \alias{mixModelsTrain,matrix-method}
-\alias{mixModelsTrain,ExpressionSet-method}
+\alias{mixModelsTrain,DataFrame-method}
+\alias{mixModelsTrain,MultiAssayExperiment-method}
 \alias{mixModelsTest}
 \alias{mixModelsTest,list,matrix-method}
-\alias{mixModelsTest,list,ExpressionSet-method}
+\alias{mixModelsTest,list,DataFrame-method}
+\alias{mixModelsTest,list,MultiAssayExperiment-method}
 \title{Selection of Differential Distributions with Mixtures of Normals}
-\description{Fits mixtures of normals for every gene, separately for each class.
-       }
+\description{Fits mixtures of normals for every feature, separately for each class.
+}
 \usage{
-  \S4method{mixModelsTrain}{matrix}(expression, classes, ...)
-  \S4method{mixModelsTrain}{ExpressionSet}(expression, ..., verbose = 3)
+  \S4method{mixModelsTrain}{matrix}(measurements, ...)
+  \S4method{mixModelsTrain}{DataFrame}(measurements, classes, ...)
+  \S4method{mixModelsTrain}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{mixModelsTest}{list,matrix}(models, test, ...)
+  \S4method{mixModelsTest}{list,DataFrame}(models, test, ...)
+  \S4method{mixModelsTest}{list,MultiAssayExperiment}(models, test, targets = names(measurements), ...)  
+  
+  
+  
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,ExpressionSet}(models, test,
             weighted = c("both", "unweighted", "weighted"),
@@ -20,49 +29,53 @@
             returnType = c("label", "score", "both"), verbose = 3)  
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the test data. For a matrix, the rows are features, and the columns
-                    are samples.}                    
-  \item{classes}{A vector of class labels.}
-  \item{weighted}{In weighted mode, the difference in densities is summed over all features.
-                  If unweighted mode, each features's vote is worth the same. To save
-                  computational time, both can be calculated simultaneously.}
-  \item{weight}{The type of weight to calculate. For \code{"height difference"}, the weight of
-                each prediction is equal to the sum of the verical distances for all of the
+  {\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                       \code{\link{MultiAssayExperiment}} containing the training data.
+                       For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{test}{An object of the same class as \code{measurements} with no samples in common with
+              \code{measurements} and the same number of features as it.}                              
+  \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}.
+                  In weighted mode, the difference in densities is summed over all features.
+                  If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
+  \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
+                or \code{"sum differences"}. The type of weight to calculate. For \code{"height difference"},
+                the weight of each prediction is equal to the sum of the verical distances for all of the
                 mixture components within one class subtracted from the sum of the components of
                 the other class, summed for each value of x. For \code{"crossover distance"},
                 the x positions where two mixture densities cross is firstly calculated.
                 The predicted class is the class with the highest mixture sum at the
                 particular value of x and the weight is the distance of x from the
-                nearest density crossover point.}
+                nearest density crossover point. For \code{"sum differences"}, the weight is the
+                sum of the weights calculated by both types of distances.}
   \item{densityXvalues}{Only relevant when \code{weight} is \code{"crossover distance"}. The number of
                         equally-spaced locations at which to calculate y values for each mixture density.}
   \item{minDifference}{The minimum difference in sums of mixture densities within each class for a
                        feature to be allowed to vote. Can be a vector of cutoffs. If no features for a
                        particular sample have a difference large enough, the class predicted is
                        simply the largest class.}
-  \item{...}{For the training or testing function with \code{\link{matrix}} dispatch,
-             arguments passed to the function with \code{\link{ExpressionSet}} dispatch.
-             For the training function with \code{\link{ExpressionSet}} dispatch,
-             extra arguments passed to \code{\link[Rmixmod]{mixmodCluster}}. The argument \code{nbCluster}
-             is mandatory.}                       
-  \item{models}{A list of length 2 of models generated by the training function.
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the classification or extra arguments passed to
+             \code{\link[Rmixmod]{mixmodCluster}}. The argument \code{nbCluster} is mandatory.}                       
+  \item{models}{A list of length 3 of models generated by the training function and training class information.
                 The first element has mixture models the same length as the number
                 of features in the expression data for one class. The second element
-                has the same information for the other class.}
-  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Sets the return value
+                has the same information for the other class. The third element has the class sizes of the classes
+                in the training data.}
+  \item{returnType}{Default: \code{"label"}. Either \code{"label"}, \code{"score"} or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{\link{data.frame}}.}                     
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+                 This function only prints progress messages if the value is 3.}
 }
 \details{
   If \code{weighted} is \code{TRUE}, then a sample's predicted class is the class with
-  the largest sum of weights, scaled for the number of samples in
+  the largest sum of weights, each scaled for the number of samples in
   the training data of each class. Otherwise, when \code{weighted} is \code{FALSE},
   each feature has an equal vote, and votes for the class with the largest weight, scaled for
   class sizes in the training set.
@@ -75,19 +88,28 @@
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.
-  A vector or list of class prediction information, as long as the number of samples in the test data,
-  or lists of such information, if both weighted and unweighted voting or a range of \code{minDifference}
-  values was provided.
+  For \code{mixModelsTest}, a vector or list of class prediction information, as long as the
+  number of samples in the test data, or lists of such information, if both weighted and unweighted voting
+  or a range of \code{minDifference} values was provided.
 }
 \author{Dario Strbenac}
 
 \examples{
-  # First 25 samples are mixtures of two normals. Last 25 samples are one normal.
+  # First 25 samples and first 5 genes are mixtures of two normals. Last 25 samples are
+  # one normal.
+  
   genesMatrix <- sapply(1:15, function(geneColumn) c(rnorm(5, 5, 1)))
   genesMatrix <- cbind(genesMatrix, sapply(1:10, function(geneColumn) c(rnorm(5, 15, 1))))
-  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 4))))
+  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 2))))
   genesMatrix <- rbind(genesMatrix, sapply(1:50, function(geneColumn) rnorm(95, 9, 3)))
-  classes <- factor(rep(c("Poor", "Good"), each = 25))
-  trained <- mixModelsTrain(genesMatrix, classes, nbCluster = 1:3)
-  mixModelsTest(trained, genesMatrix, minDifference = 1:3)
+  rownames(genesMatrix) <- paste("Gene", 1:100)
+  colnames(genesMatrix) <- paste("Sample", 1:50)
+  classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
+  
+  trainSamples <- c(1:20, 26:45)
+  testSamples <- c(21:25, 46:50)
+  
+  trained <- mixModelsTrain(genesMatrix[, trainSamples], classes[trainSamples],
+                            nbCluster = 1:3)
+  mixModelsTest(trained, genesMatrix[, testSamples], minDifference = 1:3)
 }

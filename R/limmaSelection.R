@@ -1,36 +1,43 @@
-setGeneric("limmaSelection", function(expression, ...)
+setGeneric("limmaSelection", function(measurements, ...)
            {standardGeneric("limmaSelection")})
 
-setMethod("limmaSelection", "matrix", 
-          function(expression, classes, ...)
+# Matrix of numeric measurements.
+setMethod("limmaSelection", "matrix", function(measurements, classes, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))   
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  limmaSelection(ExpressionSet(expression, AnnotatedDataFrame(groupsTable)), ...)
+  if(is.null(names(classes))) names(classes) <- colnames(measurements)
+  limmaSelection(MultiAssayExperiment(list(matrix = measurements), DataFrame(class = classes)),
+                 targets = "matrix", ...)
 })
 
-setMethod("limmaSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams, ...,
+# One or more omics datasets, possibly with clinical data.
+setMethod("limmaSelection", "MultiAssayExperiment", 
+          function(measurements, datasetName, targets = NULL,
+                   trainParams, predictParams, resubstituteParams, ...,
                    selectionName = "Moderated t-test", verbose = 3)
 {
   if(!requireNamespace("limma", quietly = TRUE))
-    stop("The package 'limma' could not be found. Please install it.")            
+    stop("The package 'limma' could not be found. Please install it.")
+  if(is.null(targets))
+    stop("'targets' must be specified but was not.")
+  if(length(setdiff(targets, names(measurements))))
+    stop("Some values of 'targets' are not names of 'measurements' but all must be.")                            
+            
   if(verbose == 3)
     message("Doing feature selection.")
-  exprMatrix <- exprs(expression)
-  classes <- pData(expression)[, "class"]
-  allFeatures <- featureNames(expression)
-  
-  fitParams <- list(exprMatrix, model.matrix(~ classes))
+            
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  measurementsTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+
+  fitParams <- list(t(as.matrix(measurementsTable)), model.matrix(~ classes))
   if(!missing(...))
     fitParams <- append(fitParams, ...)
-  prognosisModel <- do.call(limma::lmFit, fitParams)
-  prognosisModel <- limma::eBayes(prognosisModel)
-  orderedFeatures <- match(rownames(limma::topTable(prognosisModel, 2, number = Inf, sort.by = "p")),
-                           allFeatures)
-  
-  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
-            selectionName, verbose)
+  linearModel <- do.call(limma::lmFit, fitParams)
+  linearModel <- limma::eBayes(linearModel)
+  orderedFeatures <- match(rownames(limma::topTable(linearModel, 2, number = Inf, sort.by = "p")),
+                           colnames(measurementsTable))
+
+  .pickFeatures(measurementsTable, classes,
+                datasetName, trainParams, predictParams, resubstituteParams,
+                orderedFeatures, selectionName, verbose)
 })

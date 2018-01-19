@@ -4,6 +4,7 @@ setGeneric("edgeRselection", function(counts, ...)
 setMethod("edgeRselection", "matrix", # Matrix of integer counts.
           function(counts, classes, ...)
 {
+  if(is.null(names(classes))) names(classes) <- colnames(counts)
   edgeRselection(MultiAssayExperiment(list(matrix = counts), DataFrame(class = classes)),
                  targets = "matrix", ...)
 })

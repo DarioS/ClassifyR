@@ -1,24 +1,31 @@
 \name{leveneSelection}
 \alias{leveneSelection}
 \alias{leveneSelection,matrix-method}
-\alias{leveneSelection,ExpressionSet-method}
+\alias{leveneSelection,DataFrame-method}
+\alias{leveneSelection,MultiAssayExperiment-method}
 \title{Selection of Differential Variability with Levene Statistic}
 \description{Ranks features by largest Levene statistic and chooses
-the features which have best resubstitution performance.
-       }
+             the features which have best resubstitution performance.
+}
 \usage{
-  \S4method{leveneSelection}{matrix}(expression, classes, ...)
-  \S4method{leveneSelection}{ExpressionSet}(expression, datasetName,
-                             trainParams, predictParams, resubstituteParams, selectionName = "Levene Test",
-                             verbose = 3)
+  \S4method{leveneSelection}{matrix}(measurements, classes, ...)
+  \S4method{leveneSelection}{DataFrame}(measurements, classes, ...)
+  \S4method{leveneSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{classes}{A vector of class labels.}
-  \item{...}{For the \code{\link{matrix}} method, variables passed to the
-                 \code{\link{ExpressionSet}} method.}  
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the feature selection.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
@@ -34,27 +41,39 @@ the features which have best resubstitution performance.
 \details{
   Levene's statistic for unequal variance between groups is a robust version of
   Bartlett's statistic.
+  
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.  
 }
 \value{
-  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was used
-  for determining resubstitution error rate made a number of prediction varieties.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which
+  was used for determining the specified performance metric made a number of prediction varieties.
 }
 \author{Dario Strbenac}
 
 \examples{
-  if(require(sparsediscrim))
-  {
-    # Samples in one class with differential variability to other class.
-    # First 20 genes are DV.
-    genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, rbind(sapply(1:25, function(sample) rnorm(20, 9, 5)),
-                                            sapply(1:25, function(sample) rnorm(80, 9, 1))))
-    classes <- factor(rep(c("Poor", "Good"), each = 25))
-    genesMatrix <- exprs(subtractFromLocation(genesMatrix, 1:ncol(genesMatrix)))
-    leveneSelection(genesMatrix, classes, "Example",
-                    trainParams = TrainParams(fisherDiscriminant, FALSE, TRUE),
-                    predictParams = PredictParams(function(){}, FALSE, getClasses = function(result) result),
-                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                         performanceType = "balanced", better = "lower"))
-  }
+  # First 20 features have bimodal distribution for Poor class.
+  # Other 80 features have normal distribution for both classes.
+  set.seed(1984)
+  genesMatrix <- sapply(1:25, function(sample)
+                              {
+                                randomMeans <- sample(c(8, 12), 20, replace = TRUE)
+                                c(rnorm(20, randomMeans, 1), rnorm(80, 10, 1))
+                              }
+                       )
+  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
+  rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+  classes <- factor(rep(c("Poor", "Good"), each = 25))
+  genesMatrix <- subtractFromLocation(genesMatrix, 1:ncol(genesMatrix))
+  
+  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                             performanceType = "balanced error",
+                                             better = "lower")
+  selected <- leveneSelection(genesMatrix, classes, "Example",
+                              trainParams = TrainParams(fisherDiscriminant, TRUE),
+                              predictParams = PredictParams(function(){},
+                                              getClasses = function(result) result),
+                              resubstituteParams = resubstituteSettings)
+  selected@chosenFeatures                            
 }

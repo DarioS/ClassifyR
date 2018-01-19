@@ -1,6 +1,7 @@
 setGeneric("KolmogorovSmirnovSelection", function(measurements, ...)
            {standardGeneric("KolmogorovSmirnovSelection")})
 
+# Matrix of numeric measurements.
 setMethod("KolmogorovSmirnovSelection", "matrix", function(measurements, classes, ...)
 {
   .KolmogorovSmirnovSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
@@ -45,5 +46,7 @@ function(measurements, targets = names(measurements), ...)
                       ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
-  .pickFeatures(measurements, classes, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
+  .pickFeatures(measurements, classes, datasetName,
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, selectionName, verbose)
 }

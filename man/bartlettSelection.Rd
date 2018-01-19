@@ -11,9 +11,6 @@
   \S4method{bartlettSelection}{matrix}(measurements, classes, ...)
   \S4method{bartlettSelection}{DataFrame}(measurements, classes, ...)
   \S4method{bartlettSelection}{MultiAssayExperiment}(measurements, targets, ...)
-  (measurements, targets = names(measurements), datasetName,
-  trainParams, predictParams, resubstituteParams,
-  selectionName = "Bartlett Test", verbose = 3)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -45,12 +42,13 @@
   The calculation of the test statistic is performed by the \code{\link{bartlett.test}}
   function from the \code{\link{stats}} package.
   
-  Data tables which consist entirely of non-numeric data must not be specified by the
-  \code{targets} parameter.
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
-  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier
-  which was used for determining resubstitution error rate made a number of prediction varieties.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was
+  used for determining the specified performance metric made a number of prediction varieties.
 }
 \author{Dario Strbenac}
 
@@ -76,8 +74,9 @@
   genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
                                         targets = "RNA") # Exclude SNP data.
                                          
-  resubParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                    performanceType = "balanced", better = "lower")
+  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                             performanceType = "balanced error",
+                                             better = "lower")
   bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
                     trainParams = TrainParams(fisherDiscriminant, TRUE),
                     predictParams = PredictParams(function(){},

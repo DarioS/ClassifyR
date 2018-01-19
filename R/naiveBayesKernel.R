@@ -1,7 +1,7 @@
 setGeneric("naiveBayesKernel", function(measurements, ...)
            {standardGeneric("naiveBayesKernel")})
 
-setMethod("naiveBayesKernel", "matrix", 
+setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)
 {
 .naiveBayesKernel(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
@@ -52,10 +52,10 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
   if(verbose == 3)
     message("Fitting densities.")
 
-  densities <- apply(measurements, 2, function(featureValues)
+  densities <- apply(measurements, 2, function(featureColumn)
   {
-    oneClassMeasurements <- featureValues[classes == levels(classes)[1]]
-    otherClassMeasurements <- featureValues[classes == levels(classes)[2]]
+    oneClassMeasurements <- featureColumn[classes == levels(classes)[1]]
+    otherClassMeasurements <- featureColumn[classes == levels(classes)[2]]
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
     oneDensity <- do.call(densityFunction, c(list(oneClassMeasurements), densityParameters))
     otherDensity <- do.call(densityFunction, c(list(otherClassMeasurements), densityParameters))

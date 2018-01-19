@@ -1,28 +1,52 @@
-setGeneric("leveneSelection", function(expression, ...)
+setGeneric("leveneSelection", function(measurements, ...)
            {standardGeneric("leveneSelection")})
 
-setMethod("leveneSelection", "matrix", 
-          function(expression, classes, ...)
+# Matrix of numeric measurements.
+setMethod("leveneSelection", "matrix", function(measurements, classes, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features  
-  leveneSelection(ExpressionSet(expression, AnnotatedDataFrame(groupsTable)), ...)
+  .leveneSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("leveneSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams, selectionName = "Levene Test",
-                   verbose = 3)
+setMethod("leveneSelection", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .leveneSelection(measurements, splitDataset[["classes"]], ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("leveneSelection", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+
+  if(ncol(dataTable) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    .leveneSelection(dataTable, classes, ...)
+})
+
+.leveneSelection <- function(measurements, classes, datasetName,
+                             trainParams, predictParams, resubstituteParams,
+                             selectionName = "Levene Test", verbose = 3)
 {
   if(!requireNamespace("car", quietly = TRUE))
     stop("The package 'car' could not be found. Please install it.")            
   if(verbose == 3)
     message("Calculating Levene statistic.")
-  exprMatrix <- exprs(expression)
-  classes <- pData(expression)[, "class"]
-  pValues <- apply(exprMatrix, 1, function(geneRow) car::leveneTest(geneRow, classes)[["Pr(>F)"]][1])
+
+  pValues <- apply(measurements, 2, function(featureColumn)
+             car::leveneTest(featureColumn, classes)[["Pr(>F)"]][1])
   orderedFeatures <- order(pValues)
  
-  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures, selectionName, verbose)
-})
+  .pickFeatures(measurements, classes, datasetName,
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, selectionName, verbose)
+}

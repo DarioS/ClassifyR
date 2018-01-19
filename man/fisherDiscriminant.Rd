@@ -38,6 +38,10 @@ for the test set.
 \details{
   Unlike ordinary LDA, Fisher's version does not have assumptions about the normality
   of the features.
+  
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
   A vector or \code{data.frame} of class prediction information, as long as the number of samples in the test data.

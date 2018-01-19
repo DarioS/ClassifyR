@@ -35,11 +35,11 @@
                           Default: \code{list(bw = "nrd0", n = 1024,
                                               from = expression(min(featureValues)),
                                               to = expression(max(featureValues))}.}                       
-  \item{weighted}{Options: \code{"both"}, \code{"unweighted"} or \code{"weighted"}. Default: \code{"both"}.
+  \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}. 
                   In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
-  \item{weight}{Options: \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
-                or \code{"sum differences"}. Default: \code{"all"}. The type of weight to calculate.
+  \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
+                or \code{"sum differences"}. The type of weight to calculate.
                 For \code{"height difference"}, the weight of each prediction is equal to the
                 verical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
@@ -50,7 +50,7 @@
   \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
-  \item{returnType}{Either \code{"label"}, \code{"score"}, or \code{"both"}. Default: \code{"label"}
+  \item{returnType}{Default: \code{"label"}. Either \code{"label"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
                     or both labels and scores in a \code{data.frame}.}     
@@ -59,7 +59,7 @@
 }
 \details{
   If \code{weighted} is \code{TRUE}, then a sample's predicted class is the class with
-  the largest sum of weights, scaled for the number of samples in
+  the largest sum of weights, each scaled for the number of samples in
   the training data of each class. Otherwise, when \code{weighted} is \code{FALSE},
   each feature has an equal vote, and votes for the class with the largest weight,
   scaled for class sizes in the training set.

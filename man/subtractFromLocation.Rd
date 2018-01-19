@@ -23,7 +23,7 @@
   \item{training}{A vector specifying which samples are in the training set.}                
   \item{location}{Character. Either "mean" or "median".}
   \item{absolute}{Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute values of the differences
-                  are returned.}
+                  are returned. Otherwise, they are signed.}
   \item{verbose}{A progress message is shown if this value is 3.}
 }
 \details{

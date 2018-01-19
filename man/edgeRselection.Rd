@@ -9,17 +9,22 @@
 }
 \usage{
   \S4method{edgeRselection}{matrix}(counts, classes, ...)
-  \S4method{edgeRselection}{MultiAssayExperiment}(counts, datasetName, normFactorsOptions = NULL,
-                           dispOptions = NULL, fitOptions = NULL, trainParams,
-                           predictParams, resubstituteParams, selectionName = "edgeR LRT", verbose = 3)
+  \S4method{edgeRselection}{MultiAssayExperiment}(counts, datasetName, targets = NULL,
+                           normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
+                           trainParams, predictParams, resubstituteParams,
+                           selectionName = "edgeR LRT", verbose = 3)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing the
-                    expression values.}
-  \item{classes}{A vector of class labels.}
+  \item{counts}{Either a \code{\link{matrix}} or \code{\link{MultiAssayExperiment}} containing the
+                unnormalised counts.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements}. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
   \item{...}{Unused variables from the \code{matrix} method passed
-                       to the \code{ExpressionSet} method.}  
-  \item{datasetName}{A name for the dataset used. Stored in the result.}                  
+                       to the \code{MultiAssayExperiment} method.}  
+  \item{datasetName}{A name for the dataset used. Stored in the result.}
+  \item{targets}{Names of data tables to be combined into a single table and
+                 used in the analysis.}
   \item{normFactorsOptions}{A named \code{list} of any options to be passed to
                             \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{list} of any options to be passed to
@@ -42,10 +47,14 @@
   steps of estimating library size normalisation factors, calculating dispersion,
   in this case robustly, and then fitting a generalised linear model followed by
   a likelihood ratio test.
+  
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.  
 }
 \value{
-  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was used
-  for determining resubstitution error rate made a number of prediction varieties.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which
+  was used for determining the specified performance metric made a number of prediction varieties.
 }
 \author{Dario Strbenac}
 \references{
@@ -65,7 +74,6 @@
     control <- which(colData(parathyroidGenesSE)[, "treatment"] == "Control")
     expression <- expression[, c(control, DPN)]
     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
-    names(classes) <- colnames(expression)
     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small dataset.
     
     getClasses <- function(result) result[["ytehat"]]
@@ -73,10 +81,10 @@
                    trainParams = TrainParams(classifyInterface, doesTests = TRUE),
                    predictParams = PredictParams(function(){}, getClasses = getClasses),
                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                        performanceType = "balanced", better = "lower"))
+                                        performanceType = "balanced error", better = "lower"))
                                         
-    head(selection@rankedFeatures)
-    plotFeatureClasses(expression, classes, 77, dotBinWidth = 500,
-                       xAxisLabel = "Unnormalised Counts")
+    head(selection@rankedFeatures[[1]])
+    plotFeatureClasses(expression, classes, "ENSG00000044574",
+                       dotBinWidth = 500, xAxisLabel = "Unnormalised Counts")
   }
 }

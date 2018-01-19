@@ -1,48 +1,70 @@
-setGeneric("likelihoodRatioSelection", function(expression, ...)
+setGeneric("likelihoodRatioSelection", function(measurements, ...)
            {standardGeneric("likelihoodRatioSelection")})
 
-setMethod("likelihoodRatioSelection", "matrix", function(expression, classes, ...)
+# Matrix of numeric measurements.
+setMethod("likelihoodRatioSelection", "matrix", function(measurements, classes, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  likelihoodRatioSelection(exprSet, ...)
+  .likelihoodRatioSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("likelihoodRatioSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams,
-                   alternative = c(location = "different", scale = "different"),
-                   ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
+setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .likelihoodRatioSelection(measurements, splitDataset[["classes"]], ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("likelihoodRatioSelection", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+
+  if(ncol(dataTable) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+  .likelihoodRatioSelection(dataTable, classes, ...)
+})
+
+.likelihoodRatioSelection <- function(measurements, classes, datasetName,
+                                      trainParams, predictParams, resubstituteParams,
+                                      alternative = c(location = "different", scale = "different"),
+                                      ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by likelihood ratio ranking.")
   
-  classes <- pData(expression)[, "class"]
-  exprMatrix <- exprs(expression)
   oneClass <- classes == levels(classes)[1]
   otherClass <- classes == levels(classes)[2]
-  oneClassExpression <- exprMatrix[, oneClass]
-  otherClassExpression <- exprMatrix[, otherClass]
-  oneClassDistribution <- getLocationsAndScales(oneClassExpression, ...)
-  otherClassDistribution <- getLocationsAndScales(otherClassExpression, ...)
-  allDistribution <- getLocationsAndScales(exprMatrix, ...)
+  oneClassMeasurements <- measurements[oneClass, ]
+  otherClassMeasurements <- measurements[otherClass, ]
+  oneClassDistribution <- getLocationsAndScales(oneClassMeasurements, ...)
+  otherClassDistribution <- getLocationsAndScales(otherClassMeasurements, ...)
+  allDistribution <- getLocationsAndScales(measurements, ...)
 
-  logLikelihoodRatios <- -2 * (unlist(mapply(function(geneRow, scale, location)
-  sum(dnorm(geneRow, scale, location, log = TRUE)),
-  as.data.frame(t(exprMatrix)), allDistribution[[1]], allDistribution[[2]])) -
-  unlist(mapply(function(geneRow, scale, location)
-  sum(dnorm(geneRow, scale, location, log = TRUE)),
-  as.data.frame(t(oneClassExpression)),
+  logLikelihoodRatios <- -2 * (unlist(mapply(function(featureMeasurements, scale, location)
+  sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
+  measurements, allDistribution[[1]], allDistribution[[2]])) -
+  unlist(mapply(function(featureMeasurements, scale, location)
+  sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
+  oneClassMeasurements,
   switch(alternative[["location"]], same = allDistribution[[1]], different = oneClassDistribution[[1]]),
   switch(alternative[["scale"]], same = allDistribution[[2]], different = oneClassDistribution[[2]]))) -
-  unlist(mapply(function(geneRow, scale, location)
-  sum(dnorm(geneRow, scale, location, log = TRUE)),
-  as.data.frame(t(otherClassExpression)),
+  unlist(mapply(function(featureMeasurements, scale, location)
+  sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
+  otherClassMeasurements,
   switch(alternative[["location"]], same = allDistribution[[1]], different = otherClassDistribution[[1]]),
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
   orderedFeatures <- order(logLikelihoodRatios, decreasing = TRUE)
   
-  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
-            selectionName, verbose)
-})
+  .pickFeatures(measurements, classes, datasetName,
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, selectionName, verbose)
+}

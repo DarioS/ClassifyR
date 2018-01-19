@@ -21,7 +21,7 @@
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
-  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}
+  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}.
                          Must be one of the following options:
                          \code{"balanced error"}: balanced error rate,                         
                          \code{"error"}: ordinary error rate,

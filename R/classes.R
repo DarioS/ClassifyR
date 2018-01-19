@@ -28,7 +28,7 @@ setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c
 
 setMethod("ResubstituteParams", numeric(0), function()
 {
-  new("ResubstituteParams", nFeatures = seq(100, 500, 100), performanceType = "balanced",
+  new("ResubstituteParams", nFeatures = seq(100, 500, 100), performanceType = "balanced error",
       better = "lower")
 })
 

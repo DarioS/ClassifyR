@@ -30,12 +30,13 @@ setMethod("DMDselection", "MultiAssayExperiment",
   .DMDselection(dataTable, classes, ...)
 })
 
-.DMDselection <- function(measurements, classes,
-                          datasetName, trainParams, predictParams, resubstituteParams, ...,
+.DMDselection <- function(measurements, classes, datasetName, differences = c("both", "location", "scale"),
+                          trainParams, predictParams, resubstituteParams, ...,
                           selectionName = "Differences of Medians and Deviations", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by DMD.")
+  differences <- match.arg(differences)
 
   oneClassTraining <- which(classes == levels(classes)[1])
   otherClassTraining <- which(classes == levels(classes)[2])
@@ -43,10 +44,15 @@ setMethod("DMDselection", "MultiAssayExperiment",
   otherClassMeasurements <- measurements[otherClassTraining, ]
   oneClassDistribution <- getLocationsAndScales(oneClassMeasurements, ...)
   otherClassDistribution <- getLocationsAndScales(otherClassMeasurements, ...)
-  locationDifference <- oneClassDistribution[[1]] - otherClassDistribution[[1]]
-  divergence <- abs(locationDifference) + abs(oneClassDistribution[[2]] - otherClassDistribution[[2]])
+  locationDifference <- abs(oneClassDistribution[[1]] - otherClassDistribution[[1]])
+  scaleDifference <- abs(oneClassDistribution[[2]] - otherClassDistribution[[2]])
+  divergence <- 0
+  if(differences %in% c("both", "location"))
+    divergence <- divergence + locationDifference
+  if(differences %in% c("both", "scale"))
+    divergence <- divergence + scaleDifference
+  
   orderedFeatures <- order(divergence, decreasing = TRUE)
-
   .pickFeatures(measurements, classes, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedFeatures, selectionName, verbose)
 }

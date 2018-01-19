@@ -32,6 +32,11 @@
                  integer variables from the clinical data table will be used.}
   \item{...}{All parameters that \code{\link[PoiClaClu]{Classify}} can accept.}
 }
+\details{
+  Data tables which consist entirely of non-integer data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
+}
 \value{
   A result list, the same as is returned by \code{\link[PoiClaClu]{Classify}}.
 }

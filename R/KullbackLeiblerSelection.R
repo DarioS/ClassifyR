@@ -1,33 +1,57 @@
-setGeneric("KullbackLeiblerSelection", function(expression, ...)
+setGeneric("KullbackLeiblerSelection", function(measurements, ...)
            {standardGeneric("KullbackLeiblerSelection")})
 
-setMethod("KullbackLeiblerSelection", "matrix", function(expression, classes, ...)
+# Matrix of numeric measurements.
+setMethod("KullbackLeiblerSelection", "matrix", function(measurements, classes, ...)
 {
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  KullbackLeiblerSelection(exprSet, ...)
+  .KullbackLeiblerSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("KullbackLeiblerSelection", "ExpressionSet", 
-          function(expression, datasetName, trainParams, predictParams, resubstituteParams,
-                   ..., selectionName = "Kullback-Leibler Divergence", verbose = 3)
+setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .KullbackLeiblerSelection(measurements, splitDataset[["classes"]], ...)
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("KullbackLeiblerSelection", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+
+  if(ncol(dataTable) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    .KullbackLeiblerSelection(dataTable, classes, ...)
+})
+
+.KullbackLeiblerSelection <- function(measurements, classes, datasetName,
+                                      trainParams, predictParams, resubstituteParams,
+                                      ..., selectionName = "Kullback-Leibler Divergence", verbose = 3)
 {
   if(verbose == 3)
     message("Selecting features by Kullback-Leibler divergence")
-  classes <- pData(expression)[, "class"]
-  oneClassExpression <- exprs(expression[, classes == levels(classes)[1]])
-  otherClassExpression <- exprs(expression[, classes == levels(classes)[2]])
-  oneClassDistribution <- getLocationsAndScales(oneClassExpression, ...)
-  otherClassDistribution <- getLocationsAndScales(otherClassExpression, ...)
+
+  oneClassMeasurements <- measurements[classes == levels(classes)[1], ]
+  otherClassMeasurements <- measurements[classes == levels(classes)[2], ]
+  oneClassDistribution <- getLocationsAndScales(oneClassMeasurements, ...)
+  otherClassDistribution <- getLocationsAndScales(otherClassMeasurements, ...)
   locationDifference <- oneClassDistribution[[1]] - otherClassDistribution[[1]]
-  divergence <- 1/2 * (locationDifference^2/((oneClassDistribution[[2]])^2) +
-                         locationDifference^2/((otherClassDistribution[[2]])^2) +
+  divergence <- 1/2 * (locationDifference^2 / ((oneClassDistribution[[2]])^2) +
+                         locationDifference^2 / ((otherClassDistribution[[2]])^2) +
                          ((oneClassDistribution[[2]])^2) / ((otherClassDistribution[[2]])^2) +
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
-  
+
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickRows(expression, datasetName, trainParams, predictParams, resubstituteParams, orderedFeatures,
-            selectionName, verbose)
-})
+  .pickFeatures(measurements, classes, datasetName,
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, selectionName, verbose)
+}

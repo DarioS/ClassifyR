@@ -1,13 +1,13 @@
 setGeneric("getLocationsAndScales", function(measurements, ...)
            {standardGeneric("getLocationsAndScales")})
 
-setMethod("getLocationsAndScales", "matrix",
+setMethod("getLocationsAndScales", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
   .getLocationsAndScales(DataFrame(t(measurements), check.names = FALSE), ...)
 })
 
-setMethod("getLocationsAndScales", "DataFrame",
+setMethod("getLocationsAndScales", "DataFrame", # Clinical data only.
           function(measurements, ...)
 {
   isNumeric <- sapply(measurements, is.numeric)
@@ -17,6 +17,7 @@ setMethod("getLocationsAndScales", "DataFrame",
    .getLocationsAndScales(measurements, ...)
 })
 
+# One or more omics datasets, possibly with clinical data.
 setMethod("getLocationsAndScales", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {

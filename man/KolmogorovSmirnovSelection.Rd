@@ -43,10 +43,14 @@
   Features are sorted in order of biggest distance to smallest. The top number of features
   is used in a classifier, to determine which number of features has the best resubstitution
   performance.
+  
+  Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
+  is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored
+  in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
-  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which was used
-  for determining resubstitution error rate made a number of prediction varieties.
+  An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier which
+  was used for determining the specified performance metric made a number of prediction varieties.
 }
 \author{Dario Strbenac}
 
@@ -64,13 +68,14 @@
   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
-  resubstituteSettigs <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                            performanceType = "balanced", better = "lower")
+  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                             performanceType = "balanced error",
+                                             better = "lower")
   selected <- KolmogorovSmirnovSelection(genesMatrix, classes, "Example",
                              trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
                              predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
-                             resubstituteParams = resubstituteSettigs)
+                             resubstituteParams = resubstituteSettings)
                              
   head(selected[["weighted=unweighted"]]@chosenFeatures)
   plotFeatureClasses(genesMatrix, classes, 13, dotBinWidth = 0.25,

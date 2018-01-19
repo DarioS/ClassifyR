@@ -72,18 +72,18 @@ setOldClass("pamrtrained")
     stop("Training dataset and testing dataset contain differing numbers of features.")  
 }
 
-.doSelection <- function(expression, training, selectParams, trainParams,
+.doSelection <- function(measurements, training, selectParams, trainParams,
                          predictParams, verbose)
 {
-  initialClass <- class(expression)
-  if(class(expression) != "list")
-    expression <- list(data = expression)  
+  initialClass <- class(measurements)
+  if(class(measurements) != "list")
+    measurements <- list(data = measurements)  
 
-  rankedSelected <- lapply(expression, function(expressionVariety)
+  rankedSelected <- lapply(measurements, function(measurementsVariety)
   {
     if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(expressionVariety[, training], verbose = verbose)
+      paramList <- list(measurements[training, ], verbose = verbose)
       if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
@@ -105,7 +105,7 @@ setOldClass("pamrtrained")
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(expressionVariety[, training], trainParams = trainParams,
+        paramList <- list(measurementsVariety[training, ], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
@@ -212,7 +212,7 @@ setOldClass("pamrtrained")
           if(initialTrainClass != "list") trained <- list(trained)
           if(variety != "data")
             names(trained) <- paste(variety, names(trained), sep = ',')
-          trainedList <<- c(trainedList, trained)
+          trainedList <- c(trainedList, trained)
           
           lapply(trained, function(model)
           {            
@@ -461,11 +461,14 @@ setOldClass("pamrtrained")
   rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) orderedFeatures)
   pickedFeatures <- lapply(pickedFeatures, function(pickedSet) orderedFeatures[pickedSet])
   
-  if(!is.null(mcols(measurements))) # Table describing source table and variable name is present.
+  if(!all(grepl("^matrix", pickedFeatures))) # Table describing source table and variable name is present.
   {
     varInfo <- mcols(measurements)
     rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])
     pickedFeatures <- lapply(pickedFeatures, function(features) varInfo[features, ])
+  } else { # Vectors of feature names.
+    rankedFeatures <- lapply(rankedFeatures, function(features) colnames(measurements)[features])
+    pickedFeatures <- lapply(pickedFeatures, function(features) colnames(measurements)[features])
   }
   
   selectResults <- lapply(1:length(rankedFeatures), function(variety)

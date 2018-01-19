@@ -1,7 +1,7 @@
 setGeneric("fisherDiscriminant", function(measurements, ...)
            {standardGeneric("fisherDiscriminant")})
 
-setMethod("fisherDiscriminant", "matrix", 
+setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)
 {
   .fisherDiscriminant(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
@@ -9,7 +9,7 @@ setMethod("fisherDiscriminant", "matrix",
                       DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
 })
 
-setMethod("fisherDiscriminant", "DataFrame", 
+setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
           function(measurements, classes, test, ...)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -23,6 +23,7 @@ setMethod("fisherDiscriminant", "DataFrame",
   .fisherDiscriminant(trainingMatrix, splitDataset[["classes"]], testingMatrix, ...)
 })
 
+# One or more omics datasets, possibly with clinical data.
 setMethod("fisherDiscriminant", "MultiAssayExperiment", 
           function(measurements, test, targets = names(measurements), ...)
 {
