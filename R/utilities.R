@@ -34,6 +34,7 @@ setOldClass("pamrtrained")
 
   measurements <- measurements[, , targets]
   dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
+  mcols(dataTable)[, "dataset"] <- gsub("colData", "clincal", mcols(dataTable)[, "dataset"])
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
   else
@@ -434,10 +435,10 @@ setOldClass("pamrtrained")
 
     if(class(labels) == "list")
     {
-      performanceValues <- lapply(labels, function(labelSet) calcExternalPerformance(classes, labelSet, resubstituteParams@performanceType))
+      lapply(labels, function(labelSet) calcExternalPerformance(classes, labelSet, resubstituteParams@performanceType))
       
     } else {
-      performanceValues <- calcExternalPerformance(classes, labels, resubstituteParams@performanceType)
+      calcExternalPerformance(classes, labels, resubstituteParams@performanceType)
     }
   })
 
@@ -461,7 +462,7 @@ setOldClass("pamrtrained")
   rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) orderedFeatures)
   pickedFeatures <- lapply(pickedFeatures, function(pickedSet) orderedFeatures[pickedSet])
   
-  if(!all(grepl("^matrix", pickedFeatures))) # Table describing source table and variable name is present.
+  if(!is.null(mcols(measurements))) # Table describing source table and variable name is present.
   {
     varInfo <- mcols(measurements)
     rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])

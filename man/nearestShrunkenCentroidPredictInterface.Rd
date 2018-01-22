@@ -1,21 +1,26 @@
 \name{nearestShrunkenCentroidPredictInterface}
 \alias{nearestShrunkenCentroidPredictInterface}
 \alias{nearestShrunkenCentroidPredictInterface,pamrtrained,matrix-method}
-\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,ExpressionSet-method}
+\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,DataFrame-method}
+\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,MultiAssayExperiment-method}
 
 \title{Interface for \code{pamr.predict} Function from \code{pamr} CRAN Package}
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
   \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,ExpressionSet}(trained, test, ..., verbose = 3)
+  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,DataFrame}(trained, test, ...)  
+  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
   \item{trained}{An object of class \code{pamrtrained}.}             
-  \item{test}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-              the test data. For a matrix, the rows are features, and the columns are samples.}            
-  \item{...}{For the function with \code{\link{matrix}} dispatch, arguments passed to the function
-             with \code{\link{ExpressionSet}} dispatch. For the function with \code{\link{ExpressionSet}}
-             dispatch, arguemnts passed to \code{\link[pamr]{pamr.predict}}.} 
+  \item{test}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{targets}{If \code{test} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}   
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the prediction or extra arguments passed to passed to \code{\link[pamr]{pamr.predict}}.} 
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }

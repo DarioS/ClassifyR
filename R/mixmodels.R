@@ -95,13 +95,12 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
-
   classLevels <- names(models[["classSizes"]])
+  largerClass <- classLevels[which.max(models[["classSizes"]])[1]]
   
   if(verbose == 3)
     message("Predicting using normal mixtures.")
-  
-  posteriorsList <- list()
+
   if(weight != "height difference") # Calculate the crossover distance.
   {
     if(verbose == 3)
@@ -111,66 +110,52 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
     {
       featureValues <- c(oneClassModel@data, otherClassModel@data)
       xValues <- seq(min(featureValues), max(featureValues), length.out = densityXvalues)
-      classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
+      setNames(lapply(list(oneClassModel, otherClassModel), function(model)
       {
         yValues <- Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
         {
           model@bestResult@parameters@proportions[index] * dnorm(xValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
         }))
         list(x = xValues, y = yValues)
-      })
+      }), c("oneClass", "otherClass"))
     }, models[[1]], models[[2]], SIMPLIFY = FALSE)
-    
     crosses <- lapply(densities, function(densityPair) .densityCrossover(densityPair[[1]], densityPair[[2]]))
-    
-    posteriorsHorizontal <- do.call(cbind, mapply(function(testSamples, oneClassModel, otherClassModel, featureCrosses)
+    splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
+                                                                 otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
+
+    distancesHorizontal <- t(do.call(cbind, mapply(function(featureCrosses, testSamples)
     {
-      featureValues <- c(oneClassModel@data, otherClassModel@data)
-      classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
-      {
-        Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
-        {
-          model@bestResult@parameters@proportions[index] * dnorm(testSamples, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
-        }))
-      })
-      
-      classScores <- models[["classSizes"]][2] * classScores[[2]] - models[["classSizes"]][1] * classScores[[1]]
+      sapply(testSamples, function(testSample) min(abs(testSample - featureCrosses)))
+    }, crosses, test, SIMPLIFY = FALSE)))
+
+    posteriorsHorizontal <- t(do.call(cbind, mapply(function(featureCrosses, featureSplines, testSamples)
+    {
+      classScores <- models[["classSizes"]][2] * featureSplines[["otherClass"]](testSamples) - models[["classSizes"]][1] * featureSplines[["oneClass"]](testSamples)
       classPredictions <- ifelse(classScores > 0, classLevels[2], classLevels[1])
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - featureCrosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, test, models[[1]], models[[2]], crosses, SIMPLIFY = FALSE))
-    
-    if(weight != "sum differences")
-    {
-      posteriorsList[[1]] <- t(posteriorsHorizontal)
-      names(posteriorsList) = "crossover distance"
-    }
+    }, crosses, splines, test, SIMPLIFY = FALSE)))
+    class1RelativeSize <- models[["classSizes"]][1] / models[["classSizes"]][2]
+    posteriorsHorizontal <- if(class1RelativeSize < 0) posteriorsHorizontal <- posteriorsHorizontal * class1RelativeSize else posteriorsHorizontal <- posteriorsHorizontal * 1/class1RelativeSize
   }
   
   if(weight != "crossover distance") # Calculate the height difference.
   {
     if(verbose == 3)
       message("Calculating vertical differences between normal mixture densities.")
-    posteriorsVertical <- do.call(cbind, mapply(function(featureValues, oneClassModel, otherClassModel)
-                          {
-                            classScores <- lapply(list(oneClassModel, otherClassModel), function(model)
-                                           {
-                                             Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
-                                             {
-                                               model@bestResult@parameters@proportions[index] * dnorm(featureValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
-                                             }))
-                                            })
-                            classScores <- models[["classSizes"]][2] * classScores[[2]] - models[["classSizes"]][1] * classScores[[1]]
-                           }, test, models[[1]], models[[2]], SIMPLIFY = FALSE))
     
-    if(weight != "sum differences")
-      posteriorsList <- c(posteriorsList, `height difference` = list(t(posteriorsVertical)))
-  }
-  
-  if(weight == "sum differences") # Sum of the horizontal and vertical distances.
-  {
-    posteriorsList <- c(posteriorsList, `sum differences` = list(t(posteriorsHorizontal) + t(posteriorsVertical)))
+    # Rows are for features, columns are for samples.
+    distancesVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
+    {
+      featureSplines[["otherClass"]](testSamples) - featureSplines[["oneClass"]](testSamples)
+    }, splines, as.data.frame(test), SIMPLIFY = FALSE)))
+    
+    # Rows are for features, columns are for samples.
+    posteriorsVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
+    {
+      models[["classSizes"]][2] * featureSplines[["otherClass"]](testSamples) - models[["classSizes"]][1] * featureSplines[["oneClass"]](testSamples)
+    }, splines, as.data.frame(test), SIMPLIFY = FALSE)))
   }
   
   if(verbose == 3)
@@ -180,19 +165,37 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
            score = message("Calculating class scores.")
     )
   }
+  
+  if(weight == "all")
+    weightExpanded <-  c("height difference", "crossover distance", "sum differences")
+  else weightExpanded <- weight
+  allPosteriors <- lapply(weightExpanded, function(type)
+  {
+    switch(type, `height difference` = posteriorsVertical,
+           `crossover distance` = posteriorsHorizontal,
+           `sum differences` = posteriorsVertical + posteriorsHorizontal
+    )
+  })
+  allDistances <- lapply(weightExpanded, function(type)
+  {
+    switch(type, `height difference` = distancesVertical,
+           `crossover distance` = distancesHorizontal,
+           `sum differences` = distancesVertical + distancesHorizontal
+    )
+  })  
 
   weightingText <- weighted
   if(weightingText == "both") weightingText <- c("unweighted", "weighted")
-  testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames)
+  testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames, distances)
   {
     do.call(rbind, lapply(weightingText, function(isWeighted)
     {
       do.call(rbind, lapply(minDifference, function(difference)
       {
-        do.call(rbind, apply(weightPredictions, 2, function(sampleCol)
+        do.call(rbind, lapply(1:ncol(weightPredictions), function(sampleCol)
         {
-          sampleCol <- sampleCol[abs(sampleCol) > difference]
-          if(length(sampleCol) == 0) # No features have a large enough density difference.
+          useFeatures <- abs(distances[, sampleCol]) > difference
+          if(sum(useFeatures) == 0) # No features have a large enough density difference.
           {                          # Simply vote for the larger class.
             if(largerClass == levels(classes)[1])
             {
@@ -203,15 +206,16 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
               score <- 1
             }
           } else { # One or more features are available to vote with.
+            sampleValues <- weightPredictions[useFeatures, sampleCol]
             if(isWeighted == "unweighted")
             {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleCol > 0) > length(sampleCol) / 2) + 1]
-              score <- sum(sampleCol > 0) / length(sampleCol)
+              class <- levels(classes)[(sum(sampleValues > 0) > length(sampleValues) / 2) + 1]
+              score <- sum(sampleValues > 0) / length(sampleValues)
             } else {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleCol) > 0) + 1]
-              score <- sum(sampleCol)
+              class <- levels(classes)[(sum(sampleValues) > 0) + 1]
+              score <- sum(sampleValues)
             }
           }
           data.frame(class = factor(class, levels = levels(classes)), score = score,
@@ -220,7 +224,7 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
         }))
       }))
     }))
-  }, posteriorsList, names(posteriorsList), SIMPLIFY = FALSE))
+  }, allPosteriors, weightExpanded, allDistances, SIMPLIFY = FALSE))
   
   # Remove combinations of unweighted voting and weightings.
   testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
@@ -247,8 +251,6 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
            score = predictionSet[, "score"],
            both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
   }, simplify = FALSE)
-  attr(resultsList, "class") <- "list"
-  attr(resultsList, "call") <- NULL
   
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]

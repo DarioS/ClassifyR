@@ -4,17 +4,12 @@ setGeneric("edgeRselection", function(counts, ...)
 setMethod("edgeRselection", "matrix", # Matrix of integer counts.
           function(counts, classes, ...)
 {
-  if(is.null(names(classes))) names(classes) <- colnames(counts)
-  edgeRselection(MultiAssayExperiment(list(matrix = counts), DataFrame(class = classes)),
-                 targets = "matrix", ...)
+  .edgeRselection(DataFrame(t(counts), check.names = FALSE), classes, ...)
 })
 
 # One or more omics datasets, possibly with clinical data.
 setMethod("edgeRselection", "MultiAssayExperiment",
-          function(counts, datasetName, targets = NULL,
-                   normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-                   trainParams, predictParams, resubstituteParams,
-                   selectionName = "edgeR LRT", verbose = 3)
+          function(counts, targets = NULL, ...)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))
     stop("The package 'edgeR' could not be found. Please install it.")
@@ -22,16 +17,23 @@ setMethod("edgeRselection", "MultiAssayExperiment",
     stop("'targets' must be specified but was not.")
   if(length(setdiff(targets, names(counts))))
     stop("Some values of 'targets' are not names of 'counts' but all must be.")            
-            
-  if(verbose == 3)
-    message("Doing feature selection.")
 
   tablesAndClasses <- .MAEtoWideTable(counts, targets, "integer")
   countsTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
+  .edgeRselection(countsTable, classes, ...)
+})
 
+.edgeRselection <- function(counts, classes, datasetName,
+                            normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
+                            trainParams, predictParams, resubstituteParams,
+                            selectionName = "edgeR LRT", verbose = 3)
+{
+  if(verbose == 3)
+    message("Doing feature selection.")
+  
   # DGEList stores features as rows and samples as columns.          
-  countsList <- edgeR::DGEList(t(as.matrix(countsTable)), group = classes)
+  countsList <- edgeR::DGEList(t(as.matrix(counts)), group = classes)
   paramList <- list(countsList)
   if(!is.null(normFactorsOptions))
     paramList <- append(paramList, normFactorsOptions)
@@ -51,9 +53,9 @@ setMethod("edgeRselection", "MultiAssayExperiment",
     message("Fitting linear model.")
   fit <- do.call(edgeR::glmFit, paramList)
   result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
-  orderedFeatures <- match(rownames(result[["table"]]), colnames(countsTable))
-
-  .pickFeatures(countsTable, classes, datasetName,
+  orderedFeatures <- match(rownames(result[["table"]]), colnames(counts))
+  
+  .pickFeatures(counts, classes, datasetName,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)
-})
+                orderedFeatures, selectionName, verbose)  
+}

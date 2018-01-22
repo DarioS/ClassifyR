@@ -1,7 +1,6 @@
 \name{limmaSelection}
 \alias{limmaSelection}
 \alias{limmaSelection,matrix-method}
-\alias{limmaSelection,DataFrame-method}
 \alias{limmaSelection,MultiAssayExperiment-method}
 \title{Selection of Differentially Expressed Features}
 \description{Uses a moderated t-test with empirical Bayes shrinkage to select
@@ -9,9 +8,7 @@
        }
 \usage{
   \S4method{limmaSelection}{matrix}(measurements, classes, ...)
-  \S4method{limmaSelection}{MultiAssayExperiment}(measurements, datasetName, targets = NULL,
-                            trainParams, predictParams, resubstituteParams, ...,
-                            selectionName = "Moderated t-test", verbose = 3)
+  \S4method{limmaSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -20,8 +17,10 @@
   \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements}. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{...}{Unused variables from the \code{matrix} method passed to the
-            \code{MultiAssayExperiment} method or optional settings that are
+  \item{targets}{Names of data tables to be combined into a single table and
+                 used in the analysis.}                  
+  \item{...}{Unused variables by the two top-level methods passed to the internal method
+             which does the feature selection or optional settings that are
             passed to \code{\link[limma]{lmFit}}.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
@@ -61,8 +60,10 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
     
     resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
                             performanceType = "balanced error", better = "lower")
-    limmaSelection(genesMatrix, classes, "Example",
-                    trainParams = TrainParams(), predictParams = PredictParams(),
-                    resubstituteParams = resubstituteSettings)
+    selected <- limmaSelection(genesMatrix, classes, "Example",
+                               trainParams = TrainParams(), predictParams = PredictParams(),
+                               resubstituteParams = resubstituteSettings)
+                               
+    selected@chosenFeatures
   }
 }

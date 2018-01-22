@@ -44,7 +44,6 @@ setMethod("distribution", "ClassifyResult",
     if(is.data.frame(chosenFeatures))
     {
       allFeatures <- paste(allFeatures[, "feature"], paste('(', allFeatures[, "dataset"], ')', sep = ''))
-      allFeatures <- gsub("colData", "clinical", allFeatures)
     }
     scores <- table(allFeatures)
     names(scores) <- featureNames(result)[as.numeric(names(scores))]

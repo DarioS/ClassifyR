@@ -4,19 +4,13 @@ setGeneric("limmaSelection", function(measurements, ...)
 # Matrix of numeric measurements.
 setMethod("limmaSelection", "matrix", function(measurements, classes, ...)
 {
-  if(is.null(names(classes))) names(classes) <- colnames(measurements)
-  limmaSelection(MultiAssayExperiment(list(matrix = measurements), DataFrame(class = classes)),
-                 targets = "matrix", ...)
+  .limmaSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 # One or more omics datasets, possibly with clinical data.
 setMethod("limmaSelection", "MultiAssayExperiment", 
-          function(measurements, datasetName, targets = NULL,
-                   trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Moderated t-test", verbose = 3)
+          function(measurements, targets = NULL, ...)
 {
-  if(!requireNamespace("limma", quietly = TRUE))
-    stop("The package 'limma' could not be found. Please install it.")
   if(is.null(targets))
     stop("'targets' must be specified but was not.")
   if(length(setdiff(targets, names(measurements))))
@@ -26,18 +20,27 @@ setMethod("limmaSelection", "MultiAssayExperiment",
     message("Doing feature selection.")
             
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  measurementsTable <- tablesAndClasses[["dataTable"]]
+  measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
+  .limmaSelection(measurements, classes, ...)
+})
 
-  fitParams <- list(t(as.matrix(measurementsTable)), model.matrix(~ classes))
+.limmaSelection <- function(measurements, classes, datasetName,
+                            trainParams, predictParams, resubstituteParams, ...,
+                            selectionName = "Moderated t-test", verbose = 3)
+{
+  if(!requireNamespace("limma", quietly = TRUE))
+    stop("The package 'limma' could not be found. Please install it.")
+
+  fitParams <- list(t(as.matrix(measurements)), model.matrix(~ classes))
   if(!missing(...))
     fitParams <- append(fitParams, ...)
   linearModel <- do.call(limma::lmFit, fitParams)
   linearModel <- limma::eBayes(linearModel)
   orderedFeatures <- match(rownames(limma::topTable(linearModel, 2, number = Inf, sort.by = "p")),
-                           colnames(measurementsTable))
+                           colnames(measurements))
 
-  .pickFeatures(measurementsTable, classes,
+  .pickFeatures(measurements, classes,
                 datasetName, trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)
-})
+                orderedFeatures, selectionName, verbose)  
+}

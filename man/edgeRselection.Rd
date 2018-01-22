@@ -9,10 +9,7 @@
 }
 \usage{
   \S4method{edgeRselection}{matrix}(counts, classes, ...)
-  \S4method{edgeRselection}{MultiAssayExperiment}(counts, datasetName, targets = NULL,
-                           normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-                           trainParams, predictParams, resubstituteParams,
-                           selectionName = "edgeR LRT", verbose = 3)
+  \S4method{edgeRselection}{MultiAssayExperiment}(counts, targets = NULL, ...)
 }
 \arguments{
   \item{counts}{Either a \code{\link{matrix}} or \code{\link{MultiAssayExperiment}} containing the
@@ -20,17 +17,14 @@
   \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements}. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{...}{Unused variables from the \code{matrix} method passed
-                       to the \code{MultiAssayExperiment} method.}  
-  \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{targets}{Names of data tables to be combined into a single table and
-                 used in the analysis.}
-  \item{normFactorsOptions}{A named \code{list} of any options to be passed to
-                            \code{\link[edgeR]{calcNormFactors}}.}
-  \item{dispOptions}{A named \code{list} of any options to be passed to
-                            \code{\link[edgeR]{estimateDisp}}.}
-  \item{fitOptions}{A named \code{list} of any options to be passed to
-                            \code{\link[edgeR]{glmFit}}.}                
+                 used in the analysis.}                 
+  \item{...}{Unused variables by the two top-level methods passed to the internal method
+             which does the feature selection.}  
+  \item{datasetName}{A name for the dataset used. Stored in the result.}
+  \item{normFactorsOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{calcNormFactors}}.}
+  \item{dispOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{estimateDisp}}.}
+  \item{fitOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{glmFit}}.}                
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -77,13 +71,13 @@
     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small dataset.
     
     getClasses <- function(result) result[["ytehat"]]
-    selection <- edgeRselection(expression, classes, "DPN Treatment",
+    selected <- edgeRselection(expression, classes, "DPN Treatment",
                    trainParams = TrainParams(classifyInterface, doesTests = TRUE),
                    predictParams = PredictParams(function(){}, getClasses = getClasses),
                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
                                         performanceType = "balanced error", better = "lower"))
                                         
-    head(selection@rankedFeatures[[1]])
+    head(selected@rankedFeatures[[1]])
     plotFeatureClasses(expression, classes, "ENSG00000044574",
                        dotBinWidth = 500, xAxisLabel = "Unnormalised Counts")
   }

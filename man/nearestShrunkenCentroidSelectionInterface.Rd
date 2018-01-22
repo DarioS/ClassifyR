@@ -1,23 +1,28 @@
 \name{nearestShrunkenCentroidSelectionInterface}
 \alias{nearestShrunkenCentroidSelectionInterface}
 \alias{nearestShrunkenCentroidSelectionInterface,matrix-method}
-\alias{nearestShrunkenCentroidSelectionInterface,ExpressionSet-method}
+\alias{nearestShrunkenCentroidSelectionInterface,DataFrame-method}
+\alias{nearestShrunkenCentroidSelectionInterface,MultiAssayExperiment-method}
 
 \title{Interface for \code{pamr.listgenes} Function from \code{pamr} CRAN Package}
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.listgenes}} definition.}
 \usage{
-  \S4method{nearestShrunkenCentroidSelectionInterface}{matrix}(expression, classes, ...)
-  \S4method{nearestShrunkenCentroidSelectionInterface}{ExpressionSet}(expression, datasetName, trained, ...,
-                                                       selectionName = "Shrunken Centroids", verbose = 3)
+  \S4method{nearestShrunkenCentroidSelectionInterface}{matrix}(measurements, classes, ...)
+  \S4method{nearestShrunkenCentroidSelectionInterface}{DataFrame}(measurements, classes, ...)
+  \S4method{nearestShrunkenCentroidSelectionInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{datasetName}{A name for the dataset used. Stored in the result.}                  
-  \item{classes}{A vector of class labels.} 
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}                      
+  \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{trained}{The output of \code{\link{nearestShrunkenCentroidTrainInterface}},
-                      which is identical to the output of \code{\link[pamr]{pamr.listgenes}}.}                  
+                      which is identical to the output of \code{\link[pamr]{pamr.listgenes}}.}
   \item{...}{Extra arguments passed to \code{\link[pamr]{pamr.listgenes}} or parameters not used by the
              \code{\link{matrix}} method that are passed to the \code{\link{ExpressionSet}} method.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
@@ -41,9 +46,13 @@
     genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
                                  c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
     trained <- nearestShrunkenCentroidTrainInterface(genesMatrix, classes)
-    nearestShrunkenCentroidSelectionInterface(genesMatrix, classes, "Example", trained)
+    selected <- nearestShrunkenCentroidSelectionInterface(genesMatrix, classes, "Example",
+                                                          trained)
+                                                          
+    selected@chosenFeatures                                                         
   }
 }

@@ -1,29 +1,45 @@
-setGeneric("nearestShrunkenCentroidTrainInterface", function(expression, ...)
+setGeneric("nearestShrunkenCentroidTrainInterface", function(measurements, ...)
 {standardGeneric("nearestShrunkenCentroidTrainInterface")})
 
-setMethod("nearestShrunkenCentroidTrainInterface", "matrix", function(expression, classes, ...)
+setMethod("nearestShrunkenCentroidTrainInterface", "matrix", function(measurements, classes, ...)
+{
+  .nearestShrunkenCentroidTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+})
+
+setMethod("nearestShrunkenCentroidTrainInterface", "DataFrame", # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  .nearestShrunkenCentroidTrainInterface(measurements, splitDataset[["classes"]], ...)
+})
+
+setMethod("nearestShrunkenCentroidTrainInterface", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{ 
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  measurements <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  
+  if(ncol(measurements) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    .nearestShrunkenCentroidTrainInterface(measurements, classes, ...)
+})
+
+.nearestShrunkenCentroidTrainInterface <- function(measurements, classes, ..., verbose = 3)
 {
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")
-  
-  features <- rownames(expression)
-  groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-  if(length(features) > 0) featureNames(exprSet) <- features
-  nearestShrunkenCentroidTrainInterface(exprSet, ...)
-})
 
-setMethod("nearestShrunkenCentroidTrainInterface", "ExpressionSet", function(expression, ..., verbose = 3)
-{ 
-  if(!requireNamespace("pamr", quietly = TRUE))
-    stop("The package 'pamr' could not be found. Please install it.")
-  
-  classes <- pData(expression)[, "class"]
-  trainedModel <- pamr::pamr.train(list(x = exprs(expression), y = classes,
-                                        geneid = 1:nrow(expression)), ...)
+  trainedModel <- pamr::pamr.train(list(x = t(as.matrix(measurements)), y = classes), ...)
   
   if(verbose == 3)
     message("Nearest shrunken centroid training completed.")
   
   trainedModel
-})
+}

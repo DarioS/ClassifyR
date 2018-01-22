@@ -47,15 +47,15 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
   returnType <- match.arg(returnType)
   
   classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
-  largerClass <- names(classesSizes)[which.max(classesSizes)]
+  largerClass <- names(classesSizes)[which.max(classesSizes)[1]]
   
   if(verbose == 3)
     message("Fitting densities.")
 
-  densities <- apply(measurements, 2, function(featureColumn)
+  densities <- apply(measurements, 2, function(featureValues)
   {
-    oneClassMeasurements <- featureColumn[classes == levels(classes)[1]]
-    otherClassMeasurements <- featureColumn[classes == levels(classes)[2]]
+    oneClassMeasurements <- featureValues[classes == levels(classes)[1]]
+    otherClassMeasurements <- featureValues[classes == levels(classes)[2]]
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
     oneDensity <- do.call(densityFunction, c(list(oneClassMeasurements), densityParameters))
     otherDensity <- do.call(densityFunction, c(list(otherClassMeasurements), densityParameters))
@@ -70,9 +70,16 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
   {
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
+ 
+    # Distances for second class level.
+    distancesHorizontal <- t(do.call(cbind, mapply(function(featureDensities, testSamples)
+    {
+      crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
+      sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
+    }, densities, test, SIMPLIFY = FALSE)))
     
     # Score for second class level.
-    distancesHorizontal <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    posteriorsHorizontal <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
     {
       crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
       otherScores <- classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
@@ -80,10 +87,9 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
       classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
       classScores
-    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
-
+    }, densities, splines, test, SIMPLIFY = FALSE)))    
     class1RelativeSize <- classesSizes[1] / classesSizes[2]
-    posteriorsHorizontal <- ifelse(distancesHorizontal < 0, distancesHorizontal * class1RelativeSize, distancesHorizontal * 1/class1RelativeSize)
+    posteriorsHorizontal <- if(class1RelativeSize < 0) posteriorsHorizontal <- posteriorsHorizontal * class1RelativeSize else posteriorsHorizontal <- posteriorsHorizontal * 1/class1RelativeSize
   }
   
   if(weight != "crossover distance") # Calculate the height difference.
@@ -92,16 +98,16 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
       message("Calculating class densities.")
     
     # Rows are for features, columns are for samples.
-    distancesVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    distancesVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
     {
       featureSplines[["otherClass"]](testSamples) - featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
+    }, splines, test, SIMPLIFY = FALSE)))
     
     # Rows are for features, columns are for samples.
-    posteriorsVertical <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
+    posteriorsVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
     {
       classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-    }, densities, splines, as.data.frame(test), SIMPLIFY = FALSE)))
+    }, splines, test, SIMPLIFY = FALSE)))
   }
 
   if(verbose == 3)
@@ -111,7 +117,7 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
            score = message("Calculating class scores.")
     )
   }
-  
+
   if(weight == "all")
     weightExpanded <-  c("height difference", "crossover distance", "sum differences")
   else weightExpanded <- weight
@@ -197,9 +203,6 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
            score = predictionSet[, "score"],
            both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
   }, simplify = FALSE)
-  
-  attr(resultsList, "class") <- "list"
-  attr(resultsList, "call") <- NULL
   
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]

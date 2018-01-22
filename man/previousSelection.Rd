@@ -1,28 +1,28 @@
 \name{previousSelection}
 \alias{previousSelection}
 \alias{previousSelection,matrix-method}
-\alias{previousSelection,ExpressionSet-method}
+\alias{previousSelection,DataFrame-method}
+\alias{previousSelection,MultiAssayExperiment-method}
 \title{Automated Selection of Previously Selected Features}
 \description{Uses the feature selection of the same cross-validation iteration of a previous classification
 for the current classification task.
 }
 \usage{
-  \S4method{previousSelection}{matrix}(expression, classes, ...)
-  \S4method{previousSelection}{ExpressionSet}(expression, datasetName, classifyResult,
-                                              minimumOverlapPercent = 80,
-                                              selectionName = "Previous Selection", .iteration, verbose = 3)
+  \S4method{previousSelection}{matrix}(measurements, ...)
+  \S4method{previousSelection}{DataFrame}(measurements, ...)
+  \S4method{previousSelection}{MultiAssayExperiment}(measurements, ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-    the training data. For a matrix, the rows are features, and the columns are samples.}
-  \item{classes}{A vector of class labels.}
-  \item{...}{For the \code{\link{matrix}} method, variables passed to the \code{\link{ExpressionSet}} method.}  
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the feature selection.}  
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{classifyResult}{An existing classification result from which to take the feature selections from.}
   \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
                                current dataset, then the selection stops with an error.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{.iteration}{Not to be set by the user.}
   \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
     This function only prints progress messages if the value is 3.}
 }
@@ -41,12 +41,12 @@ for the current classification task.
     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
-                                       performanceType = "err", better = "lower")
-    result <- runTests(genesMatrix, classes, "Ovarian Cancer", "Differential Expression",
+                        performanceType = "error", better = "lower")
+    result <- runTests(genesMatrix, classes, "Example", "Differential Expression",
                        permutations = 2, fold = 2,
-                       params = list(SelectParams(limmaSelection, resubstituteParams = resubstitute),
-                       TrainParams(dlda, TRUE, FALSE),
-                       PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])))
+                       params = list(SelectParams(), TrainParams(),
+                       PredictParams(predict,
+                       getClasses = function(result) result[["class"]])))
                        
     # Genes 74 to 98 have differential expression in new dataset.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
