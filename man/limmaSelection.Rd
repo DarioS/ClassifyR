@@ -1,6 +1,7 @@
 \name{limmaSelection}
 \alias{limmaSelection}
 \alias{limmaSelection,matrix-method}
+\alias{limmaSelection,DataFrame-method}
 \alias{limmaSelection,MultiAssayExperiment-method}
 \title{Selection of Differentially Expressed Features}
 \description{Uses a moderated t-test with empirical Bayes shrinkage to select
@@ -8,6 +9,7 @@
        }
 \usage{
   \S4method{limmaSelection}{matrix}(measurements, classes, ...)
+  \S4method{limmaSelection}{DataFrame}(measurements, classes, ...)
   \S4method{limmaSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
@@ -19,7 +21,7 @@
                  is a \code{MultiAssayExperiment} object.}
   \item{targets}{Names of data tables to be combined into a single table and
                  used in the analysis.}                  
-  \item{...}{Unused variables by the two top-level methods passed to the internal method
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
              which does the feature selection or optional settings that are
             passed to \code{\link[limma]{lmFit}}.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
@@ -31,7 +33,7 @@
                             describing the performance measure to consider and the numbers of
                             top features to try for resubstitution classification.}                       
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
 \details{

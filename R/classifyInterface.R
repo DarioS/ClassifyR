@@ -4,9 +4,9 @@ setGeneric("classifyInterface", function(measurements, ...)
 setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
           function(measurements, classes, test, ...)
 {
-  .classifyInterface(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
+  .classifyInterface(DataFrame(t(measurements), check.names = FALSE),
                      classes,
-                     DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+                     DataFrame(t(test), check.names = FALSE), ...)
 })
 
 setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ...)
@@ -26,7 +26,7 @@ setMethod("classifyInterface", "MultiAssayExperiment",
 function(measurements, test, targets = names(measurements), ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, "integer")
-  trainingMatrix <- as.matrix(tablesAndClasses[["dataTable"]])
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets, "integer")
             

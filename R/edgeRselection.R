@@ -7,6 +7,12 @@ setMethod("edgeRselection", "matrix", # Matrix of integer counts.
   .edgeRselection(DataFrame(t(counts), check.names = FALSE), classes, ...)
 })
 
+# DataFrame of counts, likely created by runTests or runTest.
+setMethod("edgeRselection", "DataFrame", function(counts, classes, ...)
+{
+  .edgeRselection(counts, classes, ...)
+})
+
 # One or more omics datasets, possibly with clinical data.
 setMethod("edgeRselection", "MultiAssayExperiment",
           function(counts, targets = NULL, ...)

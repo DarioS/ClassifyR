@@ -21,7 +21,7 @@
                  numeric variables from the clinical data table will be used.}   
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which does the prediction or extra arguments passed to passed to \code{\link[pamr]{pamr.predict}}.} 
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
 \details{

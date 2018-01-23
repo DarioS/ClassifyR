@@ -49,8 +49,9 @@
                of classification are done in.}
   \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
              \code{\link{ExpressionSet}} method.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
-                 A higher number will produce more messages.}
+  \item{verbose}{Default: 1. A number between 0 and 3 for the amount of progress messages to give.
+                 A higher number will produce more messages as more lower-level functions
+                 print messages.}
 }
 \value{
   If the predictor function made a single prediction, then an object of class

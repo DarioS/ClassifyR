@@ -23,7 +23,7 @@ for the current classification task.
   \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
                                current dataset, then the selection stops with an error.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
     This function only prints progress messages if the value is 3.}
 }
 \value{

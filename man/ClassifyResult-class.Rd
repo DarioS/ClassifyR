@@ -33,15 +33,17 @@
   \describe{
             \item{\code{datasetName}}{A name associated with the dataset used.}
             \item{\code{classificationName}}{A name associated with the classification.}
-            \item{\code{originalNames}}{Sample names.}
-            \item{\code{originalFeatures}}{Feature names.}
-            \item{\code{rankedFeatures}}{Indices or names of all features, from most to least
-                                         important.}
-            \item{\code{chosenFeatures}}{Indices or names of features selected at each fold.}
+            \item{\code{originalNames}}{All sample names.}
+            \item{\code{originalFeatures}}{All feature names. Character vector or DataFrame with one row
+                                           for each feature if the dataset is a \code{\link{MultiAssayExperiment}}.}
+            \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
+                                         or DataFrame if dataset is a \code{MultiAssayExperiment}.}
+            \item{\code{chosenFeatures}}{Features selected at each fold. Character vector or DataFrame if
+                                         dataset is a \code{MultiAssayExperiment}.}
             \item{\code{predictions}}{A \code{\link{list}} of \code{\link{data.frame}}
                                       containing information about samples, their actual class and
                                       predicted class.}            
-            \item{\code{actualClasses}}{Factor of class of each sample.}
+            \item{\code{actualClasses}}{Factor of class of each sample.}                                      
             \item{\code{validation}}{List with first elment being name of the validation scheme,
             and other elements providing details about scehme.}
             \item{\code{tune}}{A description of the tuning parameters, and the value chosen of
@@ -67,22 +69,24 @@
   \code{result} is a \code{ClassifyResult} object.
 
   \describe{
-  \item{\code{predictions(result)}}{Returns a \code{\link{list}} of \code{\link{data.frame}}.
+  \item{\code{predictions(result)}}{Returns a \code{list} of \code{data.frame}.
      Each data.frame contains columns \code{sample}, \code{predicted}, and \code{actual}. For
      hold-out validation, only one data.frame is returned of all of the concatenated
      predictions.}}
   \describe{
-  \item{\code{actualClasses(result)}}{Returns a \code{\link{factor}} class labels, one for
+  \item{\code{actualClasses(result)}}{Returns a \code{factor} class labels, one for
     each sample.}}
   \describe{
-  \item{\code{features(result)}}{A \code{\link{list}} of the features selected for each training.}}
+  \item{\code{features(result)}}{A \code{list} of the features selected for each training.}}
   \describe{
-  \item{\code{performance(result)}}{Returns a \code{\link{list}} of performance measures. This is
-    empty until \code{\link{calcPerformance}} has been used.}}
+  \item{\code{performance(result)}}{Returns a \code{list} of performance measures. This is
+    empty until \code{calcCVperformance} has been used.}}
   \describe{
-  \item{\code{tunedParameters(result)}}{Returns a \code{\link{list}} of tuned parameter values. If cross-validation is used, this list will be large, as it stores chosen values for every validation.}}    
+  \item{\code{tunedParameters(result)}}{Returns a \code{list} of tuned parameter values.
+        If cross-validation is used, this list will be large, as it stores chosen values
+        for every iteration.}}    
   \describe{
-  \item{\code{names(result)}}{Returns a \code{\link{character}} vector of sample names.}}
+  \item{\code{sampleNames(result)}}{Returns a \code{\link{character}} vector of sample names.}}
 }
 
 \author{Dario Strbenac}

@@ -7,6 +7,12 @@ setMethod("limmaSelection", "matrix", function(measurements, classes, ...)
   .limmaSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
+# DataFrame of numeric measurements, likely created by runTests or runTest.
+setMethod("limmaSelection", "DataFrame", function(measurements, classes, ...)
+{
+  .limmaSelection(measurements, classes, ...)
+})
+
 # One or more omics datasets, possibly with clinical data.
 setMethod("limmaSelection", "MultiAssayExperiment", 
           function(measurements, targets = NULL, ...)

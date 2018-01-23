@@ -15,6 +15,7 @@ setMethod("TransformParams", c("function"),
           })
 
 setClassUnion("functionOrList", c("function", "list"))
+setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
 setClass("ResubstituteParams", representation(
   nFeatures = "numeric",
@@ -28,7 +29,7 @@ setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c
 
 setMethod("ResubstituteParams", numeric(0), function()
 {
-  new("ResubstituteParams", nFeatures = seq(100, 500, 100), performanceType = "balanced error",
+  new("ResubstituteParams", nFeatures = seq(10, 100, 10), performanceType = "balanced error",
       better = "lower")
 })
 
@@ -44,7 +45,7 @@ setClass("SelectParams", representation(
   selectionName = "character",
   minPresence = "numeric",
   intermediate = "character",
-  subsetExpressionData = "logical",  
+  subsetToSelections = "logical",  
   otherParams = "list")
 )
 
@@ -54,22 +55,22 @@ setMethod("SelectParams", character(0), function()
 {
   new("SelectParams", featureSelection = limmaSelection,
       selectionName = "Limma moderated t-test", minPresence = 1,
-      intermediate = character(0), subsetExpressionData = TRUE,
+      intermediate = character(0), subsetToSelections = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })
 setMethod("SelectParams", c("functionOrList"),
           function(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
-                   subsetExpressionData = TRUE, ...)
+                   subsetToSelections = TRUE, ...)
           {
             if(missing(selectionName) && !is.list(featureSelection))
-              selectionName <- .methodFormals(featureSelection, "ExpressionSet")[["selectionName"]]
+              selectionName <- .methodFormals(featureSelection)[["selectionName"]]
             others <- list(...)
             if(is.list(featureSelection))
               others <- unlist(others, recursive = FALSE)
             if(is.null(others)) others <- list()
             new("SelectParams", featureSelection = featureSelection,
                 selectionName = selectionName, minPresence = minPresence,
-                intermediate = intermediate, subsetExpressionData = subsetExpressionData,
+                intermediate = intermediate, subsetToSelections = subsetToSelections,
                 otherParams = others)
           })
 
@@ -84,7 +85,7 @@ setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
 setMethod("TrainParams", character(0), function()
 {
-  new("TrainParams", classifier = dlda, intermediate = character(0), doesTests = FALSE)
+  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), doesTests = FALSE)
 })
 setMethod("TrainParams", c("function"),
           function(classifier, doesTests, intermediate = character(0), ...)
@@ -164,7 +165,7 @@ setClass("ClassifyResult", representation(
   datasetName = "character",
   classificationName = "character",
   originalNames = "character",
-  originalFeatures = "character",
+  originalFeatures = "characterOrDataFrame",
   selectResult = "SelectResult",
   actualClasses = "factor",
   predictions = "list",
@@ -190,7 +191,7 @@ setMethod("show", c("ClassifyResult"),
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
             if(object@validation[[1]] != "resampleFold")
             {
-              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of row indices.\n", sep = '')
+              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature indices.\n", sep = '')
             } else # Resample and fold. Nested lists.
             {
               elementsLengths <- sapply(object@selectResult@chosenFeatures, length)
@@ -202,7 +203,7 @@ setMethod("show", c("ClassifyResult"),
                 subListText <- paste("lengths between", min(elementsLengths), "and", max(elementsLengths))
               }
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of ",
-                  subListText, " of row indices.\n", sep = '')
+                  subListText, " of feature indices.\n", sep = '')
             }            
             cat("Validation: ")
             cat(.validationText(object), ".\n", sep = '')

@@ -1,4 +1,5 @@
 setOldClass("pamrtrained")
+setOldClass("dlda")
 
 .splitDataAndClasses <- function(measurements, classes)
 { # DataFrame methods' class variable can be character or factor, so it's a bit involved.
@@ -73,7 +74,7 @@ setOldClass("pamrtrained")
     stop("Training dataset and testing dataset contain differing numbers of features.")  
 }
 
-.doSelection <- function(measurements, training, selectParams, trainParams,
+.doSelection <- function(measurements, classes, training, selectParams, trainParams,
                          predictParams, verbose)
 {
   initialClass <- class(measurements)
@@ -84,7 +85,7 @@ setOldClass("pamrtrained")
   {
     if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(measurements[training, ], verbose = verbose)
+      paramList <- list(measurementsVariety[training, ], classes[training], verbose = verbose)
       if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
@@ -158,7 +159,7 @@ setOldClass("pamrtrained")
   # Re-use inside feature selection.
 {
   initialClass <- class(measurements)
-  if(class(expression) != "list") # Will be a DataFrame.
+  if(class(measurements) != "list") # Will be a DataFrame.
     measurements <- list(data = measurements)
 
   trained <- mapply(function(measurementsVariety, variety)
@@ -171,8 +172,8 @@ setOldClass("pamrtrained")
       individiualParams <- lapply(multiplierParams, '[', 2)
       names(individiualParams) <- sapply(multiplierParams, '[', 1)
       individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
-      trainFormals <- tryCatch(names(.methodFormals(trainParams@classifier@generic)), warning = function(warn) {names(formals(trainParams@classifier))})
-      predictFormals <- tryCatch(names(formals(predictParams@predictor)), warning = function(warn) {tryCatch(names(.methodFormals(predictParams@predictor)), character(0))}) 
+      trainFormals <- names(.methodFormals(trainParams@classifier))
+      predictFormals <- names(.methodFormals(predictParams@predictor))
       changeTrain <- intersect(names(individiualParams), trainFormals)
       changePredict <- intersect(names(individiualParams), predictFormals)
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
@@ -504,21 +505,22 @@ setOldClass("pamrtrained")
   binID
 }
 
-.methodFormals <- function(f, signature = "ExpressionSet") {
+.methodFormals <- function(f) {
   tryCatch({
-    fdef <- getGeneric(f)
-    method <- selectMethod(fdef, signature)
-    genFormals <- base::formals(fdef)
-    b <- body(method)
-    if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
-      local <- eval(b[[2]][[3]])
-      if(is.function(local))
-        return(formals(local))
-      warning("Expected a .local assignment to be a function. Corrupted method?")
-    }
-    genFormals},
-    error = function(error) {
-      formals(f)
+      formals(paste('.', f@generic, sep = ''))
+    },
+    error = function(error) { # Perhaps only a DataFrame method was provided for a particular function.
+      fdef <- getGeneric(f)
+      method <- selectMethod(fdef, "DataFrame")
+      genFormals <- base::formals(fdef)
+      b <- body(method)
+      if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+        local <- eval(b[[2]][[3]])
+        if(is.function(local))
+          return(formals(local))
+        warning("Expected a .local assignment to be a function. Corrupted method?")
+      }
+      genFormals
     })
 }
 

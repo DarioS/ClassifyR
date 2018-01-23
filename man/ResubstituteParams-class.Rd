@@ -16,7 +16,8 @@
     \item{}{
       \code{ResubstituteParams()}
       Creates a default ResubstituteParams object. The number of features tried is
-      100, 200, 300, 400, 500. The performance measure used is the balanced error rate.
+      10, 20, 30, 40, 50, 60, 70, 80, 90, 100. The performance measure used is the
+      balanced error rate.
   }
     \item{}{
       \code{ResubstituteParams(nFeatures, performanceType, better = c("lower", "higher"))}
@@ -39,5 +40,5 @@
 }
 \author{Dario Strbenac}
 \examples{
-  ResubstituteParams(nFeatures = seq(25, 1000, 25), performanceType = "err", better = "lower")
+  ResubstituteParams(nFeatures = seq(25, 1000, 25), performanceType = "error", better = "lower")
 }

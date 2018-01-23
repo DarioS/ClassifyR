@@ -24,7 +24,7 @@
   \item{location}{Character. Either "mean" or "median".}
   \item{absolute}{Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute values of the differences
                   are returned. Otherwise, they are signed.}
-  \item{verbose}{A progress message is shown if this value is 3.}
+  \item{verbose}{Default: 3. A progress message is shown if this value is 3.}
 }
 \details{
   Only the samples specified by \code{training} are used in the calculation of the location.

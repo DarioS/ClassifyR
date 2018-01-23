@@ -40,7 +40,7 @@
                     The second element specifies the scale of the alternate hypothesis.
                     Valid values in each element are "same" or "different".}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
-  \item{verbose}{A number between 0 and 3 for the amount of progress messages to give.
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
 \details{
