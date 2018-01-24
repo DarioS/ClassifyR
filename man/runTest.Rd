@@ -26,7 +26,7 @@
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
   \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection.}                 
+             which does the classification.}                 
   \item{datasetName}{A name associated with the dataset used.}
   \item{classificationName}{A name associated with the classification.}  
   \item{training}{A vector which specifies the training samples.}
@@ -64,8 +64,9 @@
     more5years <- pData(TCGA_eset)[, "days_to_death"] >= 365 * 5
     goodOutcome <- which(isAlive & more5years)
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
-    classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
-    pData(TCGA_eset)[, "class"] <- classes
+    classes <- factor(rep(c("Poor", "Good"),
+                      c(length(badOutcome), length(goodOutcome))))
+                      
     runTest(exprs(TCGA_eset), classes, "Ovarian Cancer", "Differential Expression",
             training = (1:ncol(TCGA_eset)) \%\% 2 == 0,
             testing = (1:ncol(TCGA_eset)) \%\% 2 != 0)

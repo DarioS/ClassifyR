@@ -1,54 +1,60 @@
 \name{runTests}
 \alias{runTests}
 \alias{runTests,matrix-method}
-\alias{runTests,ExpressionSet-method}
+\alias{runTests,DataFrame-method}
+\alias{runTests,MultiAssayExperiment-method}
 \title{Reproducibly Run Various Kinds of Cross-Validation}
-\description{Enables doing classification schemes such as ordinary 10-fold, 100 permutations 5-fold,
-             and leave one out cross-validaion. Processing in parallel is possible by leveraging
-             the package \code{\link{BiocParallel}}.
+\description{Enables doing classification schemes such as ordinary 10-fold,
+             100 permutations 5-fold, and leave one out cross-validaion.
+             Processing in parallel is possible by leveraging the package \code{\link{BiocParallel}}.
 }
 \usage{
-  \S4method{runTests}{matrix}(expression, classes, ...)
-  \S4method{runTests}{ExpressionSet}(expression, datasetName, classificationName,
-                     validation = c("permute", "leaveOut", "fold"), permutePartition = c("fold", "split"),
-                     permutations = 100, percent = 25, folds = 5, leave = 2, seed, parallelParams = bpparam(),
-                     params = list(SelectParams(), TrainParams(), PredictParams()),
-                     verbose = 1)
+  \S4method{runTests}{matrix}(measurements, classes, ...)
+  \S4method{runTests}{DataFrame}(measurements, classes, ...)
+  \S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
-  \item{expression}{Either a \code{\link{matrix}} or \code{\link{ExpressionSet}} containing
-                    the training data. For a matrix, the rows are features, and the columns
-                    are samples.}
-  \item{classes}{A vector the same length as the number of columns of expression data specifying
-                 the class that the samples belong to.}            
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+                      \code{\link{MultiAssayExperiment}} containing the training data.
+                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} or if the measurements are
+                 of class \code{DataFrame} a character vector of length 1 containing the
+                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
+                 is a \code{MultiAssayExperiment} object.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}
+  \item{...}{Unused variables by the three top-level methods passed to the internal method
+             which does the classification.}        
   \item{datasetName}{A name associated with the dataset used.}
   \item{classificationName}{A name associated with the classification.}
-  \item{validation}{"permute" for repeated permuting. "leaveOut" for leaving all combinations
-                    of k samples as test samples. "fold" for folding of the dataset (no resampling).}
-  \item{permutePartition}{Character. Either "fold" or "split". Only applicable if \code{validation} is not
-                          "permute". If "fold", then the samples are split into folds and in each
-                          iteration one is used as the test set. If "split", the samples are split
-                          into two groups, the sizes being based on the \code{percent} value. One group is
-                          used as the training set, the other is the test set.
+  \item{validation}{Default: \code{"permute"}. \code{"permute"} for repeated permuting.
+                    \code{"leaveOut"} for leaving all possible combinations of k samples as test samples.
+                    \code{"fold"} for folding of the dataset (no resampling).}
+  \item{permutePartition}{Default: \code{"fold"}. Either \code{"fold"} or \code{"split"}. Only applicable if
+                          \code{validation} is \code{"permute"}. If \code{"fold"}, then the samples are
+                          split into folds and in each iteration one is used as the test set. If
+                          \code{"split"}, the samples are split into two groups, the sizes being based on
+                          the \code{percent} value. One group is used as the training set,
+                          the other is the test set.
                          }                    
-  \item{permutations}{Relevant when permuting is used. The number of times to do reordering of the samples
-                      before splitting or folding them.}
-  \item{percent}{Used when permutation with the split method is chosen. The percentage of samples to be
-                 in the test set.}        
-  \item{folds}{Relevant when repeated permutations are done and \code{permutePartition} is set to "fold"
-               or when \code{validation} is set to "fold". The number of folds to break the dataset into.
-               Each fold is used once as the test set.}
-  \item{leave}{Relevant when leave-k-out cross-validation is used. The number of samples to leave
-               for testing.}
+  \item{permutations}{Default: 100. Relevant when permuting is used. The number of times to do reordering
+                      of the samples before splitting or folding them.}
+  \item{percent}{Default: 25. Used when permutation with the split method is chosen. The percentage of
+                 samples to be in the test set.}        
+  \item{folds}{Default: 5. Relevant when repeated permutations are done and \code{permutePartition} is
+               set to \code{"fold"} or when \code{validation} is set to \code{"fold"}. The number of folds
+               to break the dataset into. Each fold is used once as the test set.}
+  \item{leave}{Default: 2. Relevant when leave-k-out cross-validation is used. The number of samples to
+               leave for testing.}
   \item{seed}{The random number generator used for repeated resampling will use this seed,
               if it is provided. Allows reproducibility of repeated usage on the same input data.}
-  \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}               
-  \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
-               \code{\link{SelectParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
+  \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or \code{\link{SnowParam}}.}          
+  \item{params}{A \code{list} of objects of class of \code{\link{TransformParams}},
+               \code{\link{SelectParams}}, \code{\link{TrainParams}} or \code{\link{PredictParams}}.
                The order they are in the list determines the order in which the stages
                of classification are done in.}
-  \item{...}{Unused variables from the \code{\link{matrix}} method passed to the
-             \code{\link{ExpressionSet}} method.}
   \item{verbose}{Default: 1. A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages as more lower-level functions
                  print messages.}
@@ -64,13 +70,18 @@
   if(require(curatedOvarianData) && require(sparsediscrim))
   {
     data(TCGA_eset)
-    badOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "deceased" & pData(TCGA_eset)[, "days_to_death"] <= 365)
-    goodOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "living" & pData(TCGA_eset)[, "days_to_death"] >= 365 * 5)
+    isDeceased <- pData(TCGA_eset)[, "vital_status"] == "deceased"
+    less1year <- pData(TCGA_eset)[, "days_to_death"] <= 365
+    badOutcome <- which(isDeceased & less1year)
+    isAlive <- pData(TCGA_eset)[, "vital_status"] == "living"
+    more5years <- pData(TCGA_eset)[, "days_to_death"] >= 365 * 5
+    goodOutcome <- which(isAlive & more5years)
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
-    classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
-    pData(TCGA_eset)[, "class"] <- classes
+    classes <- factor(rep(c("Poor", "Good"),
+                      c(length(badOutcome), length(goodOutcome))))
     
     # Two permuted datasets, each partitioned into two parts.
-    runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", permutations = 2, fold = 2)
+    runTests(exprs(TCGA_eset), classes, "Ovarian Cancer", "Differential Expression",
+             permutations = 2, fold = 2)
   }
 }

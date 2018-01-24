@@ -11,12 +11,7 @@ setMethod("runTest", c("DataFrame"), # Clinical data only.
 function(measurements, classes, ...)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
-  .runTest(measurements, splitDataset[["classes"]], ...)
+  .runTest(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
 })
 
 setMethod("runTest", c("MultiAssayExperiment"),
@@ -39,14 +34,10 @@ setMethod("runTest", c("MultiAssayExperiment"),
   trainParams <- params[[match("TrainParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   
-  allSamples <- switch(class(measurements), matrix = colnames(measurements),
-                                            DataFrame = rownames(measurements),
-                                            MultiAssayExperiment = rownames(colData(measurements)))
-  
-  allFeatures <- switch(class(measurements), matrix = rownames(measurements),
-                                             DataFrame = colnames(measurements),
-                                             MultiAssayExperiment = mcols(colData(measurements)))
-  
+  if(!is.null(mcols(colData(measurements))))
+    allFeatures <- mcols(colData(measurements))
+  else
+    allFeatures <- colnames(measurements)
   
   lastSize <- 1
   for(stageIndex in 1:length(params))
@@ -197,7 +188,7 @@ setMethod("runTest", c("MultiAssayExperiment"),
     
     if(class(predictedClasses) != "list")
     {
-      return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, allSamples, allFeatures,
+      return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
                             list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = predictedClasses)),
                             classes, list("independent"), tuneDetails)
              )
@@ -205,7 +196,7 @@ setMethod("runTest", c("MultiAssayExperiment"),
       return(mapply(function(varietyPredictions, varietyTunes)
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-        ClassifyResult(datasetName, classificationName, selectParams@selectionName, allSamples, allFeatures,
+        ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
                        list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
       }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))

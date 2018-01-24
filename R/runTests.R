@@ -1,40 +1,58 @@
-setGeneric("runTests", function(expression, ...)
+setGeneric("runTests", function(measurements, ...)
            {standardGeneric("runTests")})
 
-setMethod("runTests", c("matrix"),
-  function(expression, classes, ...)
+setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
+          function(measurements, classes, ...)
 {
-    groupsTable <- data.frame(class = classes, row.names = colnames(expression))
-    exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
-    runTests(exprSet, ...)
+  .runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("runTests", c("ExpressionSet"),
-    function(expression, datasetName, classificationName, validation = c("permute", "leaveOut", "fold"),
-             permutePartition = c("fold", "split"),
-             permutations = 100, percent = 25, folds = 5, leave = 2,
-             seed, parallelParams = bpparam(),
-             params = list(SelectParams(), TrainParams(), PredictParams()),
-             verbose = 1)
+setMethod("runTests", c("DataFrame"), # Clinical data only.
+          function(measurements, classes, ...)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  .runTests(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
+})
+
+setMethod("runTests", c("MultiAssayExperiment"),
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
+  .runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+})
+
+.runTests <- function(measurements, classes, datasetName, classificationName,
+                      validation = c("permute", "leaveOut", "fold"),
+                      permutePartition = c("fold", "split"),
+                      permutations = 100, percent = 25, folds = 5, leave = 2,
+                      seed, parallelParams = bpparam(),
+                      params = list(SelectParams(), TrainParams(), PredictParams()),
+                      verbose = 1)
 {
   validation <- match.arg(validation)
   permutePartition <- match.arg(permutePartition)
   if(!missing(seed)) set.seed(seed)
   resultTypes <- c("ranked", "selected", "testSet", "predictions", "tune")
+  # Elements of list returned by runTest.
 
   stagesParamClasses <- sapply(params, class)
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"testing\" must not be before \"training\" in 'params'.")
   
+  if(!is.null(mcols(measurements)))
+    allFeatures <- mcols(measurements)
+  else
+    allFeatures <- colnames(measurements)
+  
   if(validation == "permute")
   {
-    sampleOrdering <- lapply(1:permutations, function(permutation) sample(ncol(expression)))
+    sampleOrdering <- lapply(1:permutations, function(permutation) sample(nrow(measurements)))
     if(permutePartition == "fold")
     {
-      sampleFold <- rep(1:folds, length.out = ncol(expression))
+      sampleFold <- rep(1:folds, length.out = nrow(measurements))
       samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
     } else {
-      sampleFold <- rep(1:2, c(round(ncol(expression) * (100 - percent) / 100), round(ncol(expression) * percent / 100)))
+      sampleFold <- rep(1:2, c(round(nrow(measurements) * (100 - percent) / 100), round(nrow(measurements) * percent / 100)))
       samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
     }
 
@@ -46,36 +64,36 @@ setMethod("runTests", c("ExpressionSet"),
       {
         lapply(1:folds, function(foldIndex)
         {
-          runTest(expression, training = unlist(sampleFolds[-foldIndex]),
+          runTest(measurements, classes, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
         })
       } else { # Split mode.
-        runTest(expression, training = sampleFolds[[1]],
+        runTest(measurements, classes, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else if(validation == "leaveOut") # leave k out.
   {
-    testSamples <- as.data.frame(combn(ncol(expression), leave))
-    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:ncol(expression), sample))
+    testSamples <- as.data.frame(combn(nrow(measurements), leave))
+    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:nrow(measurements), sample))
     results <- bpmapply(function(trainingSample, testSample, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(expression, training = trainingSample, testing = testSample,
+      runTest(measurements, classes, training = trainingSample, testing = testSample,
               params = params, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else { # Unresampled, ordinary k-fold cross-validation.
-    sampleFold <- rep(1:folds, length.out = ncol(expression))
-    samplesFolds <- split(1:ncol(expression), sampleFold)
+    sampleFold <- rep(1:folds, length.out = nrow(measurements))
+    samplesFolds <- split(1:nrow(measurements), sampleFold)
     
     if(verbose >= 1)
       message("Processing ", folds, "-fold cross-validation.")
     results <- bplapply(1:folds, function(foldIndex)
     {
-      runTest(expression, training = unlist(samplesFolds[-foldIndex]),
+      runTest(measurements, classes, training = unlist(samplesFolds[-foldIndex]),
               testing = samplesFolds[[foldIndex]], params = params, verbose = verbose,
               .iteration = foldIndex)
     }, BPPARAM = parallelParams)
@@ -280,12 +298,12 @@ setMethod("runTests", c("ExpressionSet"),
   {
     # Might be NULL if selection is done within training.
     selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)    
-    ClassifyResult(datasetName, classificationName, selectionName, sampleNames(expression), featureNames(expression),
+    ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures,
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["predictions"]],
-                   pData(expression)[, "class"], validationInfo, resultsByVariety[[variety]][["tune"]])
+                   classes, validationInfo, resultsByVariety[[variety]][["tune"]])
   })
 
   names(classifyResults) <- varietyNames
   if(multipleVarieties == FALSE) classifyResults <- classifyResults[[1]]
   classifyResults
-})
+}

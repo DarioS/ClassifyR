@@ -18,9 +18,9 @@
   \S4method{DLDAtrainInterface}{matrix}(measurements, classes, ...)
   \S4method{DLDAtrainInterface}{DataFrame}(measurements, classes, ...)
   \S4method{DLDAtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{DLDApredictInterface}{matrix}(model, test, ...)
-  \S4method{DLDApredictInterface}{DataFrame}(model, test, ...)
-  \S4method{DLDApredictInterface}{MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
+  \S4method{DLDApredictInterface}{dlda,matrix}(model, test, ...)
+  \S4method{DLDApredictInterface}{dlda,DataFrame}(model, test, ...)
+  \S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or

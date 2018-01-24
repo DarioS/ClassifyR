@@ -134,15 +134,15 @@ setOldClass("dlda")
   rankedSelected
 }
 
-.doTransform <- function(expression, transformParams, verbose)
+.doTransform <- function(measurements, transformParams, verbose)
 {
-  initialClass <- class(expression)
-  if(class(expression) != "list")
-    expression <- list(data = expression)
+  initialClass <- class(measurements)
+  if(class(measurements) != "list")
+    measurements <- list(data = measurements)
   
-  transformed <- lapply(expression, function(expressionVariety)
+  transformed <- lapply(measurements, function(measurementsVariety)
   {
-    paramList <- list(expressionVariety)
+    paramList <- list(measurementsVariety)
     if(length(transformParams@otherParams) > 0)
       paramList <- c(paramList, transformParams@otherParams)
     paramList <- c(paramList, verbose = verbose)

@@ -42,7 +42,7 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "MultiAssayExperiment",
   
   params <- list(...)
   params <- params[!names(params) %in% c("trainParams", "predictParams")]
-  params <- c(list(trained), list(list(x = t(as.matrix(measurements)), y = classes, geneid = 1:nrow(expression))), threshold, params)
+  params <- c(list(trained), list(list(x = t(as.matrix(measurements)), y = classes, geneid = 1:ncol(measurements))), threshold, params)
 
   chosen <- as.numeric(do.call(pamr::pamr.listgenes, params)[, 1])
   
