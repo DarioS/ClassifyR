@@ -16,6 +16,7 @@ setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
   measurements <- measurements[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
+  
   .mixModelsTrain(measurements, splitDataset[["classes"]], ...)
 })
 

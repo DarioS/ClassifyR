@@ -1,26 +1,26 @@
-\name{DLDAinterface}
-\alias{DLDAtrainInterface}
-\alias{DLDAtrainInterface,matrix-method}
-\alias{DLDAtrainInterface,DataFrame-method}
-\alias{DLDAtrainInterface,MultiAssayExperiment-method}
-\alias{DLDApredictInterface}
-\alias{DLDApredictInterface,dlda,matrix-method}
-\alias{DLDApredictInterface,dlda,DataFrame-method}
-\alias{DLDApredictInterface,dlda,MultiAssayExperiment-method}
+\name{SVMinterface}
+\alias{SVMtrainInterface}
+\alias{SVMtrainInterface,matrix-method}
+\alias{SVMtrainInterface,DataFrame-method}
+\alias{SVMtrainInterface,MultiAssayExperiment-method}
+\alias{SVMpredictInterface}
+\alias{SVMpredictInterface,SVM,matrix-method}
+\alias{SVMpredictInterface,SVM,DataFrame-method}
+\alias{SVMpredictInterface,SVM,MultiAssayExperiment-method}
 \title{
-  An Interface for sparsediscrim Package's dlda Function
+  An Interface for e1071 Package's Support Vector Machine Classifier.
 }
 \description{
-  \code{DLDAtrainInterface} generates a trained diagonal LDA classifier and \code{DLDApredictInterface}
+  \code{SVMtrainInterface} generates a trained SVM classifier and \code{SVMpredictInterface}
   uses it to make predictions on a test dataset.
 }
 \usage{
-  \S4method{DLDAtrainInterface}{matrix}(measurements, classes, ...)
-  \S4method{DLDAtrainInterface}{DataFrame}(measurements, classes, ...)
-  \S4method{DLDAtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{DLDApredictInterface}{dlda,matrix}(model, test, ...)
-  \S4method{DLDApredictInterface}{dlda,DataFrame}(model, test, ...)
-  \S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
+  \S4method{SVMtrainInterface}{matrix}(measurements, classes, ...)
+  \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ...)
+  \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
+  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, ...)
+  \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -39,7 +39,8 @@
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
   \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the training or prediction (i.e. \code{verbose}).}
+             which does the training or prediction (i.e. \code{verbose}) or options that are used
+             by the \code{link[e1071]{svm}} function.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }
@@ -49,13 +50,13 @@
   with column name \code{"class"}.
 }
 \value{
-  For \code{DLDAtrainInterface}, a trained DLDA classifier.
-  For \code{DLDApredictInterface}, a result of type \code{list} with elements \code{class},
-  \code{scores} and \code{posterior}, as created by \code{sparsediscrim}'s \code{predict} method.
+  For \code{SVMtrainInterface}, a trained SVM classifier of type \code{svm}.
+  For \code{SVMpredictInterface}, a result of type \code{factor}, as created by \code{e1071}'s
+  \code{predict} method for trained SVM models.
 }
 \author{Dario Strbenac}
 \examples{
-  if(require(sparsediscrim))
+  if(require(e1071))
   {
     # Genes 76 to 100 have differential expression.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
@@ -64,12 +65,11 @@
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-    selected <- rownames(genesMatrix)[91:100]
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     
-    classifier <- DLDAtrainInterface(genesMatrix[selected, trainingSamples],
-                                     classes[trainingSamples])
-    DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])[["class"]]
+    classifier <- SVMtrainInterface(genesMatrix[, trainingSamples],
+                                     classes[trainingSamples], kernel = "linear")
+    SVMpredictInterface(classifier, genesMatrix[, testingSamples])
   }
 }

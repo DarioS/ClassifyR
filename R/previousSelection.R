@@ -21,7 +21,9 @@ setMethod("previousSelection", "MultiAssayExperiment",
             .previousSelection(dataTable, ...)
           })
 
-.previousSelection <- function(measurements, datasetName, classifyResult, minimumOverlapPercent = 80,
+# Classes is passed around because most other selection functions need it, so it is sent from
+# .doSelection
+.previousSelection <- function(measurements, classes, datasetName, classifyResult, minimumOverlapPercent = 80,
                                selectionName = "Previous Selection", .iteration, verbose = 3)
 {
   if(verbose == 3)

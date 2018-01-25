@@ -1,3 +1,8 @@
+setOldClass("pamrtrained")
+setOldClass("dlda")
+setOldClass("svm")
+setOldClass("multnet")
+
 setClass("TransformParams", representation(
   transform = "function",
   intermediate = "character",  
@@ -141,7 +146,7 @@ setMethod("show", c("SelectResult"),
             cat("An object of class 'SelectResult'.\n")
             cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectionName, ".\n", sep = '')
-            if(length(object@rankedFeatures) > 0) # Some methods don't use rankings.
+            if(!is.null(object@rankedFeatures[[1]])) # Some methods don't use rankings.
             {
               if(class(object@rankedFeatures[[1]]) == "list") # Must be from resampling and folding.
                 featureLength <- length(object@rankedFeatures[[1]][[1]])

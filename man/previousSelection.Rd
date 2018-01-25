@@ -38,6 +38,7 @@ for the current classification task.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
                                  c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+    colnames(genesMatrix) <- paste("Sample", 1:50)
     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
@@ -48,17 +49,22 @@ for the current classification task.
                        PredictParams(predict,
                        getClasses = function(result) result[["class"]])))
                        
-    # Genes 74 to 98 have differential expression in new dataset.
+    # Genes 50 to 74 have differential expression in new dataset.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-    newDataset <- cbind(newDataset, rbind(sapply(1:25, function(sample) rnorm(73, 9, 2)),
-                                           sapply(1:25, function(sample) rnorm(25, 14, 2)),
-                                           sapply(1:25, function(sample) rnorm(2, 14, 2))))
+    newDataset <- cbind(newDataset, rbind(sapply(1:25, function(sample) rnorm(49, 9, 2)),
+                                          sapply(1:25, function(sample) rnorm(25, 14, 2)),
+                                          sapply(1:25, function(sample) rnorm(26, 9, 2))))
+                                          
+    rownames(newDataset) <- rownames(genesMatrix)
+    colnames(newDataset) <- colnames(genesMatrix)
                                            
-    newerResult <- runTests(newDataset, classes, "Ovarian Cancer Updated", "Differential Expression",
-                       permutations = 2, fold = 2,
-                       params = list(SelectParams(previousSelection, intermediate = ".iteration",
-                                    classifyResult = result),
-                       TrainParams(dlda, TRUE, FALSE),
-                       PredictParams(predict, TRUE, getClasses = function(result) result[["class"]])))                                           
+    newerResult <- runTests(newDataset, classes, "Ovarian Cancer Updated",
+                            "Differential Expression", permutations = 2, fold = 2,
+                       params = list(SelectParams(previousSelection,
+                                     intermediate = ".iteration",
+                                     classifyResult = result),
+                       TrainParams(DLDAtrainInterface, FALSE),
+                       PredictParams(DLDApredictInterface,
+                                     getClasses = function(result) result[["class"]])))                                           
   }  
 }

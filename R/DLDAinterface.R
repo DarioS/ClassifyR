@@ -64,15 +64,14 @@ setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
   test <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
             
   if(ncol(test) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    .DLDApredictInterface(model, test, classes, ...)
+    .DLDApredictInterface(model, test, ...)
 })
 
-.DLDApredictInterface <- function(model, test, classes, verbose = 3)
+.DLDApredictInterface <- function(model, test, verbose = 3)
 {
   if(!requireNamespace("sparsediscrim", quietly = TRUE))
     stop("The package 'sparsediscrim' could not be found. Please install it.")

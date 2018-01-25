@@ -1,6 +1,3 @@
-setOldClass("pamrtrained")
-setOldClass("dlda")
-
 .splitDataAndClasses <- function(measurements, classes)
 { # DataFrame methods' class variable can be character or factor, so it's a bit involved.
   if(class(classes) == "character" && length(classes) > 1)

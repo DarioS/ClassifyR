@@ -31,6 +31,8 @@
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
   \item{...}{All parameters that \code{\link[PoiClaClu]{Classify}} can accept.}
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
+                 This function only prints progress messages if the value is 3.}    
 }
 \details{
   Data tables which consist entirely of non-integer data cannot be analysed. If \code{measurements}
@@ -49,7 +51,7 @@
     trainData <- t(readCounts[['x']])
     classes <- readCounts[['y']]
     testData <- t(readCounts[['xte']])
-    classified <- classifyInterface(trainData, classes, testData, verbose = TRUE)
+    classified <- classifyInterface(trainData, classes, testData)
     
     setNames(table(readCounts[["yte"]] == classified[["ytehat"]]),
              c("Incorrect", "Correct"))
