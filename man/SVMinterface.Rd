@@ -4,9 +4,9 @@
 \alias{SVMtrainInterface,DataFrame-method}
 \alias{SVMtrainInterface,MultiAssayExperiment-method}
 \alias{SVMpredictInterface}
-\alias{SVMpredictInterface,SVM,matrix-method}
-\alias{SVMpredictInterface,SVM,DataFrame-method}
-\alias{SVMpredictInterface,SVM,MultiAssayExperiment-method}
+\alias{SVMpredictInterface,svm,matrix-method}
+\alias{SVMpredictInterface,svm,DataFrame-method}
+\alias{SVMpredictInterface,svm,MultiAssayExperiment-method}
 \title{
   An Interface for e1071 Package's Support Vector Machine Classifier.
 }
@@ -20,7 +20,7 @@
   \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
   \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, ...)
-  \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
+  \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -34,7 +34,8 @@
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
-              \code{measurements} and the same number of features as it.}                 
+              \code{measurements} and the same number of features as it.  Also, if a \code{DataFrame},
+              the \code{class} column must be absent.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}

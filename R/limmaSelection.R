@@ -22,9 +22,6 @@ setMethod("limmaSelection", "MultiAssayExperiment",
   if(length(setdiff(targets, names(measurements))))
     stop("Some values of 'targets' are not names of 'measurements' but all must be.")                            
             
-  if(verbose == 3)
-    message("Doing feature selection.")
-            
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]

@@ -20,7 +20,7 @@
   \S4method{DLDAtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{DLDApredictInterface}{dlda,matrix}(model, test, ...)
   \S4method{DLDApredictInterface}{dlda,DataFrame}(model, test, ...)
-  \S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
+  \S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -34,7 +34,8 @@
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
-              \code{measurements} and the same number of features as it.}                 
+              \code{measurements} and the same number of features as it. Also, if a \code{DataFrame},
+              the \code{class} column must be absent.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}

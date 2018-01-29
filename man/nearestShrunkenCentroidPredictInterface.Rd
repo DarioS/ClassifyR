@@ -13,9 +13,9 @@
 }
 \arguments{
   \item{trained}{An object of class \code{pamrtrained}.}             
-  \item{test}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
-                      \code{\link{MultiAssayExperiment}} containing the training data.
-                      For a \code{matrix}, the rows are features, and the columns are samples.}
+  \item{test}{An object of the same class as \code{measurements} with no samples in common with
+              \code{measurements} used in the training stage and the same number of features as it.
+              Also, if a \code{DataFrame}, the \code{class} column must be absent.}
   \item{targets}{If \code{test} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}   

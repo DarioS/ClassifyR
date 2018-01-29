@@ -1,9 +1,9 @@
-\name{pamrtrained}
+\name{dlda}
 \docType{class}
-\alias{pamrtrained}
-\alias{pamrtrained-class}
+\alias{dlda}
+\alias{dlda-class}
 
-\title{Trained pamr Object}
+\title{Trained dlda Object}
 \description{
   Enables S4 method dispatching on it.
 }

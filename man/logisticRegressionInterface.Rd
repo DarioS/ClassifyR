@@ -4,11 +4,11 @@
 \alias{logisticRegressionTrainInterface,DataFrame-method}
 \alias{logisticRegressionTrainInterface,MultiAssayExperiment-method}
 \alias{logisticRegressionPredictInterface}
-\alias{logisticRegressionPredictInterface,mlogit,matrix-method}
-\alias{logisticRegressionPredictInterface,mlogit,DataFrame-method}
-\alias{logisticRegressionPredictInterface,mlogit,MultiAssayExperiment-method}
+\alias{logisticRegressionPredictInterface,mnlogit,matrix-method}
+\alias{logisticRegressionPredictInterface,mnlogit,DataFrame-method}
+\alias{logisticRegressionPredictInterface,mnlogit,MultiAssayExperiment-method}
 \title{
-  An Interface for mlogit Package's mlogit Function
+  An Interface for mnlogit Package's mnlogit Function
 }
 \description{
   \code{logisticRegressionTrainInterface} generates a multinomial logistic regression model trained on some
@@ -19,9 +19,9 @@
   \S4method{logisticRegressionTrainInterface}{matrix}(measurements, classes, ...)
   \S4method{logisticRegressionTrainInterface}{DataFrame}(measurements, classes, ...)
   \S4method{logisticRegressionTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{logisticRegressionPredictInterface}{matrix}(model, test, ...)
-  \S4method{logisticRegressionPredictInterface}{DataFrame}(model, test, ...)
-  \S4method{logisticRegressionPredictInterface}{MultiAssayExperiment}(model, test, targets = names(measurements), ...)  
+  \S4method{logisticRegressionPredictInterface}{mnlogit,matrix}(model, test, ...)
+  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, ...)
+  \S4method{logisticRegressionPredictInterface}{mnlogit,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -33,7 +33,8 @@
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
-              \code{measurements} and the same number of features as it.}                 
+              \code{measurements} and the same number of features as it. Also, if a \code{DataFrame},
+              the \code{class} column must be absent.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
@@ -46,32 +47,27 @@
   If \code{measurements} is an object of class \code{MultiAssayExperiment}, the factor of
   sample classes must be stored in the DataFrame accessible by the \code{colData} function
   with column name \code{"class"}.
+  
+  This wrapper works with individual-specific variables. If more a complex experimental design is utilised,
+  such as a market research dataset with both individual-specific and alternative-specific variables, then
+  this wrapper is not suitable to classify it.
 }
 \value{
   For \code{logisticRegressionTrainInterface}, a fitted multinomial logistic regression model.
-  For \code{logisticRegressionPredictInterface}, a result of type \code{list} with elements \code{class},
-  \code{scores} and \code{posterior}, as created by \code{sparsediscrim}'s \code{predict} method.
+  For \code{logisticRegressionPredictInterface}, a \code{factor} vector with class predictions for
+  the samples in the test set.
 }
 \author{Dario Strbenac}
 \examples{
-  # 3 cancer types, melanoma, breast cancer, prostate cancer.
-  # 30 samples, 10 samples have each cancer type.
-  
-  cancerTypes <- c("Melanoma", "Breast Cancer", "Prostate Cancer")
-  clinical <- DataFrame(Age = rpois(30, c(rep(40,5), rep(50, 5), rep(35, 20))),
-                        Gender = factor(c(rep(c("Male", "Female"), c(5, 5)),
-                                          rep(c("Male", "Female"), c(1, 9)),
-                                          rep("Male", 10))),
-                        Cancer = factor(rep(cancerTypes, each = 10)),
-                        row.names = paste("Patient", 1:30))
-                        
-  geneExpression <- matrix(c(rnorm(30, 15, 1), # Housekeeping gene.
-                             c(rnorm(10, 12, 1), rnorm(20, 7, 1)), # High in melanoma.
-                             c(rnorm(10, 8, 1), rnorm(10, 9, 1), rnorm(10, 7, 2)), # High in breast cancer.
-                             c(rnorm(20, 10, 1), rnorm(10, 6, 2)) # Low in prostate cancer.
-                             ), ncol = 30, byrow = TRUE,
-                           dimnames = list(row = c("GAPDH", "BRAF", "FST", "GSTP1"),
-                                           column = paste("Patient", 1:30))
-                          )
-  datasetContainer <- MultiAssayExperiment(list(RNA = geneExpression), clinical)
+  if(require(mnlogit))
+  {
+    variables <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+    trainSamples <- c(1:45, 51:95, 101:145)
+    testSamples <- c(46:50, 96:100, 146:150)
+    
+    trained <- logisticRegressionTrainInterface(DataFrame(iris[, variables]),
+                                                iris[, "Species"])
+    predicted <- logisticRegressionPredictInterface(trained,
+                                         DataFrame(iris[testSamples, variables]))
+  }
 }

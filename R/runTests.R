@@ -75,7 +75,7 @@ setMethod("runTests", c("MultiAssayExperiment"),
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else if(validation == "leaveOut") # leave k out.
   {
-    testSamples <- as.data.frame(combn(nrow(measurements), leave))
+    testSamples <- as.data.frame(utils::combn(nrow(measurements), leave))
     trainingSamples <- lapply(testSamples, function(sample) setdiff(1:nrow(measurements), sample))
     results <- bpmapply(function(trainingSample, testSample, sampleNumber)
     {

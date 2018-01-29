@@ -1,6 +1,7 @@
 setOldClass("pamrtrained")
 setOldClass("dlda")
 setOldClass("svm")
+setOldClass("mnlogit")
 setOldClass("multnet")
 
 setClass("TransformParams", representation(
@@ -220,6 +221,22 @@ setMethod("show", c("ClassifyResult"),
               cat("Performance Measures: None calculated yet.\n", sep = '')
           })
 
+setGeneric("sampleNames", function(object, ...)
+{standardGeneric("sampleNames")})
+setMethod("sampleNames", c("ClassifyResult"),
+          function(object)
+          {
+            object@originalNames
+          })
+
+setGeneric("featureNames", function(object, ...)
+{standardGeneric("featureNames")})
+setMethod("featureNames", c("ClassifyResult"),
+          function(object)
+          {
+            object@originalFeatures
+          })
+
 setGeneric("predictions", function(object, ...)
 {standardGeneric("predictions")})
 setMethod("predictions", c("ClassifyResult"),
@@ -242,18 +259,6 @@ setMethod("performance", c("ClassifyResult"),
           function(object)
           {
             object@performance
-          })
-
-setMethod("sampleNames", c("ClassifyResult"),
-          function(object)
-          {
-            object@originalNames
-          })
-
-setMethod("featureNames", c("ClassifyResult"),
-          function(object)
-          {
-            object@originalFeatures
           })
 
 setGeneric("actualClasses", function(object, ...)

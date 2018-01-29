@@ -71,13 +71,11 @@ setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
           function(models, test, ...)
 {
-  splitDataset <- .splitDataAndClasses(test, classes)
-  measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
+  isNumeric <- sapply(test, is.numeric)
+  test <- test[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
-  .mixModelsTest(models, measurements, ...)
+  .mixModelsTest(models, test, ...)
 })
 
 # One or more omics datasets, possibly with clinical data.

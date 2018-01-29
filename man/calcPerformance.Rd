@@ -7,17 +7,17 @@
 \description{If \code{calcExternalPerformance} is used, such as when having a vector of known classes and a vector of predicted classes determined outside of the ClassifyR package, a single metric value is calculated. If \code{calcCVperformance} is used, annotates the results of calling \code{\link{runTests}} with one of the user-specified performance measures.
 }
 \usage{
-  \S4method{calcPerformance}{factor, factor}(actualClasses, predictedClasses,
-                                             performanceType = c("balanced error", "error", "average accuracy",
+  \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
+                                             performanceType = c("error", "balanced error", "average accuracy",
                                                                  "micro precision", "micro recall",
                                                                  "micro F1", "macro precision",
-                                                                 "macro recall", "macro F1")
-  \S4method{calcPerformance}{ClassifyResult}(result,
-                                             performanceType = c("balanced error", "error", "sample error",
+                                                                 "macro recall", "macro F1"))
+  \S4method{calcCVperformance}{ClassifyResult}(result,
+                                             performanceType = c("error", "balanced error", "sample error",
                                                                  "sample accuracy", "average accuracy",
                                                                  "micro precision", "micro recall",
                                                                  "micro F1", "macro precision",
-                                                                 "macro recall", "macro F1")
+                                                                 "macro recall", "macro F1"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -72,7 +72,7 @@
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
                            list(1:50, 1:50), list(1:5, 6:15),
                            list(predictTable), actual, list("leave", 2))
-  result <- calcPerformance(result, "balanced error") 
+  result <- calcCVperformance(result, "balanced error") 
   performance(result)
 }
 \author{Dario Strbenac}

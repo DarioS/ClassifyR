@@ -24,8 +24,8 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
     classifier to use for training.}
@@ -81,5 +81,5 @@
                     trainParams = TrainParams(fisherDiscriminant, TRUE),
                     predictParams = PredictParams(function(){},
                     getClasses = function(result) result),
-                    resubstituteParams = resubParams)
+                    resubstituteParams = resubstituteSettings)
 }

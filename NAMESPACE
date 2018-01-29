@@ -1,3 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 
-import(methods, S4Vectors, MultiAssayExperiment, BiocParallel, locfit, grid)
+import(methods, BiocParallel, locfit, grid, utils, stats)
+importFrom("S4Vectors", DataFrame, as.data.frame)
+importFrom("MultiAssayExperiment", ExperimentList, MultiAssayExperiment, wideFormat)

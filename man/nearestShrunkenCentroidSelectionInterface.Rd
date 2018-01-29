@@ -23,8 +23,8 @@
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{trained}{The output of \code{\link{nearestShrunkenCentroidTrainInterface}},
                       which is identical to the output of \code{\link[pamr]{pamr.listgenes}}.}
-  \item{...}{Extra arguments passed to \code{\link[pamr]{pamr.listgenes}} or parameters not used by the
-             \code{\link{matrix}} method that are passed to the \code{\link{ExpressionSet}} method.}
+  \item{...}{Extra arguments passed to \code{\link[pamr]{pamr.listgenes}} or unused variables by
+             the three top-level methods passed to the internal method which does the feature selection.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}

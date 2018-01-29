@@ -12,7 +12,8 @@
                                           absolute = TRUE, verbose = 3)
   \S4method{subtractFromLocation}{DataFrame}(measurements, training, location = c("mean", "median"),
                                              absolute = TRUE, verbose = 3)
-  \S4method{subtractFromLocation}{MultiAssayExperiment}(measurements, training, location = c("mean", "median"),
+  \S4method{subtractFromLocation}{MultiAssayExperiment}(measurements, training, targets = names(measurements),
+                                                        location = c("mean", "median"),
                                                         absolute = TRUE, verbose = 3)
 }
 \arguments{

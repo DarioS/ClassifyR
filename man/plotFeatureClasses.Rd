@@ -7,8 +7,8 @@
 \description{Allows the visualisation of measurements in the dataset.}
 \usage{
   \S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
-  \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, ...)
-  \S4method{plotFeatureClasses}{DataFrame}(measurements, targets, ...)
+  \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL, ...)
+  \S4method{plotFeatureClasses}{MultiAssayExperiment}(measurements, targets, groupBy = NULL, ...)
 }
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
@@ -44,7 +44,7 @@
                            types of plot(s) to draw. The default value is \code{"both"}, which draws a
                            density plot and also a stip chart below the density plot. Other options
                            are \code{"density"} for drawing only a density plot and
-                           \code{"stripchart"} for drawing only a strip chart.
+                           \code{"stripchart"} for drawing only a strip chart.}
   \item{measurementLimits}{The minimum and maximum expression values to plot. Default: \code{NULL}.
                            By default, the limits are automatically computed from the data values.}
   \item{lineWidth}{Numeric value that alters the line thickness for density plots. Default: 1.}
@@ -64,7 +64,8 @@
   \item{xLabelPositions}{Either "auto" or a vector of values. The positions of labels on the x-axis.
                          If "auto", the placement of labels is automatically calculated.}
   \item{yLabelPositions}{Either "auto" or a vector of values. The positions of labels on the y-axis.
-                         If "auto", the placement of labels is automatically calculated.}                 \item{fontSizes}{A vector of length 5. The first number is the size of the title.
+                         If "auto", the placement of labels is automatically calculated.}
+  \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}

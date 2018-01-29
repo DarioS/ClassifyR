@@ -1,9 +1,9 @@
-\name{pamrtrained}
+\name{svm}
 \docType{class}
-\alias{pamrtrained}
-\alias{pamrtrained-class}
+\alias{svm}
+\alias{svm-class}
 
-\title{Trained pamr Object}
+\title{Trained svm Object}
 \description{
   Enables S4 method dispatching on it.
 }

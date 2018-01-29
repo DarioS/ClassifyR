@@ -43,7 +43,7 @@ function(measurements, targets = names(measurements), ...)
   oneClass <- classes == levels(classes)[1]
   otherClass <- classes == levels(classes)[2]
   KSdistance <- apply(measurements, 2, function(featureColumn)
-                      ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
+                      stats::ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
   .pickFeatures(measurements, classes, datasetName,

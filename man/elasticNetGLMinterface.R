@@ -7,6 +7,7 @@ setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measureme
   .elasticNetGLMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
+# Clinical data only.
 setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, ...)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -15,6 +16,7 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
   .elasticNetGLMtrainInterface(measurements, splitDataset[["classes"]], ...)
 })
 
+# One or more omics datasets, possibly with clinical data.
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
 function(measurements, targets = names(measurements), ...)
 {
@@ -38,6 +40,7 @@ function(measurements, targets = names(measurements), ...)
   glmnet::glmnet(as.matrix(measurements), classes, family = "multinomial", ...)
 }
 
+# Matrix of numeric measurements.
 setGeneric("elasticNetGLMpredictInterface", function(model, test, ...)
 {standardGeneric("elasticNetGLMpredictInterface")})
 
@@ -47,6 +50,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
   .elasticNetGLMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
+# Clinical data only.
 setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, ...)
 {
   splitDataset <- .splitDataAndClasses(test, classes)
@@ -55,6 +59,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   .elasticNetGLMpredictInterface(model, test, ...)
 })
 
+# One or more omics datasets, possibly with clinical data.
 setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {

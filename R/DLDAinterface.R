@@ -51,18 +51,16 @@ setMethod("DLDApredictInterface", c("dlda", "matrix"),
 
 setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, ...)
 {
-  splitDataset <- .splitDataAndClasses(test, classes)
-  testMatrix <- splitDataset[["measurements"]]
-  isNumeric <- sapply(testMatrix, is.numeric)
-  testMatrix <- testMatrix[, isNumeric, drop = FALSE]
+  isNumeric <- sapply(test, is.numeric)
+  test <- test[, isNumeric, drop = FALSE]
   
-  .DLDApredictInterface(model, testMatrix, ...)
+  .DLDApredictInterface(model, test, ...)
 })
 
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(test, targets)
   test <- tablesAndClasses[["dataTable"]]
             
   if(ncol(test) == 0)

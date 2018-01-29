@@ -1,9 +1,9 @@
-\name{pamrtrained}
+\name{multnet}
 \docType{class}
-\alias{pamrtrained}
-\alias{pamrtrained-class}
+\alias{multnet}
+\alias{multnet-class}
 
-\title{Trained pamr Object}
+\title{Trained multnet Object}
 \description{
   Enables S4 method dispatching on it.
 }

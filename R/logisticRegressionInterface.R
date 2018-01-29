@@ -7,77 +7,78 @@ setMethod("logisticRegressionTrainInterface", "matrix", # Matrix of numeric meas
   .logisticRegressionTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
+# Clinical data only.
 setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements, classes, ...)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-
-  .logisticRegressionTrainInterface(measurements, splitDataset[["classes"]], ...)
+  .logisticRegressionTrainInterface(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
 })
 
+# One or more omics datasets, possibly with clinical data.
 setMethod("logisticRegressionTrainInterface", "MultiAssayExperiment",
 function(measurements, targets = names(measurements), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   
-  if(ncol(measurements) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    .logisticRegressionTrainInterface(measurements, classes, ...)
+  .logisticRegressionTrainInterface(measurements, classes, ...)
 })
 
-.logisticRegressionTrainInterface <- function(measurements, classes, verbose = 3)
+.logisticRegressionTrainInterface <- function(measurements, classes, ..., verbose = 3)
 {
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  if(!requireNamespace("mlogit", quietly = TRUE))
+    stop("The package 'mlogit' could not be found. Please install it.")
+  if(!requireNamespace("mnlogit", quietly = TRUE))
+    stop("The package 'mnlogit' could not be found. Please install it.")
   if(verbose == 3)
-    message("Fitting DLDA classifier to data.")
+    message("Fitting logistic regression classifier to data.")
 
-  sparsediscrim::dlda(as.matrix(measurements), classes)
+  # Reshape data for input into the fitting function.
+  measuredVariables <- colnames(measurements)
+  measurements[, "class"] <- classes
+  reshaped <- mlogit::mlogit.data(as.data.frame(measurements), choice = "class", shape = "wide")
+  modelFormula <- formula(paste("class ~ 1 |", paste(measuredVariables, collapse = '+'), "| 1"))
+  
+  mnlogit(modelFormula, data = reshaped, ...)
 }
 
 setGeneric("logisticRegressionPredictInterface", function(model, test, ...)
 {standardGeneric("logisticRegressionPredictInterface")})
 
-setMethod("logisticRegressionPredictInterface", c("dlda", "matrix"),
+# Matrix of numeric measurements.
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "matrix"),
           function(model, test, ...)
 {
   .logisticRegressionPredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("logisticRegressionPredictInterface", c("dlda", "DataFrame"), function(model, test, ...)
+# Clinical data only.
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, ...)
 {
-  splitDataset <- .splitDataAndClasses(test, classes)
-  testMatrix <- splitDataset[["measurements"]]
-  isNumeric <- sapply(testMatrix, is.numeric)
-  testMatrix <- testMatrix[, isNumeric, drop = FALSE]
-  
-  .logisticRegressionPredictInterface(model, testMatrix, ...)
+  .logisticRegressionPredictInterface(model, test, ...)
 })
 
-setMethod("logisticRegressionPredictInterface", c("dlda", "MultiAssayExperiment"),
+# One or more omics datasets, possibly with clinical data.
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  test <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-            
-  if(ncol(test) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    .logisticRegressionPredictInterface(model, test, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(test, targets, restrict = NULL)
+  .logisticRegressionPredictInterface(model, tablesAndClasses[["dataTable"]], ...)
 })
 
-.logisticRegressionPredictInterface <- function(model, test, classes, verbose = 3)
+.logisticRegressionPredictInterface <- function(model, test, verbose = 3)
 {
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  if(!requireNamespace("mlogit", quietly = TRUE))
+    stop("The package 'mlogit' could not be found. Please install it.")
+  if(!requireNamespace("mnlogit", quietly = TRUE))
+    stop("The package 'mnlogit' could not be found. Please install it.")
   if(verbose == 3)
-    message("Predicting classes using trained DLDA classifier.")
+    message("Predicting classes using trained logistic regression classifier.")
   
-  predict(model, as.matrix(test))
+  # Reshape data for input into the predicting function.
+  measuredVariables <- colnames(test)
+  #reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = rep("setosa", 15), shape = "wide")
+  
+  #predict(model, reshaped, probability = FALSE)
 }

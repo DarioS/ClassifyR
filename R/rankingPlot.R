@@ -23,7 +23,7 @@ setMethod("rankingPlot", "list",
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")            
             
-  theme_set(theme_classic() + theme(panel.border = element_rect(fill = NA)))            
+  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
   comparison <- match.arg(comparison)
   lineColourVariable <- match.arg(lineColourVariable)
   pointTypeVariable <- match.arg(pointTypeVariable)

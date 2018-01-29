@@ -21,7 +21,7 @@ setMethod("performancePlot", "list",
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
   
-  theme_set(theme_classic() + theme(panel.border = element_rect(fill = NA)))
+  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   xVariable <- match.arg(xVariable)
   boxFillColouring <- match.arg(boxFillColouring)
   boxLineColouring <- match.arg(boxLineColouring)

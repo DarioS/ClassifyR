@@ -66,6 +66,9 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
   measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
+  mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
+  colnames(mcols(measurements))[1] <- "dataset"
+  mcols(measurements)[, "feature"] <- ifelse(is.na(mcols(measurements)[, "rowname"]), mcols(measurements)[, "colname"], mcols(measurements)[, "rowname"])
   .plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, ...)
 })
 

@@ -37,7 +37,7 @@ function(measurements, targets = names(measurements), ...)
   if(verbose == 3)
     message("Fitting SVM classifier to data.")
 
-  e1071::svm(measurements, classes, ...)
+  svm(measurements, classes, ...)
 }
 
 setGeneric("SVMpredictInterface", function(model, test, ...)

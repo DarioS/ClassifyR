@@ -1,6 +1,7 @@
 \name{edgeRselection}
 \alias{edgeRselection}
 \alias{edgeRselection,matrix-method}
+\alias{edgeRselection,DataFrame-method}
 \alias{edgeRselection,MultiAssayExperiment-method}
 \title{Feature Selection Based on Differential Expression for Count Data}
 \description{Performs a differential expression analysis between classes and chooses

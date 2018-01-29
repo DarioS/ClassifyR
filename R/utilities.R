@@ -32,7 +32,10 @@
 
   measurements <- measurements[, , targets]
   dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
-  mcols(dataTable)[, "dataset"] <- gsub("colData", "clincal", mcols(dataTable)[, "dataset"])
+  mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
+  colnames(mcols(dataTable))[1] <- "dataset"
+  mcols(dataTable)[, "feature"] <- ifelse(is.na(mcols(dataTable)[, "rowname"]), mcols(dataTable)[, "colname"], mcols(dataTable)[, "rowname"])
+  mcols(dataTable) <- mcols(dataTable)[, c(1, 4)] # Dataset and variable name within the dataset.
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
   else
@@ -360,7 +363,7 @@
   
   predicted <- mapply(function(model, data, variety)
   {
-    if(!grepl("{}", paste(capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
+    if(!grepl("{}", paste(utils::capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
     {
       testMeasurements <- data[testing, ]
       

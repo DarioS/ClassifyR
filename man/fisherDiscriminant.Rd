@@ -13,7 +13,7 @@ for the test set.
   \S4method{fisherDiscriminant}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
-  {\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                        \code{\link{MultiAssayExperiment}} containing the training data.
                        For a \code{matrix}, the rows are features, and the columns are samples.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length

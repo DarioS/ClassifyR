@@ -12,7 +12,7 @@ setMethod("distribution", "ClassifyResult",
     stop("The package 'ggplot2' could not be found. Please install it.")
             
   if(plot == TRUE)
-    theme_set(theme_classic() + theme(panel.border = element_rect(fill = NA)))
+    ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
             
   dataType <- match.arg(dataType)
   plotType <- match.arg(plotType)

@@ -4,6 +4,10 @@
 \alias{ClassifyResult-class}
 \alias{ClassifyResult,character,character,character,character,character-method}
 \alias{show,ClassifyResult-method}
+\alias{sampleNames}
+\alias{sampleNames,ClassifyResult-method}
+\alias{featureNames}
+\alias{featureNames,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
 \alias{actualClasses}
@@ -69,6 +73,10 @@
   \code{result} is a \code{ClassifyResult} object.
 
   \describe{
+  \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the dataset.}}
+  \describe{
+  \item{\code{featureNames(result)}}{Returns a vector of features present in the dataset.}}
+  \describe{
   \item{\code{predictions(result)}}{Returns a \code{list} of \code{data.frame}.
      Each data.frame contains columns \code{sample}, \code{predicted}, and \code{actual}. For
      hold-out validation, only one data.frame is returned of all of the concatenated
@@ -94,14 +102,19 @@
   if(require(curatedOvarianData) && require(sparsediscrim))
   {
     data(TCGA_eset)
-    badOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "deceased" & pData(TCGA_eset)[, "days_to_death"] <= 365)
-    goodOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "living" & pData(TCGA_eset)[, "days_to_death"] >= 365 * 5)
+    isDeceased <- pData(TCGA_eset)[, "vital_status"] == "deceased"
+    less1year <- pData(TCGA_eset)[, "days_to_death"] <= 365
+    badOutcome <- which(isDeceased & less1year)
+    isAlive <- pData(TCGA_eset)[, "vital_status"] == "living"
+    more5years <- pData(TCGA_eset)[, "days_to_death"] >= 365 * 5
+    goodOutcome <- which(isAlive & more5years)
     TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
-    classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
-    pData(TCGA_eset)[, "class"] <- classes
-    results <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", permutations = 2, folds = 2)
-    show(results)
-    predictions(results)
-    actualClasses(results)
+    classes <- factor(rep(c("Poor", "Good"),
+                      c(length(badOutcome), length(goodOutcome))))
+    
+    # Two permuted datasets, each partitioned into two parts.
+    classified <- runTests(exprs(TCGA_eset), classes, "Ovarian Cancer",
+                           "Differential Expression", permutations = 2, fold = 2)
+    class(classified)
   }
 }

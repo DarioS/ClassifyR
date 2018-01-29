@@ -71,5 +71,4 @@
                predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
                resubstituteParams = resubstituteSettings)
-  }
 }

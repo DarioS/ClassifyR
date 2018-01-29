@@ -10,10 +10,11 @@ Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
 biocViews: Classification, Survival
 Depends: R (>= 3.4.0), methods, S4Vectors, MultiAssayExperiment, BiocParallel
-Imports: locfit, grid
+Imports: locfit, grid, utils
 Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
         BiocStyle, pamr, sparsediscrim, PoiClaClu, curatedOvarianData,
-        parathyroidSE, knitr, klaR, gtable, scales, e1071, rmarkdown, IRanges
+        parathyroidSE, knitr, gtable, scales, e1071, rmarkdown, IRanges,
+        randomForest, robustbase, mlogit, mnlogit, glmnet
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
              and prediction. The requirements of variable types and names are
