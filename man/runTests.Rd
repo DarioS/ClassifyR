@@ -10,7 +10,13 @@
 }
 \usage{
   \S4method{runTests}{matrix}(measurements, classes, ...)
-  \S4method{runTests}{DataFrame}(measurements, classes, ...)
+  \S4method{runTests}{DataFrame}(measurements, classes, datasetName, classificationName,
+                      validation = c("permute", "leaveOut", "fold"),
+                      permutePartition = c("fold", "split"),
+                      permutations = 100, percent = 25, folds = 5, leave = 2,
+                      seed, parallelParams = bpparam(),
+                      params = list(SelectParams(), TrainParams(), PredictParams()),
+                      verbose = 1)
   \S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -25,8 +31,8 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the classification.}        
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}        
   \item{datasetName}{A name associated with the dataset used.}
   \item{classificationName}{A name associated with the classification.}
   \item{validation}{Default: \code{"permute"}. \code{"permute"} for repeated permuting.

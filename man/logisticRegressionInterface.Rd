@@ -17,10 +17,10 @@
 }
 \usage{
   \S4method{logisticRegressionTrainInterface}{matrix}(measurements, classes, ...)
-  \S4method{logisticRegressionTrainInterface}{DataFrame}(measurements, classes, ...)
+  \S4method{logisticRegressionTrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{logisticRegressionTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{logisticRegressionPredictInterface}{mnlogit,matrix}(model, test, ...)
-  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, ...)
+  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, verbose = 3)
   \S4method{logisticRegressionPredictInterface}{mnlogit,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -38,8 +38,10 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the training or prediction (i.e. \code{verbose}).}
+  \item{model}{A fitted model as returned by \code{logisticRegressionTrainInterface}.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method or optional settings that are passed
+             to \code{\link{mnlogit}}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }

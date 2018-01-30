@@ -9,7 +9,9 @@
        }
 \usage{
   \S4method{KullbackLeiblerSelection}{matrix}(measurements, classes, ...)
-  \S4method{KullbackLeiblerSelection}{DataFrame}(measurements, classes, ...)
+  \S4method{KullbackLeiblerSelection}{DataFrame}(measurements, classes, datasetName,
+                                trainParams, predictParams, resubstituteParams, ...,
+                                selectionName = "Kullback-Leibler Divergence", verbose = 3)
   \S4method{KullbackLeiblerSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -24,9 +26,9 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection or options which are accepted by the function
-             \code{\link{getLocationsAndScales}}.}                 
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method or options which are
+             accepted by the function \code{\link{getLocationsAndScales}}.}                 
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}

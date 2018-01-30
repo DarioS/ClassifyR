@@ -4,11 +4,14 @@ setGeneric("likelihoodRatioSelection", function(measurements, ...)
 # Matrix of numeric measurements.
 setMethod("likelihoodRatioSelection", "matrix", function(measurements, classes, ...)
 {
-  .likelihoodRatioSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  likelihoodRatioSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data only.
-          function(measurements, classes, ...)
+          function(measurements, classes, datasetName,
+                   trainParams, predictParams, resubstituteParams,
+                   alternative = c(location = "different", scale = "different"),
+                   ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -16,28 +19,7 @@ setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data only.
   measurements <- measurements[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
-  .likelihoodRatioSelection(measurements, splitDataset[["classes"]], ...)
-})
 
-# One or more omics datasets, possibly with clinical data.
-setMethod("likelihoodRatioSelection", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-
-  if(ncol(dataTable) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-  .likelihoodRatioSelection(dataTable, classes, ...)
-})
-
-.likelihoodRatioSelection <- function(measurements, classes, datasetName,
-                                      trainParams, predictParams, resubstituteParams,
-                                      alternative = c(location = "different", scale = "different"),
-                                      ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
-{
   if(verbose == 3)
     message("Selecting features by likelihood ratio ranking.")
   
@@ -67,4 +49,18 @@ setMethod("likelihoodRatioSelection", "MultiAssayExperiment",
   .pickFeatures(measurements, classes, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)
-}
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("likelihoodRatioSelection", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+
+  if(ncol(dataTable) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+  likelihoodRatioSelection(dataTable, classes, ...)
+})

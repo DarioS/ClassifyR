@@ -9,7 +9,9 @@
 }
 \usage{
   \S4method{bartlettSelection}{matrix}(measurements, classes, ...)
-  \S4method{bartlettSelection}{DataFrame}(measurements, classes, ...)
+  \S4method{bartlettSelection}{DataFrame}(measurements, classes, datasetName,
+                               trainParams, predictParams, resubstituteParams,
+                               selectionName = "Bartlett Test", verbose = 3)
   \S4method{bartlettSelection}{MultiAssayExperiment}(measurements, targets, ...)
 }
 \arguments{

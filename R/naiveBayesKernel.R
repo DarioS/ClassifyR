@@ -4,44 +4,27 @@ setGeneric("naiveBayesKernel", function(measurements, ...)
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)
 {
-.naiveBayesKernel(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
-                  classes,
-                  DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+  naiveBayesKernel(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
+                   classes,
+                   DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
 })
 
 setMethod("naiveBayesKernel", "DataFrame", 
-          function(measurements, classes, test, ...)
+          function(measurements, classes, test,
+                   densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
+                   weighted = c("both", "unweighted", "weighted"),
+                   weight = c("all", "height difference", "crossover distance", "sum differences"),
+                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
+  trainingMatrix <- splitDataset[["measurements"]]
+  isNumeric <- sapply(trainingMatrix, is.numeric)
+  trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
   isNumeric <- sapply(test, is.numeric)
   testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  .naiveBayesKernel(trainingMatrix, splitDataset[["classes"]], testingMatrix, ...)
-})
-
-setMethod("naiveBayesKernel", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingMatrix <- .MAEtoWideTable(test, targets)
-            
-  .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  .naiveBayesKernel(trainingMatrix, classes, testingMatrix, ...)
-})
-
-.naiveBayesKernel <- function(measurements, classes, test, densityFunction = density,
-                              densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)),
-                                                       to = expression(max(featureValues))),
-                              weighted = c("both", "unweighted", "weighted"),
-                              weight = c("all", "height difference", "crossover distance", "sum differences"),
-                              minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
-{
+  
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
@@ -177,7 +160,7 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
       }))
     }))
   }, allPosteriors, weightExpanded, allDistances, SIMPLIFY = FALSE))
-  
+
   # Remove combinations of unweighted voting and weightings.
   testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
   {
@@ -194,18 +177,32 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
   if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
-  
-  varietyFactor <- factor(do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ',')))
-  varietyFactor <- gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor)
-  resultsList <- by(testPredictions, varietyFactor, function(predictionSet)
+
+  varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
+  varietyFactor <- factor(gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor))
+  resultsList <- lapply(levels(varietyFactor), function(variety)
   {
-    switch(returnType, label = predictionSet[, "class"],
-           score = predictionSet[, "score"],
-           both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
-  }, simplify = FALSE)
+    varietyPredictions <- subset(testPredictions, varietyFactor == variety)
+    switch(returnType, label = varietyPredictions[, "class"],
+           score = varietyPredictions[, "score"],
+           both = data.frame(label = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+  })
+  names(resultsList) <- levels(varietyFactor)
   
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]
   else
-    resultsList  
-}
+    resultsList    
+})
+
+setMethod("naiveBayesKernel", "MultiAssayExperiment", 
+          function(measurements, test, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  testingMatrix <- .MAEtoWideTable(test, targets)
+            
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  naiveBayesKernel(trainingMatrix, classes, testingMatrix, ...)
+})

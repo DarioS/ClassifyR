@@ -9,20 +9,26 @@ for the current classification task.
 }
 \usage{
   \S4method{previousSelection}{matrix}(measurements, ...)
-  \S4method{previousSelection}{DataFrame}(measurements, ...)
+  \S4method{previousSelection}{DataFrame}(measurements, classes, datasetName,
+                               classifyResult, minimumOverlapPercent = 80,
+                               selectionName = "Previous Selection", .iteration, verbose = 3)
   \S4method{previousSelection}{MultiAssayExperiment}(measurements, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection.}  
+  \item{classes}{Do not specify this variable. It is ignored and only used to create consistency of formal
+                 parameters with other feature selection methods.}                      
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}  
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{classifyResult}{An existing classification result from which to take the feature selections from.}
   \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
                                current dataset, then the selection stops with an error.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
+  \item{.iteration}{Do not specify this variable. It is set by \code{\link{runTests}} if this function
+                    is being repeatedly called by \code{runTests}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
     This function only prints progress messages if the value is 3.}
 }
@@ -65,6 +71,7 @@ for the current classification task.
                                      classifyResult = result),
                        TrainParams(DLDAtrainInterface, FALSE),
                        PredictParams(DLDApredictInterface,
-                                     getClasses = function(result) result[["class"]])))                                           
+                                     getClasses = function(result) result[["class"]])))
+    newerResult                                     
   }  
 }

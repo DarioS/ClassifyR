@@ -9,7 +9,9 @@
        }
 \usage{
   \S4method{limmaSelection}{matrix}(measurements, classes, ...)
-  \S4method{limmaSelection}{DataFrame}(measurements, classes, ...)
+  \S4method{limmaSelection}{DataFrame}(measurements, classes, datasetName,
+                                       trainParams, predictParams, resubstituteParams, ...,
+                                       selectionName = "Moderated t-test", verbose = 3)
   \S4method{limmaSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
@@ -21,9 +23,9 @@
                  is a \code{MultiAssayExperiment} object.}
   \item{targets}{Names of data tables to be combined into a single table and
                  used in the analysis.}                  
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection or optional settings that are
-            passed to \code{\link[limma]{lmFit}}.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method or optional settings that are
+            passed to \code{\link[pamr]{pamr.predict}}.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}

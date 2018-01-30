@@ -25,6 +25,9 @@
   \item{location}{Character. Either "mean" or "median".}
   \item{absolute}{Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute values of the differences
                   are returned. Otherwise, they are signed.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}                  
   \item{verbose}{Default: 3. A progress message is shown if this value is 3.}
 }
 \details{

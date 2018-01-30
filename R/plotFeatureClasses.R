@@ -4,18 +4,27 @@ setGeneric("plotFeatureClasses", function(measurements, ...)
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {
   if(missing(targets))
-    stop("'targets' must be specified by the user.")
+    stop("'targets' must be specified.")
   
-  .plotFeatureClasses(DataFrame(t(measurements[targets, , drop = FALSE]), check.names = FALSE), classes, ...)
+  plotFeatureClasses(DataFrame(t(measurements[targets, , drop = FALSE]), check.names = FALSE),
+                     classes, targets, ...)
 })
 
-setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL, ...)
+setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
+                                groupingName = NULL, whichNumericPlots = c("both", "density", "stripchart"),
+                                measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
+                                xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
+                                showXtickLabels = TRUE, showYtickLabels = TRUE,
+                                xLabelPositions = "auto", yLabelPositions = "auto",
+                                fontSizes = c(24, 16, 12, 12, 12),
+                                colours = c("#3F48CC", "#880015"),
+                                showDatasetName = TRUE, plot = TRUE)
 {
   if(missing(targets))
-    stop("'targets' must be specified by the user.")
+    stop("'targets' must be specified.")
   
   groupingName <- NULL
-  if(!is.null(groupBy))
+  if(is.character(groupBy))
   {
     groupingName <- groupBy
     groupBy <- measurements[, groupBy]
@@ -25,64 +34,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   }
 
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  .plotFeatureClasses(splitDataset[["measurements"]][, targets, drop = FALSE],
-                      splitDataset[["classes"]],
-                      groupBy = groupBy, groupingName = groupingName, ...)
-})
-
-setMethod("plotFeatureClasses", "MultiAssayExperiment",
-                                function(measurements, targets, groupBy = NULL, ...)
-{
-  if(missing(targets))
-    stop("'targets' must be specified by the user.")
-  if(!all(targets[, 1] %in% c(names(measurements), "clinical")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
-                                
-  assaysTargets <- targets[targets[, 1] != "clinical", ]
-  sampleInfoTargets <- targets[targets[, 1] == "clinical", ]
-  measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
-  classes <- colData(measurements)[, "class"]
- 
-  groupingName <- NULL
-  if(!is.null(groupBy))
-  {
-    groupingName <- groupBy[2]
-    groupingTable <- groupBy[1]
-    if(groupingTable == "clinical")
-    {
-      groupBy <- colData(measurements)[, groupingName]
-
-    } else { # One of the omics tables. Include table name.
-      groupBy <- measurements[groupingName, , groupingTable]
-      groupingName <- paste(groupingName, groupingTable)
-    }
-    levelsOrder <- levels(groupBy)
-    groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
-                    facets = {groupText <- paste(groupingName, "is", groupBy)
-                             factor(groupText, levels = paste(groupingName, "is", levelsOrder))}
-                    )
-  }
-
-  colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
-  measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
-  measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
-  mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
-  colnames(mcols(measurements))[1] <- "dataset"
-  mcols(measurements)[, "feature"] <- ifelse(is.na(mcols(measurements)[, "rowname"]), mcols(measurements)[, "colname"], mcols(measurements)[, "rowname"])
-  .plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, ...)
-})
-
-.plotFeatureClasses <- function(measurements, classes = NULL, varInfo = NULL, groupBy = NULL,
-                                groupingName = NULL,
-                                whichNumericPlots = c("both", "density", "stripchart"),
-                                measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
-                                xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
-                                showXtickLabels = TRUE, showYtickLabels = TRUE,
-                                xLabelPositions = "auto", yLabelPositions = "auto",
-                                fontSizes = c(24, 16, 12, 12, 12),
-                                colours = c("#3F48CC", "#880015"),
-                                showDatasetName = TRUE, plot = TRUE)
-{
+  measurements <- splitDataset[["measurements"]]
+  classes <- splitDataset[["classes"]]
+  
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
   if(!requireNamespace("grid", quietly = TRUE))
@@ -96,7 +50,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
     xLabelPositions <- ggplot2::waiver()
   if(yLabelPositions[1] == "auto")
     yLabelPositions <- ggplot2::waiver()
-
+  
   invisible(lapply(seq_along(measurements), function(columnIndex)
   {
     plotData <- data.frame(measurement = measurements[, columnIndex], class = classes)
@@ -106,14 +60,14 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
       plotData[, "facets grouping"] <- groupBy[["facets"]]
     }
 
-    if(is.null(varInfo))
+    if(is.null(mcols(measurements)))
     {
       featureText <- colnames(measurements)[columnIndex]
     } else {
-      featureText <- varInfo[columnIndex, "feature"]
+      featureText <- mcols(measurements)[columnIndex, "feature"]
       if(showDatasetName == TRUE)
       {
-        featureText <- paste(featureText, paste('(', varInfo[columnIndex, "dataset"], ')', sep = ''))
+        featureText <- paste(featureText, paste('(', mcols(measurements)[columnIndex, "dataset"], ')', sep = ''))
       }
     }
     
@@ -216,5 +170,47 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
         print(barPlot)
       barPlot
     }
-  }))
-}
+  }))  
+})
+
+setMethod("plotFeatureClasses", "MultiAssayExperiment",
+                                function(measurements, targets, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
+{
+  if(missing(targets))
+    stop("'targets' must be specified by the user.")
+  if(!all(targets[, 1] %in% c(names(measurements), "clinical")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+                                
+  assaysTargets <- targets[targets[, 1] != "clinical", ]
+  sampleInfoTargets <- targets[targets[, 1] == "clinical", ]
+  measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
+  classes <- colData(measurements)[, "class"]
+
+  if(!is.null(groupBy))
+  {
+    if(is.null(groupingName))
+      groupingName <- groupBy[2]
+    groupingTable <- groupBy[1]
+    if(groupingTable == "clinical")
+    {
+      groupBy <- colData(measurements)[, groupBy[2]]
+    } else { # One of the omics tables.
+      groupBy <- measurements[groupBy[2], , groupingTable]
+      if(showDatasetName == TRUE)
+        groupingName <- paste(groupingName, groupingTable)
+    }
+    levelsOrder <- levels(groupBy)
+    groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
+                    facets = {groupText <- paste(groupingName, "is", groupBy)
+                             factor(groupText, levels = paste(groupingName, "is", levelsOrder))}
+                    )
+  }
+
+  colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
+  measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
+  measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
+  mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(measurements)[, "sourceName"])
+  colnames(mcols(measurements))[1] <- "dataset"
+  if(is.na(mcols(measurements)[, "rowname"])) mcols(measurements)[, "feature"] <- mcols(measurements)[, "colname"] else mcols(measurements)[, "feature"] <- mcols(measurements)[, "rowname"]
+  plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
+})

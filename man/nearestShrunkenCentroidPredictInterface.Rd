@@ -8,7 +8,7 @@
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
   \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,DataFrame}(trained, test, ...)  
+  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,DataFrame}(trained, test, ..., verbose = 3)  
   \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
@@ -19,13 +19,15 @@
   \item{targets}{If \code{test} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}   
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the prediction or extra arguments passed to passed to \code{\link[pamr]{pamr.predict}}.} 
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method or optional settings that are
+            passed to \code{\link[pamr]{pamr.predict}}.} 
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
 \details{
   This function is an interface between the ClassifyR framework and \code{\link[pamr]{pamr.predict}}.
+  It selects the highest threshold that gives the minimum error rate in the training data.
 }
 \value{
   A factor of predicted classes for the test data.

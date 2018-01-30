@@ -4,39 +4,18 @@ setGeneric("edgeRselection", function(counts, ...)
 setMethod("edgeRselection", "matrix", # Matrix of integer counts.
           function(counts, classes, ...)
 {
-  .edgeRselection(DataFrame(t(counts), check.names = FALSE), classes, ...)
+  edgeRselection(DataFrame(t(counts), check.names = FALSE), classes, ...)
 })
 
 # DataFrame of counts, likely created by runTests or runTest.
-setMethod("edgeRselection", "DataFrame", function(counts, classes, ...)
-{
-  .edgeRselection(counts, classes, ...)
-})
-
-# One or more omics datasets, possibly with clinical data.
-setMethod("edgeRselection", "MultiAssayExperiment",
-          function(counts, targets = NULL, ...)
-{
-  if(!requireNamespace("edgeR", quietly = TRUE))
-    stop("The package 'edgeR' could not be found. Please install it.")
-  if(is.null(targets))
-    stop("'targets' must be specified but was not.")
-  if(length(setdiff(targets, names(counts))))
-    stop("Some values of 'targets' are not names of 'counts' but all must be.")            
-
-  tablesAndClasses <- .MAEtoWideTable(counts, targets, "integer")
-  countsTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  .edgeRselection(countsTable, classes, ...)
-})
-
-.edgeRselection <- function(counts, classes, datasetName,
-                            normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-                            trainParams, predictParams, resubstituteParams,
-                            selectionName = "edgeR LRT", verbose = 3)
+setMethod("edgeRselection", "DataFrame",
+          function(counts, classes, datasetName,
+                   normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
+                   trainParams, predictParams, resubstituteParams,
+                   selectionName = "edgeR LRT", verbose = 3)
 {
   if(verbose == 3)
-    message("Doing feature selection.")
+    message("Doing edgeR LRT feature selection.")
   
   # DGEList stores features as rows and samples as columns.          
   countsList <- edgeR::DGEList(t(as.matrix(counts)), group = classes)
@@ -63,5 +42,22 @@ setMethod("edgeRselection", "MultiAssayExperiment",
   
   .pickFeatures(counts, classes, datasetName,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
-}
+                orderedFeatures, selectionName, verbose)    
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("edgeRselection", "MultiAssayExperiment",
+          function(counts, targets = NULL, ...)
+{
+  if(!requireNamespace("edgeR", quietly = TRUE))
+    stop("The package 'edgeR' could not be found. Please install it.")
+  if(is.null(targets))
+    stop("'targets' must be specified but was not.")
+  if(length(setdiff(targets, names(counts))))
+    stop("Some values of 'targets' are not names of 'counts' but all must be.")            
+
+  tablesAndClasses <- .MAEtoWideTable(counts, targets, "integer")
+  countsTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  edgeRselection(countsTable, classes, ...)
+})

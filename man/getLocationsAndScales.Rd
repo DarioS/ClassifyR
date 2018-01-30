@@ -8,7 +8,8 @@
 }
 \usage{
   \S4method{getLocationsAndScales}{matrix}(measurements, ...)
-  \S4method{getLocationsAndScales}{DataFrame}(measurements, ...)
+  \S4method{getLocationsAndScales}{DataFrame}(measurements, location = c("mean", "median"),
+                                              scale = c("SD", "MAD", "Qn"))
   \S4method{getLocationsAndScales}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -18,12 +19,10 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which calculates the locations and scales.}  
-  \item{location}{Default: \code{"mean"}. Either \code{"mean"} or \code{"median"}. The type of
-                  location to be calculated.}
-  \item{scale}{Default: \code{"SD"}. Either \code{"SD"}, \code{"MAD"} or \code{"Qn"}
-               The type of scale to be calculated.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}  
+  \item{location}{The type of location to be calculated.}
+  \item{scale}{The type of scale to be calculated.}
 }
 \details{
   \code{"SD"} is used to represent standard deviation and \code{"MAD"} is used to represent
@@ -41,6 +40,6 @@
   genesMatrix <- matrix(rnorm(1000, 8, 4), ncol = 10)
   distributionInfo <- getLocationsAndScales(genesMatrix, "median", "MAD")
   
-  mean(distributionInfo[["median"]])
-  mean(distributionInfo[["MAD"]])
+  mean(distributionInfo[["median"]]) # Typical median.
+  mean(distributionInfo[["MAD"]]) # Typical MAD.
 }

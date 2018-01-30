@@ -4,29 +4,14 @@ setGeneric("logisticRegressionTrainInterface", function(measurements, ...)
 setMethod("logisticRegressionTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
-  .logisticRegressionTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  logisticRegressionTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 # Clinical data only.
-setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements, classes, ...)
+setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  .logisticRegressionTrainInterface(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
-})
 
-# One or more omics datasets, possibly with clinical data.
-setMethod("logisticRegressionTrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  
-  .logisticRegressionTrainInterface(measurements, classes, ...)
-})
-
-.logisticRegressionTrainInterface <- function(measurements, classes, ..., verbose = 3)
-{
   if(!requireNamespace("mlogit", quietly = TRUE))
     stop("The package 'mlogit' could not be found. Please install it.")
   if(!requireNamespace("mnlogit", quietly = TRUE))
@@ -41,7 +26,18 @@ function(measurements, targets = names(measurements), ...)
   modelFormula <- formula(paste("class ~ 1 |", paste(measuredVariables, collapse = '+'), "| 1"))
   
   mnlogit(modelFormula, data = reshaped, ...)
-}
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("logisticRegressionTrainInterface", "MultiAssayExperiment",
+function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
+  measurements <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  
+  logisticRegressionTrainInterface(measurements, classes, ...)
+})
 
 setGeneric("logisticRegressionPredictInterface", function(model, test, ...)
 {standardGeneric("logisticRegressionPredictInterface")})
@@ -50,24 +46,11 @@ setGeneric("logisticRegressionPredictInterface", function(model, test, ...)
 setMethod("logisticRegressionPredictInterface", c("mnlogit", "matrix"),
           function(model, test, ...)
 {
-  .logisticRegressionPredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
+  logisticRegressionPredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
 # Clinical data only.
-setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, ...)
-{
-  .logisticRegressionPredictInterface(model, test, ...)
-})
-
-# One or more omics datasets, possibly with clinical data.
-setMethod("logisticRegressionPredictInterface", c("mnlogit", "MultiAssayExperiment"),
-          function(model, test, targets = names(test), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(test, targets, restrict = NULL)
-  .logisticRegressionPredictInterface(model, tablesAndClasses[["dataTable"]], ...)
-})
-
-.logisticRegressionPredictInterface <- function(model, test, verbose = 3)
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, verbose = 3)
 {
   if(!requireNamespace("mlogit", quietly = TRUE))
     stop("The package 'mlogit' could not be found. Please install it.")
@@ -81,4 +64,12 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "MultiAssayExperime
   #reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = rep("setosa", 15), shape = "wide")
   
   #predict(model, reshaped, probability = FALSE)
-}
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "MultiAssayExperiment"),
+          function(model, test, targets = names(test), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(test, targets, restrict = NULL)
+  logisticRegressionPredictInterface(model, tablesAndClasses[["dataTable"]], ...)
+})

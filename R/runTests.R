@@ -4,24 +4,11 @@ setGeneric("runTests", function(measurements, ...)
 setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
-  .runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 setMethod("runTests", c("DataFrame"), # Clinical data only.
-          function(measurements, classes, ...)
-{
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  .runTests(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
-})
-
-setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
-  .runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
-})
-
-.runTests <- function(measurements, classes, datasetName, classificationName,
+          function(measurements, classes, datasetName, classificationName,
                       validation = c("permute", "leaveOut", "fold"),
                       permutePartition = c("fold", "split"),
                       permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -29,6 +16,10 @@ setMethod("runTests", c("MultiAssayExperiment"),
                       params = list(SelectParams(), TrainParams(), PredictParams()),
                       verbose = 1)
 {
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- splitDataset[["measurements"]]
+  classes <- splitDataset[["classes"]]
+  
   validation <- match.arg(validation)
   permutePartition <- match.arg(permutePartition)
   if(!missing(seed)) set.seed(seed)
@@ -305,5 +296,17 @@ setMethod("runTests", c("MultiAssayExperiment"),
 
   names(classifyResults) <- varietyNames
   if(multipleVarieties == FALSE) classifyResults <- classifyResults[[1]]
-  classifyResults
+  classifyResults  
+})
+
+setMethod("runTests", c("MultiAssayExperiment"),
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
+  runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+})
+
+.runTests <- function()
+{
+
 }

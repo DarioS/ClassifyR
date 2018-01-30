@@ -4,27 +4,16 @@ setGeneric("runTest", function(measurements, ...)
 setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
   function(measurements, classes, ...)
 {
-  .runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 setMethod("runTest", c("DataFrame"), # Clinical data only.
-function(measurements, classes, ...)
+function(measurements, classes, datasetName, classificationName, training, testing,
+         params = list(SelectParams(), TrainParams(), PredictParams()),
+         verbose = 1, .iteration = NULL)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  .runTest(splitDataset[["measurements"]], splitDataset[["classes"]], ...)
-})
 
-setMethod("runTest", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
-  .runTest(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
-})
-
-.runTest <- function(measurements, classes, datasetName, classificationName, training, testing,
-                     params = list(SelectParams(), TrainParams(), PredictParams()),
-                     verbose = 1, .iteration = NULL)
-{
   stagesParamClasses <- sapply(params, class)
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"PredictParams\" variable must not be before \"TrainParams\" in 'params' list.")
@@ -34,8 +23,8 @@ setMethod("runTest", c("MultiAssayExperiment"),
   trainParams <- params[[match("TrainParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   
-  if(!is.null(mcols(colData(measurements))))
-    allFeatures <- mcols(colData(measurements))
+  if(!is.null(mcols(measurements)))
+    allFeatures <- mcols(measurements)
   else
     allFeatures <- colnames(measurements)
   
@@ -201,5 +190,12 @@ setMethod("runTest", c("MultiAssayExperiment"),
                        classes, list("independent"), varietyTunes)
       }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))
     }
-  }
-}
+  }  
+})
+
+setMethod("runTest", c("MultiAssayExperiment"),
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
+  runTest(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+})

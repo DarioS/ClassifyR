@@ -16,10 +16,10 @@
 }
 \usage{
   \S4method{SVMtrainInterface}{matrix}(measurements, classes, ...)
-  \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ...)
+  \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
-  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, ...)
+  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, ..., verbose = 3)
   \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -38,10 +38,11 @@
               the \code{class} column must be absent.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
-                 integer variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the training or prediction (i.e. \code{verbose}) or options that are used
-             by the \code{link[e1071]{svm}} function.}
+                 numeric variables from the clinical data table will be used.}
+  \item{model}{A fitted model as returned by \code{SVMtrainInterface}.}                 
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or options
+             that are used by the \code{link[e1071]{svm}} function.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }

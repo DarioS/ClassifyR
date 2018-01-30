@@ -3,28 +3,14 @@ setGeneric("previousSelection", function(measurements, ...)
 
 setMethod("previousSelection", "matrix", 
           function(measurements, ...)
-          {
-            .previousSelection(DataFrame(t(measurements), check.names = FALSE), ...)
-          })
-
-setMethod("previousSelection", "DataFrame", 
-          function(measurements, ...)
-          {
-            .previousSelection(measurements, ...)
-          })
-
-setMethod("previousSelection", "MultiAssayExperiment", 
-          function(measurements, ...)
-          {
-            clinicalColumns <- colnames(colData(clinicalColumns))
-            dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
-            mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", mcols(dataTable)[, "sourceName"])
-            .previousSelection(dataTable, ...)
-          })
+{
+  previousSelection(DataFrame(t(measurements), check.names = FALSE), ...)
+})
 
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection
-.previousSelection <- function(measurements, classes, datasetName, classifyResult, minimumOverlapPercent = 80,
+setMethod("previousSelection", "DataFrame", 
+          function(measurements, classes, datasetName, classifyResult, minimumOverlapPercent = 80,
                                selectionName = "Previous Selection", .iteration, verbose = 3)
 {
   if(verbose == 3)
@@ -55,4 +41,13 @@ setMethod("previousSelection", "MultiAssayExperiment",
     signalCondition(simpleError(paste("Number of features in common between previous and current dataset is lower than", minimumOverlapPercent, "percent.")))
   
   SelectResult(datasetName, selectionName, list(), list(commonFeatures)) # Ranking isn't transferred across.
-}
+})
+
+setMethod("previousSelection", "MultiAssayExperiment", 
+          function(measurements, ...)
+          {
+            clinicalColumns <- colnames(colData(clinicalColumns))
+            dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
+            mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", mcols(dataTable)[, "sourceName"])
+            previousSelection(dataTable, ...)
+          })

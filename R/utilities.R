@@ -34,8 +34,10 @@
   dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
   mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
   colnames(mcols(dataTable))[1] <- "dataset"
-  mcols(dataTable)[, "feature"] <- ifelse(is.na(mcols(dataTable)[, "rowname"]), mcols(dataTable)[, "colname"], mcols(dataTable)[, "rowname"])
-  mcols(dataTable) <- mcols(dataTable)[, c(1, 4)] # Dataset and variable name within the dataset.
+  
+  mcols(dataTable)[, "feature"] <- mcols(dataTable)[, "rowname"]
+  mcols(dataTable)[is.na(mcols(dataTable)[, "rowname"]), "feature"] <- mcols(dataTable)[, "colname"]
+  mcols(dataTable) <- mcols(dataTable)[, c("dataset", "feature")]
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
   else

@@ -25,15 +25,13 @@ Description: The software formalises a framework for classification in R.
              and differential distribution are included. Additional functions
              may be developed by the user, by creating an interface to the framework.
 Collate: classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInterface.R
-         DLDAinterface.R DMDselection.R edgeRselection.R fisherDiscriminant.R distribution.R
-         getLocationsAndScales.R KolmogorovSmirnovSelection.R
-         KullbackLeiblerSelection.R leveneSelection.R
-         likelihoodRatioSelection.R limmaSelection.R logisticRegressionInterface.R mixmodels.R
-         naiveBayesKernel.R nearestShrunkenCentroidSelectionInterface.R
-         nearestShrunkenCentroidTrainInterface.R
-         nearestShrunkenCentroidPredictInterface.R performancePlot.R
-         plotFeatureClasses.R previousSelection.R randomForestInterface.R rankingPlot.R
-         ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R
-         subtractFromLocation.R SVMinterface.R
+         DLDAinterface.R DMDselection.R distribution.R edgeRselection.R elasticNetGLMinterface.R
+         fisherDiscriminant.R getLocationsAndScales.R KolmogorovSmirnovSelection.R
+         KullbackLeiblerSelection.R leveneSelection.R likelihoodRatioSelection.R limmaSelection.R 
+         logisticRegressionInterface.R mixmodels.R naiveBayesKernel.R
+         nearestShrunkenCentroidSelectionInterface.R nearestShrunkenCentroidTrainInterface.R
+         nearestShrunkenCentroidPredictInterface.R performancePlot.R plotFeatureClasses.R
+         previousSelection.R randomForestInterface.R rankingPlot.R ROCplot.R runTest.R runTests.R
+         samplesMetricMap.R selectionPlot.R subtractFromLocation.R SVMinterface.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

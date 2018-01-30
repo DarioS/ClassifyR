@@ -4,40 +4,22 @@ setGeneric("fisherDiscriminant", function(measurements, ...)
 setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)
 {
-  .fisherDiscriminant(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
-                      classes,
-                      DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+  fisherDiscriminant(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
+                     classes,
+                     DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
 })
 
 setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
-          function(measurements, classes, test, ...)
+          function(measurements, classes, test, returnType = c("label", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
-  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
+  trainingMatrix <- splitDataset[["measurements"]]
+  isNumeric <- sapply(trainingMatrix, is.numeric)
+  trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
   isNumeric <- sapply(test, is.numeric)
   testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  .fisherDiscriminant(trainingMatrix, splitDataset[["classes"]], testingMatrix, ...)
-})
-
-# One or more omics datasets, possibly with clinical data.
-setMethod("fisherDiscriminant", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingMatrix <- .MAEtoWideTable(test, targets)
-  
-  .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  .fisherDiscriminant(trainingMatrix, classes, testingMatrix, ...)
-})
-
-.fisherDiscriminant <- function(measurements, classes, test, returnType = c("label", "score", "both"), verbose = 3)
-{
   returnType <- match.arg(returnType)
 
   oneClassTraining <- which(classes == levels(classes)[1])
@@ -63,5 +45,18 @@ setMethod("fisherDiscriminant", "MultiAssayExperiment",
   }), levels = levels(classes))
   scores <- apply(test, 1, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
   
-  switch(returnType, label = labels, score = scores, both = data.frame(label = labels, score = scores))
-}
+  switch(returnType, label = labels, score = scores, both = data.frame(label = labels, score = scores))  
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("fisherDiscriminant", "MultiAssayExperiment", 
+          function(measurements, test, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  testingMatrix <- .MAEtoWideTable(test, targets)
+  
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  fisherDiscriminant(trainingMatrix, classes, testingMatrix, ...)
+})

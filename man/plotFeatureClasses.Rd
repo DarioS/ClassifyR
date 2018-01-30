@@ -7,8 +7,16 @@
 \description{Allows the visualisation of measurements in the dataset.}
 \usage{
   \S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
-  \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL, ...)
-  \S4method{plotFeatureClasses}{MultiAssayExperiment}(measurements, targets, groupBy = NULL, ...)
+  \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL,
+                                groupingName = NULL, whichNumericPlots = c("both", "density", "stripchart"),
+                                measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
+                                xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
+                                showXtickLabels = TRUE, showYtickLabels = TRUE,
+                                xLabelPositions = "auto", yLabelPositions = "auto",
+                                fontSizes = c(24, 16, 12, 12, 12),
+                                colours = c("#3F48CC", "#880015"),
+                                showDatasetName = TRUE, plot = TRUE)
+  \S4method{plotFeatureClasses}{MultiAssayExperiment}(measurements, targets, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
 }
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
@@ -37,7 +45,8 @@
                 object. A density plot will have additional lines of different line types for
                 each category. A strip chart plot will have a separate strip chart created for
                 each category and the charts will be drawn in a single column on the
-                graphics device. A bar chart plot will similarly be laid out.}                
+                graphics device. A bar chart plot will similarly be laid out.}
+  \item{groupingName}{A label for the grouping variable to be used in plots.}                
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which generates the plot(s).}
   \item{whichNumericPlots}{If the feature has numeric measurements, this option specifies which

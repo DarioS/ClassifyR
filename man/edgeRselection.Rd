@@ -10,7 +10,10 @@
 }
 \usage{
   \S4method{edgeRselection}{matrix}(counts, classes, ...)
-  \S4method{edgeRselection}{DataFrame}(counts, classes, ...)
+  \S4method{edgeRselection}{DataFrame}(counts, classes, datasetName,
+                                       normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
+                                       trainParams, predictParams, resubstituteParams,
+                                       selectionName = "edgeR LRT", verbose = 3)
   \S4method{edgeRselection}{MultiAssayExperiment}(counts, targets = NULL, ...)
 }
 \arguments{
@@ -19,10 +22,11 @@
   \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements}. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{targets}{Names of data tables to be combined into a single table and
-                 used in the analysis.}                 
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the feature selection.}
+  \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
+                 data tables to be used. \code{"clinical"} is also a valid value and specifies that
+                 numeric variables from the clinical data table will be used.}              
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}
   \item{normFactorsOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{estimateDisp}}.}

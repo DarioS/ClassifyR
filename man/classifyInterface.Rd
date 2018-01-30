@@ -11,7 +11,7 @@
 }
 \usage{
   \S4method{classifyInterface}{matrix}(measurements, classes, test, ...)
-  \S4method{classifyInterface}{DataFrame}(measurements, classes, test, ...)
+  \S4method{classifyInterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
   \S4method{classifyInterface}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
@@ -30,7 +30,9 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
-  \item{...}{All parameters that \code{\link[PoiClaClu]{Classify}} can accept.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method or parameters that
+             \code{\link[PoiClaClu]{Classify}} can accept.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}    
 }
@@ -51,6 +53,7 @@
     trainData <- t(readCounts[['x']])
     classes <- readCounts[['y']]
     testData <- t(readCounts[['xte']])
+    storage.mode(trainData) <- storage.mode(testData) <- "integer"
     classified <- classifyInterface(trainData, classes, testData)
     
     setNames(table(readCounts[["yte"]] == classified[["ytehat"]]),

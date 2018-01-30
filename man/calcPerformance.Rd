@@ -46,6 +46,9 @@
                          \code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
                                             macro precision and macro recall.
                         }
+  \item{actualClasses}{A factor vector specifying each sample's correct class.}
+  \item{predictedClasses}{A factor vector of the same length as \code{actualClasses}
+                          specifying each sample's predicted class.}
 }
 \details{
   All metrics are suitable for evaluating classification scenarios with more than two classes.

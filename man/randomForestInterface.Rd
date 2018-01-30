@@ -12,16 +12,14 @@
 }
 \usage{
   \S4method{randomForestInterface}{matrix}(measurements, classes, test, ...)
-  \S4method{randomForestInterface}{DataFrame}(measurements, classes, test, ...)
+  \S4method{randomForestInterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
   \S4method{randomForestInterface}{MultiAssayExperiment}(measurements, targets = names(measurements),
                                                          test, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                      \code{\link{MultiAssayExperiment}} containing the training data.
-                     For a \code{matrix}, the rows are features, and the columns are samples.
-                     If of type \code{\link{DataFrame}}, the dataset is subset to only those
-                     features of type \code{integer}.}
+                     For a \code{matrix}, the rows are features, and the columns are samples.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements} or if the measurements are
                  of class \code{DataFrame} a character vector of length 1 containing the
@@ -32,9 +30,11 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}
-  \item{...}{Unused variables by the three top-level methods passed to the internal method
-             which does the training or prediction (i.e. \code{verbose}) or options that are used
-             by the \code{link[randomForest]{randomForest}} function.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or
+             options which are accepted by the \code{link[randomForest]{randomForest}} function.}
+  \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
+                 This function only prints progress messages if the value is 3.}             
 }
 \details{
   If \code{measurements} is an object of class \code{MultiAssayExperiment}, the factor of sample
@@ -62,7 +62,7 @@
     
     classified <- randomForestInterface(genesMatrix[, trainingSamples],
                                         classes[trainingSamples],
-                                        genesMatrix[, testingSamples])
+                                        genesMatrix[, testingSamples], ntree = 10)
     classified[["test"]][["predicted"]]
   }
 }

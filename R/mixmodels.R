@@ -4,11 +4,11 @@ setGeneric("mixModelsTrain", function(measurements, ...)
 setMethod("mixModelsTrain", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
-  .mixModelsTrain(DataFrame(t(measurements), check.names = FALSE), ...)
+  mixModelsTrain(DataFrame(t(measurements), check.names = FALSE), ...)
 })
 
 setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
-          function(measurements, classes, ...)
+          function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -17,21 +17,6 @@ setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
   
-  .mixModelsTrain(measurements, splitDataset[["classes"]], ...)
-})
-
-# One or more omics datasets, possibly with clinical data.
-setMethod("mixModelsTrain", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]            
-  .mixModelsTrain(dataTable, classes, ...)
-})
-
-.mixModelsTrain <- function(measurements, classes, ..., verbose = 3)
-{
   if(verbose == 3)
     message("Fitting mixtures of normals for genes.")
   if(!requireNamespace("Rmixmod", quietly = TRUE))
@@ -41,14 +26,13 @@ setMethod("mixModelsTrain", "MultiAssayExperiment",
   otherClass <- classes == levels(classes)[2]
   oneClassMeasurements <- measurements[oneClass, ]
   otherClassMeasurements <- measurements[otherClass, ]
-  isExtra <- !missing(...)
   
   models <- lapply(list(oneClassMeasurements, otherClassMeasurements), function(classMeasurements)
             {
                 apply(classMeasurements, 2, function(featureColumn)
                 {
                    mixmodParams <- list(featureColumn)
-                   if(isExtra) mixmodParams <- append(mixmodParams, list(...))
+                   mixmodParams <- append(mixmodParams, list(...))
                    do.call(Rmixmod::mixmodCluster, mixmodParams)
                 })     
             })
@@ -58,39 +42,37 @@ setMethod("mixModelsTrain", "MultiAssayExperiment",
   
   models[["classSizes"]] <- setNames(c(sum(oneClass), sum(otherClass)), levels(classes))
   models
-}
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("mixModelsTrain", "MultiAssayExperiment",
+          function(measurements, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  dataTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]            
+  mixModelsTrain(dataTable, classes, ...)
+})
 
 setGeneric("mixModelsTest", function(models, test, ...)
            {standardGeneric("mixModelsTest")})
 
 setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
 {
-  .mixModelsTest(models, DataFrame(t(test), check.names = FALSE), ...)
+  mixModelsTest(models, DataFrame(t(test), check.names = FALSE), ...)
 })
 
 setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
-          function(models, test, ...)
+          function(models, test, weighted = c("both", "unweighted", "weighted"),
+                   weight = c("all", "height difference", "crossover distance", "sum differences"),
+                   densityXvalues = 1024, minDifference = 0,
+                   returnType = c("label", "score", "both"), verbose = 3)
 {
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
-  .mixModelsTest(models, test, ...)
-})
 
-# One or more omics datasets, possibly with clinical data.
-setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
-          function(models, test, targets = names(test), ...)
-{
-  testingMatrix <- .MAEtoWideTable(test, targets)
-  .mixModelsTest(models, testingMatrix, ...)
-})
-
-.mixModelsTest <- function(models, test, weighted = c("both", "unweighted", "weighted"),
-                  weight = c("all", "height difference", "crossover distance", "sum differences"),
-                  densityXvalues = 1024, minDifference = 0,
-                  returnType = c("label", "score", "both"), verbose = 3)
-{
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
@@ -242,17 +224,27 @@ setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
   
-  varietyFactor <- factor(do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ',')))
-  varietyFactor <- gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor)
-  resultsList <- by(testPredictions, varietyFactor, function(predictionSet)
+  varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
+  varietyFactor <- factor(gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor))
+  resultsList <- lapply(levels(varietyFactor), function(variety)
   {
-    switch(returnType, label = predictionSet[, "class"],
-           score = predictionSet[, "score"],
-           both = data.frame(label = predictionSet[, "class"], score = predictionSet[, "score"]))
-  }, simplify = FALSE)
+    varietyPredictions <- subset(testPredictions, varietyFactor == variety)
+    switch(returnType, label = varietyPredictions[, "class"],
+           score = varietyPredictions[, "score"],
+           both = data.frame(label = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+  })
+  names(resultsList) <- levels(varietyFactor)
   
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]
   else
-    resultsList
-}
+    resultsList  
+})
+
+# One or more omics datasets, possibly with clinical data.
+setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
+          function(models, test, targets = names(test), ...)
+{
+  testingMatrix <- .MAEtoWideTable(test, targets)
+  mixModelsTest(models, testingMatrix, ...)
+})

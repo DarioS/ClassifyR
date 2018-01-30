@@ -3,25 +3,10 @@ setGeneric("nearestShrunkenCentroidPredictInterface", function(trained, test, ..
 
 setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "matrix"), function(trained, test, ...)
 {
-  .nearestShrunkenCentroidPredictInterface(trained, DataFrame(t(test), check.names = FALSE), ...)
+  nearestShrunkenCentroidPredictInterface(trained, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, ...)
-{
-  .nearestShrunkenCentroidPredictInterface(trained, test, ...)
-})
-
-setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(trained, test, targets = names(test), ...)
-{
-  test <- .MAEtoWideTable(test, targets)[["dataTable"]]
-  
-  if(ncol(test) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    .nearestShrunkenCentroidPredictInterface(trained, test, classes, ...)
-})
-
-.nearestShrunkenCentroidPredictInterface <- function(trained, test, ..., verbose = 3)
+setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, ..., verbose = 3)
 {
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")
@@ -35,4 +20,14 @@ setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "MultiAssa
   if(verbose == 3)
     message("Nearest shrunken centroid predictions made.")
   predictions
-}
+})
+
+setMethod("nearestShrunkenCentroidPredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(trained, test, targets = names(test), ...)
+{
+  test <- .MAEtoWideTable(test, targets)[["dataTable"]]
+  
+  if(ncol(test) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    nearestShrunkenCentroidPredictInterface(trained, test, classes, ...)
+})
