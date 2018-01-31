@@ -12,6 +12,7 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
                                        "macro recall", "macro F1"))
 {
   performanceType <- match.arg(performanceType)
+  levels(predictedClasses) <- levels(actualClasses)
   .calcPerformance(list(actualClasses), list(predictedClasses), performanceType = performanceType)[["values"]]
 })
 
@@ -26,7 +27,7 @@ setMethod("calcCVperformance", c("ClassifyResult"),
   
   classLevels <- levels(actualClasses(result))
   samples <- lapply(result@predictions, function(sample) factor(sample[, "sample"], levels = sampleNames(result)))
-  predictedClasses <- lapply(result@predictions, function(sample) sample[, "label"])
+  predictedClasses <- lapply(result@predictions, function(sample) factor(sample[, "label"], levels = classLevels))
   actualClasses <- lapply(result@predictions, function(sample)
                    factor(actualClasses(result)[sample[, "sample"]], levels = classLevels, ordered = TRUE))
 

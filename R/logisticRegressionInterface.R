@@ -58,12 +58,13 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
     stop("The package 'mnlogit' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained logistic regression classifier.")
-  
+
   # Reshape data for input into the predicting function.
   measuredVariables <- colnames(test)
-  #reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = rep("setosa", 15), shape = "wide")
+  test[, "placeholder"] <- model[["choices"]]
+  reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = "placeholder", shape = "wide")
   
-  #predict(model, reshaped, probability = FALSE)
+  unname(predict(model, reshaped, probability = FALSE))
 })
 
 # One or more omics datasets, possibly with clinical data.

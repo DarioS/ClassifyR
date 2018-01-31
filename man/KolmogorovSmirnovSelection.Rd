@@ -70,14 +70,14 @@
   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
-  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                             performanceType = "balanced error",
-                                             better = "lower")
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                           performanceType = "balanced error",
+                                           better = "lower")
   selected <- KolmogorovSmirnovSelection(genesMatrix, classes, "Example",
                              trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
                              predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
-                             resubstituteParams = resubstituteSettings)
+                             resubstituteParams = resubstituteParams)
                              
   head(selected[["weighted=unweighted"]]@chosenFeatures)
   plotFeatureClasses(genesMatrix, classes, "Gene 13", dotBinWidth = 0.25,

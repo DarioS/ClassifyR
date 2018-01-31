@@ -89,7 +89,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
               .iteration = foldIndex)
     }, BPPARAM = parallelParams)
   }
-  
+
   if(validation == "permute" && permutePartition == "split" || validation %in% c("leaveOut", "fold"))
   {
     resultErrors <- sapply(results, function(result) is.character(result))
@@ -152,12 +152,22 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
               if(permutePartition == "fold")
               {
                 if(resultType == "testSet" || class(sample[[1]][["predictions"]]) != "data.frame")
+                {
                                               # First fold predictions are a not data.frame.
-                  unlist(lapply(sample, function(fold) fold[[resultType]]))
-                else # Predictions is a data.frame with labels and scores.
-                  do.call(rbind, lapply(sample, function(fold) fold[[resultType]]))
+                  reshaped <- unlist(lapply(sample, function(fold) fold[[resultType]]))
+                  if(resultType == "predictions")
+                    reshaped <- factor(reshaped, levels = levels(classes))
+                  reshaped
+                } else { # Predictions is a data.frame with labels and scores.
+                  resultTable <- do.call(rbind, lapply(sample, function(fold) fold[[resultType]]))
+                  resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))
+                  resultTable
+                }
               } else { # permutePartition is "split".
-                sample[[resultType]]
+                information <- sample[[resultType]]
+                if(resultType == "predictions")
+                  information <- factor(information, levels = levels(classes))
+                information
               }
             } else {
               if(permutePartition == "fold")
@@ -172,11 +182,17 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
               {
                 prediction <- lapply(sample, function(fold) fold[[resultType]][[varietyName]])
                 if(class(prediction[[1]]) == "data.frame")
-                  do.call(rbind, prediction)
-                else
-                  unlist(prediction)
+                {
+                  reshaped <- do.call(rbind, prediction)
+                  reshaped[, "class"] <- factor(reshaped[, "class"], levels = levels(classes))
+                  reshaped
+                } else
+                  factor(unlist(prediction), levels = levels(classes))
               } else { # permutePartition is "split".
-                sample[[resultType]][[varietyName]]
+                information <- sample[[resultType]][[varietyName]]
+                if(resultType == "predictions")
+                  information <- factor(information, levels = levels(classes))
+                information                
               }
             } else { # Ranked, selected features and test samples, with varieties.
               if(permutePartition == "fold")
@@ -216,13 +232,20 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
         resultList <- lapply(results, function(sample) sample[[resultType]])
         
         if(resultType == "testSet" || resultType == "predictions" && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
-          resultList <- unlist(resultList)
+        {
+          reshaped <- unlist(resultList)
+          if(resultType == "predictions")
+            reshaped <- factor(reshaped, levels = levels(classes)) # Enforce that levels are in the same order as input by the user.
+          reshaped
+        }
         else if (resultType == "predictions" && multipleVarieties == FALSE) # Predictions are in a data.frame.
-          resultList <- do.call(rbind, resultList)
+          {resultTable <- do.call(rbind, resultList)
+          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))}
         else if(multipleVarieties == TRUE && resultType == "predictions" && class(resultList[[1]]) != "data.frame")
-          unlist(lapply(resultList, "[[", varietyName))
+          factor(unlist(lapply(resultList, "[[", varietyName)), levels = levels(classes))
         else if(multipleVarieties == TRUE && resultType == "predictions") # Predictions are factor or numeric.
-          do.call(rbind, lapply(resultList, "[[", varietyName))
+          {resultTable <- do.call(rbind, lapply(resultList, "[[", varietyName))
+          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))}
         else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune"))
           lapply(resultList, "[[", varietyName)
         else # For multipleVarieties being FALSE, and not the predicted classes.
@@ -305,8 +328,3 @@ setMethod("runTests", c("MultiAssayExperiment"),
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
   runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
 })
-
-.runTests <- function()
-{
-
-}

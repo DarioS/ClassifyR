@@ -69,13 +69,13 @@
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   genesMatrix <- subtractFromLocation(genesMatrix, 1:ncol(genesMatrix))
   
-  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                             performanceType = "balanced error",
-                                             better = "lower")
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                           performanceType = "balanced error",
+                                           better = "lower")
   selected <- leveneSelection(genesMatrix, classes, "Example",
                               trainParams = TrainParams(fisherDiscriminant, TRUE),
                               predictParams = PredictParams(function(){},
                                               getClasses = function(result) result),
-                              resubstituteParams = resubstituteSettings)
+                              resubstituteParams = resubstituteParams)
   selected@chosenFeatures                            
 }

@@ -76,14 +76,14 @@
   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
-  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                             performanceType = "balanced error",
-                                             better = "lower")
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                           performanceType = "balanced error",
+                                           better = "lower")
   selected <- likelihoodRatioSelection(genesMatrix, classes, "Example",
                                        trainParams = TrainParams(naiveBayesKernel, TRUE),
                            predictParams = PredictParams(function(){},
                                            getClasses = function(result) result),
-                           resubstituteParams = resubstituteSettings)
+                           resubstituteParams = resubstituteParams)
                  
   classifierVariety <- "weighted=weighted,weight=crossover distance"                         
   head(selected[[classifierVariety]]@chosenFeatures[[1]])

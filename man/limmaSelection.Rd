@@ -62,11 +62,11 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
     
-    resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
                             performanceType = "balanced error", better = "lower")
     selected <- limmaSelection(genesMatrix, classes, "Example",
                                trainParams = TrainParams(), predictParams = PredictParams(),
-                               resubstituteParams = resubstituteSettings)
+                               resubstituteParams = resubstituteParams)
                                
     selected@chosenFeatures
   }

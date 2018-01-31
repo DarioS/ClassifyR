@@ -66,12 +66,12 @@
   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
- resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                             performanceType = "balanced error",
-                                             better = "lower")
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                           performanceType = "balanced error",
+                                           better = "lower")
   DMDselection(genesMatrix, classes, datasetName = "Example",
                trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
                predictParams = PredictParams(function(){},
                                              getClasses = function(result) result),
-               resubstituteParams = resubstituteSettings)
+               resubstituteParams = resubstituteParams)
 }

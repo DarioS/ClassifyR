@@ -4,16 +4,29 @@ setGeneric("elasticNetGLMtrainInterface", function(measurements, ...)
 setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
-  .elasticNetGLMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  elasticNetGLMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 # Clinical data only.
-setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, ...)
+setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, lambda = NULL, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
 
-  .elasticNetGLMtrainInterface(measurements, splitDataset[["classes"]], ...)
+  if(!requireNamespace("glmnet", quietly = TRUE))
+    stop("The package 'glmnet' could not be found. Please install it.")
+  if(verbose == 3)
+    message("Fitting elastic net regularised GLM classifier to data.")
+
+  fitted <- glmnet::glmnet(as.matrix(measurements), splitDataset[["classes"]], family = "multinomial", ...)
+  
+  if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
+  { # Pick one lambda based on resubstitution performance.
+    bestLambda <- fitted[["lambda"]][which.max(fitted[["dev.ratio"]])[1]]
+    attr(fitted, "tune") <- list(lambda = bestLambda)
+  }
+  
+  fitted
 })
 
 # One or more omics datasets, possibly with clinical data.
@@ -27,18 +40,8 @@ function(measurements, targets = names(measurements), ...)
   if(ncol(measurements) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    .elasticNetGLMtrainInterface(measurements, classes, ...)
+    elasticNetGLMtrainInterface(measurements, classes, ...)
 })
-
-.elasticNetGLMtrainInterface <- function(measurements, classes, ..., verbose = 3)
-{
-  if(!requireNamespace("glmnet", quietly = TRUE))
-    stop("The package 'glmnet' could not be found. Please install it.")
-  if(verbose == 3)
-    message("Fitting elastic net regularised GLM classifier to data.")
-
-  glmnet::glmnet(as.matrix(measurements), classes, family = "multinomial", ...)
-}
 
 # Matrix of numeric measurements.
 setGeneric("elasticNetGLMpredictInterface", function(model, test, ...)
@@ -47,16 +50,23 @@ setGeneric("elasticNetGLMpredictInterface", function(model, test, ...)
 setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
           function(model, test, ...)
 {
-  .elasticNetGLMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
+  elasticNetGLMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
 # Clinical data only.
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, ...)
-{
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, lambda, ..., verbose = 3)
+{ # ... just consumes emitted tuning variables from .doTrain which are unused.
   splitDataset <- .splitDataAndClasses(test, classes)
   test <- splitDataset[["measurements"]]
   
-  .elasticNetGLMpredictInterface(model, test, ...)
+  if(!requireNamespace("sparsediscrim", quietly = TRUE))
+    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  if(verbose == 3)
+    message("Predicting classes using trained elastic net regularised GLM classifier.")
+
+  if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
+    lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
+  factor(predict(model, as.matrix(test), s = lambda, type = "class"))
 })
 
 # One or more omics datasets, possibly with clinical data.
@@ -65,16 +75,6 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
   test <- tablesAndClasses[["dataTable"]]
-            
-  .elasticNetGLMpredictInterface(model, test, ...)
+            browser()
+  elasticNetGLMpredictInterface(model, test, ...)
 })
-
-.elasticNetGLMpredictInterface <- function(model, test, verbose = 3)
-{
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
-  if(verbose == 3)
-    message("Predicting classes using trained elastic net regularised GLM classifier.")
-  
-  predict(model, as.matrix(test))
-}

@@ -138,7 +138,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                   error = function(error) error[["message"]])
                               if(is.character(trained)) return(trained) # An error occurred.
 
-                              newSize <- if(class(trained) == "list") length(trained) else 1
+                              newSize <- if("list" %in% class(trained)) length(trained) else 1
                               if(newSize / lastSize != 1) # More varieties were created.
                               {
                                 measurements <- unlist(lapply(if(class(measurements) == "list") measurements else list(measurements), function(variety)
@@ -148,7 +148,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
                               }
                               
                               lastSize <- newSize
-                              if(class(trained) == "list")
+                              if("list" %in% class(trained))
                                 tuneDetails <- lapply(trained, attr, "tune")
                               else
                                 tuneDetails <- attr(trained, "tune")
@@ -159,7 +159,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                    predictParams@otherParams <- c(predictParams@otherParams, mget(predictParams@intermediate))
                                   predictedClasses <- tryCatch(.doTest(trained, measurements, testing, predictParams, verbose),
                                                                error = function(error) error[["message"]])
-                                  if(is.character(predictedClasses) && grepl("^Error", predictedClasses)) # An error occurred.
+                                  if(is.character(predictedClasses)) # An error occurred.
                                     return(predictedClasses) # Return early. Don't make a ClassifyResult below.
                                }
            )

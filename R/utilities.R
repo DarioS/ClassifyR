@@ -201,25 +201,28 @@
         if(verbose >= 2)
           message("Training completed.")  
         returnResult <- trained
-      } else { # Tuning Parameter selection.
+      } else {# Tuning Parameter selection.
         trainedList <- list()
         resubstituteParams <- trainParams@otherParams[["resubstituteParams"]]
+        trainParams@otherParams <- trainParams@otherParams[-match("resubstituteParams", names(trainParams@otherParams))] # Don't pass the resubstitution parameters directly to the classifier.
         performances <- apply(tuneCombinations, 1, function(tuneCombination)
         {
           tuneParams <- as.list(tuneCombination)
-          names(tuneParams) <- colnames(tuneCombinations)
           if(length(trainParams@otherParams) > 0)
             paramList <- c(paramList, trainParams@otherParams)
           paramList <- c(paramList, tuneParams, verbose = verbose)
           trained <- do.call(trainParams@classifier, paramList)
           initialTrainClass <- class(trained)
-          if(initialTrainClass != "list") trained <- list(trained)
+          if(! "list" %in% initialTrainClass) trained <- list(trained)
+
+          if("tune" %in% names(attributes(trained[[1]])))
+              tuneParams <- c(tuneParams, attr(trained[[1]], "tune"))
           if(variety != "data")
             names(trained) <- paste(variety, names(trained), sep = ',')
-          trainedList <- c(trainedList, trained)
-          
+          trainedList <<- c(trainedList, trained)
+    
           lapply(trained, function(model)
-          {            
+          {        
             paramList <- list(model, measurementsTrain) # Model and test set same as training set.
             if(length(predictParams@otherParams) > 0)
               paramList <- c(paramList, predictParams@otherParams)
@@ -239,20 +242,21 @@
             })
           })
         })
+        
         chosenModels <- lapply(1:length(performances[[1]]), function(trainVariety)
         {
           lapply(1:length(trainVariety[[1]]), function(predictVariety)
           {
               performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[trainVariety]][[predictVariety]])
               if(resubstituteParams@better == "lower")
-                chosenTune <- which.min(performanceValues)
+                chosenTune <- which.min(performanceValues)[1]
               else
-                chosenTune <- which.max(performanceValues)
+                chosenTune <- which.max(performanceValues)[1]
 
               chosenModel <- trainedList[[chosenTune]]
               tuneParameters <- as.list(tuneCombinations[chosenTune, , drop = FALSE])
-              attr(tuneParameters, "out.attrs") <- NULL
-              attr(chosenModel, "tune") <- tuneParameters
+              # Concatenate in case the classifier interally did other parameter tuning and recorded it in the tune attribute.
+              attr(chosenModel, "tune") <- c(attr(chosenModel, "tune"), tuneParameters)
               chosenModel
           })
         })
@@ -316,7 +320,7 @@
             list(predictedClasses[[predictIndex]], performanceValue)
           })
         })
-        
+
         chosenPredictions <- lapply(1:length(performances[[1]]), function(predictVariety)
         {
           performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[predictVariety]][[2]]) # Value is in second position.

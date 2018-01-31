@@ -76,12 +76,12 @@
   genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
                                         targets = "RNA") # Exclude SNP data.
                                          
-  resubstituteSettings <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                             performanceType = "balanced error",
-                                             better = "lower")
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                           performanceType = "balanced error",
+                                           better = "lower")
   bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
                     trainParams = TrainParams(fisherDiscriminant, TRUE),
                     predictParams = PredictParams(function(){},
                     getClasses = function(result) result),
-                    resubstituteParams = resubstituteSettings)
+                    resubstituteParams = resubstituteParams)
 }
