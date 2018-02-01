@@ -28,7 +28,8 @@ setMethod("previousSelection", "DataFrame",
   } else { # A data.frame describing the dataset and variable name of the chosen feature.
     keepRows <- numeric()
     varInfo <- mcols(measurements) # mcols stores source information about variables.
-    variable <- ifelse(is.na(varInfo[, "rowname"]), varInfo[, "colname"], varInfo[, "rowname"])
+    variable <- varInfo[, "rowname"]
+    variable[is.na(variable)] <- varInfo[is.na(variable), "colname"]
     for(index in 1:length(previousIDs))
     {
       if(any(previousIDs[index, "dataset"] == varInfo[, "sourceName"] & previousIDs[index, "variable"] == variable))

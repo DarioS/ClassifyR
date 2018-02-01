@@ -36,7 +36,6 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                if(length(transformParams@intermediate) != 0)
                                  transformParams@otherParams <- c(transformParams@otherParams, mget(transformParams@intermediate))
 
-                               transformParams@otherParams <- c(transformParams@otherParams, list(training = training))
                                measurements <- tryCatch(.doTransform(measurements, transformParams, verbose), error = function(error) error[["message"]])
                                if(is.character(measurements)) return(measurements) # An error occurred.
                                newSize <- if(class(measurements) == "list") length(measurements) else 1

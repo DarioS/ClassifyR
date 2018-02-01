@@ -67,8 +67,8 @@
     trainSamples <- c(1:45, 51:95, 101:145)
     testSamples <- c(46:50, 96:100, 146:150)
     
-    trained <- logisticRegressionTrainInterface(DataFrame(iris[, variables]),
-                                                iris[, "Species"])
+    trained <- logisticRegressionTrainInterface(DataFrame(iris[trainSamples, variables]),
+                                                iris[trainSamples, "Species"])
     predicted <- logisticRegressionPredictInterface(trained,
                                          DataFrame(iris[testSamples, variables]))
   }

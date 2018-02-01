@@ -211,6 +211,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
   mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(measurements)[, "sourceName"])
   colnames(mcols(measurements))[1] <- "dataset"
-  if(is.na(mcols(measurements)[, "rowname"])) mcols(measurements)[, "feature"] <- mcols(measurements)[, "colname"] else mcols(measurements)[, "feature"] <- mcols(measurements)[, "rowname"]
+  mcols(measurements)[, "feature"] <- mcols(measurements)[, "rowname"]
+  mcols(measurements)[is.na(mcols(measurements)[, "feature"]), "feature"] <- mcols(measurements)[, "colname"]
   plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
 })

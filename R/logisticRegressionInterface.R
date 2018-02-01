@@ -61,7 +61,7 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
 
   # Reshape data for input into the predicting function.
   measuredVariables <- colnames(test)
-  test[, "placeholder"] <- model[["choices"]]
+  test[, "placeholder"] <- model[["choices"]][1] # A hack.
   reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = "placeholder", shape = "wide")
   
   unname(predict(model, reshaped, probability = FALSE))
