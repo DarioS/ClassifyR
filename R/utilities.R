@@ -166,8 +166,8 @@
 
   trained <- mapply(function(measurementsVariety, variety)
   {
-    measurementsTrain <- measurementsVariety[training, ]
-    measurementsTest <- measurementsVariety[testing, ]
+    measurementsTrain <- measurementsVariety[training, , drop = FALSE]
+    measurementsTest <- measurementsVariety[testing, , drop = FALSE]
     if(variety != "data") # Single expression set is in a list with name 'data'.
     {
       multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
@@ -366,7 +366,7 @@
     trained <- list(model = trained)
     measurements <- list(data = measurements)
   }
-  
+
   predicted <- mapply(function(model, data, variety)
   {
     if(!grepl("{}", paste(utils::capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
@@ -387,7 +387,7 @@
       if(length(predictParams@otherParams) > 0)
         paramList <- c(paramList, predictParams@otherParams)
       paramList <- c(paramList, verbose = verbose)
-       prediction <- do.call(predictParams@predictor, paramList)
+      prediction <- do.call(predictParams@predictor, paramList)
     } else
     {
       prediction <- model
@@ -413,10 +413,10 @@
 {
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
-    measurementsSubset <- measurements[, orderedFeatures[1:topFeatures]]
+    measurementsSubset <- measurements[, orderedFeatures[1:topFeatures], drop = FALSE]
     trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                         trainParams, predictParams, verbose)
-    
+
     if(trainParams@doesTests == FALSE)
     {
         predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
@@ -439,7 +439,7 @@
       else
         labels <- predictions
     }
-
+    
     if(class(labels) == "list")
     {
       lapply(labels, function(labelSet) calcExternalPerformance(classes, labelSet, resubstituteParams@performanceType))

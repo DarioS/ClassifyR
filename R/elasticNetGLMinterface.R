@@ -75,6 +75,6 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
   test <- tablesAndClasses[["dataTable"]]
-            browser()
+
   elasticNetGLMpredictInterface(model, test, ...)
 })

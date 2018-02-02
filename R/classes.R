@@ -111,7 +111,7 @@ setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {
-  new("PredictParams", predictor = predict, intermediate = character(0),
+  new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0),
       getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("function"),
