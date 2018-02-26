@@ -64,7 +64,7 @@ for the current classification task.
     rownames(newDataset) <- rownames(genesMatrix)
     colnames(newDataset) <- colnames(genesMatrix)
                                            
-    newerResult <- runTests(newDataset, classes, "Ovarian Cancer Updated",
+    newerResult <- runTests(newDataset, classes, "Latest Dataset",
                             "Differential Expression", permutations = 2, fold = 2,
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",
@@ -72,6 +72,9 @@ for the current classification task.
                        TrainParams(DLDAtrainInterface, FALSE),
                        PredictParams(DLDApredictInterface,
                                      getClasses = function(result) result[["class"]])))
-    newerResult                                     
+                                     
+    # However, only genes 76 to 100 are chosen, because the feature selections are
+    # carried over from the first cross-validated classification.
+    features(newerResult)
   }  
 }

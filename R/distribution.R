@@ -33,20 +33,19 @@ setMethod("distribution", "ClassifyResult",
     names(scores) <- sampleNames(result)
   } else { # features
     chosenFeatures <- features(result)
-    if(is.numeric(chosenFeatures)[[1]])
+    if(is.character(chosenFeatures[[1]])) # No longer numeric row indicies, but character feature IDs.
       allFeatures <- unlist(chosenFeatures)
-    else if(is.data.frame(chosenFeatures)[[1]])
+    else if(is.data.frame(chosenFeatures[[1]]))
       allFeatures <- do.call(rbind, chosenFeatures)
-    else if(is.numeric(chosenFeatures)[[2]])
+    else if(is.character(chosenFeatures[[2]]))
       allFeatures <- unlist(chosenFeatures)
-    else if(is.data.frame(chosenFeatures)[[2]])
+    else if(is.data.frame(chosenFeatures[[2]]))
       allFeatures <- do.call(rbind, lapply(chosenFeatures, function(iteration) do.call(rbind, iteration)))
     if(is.data.frame(chosenFeatures))
     {
       allFeatures <- paste(allFeatures[, "feature"], paste('(', allFeatures[, "dataset"], ')', sep = ''))
     }
     scores <- table(allFeatures)
-    names(scores) <- featureNames(result)[as.numeric(names(scores))]
   }
   
   if(dataType == "features" && summaryType == "percentage")

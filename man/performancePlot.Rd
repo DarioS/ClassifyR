@@ -7,17 +7,23 @@
 \usage{
   \S4method{performancePlot}{list}(results,
                    aggregate = character(),
-                   xVariable = c("classificationName", "datasetName", "selectionName", "validation"),
+                   xVariable = c("classificationName", "datasetName", "selectionName",
+                                 "validation"),
                    performanceName = NULL,
-                   boxFillColouring = c("classificationName", "datasetName", "selectionName", "validation", "None"),
+                   boxFillColouring = c("classificationName", "datasetName", "selectionName",
+                                        "validation", "None"),
                    boxFillColours = NULL,
-                   boxLineColouring = c("classificationName", "datasetName", "selectionName", "validation", "None"),
+                   boxLineColouring = c("classificationName", "datasetName", "selectionName",
+                                        "validation", "None"),
                    boxLineColours = NULL,
-                   rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
-                   columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
+                   rowVariable = c("None", "validation", "datasetName", "classificationName",
+                                   "selectionName"),
+                   columnVariable = c("datasetName", "classificationName", "validation",
+                                      "selectionName", "None"),
                    yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
                    xLabel = "Analysis", yLabel = performanceName,
-                   margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
+                   margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
+                   showLegend = TRUE, plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
@@ -70,13 +76,26 @@
                     data.frame(sample = sample(10, 20, replace = TRUE),
                                label = rep(c("Healthy", "Cancer"), each = 10)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  result1 <- ClassifyResult("Example", "Differential Expression", "t-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)), list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
-                            predicted, actual, list("resampleFold", 2, 2))
-  result1 <- calcPerformance(result1, "f")
-  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                          label = rep(c("Healthy", "Cancer"), each = 50))
-  result2 <- ClassifyResult("Example", "Differential Variability", "F-test", LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)), list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
-                            list(predicted), actual, validation = list("leave", 1))
-  result2 <- calcPerformance(result2, "f")                            
-  performancePlot(list(result1, result2), performanceName = "Precision-Recall F measure", title = "Comparison", boxLineColouring = "None")
+  result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
+                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
+                            list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
+                            predicted, actual, validation = list("resampleFold", 2, 2))
+  result1 <- calcCVperformance(result1, "macro F1")
+
+  predicted <- list(data.frame(sample = sample(10, 20, replace = TRUE),
+                              label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                    data.frame(sample = sample(10, 20, replace = TRUE),
+                               label = rep(c("Healthy", "Cancer"), each = 10)))
+  result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
+                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+                            list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
+                            predicted, actual, validation = list("resampleFold", 2, 2))
+  result2 <- calcCVperformance(result2, "macro F1")
+  
+  performancePlot(list(result1, result2), performanceName = "Macro F1 Score",
+                  title = "Comparison", boxLineColouring = "None", columnVariable = "None")
 }

@@ -60,7 +60,7 @@
 \references{
   edgeR: a Bioconductor package for differential expression analysis of digital gene
   expression data, Mark D. Robinson, Davis McCarthy, and Gordon Smyth, 2010,
-  Bioinformatics, Volume 26 Issue 1, \url{https://academic.oup.com/bioinformatics/article/26/1/139/182458}.
+  \emph{Bioinformatics}, Volume 26 Issue 1, \url{https://academic.oup.com/bioinformatics/article/26/1/139/182458}.
 }
 
 \examples{

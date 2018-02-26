@@ -43,21 +43,26 @@ identifying outlier samples that are difficult to classify.
 \author{Dario Strbenac}
 
 \examples{
-  if(require(curatedOvarianData) && require(sparsediscrim))
+  if(require(sparsediscrim))
   {
-    data(TCGA_eset)
-    badOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "deceased" & pData(TCGA_eset)[, "days_to_death"] <= 365)
-    goodOutcome <- which(pData(TCGA_eset)[, "vital_status"] == "living" & pData(TCGA_eset)[, "days_to_death"] >= 365 * 5)
-    TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
-    classes <- factor(rep(c("Poor", "Good"), c(length(badOutcome), length(goodOutcome))))
-    pData(TCGA_eset)[, "class"] <- classes
-    result <- runTests(TCGA_eset, "Ovarian Cancer", "Differential Expression", permutations = 2, fold = 2)
-    sampleDistribution <- distribution(result, "samples", xLabel = "Sample Error Rate",
-                                       title = "Distribution of Error Rates")
-    featureDistribution <- distribution(result, "features", summaryType = "count", plotType = "histogram",
+    data(melanomaResponse)
+    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+                                         performanceType = "balanced error",
+                                         better = "lower")
+    
+    result <- runTests(measurements, classes, "Melanoma", "Different Means",
+                       validation = "leaveOut", leave = 1,
+                       params = list(SelectParams(limmaSelection, "Moderated t Statistic",
+                                                  resubstituteParams = resubstituteParams),
+                                     TrainParams(DLDAtrainInterface, doesTests = FALSE),
+                                     PredictParams(DLDApredictInterface,
+                                                   getClasses = function(result)
+                                                                result[["class"]]))
+                       )
+    featureDistribution <- distribution(result, "features", summaryType = "count",
+                                        plotType = "histogram",
                                         xLabel = "Number of Cross-validations", yLabel = "Count",
                                         binwidth = 1)
-    print(head(sampleDistribution))
     print(head(featureDistribution))
   }
 }

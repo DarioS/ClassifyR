@@ -55,7 +55,7 @@
                  resubstituteParams = ResubstituteParams())
     
     # For pamr shrinkage selection.
-    SelectParams(nearestShrunkenCentroidSelectionInterface, datasetName = "Ovarian Cancer",
+    SelectParams(nearestShrunkenCentroidSelectionInterface, datasetName = "Cancer",
                  intermediate = "trained", subsetToSelections = FALSE)
   }
 }

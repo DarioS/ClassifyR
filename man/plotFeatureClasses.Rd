@@ -125,7 +125,7 @@
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
-  plotFeatureClasses(dataContainer, targets = targetFeatures,
-                     groupBy = c("clinical", "Gender"),
-                     xAxisLabel = expression(log[2](expression)))
+  #plotFeatureClasses(dataContainer, targets = targetFeatures,
+  #                   groupBy = c("clinical", "Gender"),
+  #                   xAxisLabel = expression(log[2](expression))) Wait for MultiAssayExperiment update.
 }

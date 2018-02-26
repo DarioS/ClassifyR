@@ -99,22 +99,22 @@
 
 \author{Dario Strbenac}
 \examples{
-  if(require(curatedOvarianData) && require(sparsediscrim))
+  if(require(sparsediscrim))
   {
-    data(TCGA_eset)
-    isDeceased <- pData(TCGA_eset)[, "vital_status"] == "deceased"
-    less1year <- pData(TCGA_eset)[, "days_to_death"] <= 365
-    badOutcome <- which(isDeceased & less1year)
-    isAlive <- pData(TCGA_eset)[, "vital_status"] == "living"
-    more5years <- pData(TCGA_eset)[, "days_to_death"] >= 365 * 5
-    goodOutcome <- which(isAlive & more5years)
-    TCGA_eset <- TCGA_eset[, c(badOutcome, goodOutcome)]
-    classes <- factor(rep(c("Poor", "Good"),
-                      c(length(badOutcome), length(goodOutcome))))
+    data(melanomaResponse)
     
-    # Two permuted datasets, each partitioned into two parts.
-    classified <- runTests(exprs(TCGA_eset), classes, "Ovarian Cancer",
-                           "Differential Expression", permutations = 2, fold = 2)
+    # Leave-one-out cross-validation.
+    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+                                         performanceType = "balanced error",
+                                         better = "lower")
+    classified <-
+    runTests(measurements, classes, "Melanoma", "Different Means",
+             validation = "leaveOut", leave = 1,
+             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
+                                        resubstituteParams = resubstituteParams),
+                           TrainParams(DLDAtrainInterface, doesTests = FALSE),
+                           PredictParams(DLDApredictInterface,
+                                         getClasses = function(result) result[["class"]])))
     class(classified)
   }
 }

@@ -71,17 +71,17 @@
   names(classes) <- paste("Sample", 1:50)
   genesDataset <- MultiAssayExperiment(list(RNA = genesRNAmatrix, SNP = genesSNPmatrix),
                                        colData = DataFrame(class = classes))
-    
+  # Wait for update to MultiAssayExperiment wideFormat function.  
   trainIDs <- paste("Sample", c(1:20, 26:45))
-  genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
-                                        targets = "RNA") # Exclude SNP data.
+  #genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
+  #                                      targets = "RNA") # Exclude SNP data.
                                          
   resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
                                            performanceType = "balanced error",
                                            better = "lower")
-  bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
-                    trainParams = TrainParams(fisherDiscriminant, TRUE),
-                    predictParams = PredictParams(function(){},
-                    getClasses = function(result) result),
-                    resubstituteParams = resubstituteParams)
+  #bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
+  #                  trainParams = TrainParams(fisherDiscriminant, TRUE),
+  #                  predictParams = PredictParams(function(){},
+  #                  getClasses = function(result) result),
+  #                  resubstituteParams = resubstituteParams)
 }

@@ -51,12 +51,12 @@ setMethod("calcCVperformance", c("ClassifyResult"),
       if(nrow(sampleResult) == 0)
         return(NA)
       if(performanceType == "sample error")
-        sum(sampleResult[, "label"] != sampleResult[, "actual"])
+        sum(sampleResult[, "predicted"] != sampleResult[, "actual"])
       else
-        sum(sampleResult[, "label"] == sampleResult[, "actual"])
+        sum(sampleResult[, "predicted"] == sampleResult[, "actual"])
     })
     performanceValues <- as.numeric(sampleMetricValues / table(factor(resultTable[, "sample"], levels = allIDs)))
-    names(performanceValues) <- sampleNames(result)
+    names(performanceValues) <- allIDs
     performanceName <- ifelse(performanceType == "sample error", "Sample-wise Error Rate", "Sample-wise Accuracy")
   } else if(performanceType == "error") {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
@@ -129,5 +129,6 @@ setMethod("calcCVperformance", c("ClassifyResult"),
       }
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
   }
+
   list(name = performanceName, values = performanceValues)
 }

@@ -513,20 +513,20 @@
 
 .methodFormals <- function(f) {
   tryCatch({
-      formals(paste('.', f@generic, sep = ''))
-    },
-    error = function(error) { # Perhaps only a DataFrame method was provided for a particular function.
-      fdef <- getGeneric(f)
-      method <- selectMethod(fdef, "DataFrame")
-      genFormals <- base::formals(fdef)
-      b <- body(method)
-      if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
-        local <- eval(b[[2]][[3]])
-        if(is.function(local))
-          return(formals(local))
-        warning("Expected a .local assignment to be a function. Corrupted method?")
-      }
-      genFormals
+    fdef <- getGeneric(f)
+    method <- selectMethod(fdef, "DataFrame")
+    genFormals <- base::formals(fdef)
+    b <- body(method)
+    if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+      local <- eval(b[[2]][[3]])
+      if(is.function(local))
+        return(formals(local))
+      warning("Expected a .local assignment to be a function. Corrupted method?")
+    }
+    genFormals
+  },
+    error = function(error) {
+      formals(f)
     })
 }
 
