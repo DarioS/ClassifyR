@@ -69,7 +69,7 @@
 }
 \examples{
   predictTable <- data.frame(sample = 1:10,
-                             label = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
+                             class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
   result <- ClassifyResult("Example", "Differential Expression", "A Selection",
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),

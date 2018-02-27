@@ -232,10 +232,10 @@
               predicted <- list(predictParams@getClasses(predicted))
             else
               predicted <- lapply(predicted, predictParams@getClasses)
-            if(class(predicted[[1]]) == "data.frame") # Predictor returned both scores and labels. Just use labels.
+            if(class(predicted[[1]]) == "data.frame") # Predictor returned both scores and classes Just use classes.
               predicted <- lapply(predicted, function(variety) variety[, sapply(variety, class) == "factor"])
             if(is.numeric(class(predicted[[1]]))) # Can't automatically decide on a threshold. Stop processing.
-               stop("Only numeric predictions are available. Predicted class labels must be provided.")
+               stop("Only numeric predictions are available. Predicted classes must be provided.")
             lapply(predicted, function(predictions)
             {
               calcExternalPerformance(classes[training], predictions, resubstituteParams@performanceType)
@@ -306,12 +306,12 @@
             predictedClasses <- list(predictParams@getClasses(trained))
           else
             predictedClasses <- lapply(trained, predictParams@getClasses)
-          if(class(trained[[1]]) == "data.frame") # Predictor returned both scores and labels. Just use labels.
+          if(class(trained[[1]]) == "data.frame") # Predictor returned both scores and classes. Just use classes.
             predictedFactor <- lapply(trained, function(variety) variety[, sapply(variety, class) == "factor"])
           else if(class(trained[[1]]) == "factor")
             predictedFactor <- trained
           else if(is.numeric(class(trained[[1]]))) # Can't automatically decide on a threshold. Stop processing.
-            stop("Only numeric predictions are available. Predicted class labels must be provided.")
+            stop("Only numeric predictions are available. Predicted classes must be provided.")
           
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
@@ -430,22 +430,22 @@
     if(class(predictions) == "list") # Mutiple varieties of predictions.
     {
       if(class(predictions[[1]]) == "data.frame")
-        labels <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
+        predictedClasses <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
       else
-        labels <- predictions
+        predictedClasses <- predictions
     } else { # A single variety of prediction.
       if(class(predictions) == "data.frame")
-        labels <- predictions[, sapply(predictions, class) == "factor"]
+        predictedClasses <- predictions[, sapply(predictions, class) == "factor"]
       else
-        labels <- predictions
+        predictedClasses <- predictions
     }
     
-    if(class(labels) == "list")
+    if(class(predictedClasses) == "list")
     {
-      lapply(labels, function(labelSet) calcExternalPerformance(classes, labelSet, resubstituteParams@performanceType))
+      lapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, resubstituteParams@performanceType))
       
     } else {
-      calcExternalPerformance(classes, labels, resubstituteParams@performanceType)
+      calcExternalPerformance(classes, predictedClasses, resubstituteParams@performanceType)
     }
   })
 

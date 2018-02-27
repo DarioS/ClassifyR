@@ -17,7 +17,7 @@
                                             to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
   \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }
 \arguments{
@@ -57,7 +57,7 @@
   \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
-  \item{returnType}{Default: \code{"label"}. Either \code{"label"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
                     or both labels and scores in a \code{data.frame}.}     

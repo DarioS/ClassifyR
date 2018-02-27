@@ -1,7 +1,8 @@
 ---
 title: "An Introduction to **ClassifyR**"
-author: Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod
-institute: The University of Sydney, Australia
+author: "Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod \\
+
+The University of Sydney, Australia."
 output: 
   BiocStyle::html_document:
     toc: true
@@ -9,6 +10,15 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{An Introduction to the ClassifyR Package}
 ---
+
+<style>
+    body .main-container {
+        max-width: 1600px;
+    }
+    p {
+      padding: 20px;
+    }
+</style>
 
 ```{r, echo = FALSE, results = "asis"}
 options(width = 130)
@@ -24,7 +34,7 @@ Each step can be provided with custom functions that follow some rules about par
 * Ordinary k-fold cross-validation
 * Permutation of the order of samples followed by k-fold cross-validation
 * Repeated x% test set cross-validation
-* leave-k-out cross-validation.
+* leave-k-out cross-validation
 
 *runTests* can use parallel processing capabilities in R to speed up cross-validations when many CPUs are available. The output of *runTests* is a *ClassifyResult* object which can be directly used by the performance evaluation functions. The process of classification is summarised by a flowchart.
 
@@ -54,7 +64,7 @@ CMA          | No  | No  | Yes | No  | No  | No  | No  | No
 
 To demonstrate some key features of ClassifyR, a small dataset consisting of 35 features and 20 blood samples from stage 4 melanoma samples will be used to quickly obtain results. The 20 patients which were treated by either nivolumab or pembrolizumab are divided into 11 responders and 9 non-responders. The journal article corresponding to the dataset was published in 2018 and is titled [High-dimensional Single-cell Analysis Predicts Response to Anti-PD-1 Immunotherapy](https://www.nature.com/articles/nm.4466). Although thousands of cells were measured for each sample, those measurements have been summarised to 1 value per protein by taking the median of all cells' measurements for a particular protein.
 
-```{r}
+```{r, message = FALSE}
 library(ClassifyR)
 data(melanomaResponse) # Replace with real dataset soon. This is rnorm.
 measurements[1:5, 1:5]
@@ -91,10 +101,10 @@ Here, leave-one-out cross-validation (LOOCV) is specified by the values of *vali
 
 The most frequently selected protein can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
 
-```{r, fig.height = 12, fig.width = 12, results = "hold", message = FALSE}
-selectionPercentages <- distribution(DEresults, plot = FALSE)
+```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
+selectionPercentages <- distribution(DMresults, plot = FALSE)
 mostChosen <- names(sort(selectionPercentages, decreasing = TRUE)[1])
-bestProteinPlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.25)
+bestProteinPlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1)
 ```
 
 The means of the protein levels are substantially different between the responder and non-responder patients. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
@@ -102,16 +112,16 @@ The means of the protein levels are substantially different between the responde
 Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced error rate is calculated considering all samples, each of which was in the test set once. The balanced error rate is defined as the average of the classification errors of each class.
 
 ```{r}
-DEresults <- calcCVperformance(DEresults, "balanced error")
-DEresults
-performance(DEresults)
+DMresults <- calcCVperformance(DMresults, "balanced error")
+DMresults
+performance(DMresults)
 ```
 
 The error rate is small. If a cross-validation scheme such as 100 permutations, 5 folds was used instead, there would be 100 data sets to cross-validate and numerous predictions made of each sample, resulting in 100 values for each performance metric. Then, the function *performancePlot* could be used to visualise the distribution of the metric and even compare different classifiers. See the documentation of *performancePlot* for more details.
 
 ### Comparison of Different Classifications
 
-The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback–Leibler divergence ranking and resubstitution error as a feature selection heursitic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
+The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heursitic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
 DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribution",
@@ -126,105 +136,81 @@ DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribut
 DDresults
 ```
 
-Here, *doesTests* is TRUE because *naiveBayesKernel* has input parameters for the traing data and the test data. The naive Bayes kernel classifier has many options specifying how the distances between class densities are used. For more information, consult the documentation of the function named *naiveBayesKernel*.
+Here, *doesTests* is TRUE because *naiveBayesKernel* has input parameters for the training data and the test data. The naive Bayes kernel classifier has many options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
 
-Now, the classification error for each sample is calculated for both the differential means and differential distribution classifiers.
+Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
 ```{r, fig.width = 10, fig.height = 7}
 library(grid)
-DMresults <- calcCVperformance(DEresults, "sample error")
+DMresults <- calcCVperformance(DMresults, "sample error")
 DDresults <- calcCVperformance(DDresults, "sample error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
-errorPlot <- samplesMetricMap(resultsList, metric = "error")
+errorPlot <- samplesMetricMap(resultsList, metric = "error", plot = FALSE)
 grid.draw(errorPlot)
 ```
 
-```{r, fig.width = 10, fig.height = 7}
-accuracyPlot <- samplesMetricMap(resultsList, metric = "accuracy")
+The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them.
+
+The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 10 different features were for the differential distribution classifier for all 20 cross-validations.
+
+```{r}
+rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:10, xLabelPositions = 1:10,
+                            lineColourVariable = "None", pointTypeVariable = "None",
+                            columnVariable = "None", plot = FALSE)
+rankOverlaps
 ```
 
-The *performancePlot* function allows the comparison of overall performance measures, such as accuracy and error rate.
+The top-ranked features are highly consistent between all pairs of the 20 cross-validations, as is intuitively expected if only one sample changes between each cross-validation.
 
-```{r, fig.width = 6.8, fig.height = 5}
-errorBoxes <- performancePlot(list(DEresults, DVresults, DDresults[["weight=crossover distance"]]),
-                              performanceName = "Balanced Error Rate",
-                              boxFillColouring  = "None", boxLineColouring = "None",
-                              title = "Errors Across Classification Types")
-```
-
-This plots the balanced error rates of the three kinds of classification together.
+For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
 ## Using an Independent Test Set
 
-Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are well-designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test set.
-
-To demonstrate how this kind of analysis can be done with ClassifyR, a training and a test dataset are simulated, with 500 features and 50 samples in each set. 25 features will be differentially expressed in the training set. 25 features will be differentially expressed in the test set, and 15 of them will be the same features as in the training set.
-
-```{r}
-trainingExpr <- matrix(rnorm(500 * 50, 9, 3), ncol = 50)
-trainingClasses <- factor(rep(c("Healthy", "Diseased"), each = 25), levels = c("Healthy", "Diseased"))
-trainingExpr[101:125, trainingClasses == "Diseased"] <- trainingExpr[101:125, trainingClasses == "Diseased"] - 2
-
-testingExpr <- matrix(rnorm(500 * 50, 9, 3), ncol = 50)
-testingClasses <- factor(rep(c("Healthy", "Diseased"), each = 25), levels = c("Healthy", "Diseased"))
-testingExpr[111:135, testingClasses == "Diseased"] <- testingExpr[111:135, testingClasses == "Diseased"] - 2
-```
-
-There are two matrices; one for the training set and one for the test set. Since *runTest* expects a single expression object, the matrices are combined putting the columns together and concatenating the classes vectors. The specification of training and testing samples happens by providing the column numbers of each group of samples.
-
-```{r}
-allExpr <- cbind(trainingExpr, testingExpr)
-allClasses <- unlist(list(trainingClasses, testingClasses))
-independentResult  <- runTest(allExpr, allClasses, datasetName = "Simulation", classificationName = "DE",
-                              training = 1:50, testing = 51:100)
-independentResult
-```
+Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are well-designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
 
 ## Cross-validating Selected Features on a Different Dataset
 
-Once a cross-validation classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing ClassifyResult object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset. The classifier training is redone.
+Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone.
 
 ## Generating a ROC Plot
 
-Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier and Fisher discriminant analysis used previously had the *returnType* variable set to *"both"*, so labels and scores were both stored in the classification result. Setting *returnType* to *"score"* is also sufficient. Many existing classifiers in other R package also have an option that allows a score or probability to be calculated.
+Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously had its *returnType* parameter set to *"both"*, so class predictions and scores were both stored in the classification result. In this case, a data.frame with two columns (named "class" and "score") is returned by the classifier to the framework. Setting *returnType* to *"score"* is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
 
 ```{r, fig.height = 5, fig.width = 6}
-ROCcurves <- ROCplot(list(DVresults, DDresults[["weight=crossover distance"]]))
+ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
+
+This ROC plot shows the classifiability of the melanoma dataset is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
 ## Parameter Tuning
 
-Some classifiers allow the setting of a tuning parameter, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. The SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more.
+Some classifiers allow the setting of a tuning parameter, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more.
 
-This is acheived in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. If *tuneParams* has more than one element, all combination of values of the tuning variables are tried. The performance criterion specified to *resubstituteParams* is also used as the criterion for choosing the best tuning parameter(s). This means that any of the performance measures calculated by **ROCR** can be used.
-
-A linear SVM is demonstrated. It only has one tuning parameter, the cost value.
+This is acheived in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. If *tuneParams* has more than one element, all combination of values of the tuning variables are tried. The performance criterion specified to *resubstituteParams* is also used as the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
-library(e1071) # Provides SVM functions.
-resubstituteParams = ResubstituteParams(nFeatures = c(25, 50, 75, seq(100, 1000, 100)),
-                                        performanceType = "balanced", better = "lower")
-SVMresults <- runTests(ovarSet, "Ovarian Cancer", "Differential Expression", validation = "permute",
-                       permutations = 5, folds = 3,
+SVMresults <- runTests(measurements, classes, "Melanoma", "Tuned SVM",
+                       validation = "leave", leave = 1,
                        params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
-                                     TrainParams(svm, TRUE, doesTests = FALSE, kernel = "linear",                                                             resubstituteParams = resubstituteParams,
+                                     TrainParams(SVMtrainInterface, doesTests = FALSE, kernel = "linear",                                                    resubstituteParams = resubstituteParams,
                                                  tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
-                                     PredictParams(predict, TRUE, getClasses = function(result) result)),
-                       parallelParams = bpparam(), verbose = 1)
+                                     PredictParams(SVMpredictInterface,
+                                                   getClasses = function(result) result))
+                       )
 ```
 
 The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
 
 ```{r}
 length(tunedParameters(SVMresults))
-tunedParameters(SVMresults)[[1]]
+tunedParameters(SVMresults)[1:3]
 ```
 
 These are the cost values chosen for the three folds of the first resampling.
 
-## Conclusion
+## Summary
 
-When many replicates per class are available, differential variability or distribution classification may have better prediction perfomance than traditional differential expression analysis. Judging by feature selection, the probes chosen for their differential distribution have much stronger differences than those for expression.
+**ClassifyR** is a framework for cross-validated classification that provides a variety of unique functions for performance evaluation. It provides wrappers for many popular classifiers but is designed to be extensible if other classifiers are desired.
 
 ## Rules Regarding Input Variables of New Functions
 
@@ -235,9 +221,9 @@ htmltools::img(src = knitr::image_uri("functionRules.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
-The argument *verbose* is sent from *runTest* to these functions so they must handle it. In the ClassifyR framework, *verbose* is a number which indicates the amount of progress messages to be printed. If verbose is 0, no progress messages are printed. If it is 1, only one message is printed for every 10 cross-validations completed. If it is 2, in addition to the messages printed when it is 1, a message is printed each time one of the stages of classification (transformation, feature selection, training, prediction) is done. If it is 3, in addition to the messages printed for values 1 and 2, progress messages are printed from within the classification functions themselves.
+The argument *verbose* is sent from *runTest* to these functions so they must handle it, even if not explicitly using it. In the **ClassifyR** framework, *verbose* is a number which indicates the amount of progress messages to be printed. If verbose is 0, no progress messages are printed. If it is 1, only one message is printed for every 10 cross-validations completed. If it is 2, in addition to the messages printed when it is 1, a message is printed each time one of the stages of classification (transformation, feature selection, training, prediction) is done. If it is 3, in addition to the messages printed for values 1 and 2, progress messages are printed from within the classification functions themselves.
 
-A version of each inlcuded transformation, selection, training and prediction function is typically implmented for (1) a numeric matrix for which the rows are for features and columns are for samples and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* and a class specification and (3) a *MultiAssayExperiment* which stores class information in the *colData* slot's *DataFrame* with column name "class". For the inputs which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the function which accepts a *DataFrame* contains the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classses either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide felxibility regarding input data. See the code of existing functions in the package for examples of this, if intending to contribute novel classification-related methods to **ClassifyR**.
+A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classses either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide felxibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.
 
 ## References
 Strbenac D., Yang, J., Mann, G.J. and Ormerod, J. T. (2015) [ClassifyR: an R package for performance assessment of classification with applications to transcriptomics](http://bioinformatics.oxfordjournals.org/content/31/11/1851), *Bioinformatics*, 31(11):1851-1853

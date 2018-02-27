@@ -10,7 +10,7 @@ for the test set.
 \usage{
   \S4method{fisherDiscriminant}{matrix}(measurements, classes, test, ...)
   \S4method{fisherDiscriminant}{DataFrame}(measurements, classes, test,
-                                           returnType = c("label", "score", "both"), verbose = 3)
+                                           returnType = c("class", "score", "both"), verbose = 3)
   \S4method{fisherDiscriminant}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
@@ -29,7 +29,7 @@ for the test set.
                  integer variables from the clinical data table will be used.}              
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{returnType}{Default: \code{"label"}. Either \code{"label"}, \code{"score"}, or \code{"both"}.
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"}, or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
                     or both labels and scores in a \code{data.frame}.}                    

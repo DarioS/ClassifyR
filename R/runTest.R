@@ -177,7 +177,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
     if(class(predictedClasses) != "list")
     {
       return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
-                            list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = predictedClasses)),
+                            list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, class = predictedClasses)),
                             classes, list("independent"), tuneDetails)
              )
     } else { # A variety of predictions were made.
@@ -185,7 +185,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
         ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
-                       list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, label = varietyPredictions)),
+                       list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, class = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
       }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))
     }

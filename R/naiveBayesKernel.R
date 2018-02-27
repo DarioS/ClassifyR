@@ -14,7 +14,7 @@ setMethod("naiveBayesKernel", "DataFrame",
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
-                   minDifference = 0, returnType = c("label", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]
@@ -95,7 +95,7 @@ setMethod("naiveBayesKernel", "DataFrame",
 
   if(verbose == 3)
   {
-    switch(returnType, label = ,
+    switch(returnType, class = ,
            both = message("Calculating class scores and determining class labels."),
            score = message("Calculating class scores.")
     )
@@ -183,12 +183,12 @@ setMethod("naiveBayesKernel", "DataFrame",
   resultsList <- lapply(levels(varietyFactor), function(variety)
   {
     varietyPredictions <- subset(testPredictions, varietyFactor == variety)
-    switch(returnType, label = varietyPredictions[, "class"],
+    switch(returnType, class = varietyPredictions[, "class"],
            score = varietyPredictions[, "score"],
-           both = data.frame(label = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
   })
   names(resultsList) <- levels(varietyFactor)
-  
+
   if(length(resultsList) == 1) # No varieties.
     resultsList[[1]]
   else

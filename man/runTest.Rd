@@ -59,6 +59,10 @@
   if(require(sparsediscrim))
   {
     data(melanomaResponse)
+    # Leave-one-out cross-validation.
+    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+                                         performanceType = "balanced error",
+                                         better = "lower")
     runTest(measurements, classes, "Melanoma", "Different Means",
             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                        resubstituteParams = resubstituteParams),

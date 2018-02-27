@@ -66,7 +66,7 @@ setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
           function(models, test, weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
                    densityXvalues = 1024, minDifference = 0,
-                   returnType = c("label", "score", "both"), verbose = 3)
+                   returnType = c("class", "score", "both"), verbose = 3)
 {
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]
@@ -141,7 +141,7 @@ setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
   
   if(verbose == 3)
   {
-    switch(returnType, label = ,
+    switch(returnType, class = ,
            both = message("Calculating class scores and determining class labels."),
            score = message("Calculating class scores.")
     )
@@ -229,9 +229,9 @@ setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
   resultsList <- lapply(levels(varietyFactor), function(variety)
   {
     varietyPredictions <- subset(testPredictions, varietyFactor == variety)
-    switch(returnType, label = varietyPredictions[, "class"],
+    switch(returnType, class = varietyPredictions[, "class"],
            score = varietyPredictions[, "score"],
-           both = data.frame(label = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
   })
   names(resultsList) <- levels(varietyFactor)
   

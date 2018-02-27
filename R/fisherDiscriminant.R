@@ -10,7 +10,7 @@ setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
 })
 
 setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
-          function(measurements, classes, test, returnType = c("label", "score", "both"), verbose = 3)
+          function(measurements, classes, test, returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]
@@ -36,7 +36,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
   if(verbose == 3)
     message("Critical value calculated.")
   
-  labels <- factor(apply(test, 1, function(testSample)
+  classes <- factor(apply(test, 1, function(testSample)
   {
     if(aT %*% as.matrix(testSample) >= criticalValue)
       levels(classes)[1]
@@ -45,7 +45,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
   }), levels = levels(classes))
   scores <- apply(test, 1, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
   
-  switch(returnType, label = labels, score = scores, both = data.frame(label = labels, score = scores))  
+  switch(returnType, class = classes, score = scores, both = data.frame(class = classes, score = scores))  
 })
 
 # One or more omics datasets, possibly with clinical data.

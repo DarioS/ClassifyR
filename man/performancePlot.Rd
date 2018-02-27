@@ -68,13 +68,13 @@
 
 \examples{
   predicted <- list(data.frame(sample = sample(10, 20, replace = TRUE),
-                              label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)))
+                               class = rep(c("Healthy", "Cancer"), each = 10)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
@@ -83,13 +83,13 @@
   result1 <- calcCVperformance(result1, "macro F1")
 
   predicted <- list(data.frame(sample = sample(10, 20, replace = TRUE),
-                              label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)),
+                               class = rep(c("Healthy", "Cancer"), each = 10)),
                     data.frame(sample = sample(10, 20, replace = TRUE),
-                               label = rep(c("Healthy", "Cancer"), each = 10)))
+                               class = rep(c("Healthy", "Cancer"), each = 10)))
   result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),

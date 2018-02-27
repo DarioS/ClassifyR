@@ -19,7 +19,7 @@
   \S4method{mixModelsTest}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
                          weight = c("all", "height difference", "crossover distance", "sum differences"),
                          densityXvalues = 1024, minDifference = 0,
-                         returnType = c("label", "score", "both"), verbose = 3)
+                         returnType = c("class", "score", "both"), verbose = 3)
   \S4method{mixModelsTest}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  
 }
 \arguments{
@@ -65,7 +65,7 @@
                        feature to be allowed to vote. Can be a vector of cutoffs. If no features for a
                        particular sample have a difference large enough, the class predicted is
                        simply the largest class.}
-  \item{returnType}{Default: \code{"label"}. Either \code{"label"}, \code{"score"} or \code{"both"}. Sets the return value
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{data.frame}.}                     

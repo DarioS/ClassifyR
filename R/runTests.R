@@ -153,12 +153,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
               {
                 if(resultType == "testSet" || class(sample[[1]][["predictions"]]) != "data.frame")
                 {
-                                              # First fold predictions are a not data.frame.
+                  # First fold predictions are a not data.frame.
                   reshaped <- unlist(lapply(sample, function(fold) fold[[resultType]]))
                   if(resultType == "predictions")
                     reshaped <- factor(reshaped, levels = levels(classes))
                   reshaped
-                } else { # Predictions is a data.frame with labels and scores.
+                } else { # Predictions is a data.frame with classes and scores.
                   resultTable <- do.call(rbind, lapply(sample, function(fold) fold[[resultType]]))
                   resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))
                   resultTable
@@ -215,7 +215,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       resultsLists
     })
     names(resultsByVariety) <- varietyNames
-  } else { # leave k out or ordinary, unresampled k-fold cross-validation.
+  } else {# leave k out or ordinary, unresampled k-fold cross-validation.
     if(class(results[[1]][["predictions"]]) == "list")
     {
       multipleVarieties <- TRUE
@@ -230,26 +230,27 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       resultsLists <- lapply(resultTypes, function(resultType)
       {
         resultList <- lapply(results, function(sample) sample[[resultType]])
-        
         if(resultType == "testSet" || resultType == "predictions" && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
         {
           reshaped <- unlist(resultList)
           if(resultType == "predictions")
             reshaped <- factor(reshaped, levels = levels(classes)) # Enforce that levels are in the same order as input by the user.
           reshaped
-        }
-        else if (resultType == "predictions" && multipleVarieties == FALSE) # Predictions are in a data.frame.
-          {resultTable <- do.call(rbind, resultList)
-          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))}
-        else if(multipleVarieties == TRUE && resultType == "predictions" && class(resultList[[1]]) != "data.frame")
+        } else if (resultType == "predictions" && multipleVarieties == FALSE) { # Predictions are in a data.frame.
+          resultTable <- do.call(rbind, resultList)
+          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))
+          resultTable
+        } else if(multipleVarieties == TRUE && resultType == "predictions" && class(resultList[[1]]) != "data.frame") {
           factor(unlist(lapply(resultList, "[[", varietyName)), levels = levels(classes))
-        else if(multipleVarieties == TRUE && resultType == "predictions") # Predictions are factor or numeric.
-          {resultTable <- do.call(rbind, lapply(resultList, "[[", varietyName))
-          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))}
-        else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune"))
+        } else if(multipleVarieties == TRUE && resultType == "predictions") { # Predictions are factor or numeric.
+          resultTable <- do.call(rbind, lapply(resultList, "[[", varietyName))
+          resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))
+          resultTable
+        } else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune")) {
           lapply(resultList, "[[", varietyName)
-        else # For multipleVarieties being FALSE, and not the predicted classes.
+        } else { # For multipleVarieties being FALSE, and not the predicted classes.
           resultList
+        }
       })
       names(resultsLists) <- resultTypes
       resultsLists
@@ -263,20 +264,22 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
     {
       lapply(1:length(results), function(resample)
       {
+        sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
         switch(class(resultVariety[["predictions"]][[resample]]),
-               factor = data.frame(sample = resultVariety[["testSet"]][[resample]], label = resultVariety[["predictions"]][[resample]]),
-               numeric = data.frame(sample = resultVariety[["testSet"]][[resample]], score = resultVariety[["predictions"]][[resample]]),
-               data.frame = data.frame(sample = resultVariety[["testSet"]][[resample]],
+               factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]][[resample]]),
+               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]]),
+               data.frame = data.frame(sample = sampleNames,
                                        label = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"],
                                        score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"]))
                 
       })
     } else { # leave k out or ordinary, unresampled k-fold cross-validation.
+      sampleNames <- rownames(measurements)[resultVariety[["testSet"]]]
       list(switch(class(resultVariety[["predictions"]]),
-             factor = data.frame(sample = resultVariety[["testSet"]], label = resultVariety[["predictions"]]),
-             numeric = data.frame(sample = resultVariety[["testSet"]], score = resultVariety[["predictions"]]),
-             data.frame = data.frame(sample = resultVariety[["testSet"]],
-                                     label = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"],
+             factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]]),
+             numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]]),
+             data.frame = data.frame(sample = sampleNames,
+                                     class = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"],
                                      score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"])))
     }
   })

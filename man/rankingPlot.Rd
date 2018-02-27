@@ -98,7 +98,7 @@ The overlaps are converted to percentages and plotted as lineplots.
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                          label = rep(c("Healthy", "Cancer"), each = 50))
+                          class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   rankList <- list(list(1:100, c(5:1, 6:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
   result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection", LETTERS[1:10], LETTERS[10:1],
@@ -107,7 +107,7 @@ The overlaps are converted to percentages and plotted as lineplots.
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, list("resampleFold", 2, 2))
   
-  predicted[, "label"] <- sample(predicted[, "label"])
+  predicted[, "class"] <- sample(predicted[, "class"])
   rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
   result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection", LETTERS[1:10], LETTERS[10:1],
                             rankList,
