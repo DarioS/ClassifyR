@@ -10,8 +10,8 @@
 \usage{
   \S4method{KullbackLeiblerSelection}{matrix}(measurements, classes, ...)
   \S4method{KullbackLeiblerSelection}{DataFrame}(measurements, classes, datasetName,
-                                trainParams, predictParams, resubstituteParams, ...,
-                                selectionName = "Kullback-Leibler Divergence", verbose = 3)
+                         trainParams, predictParams, resubstituteParams, ...,
+                               selectionName = "Kullback-Leibler Divergence", verbose = 3)
   \S4method{KullbackLeiblerSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

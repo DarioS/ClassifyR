@@ -56,7 +56,7 @@
     
     trained <- nearestShrunkenCentroidTrainInterface(genesMatrix, classes)
     selected <- nearestShrunkenCentroidSelectionInterface(genesMatrix, classes, "Example",
-                                                          trained)
+                                                         trained)
                                                           
     selected@chosenFeatures                                                         
   }

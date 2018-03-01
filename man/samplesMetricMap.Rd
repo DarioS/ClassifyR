@@ -7,16 +7,16 @@ and one row for each classification result.
             }
 \usage{
   \S4method{samplesMetricMap}{list}(results,
-                   comparison = c("classificationName", "datasetName", "selectionName",
-                                  "validation"),
-                   metric = c("error", "accuracy"),
-                   metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
+                     comparison = c("classificationName", "datasetName", "selectionName",
+                                "validation"),
+                 metric = c("error", "accuracy"),
+                     metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
-                   classColours = c("#3F48CC", "#880015"), fontSizes = c(24, 16, 12, 12, 12),
-                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE,
-                   xAxisLabel = "Sample Name", showXtickLabels = TRUE,
-                   yAxisLabel = "Analysis", showYtickLabels = TRUE,
-                   legendSize = grid::unit(1, "lines"), plot = TRUE)
+                     classColours = c("#3F48CC", "#880015"), fontSizes = c(24, 16, 12, 12, 12),
+                  mapHeight = 4, title = "Error Comparison", showLegends = TRUE,
+                 xAxisLabel = "Sample Name", showXtickLabels = TRUE,
+                 yAxisLabel = "Analysis", showYtickLabels = TRUE,
+                 legendSize = grid::unit(1, "lines"), plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}

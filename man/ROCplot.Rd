@@ -6,10 +6,11 @@
        }
 \usage{
   \S4method{ROCplot}{list}(results, nBins = sapply(results, totalPredictions),
-                   lineColourVariable = c("classificationName", "datasetName", "selectionName", "validation", "None"), lineColours = NULL,
-                   lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
-                   plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate",
-                   plot = TRUE, showAUC = TRUE)
+          lineColourVariable = c("classificationName", "datasetName", "selectionName",
+        "validation", "None"), lineColours = NULL,
+          lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
+        plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate",
+        yLabel = "True Positive Rate", plot = TRUE, showAUC = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}

@@ -10,8 +10,8 @@
 \usage{
   \S4method{limmaSelection}{matrix}(measurements, classes, ...)
   \S4method{limmaSelection}{DataFrame}(measurements, classes, datasetName,
-                                       trainParams, predictParams, resubstituteParams, ...,
-                                       selectionName = "Moderated t-test", verbose = 3)
+              trainParams, predictParams, resubstituteParams, ...,
+              selectionName = "Moderated t-test", verbose = 3)
   \S4method{limmaSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{

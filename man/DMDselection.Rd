@@ -10,8 +10,9 @@
 \usage{
   \S4method{DMDselection}{matrix}(measurements, classes, ...)
   \S4method{DMDselection}{DataFrame}(measurements, classes, datasetName, differences = c("both", "location", "scale"),
-                                     trainParams, predictParams, resubstituteParams, ...,
-                                     selectionName = "Differences of Medians and Deviations", verbose = 3)
+             trainParams, predictParams, resubstituteParams, ...,
+             selectionName = "Differences of Medians and Deviations",
+             verbose = 3)
   \S4method{DMDselection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

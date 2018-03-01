@@ -5,25 +5,24 @@
 \description{Draws a graphical summary of a particular performance measure for a list of classifications
        }
 \usage{
-  \S4method{performancePlot}{list}(results,
-                   aggregate = character(),
-                   xVariable = c("classificationName", "datasetName", "selectionName",
-                                 "validation"),
-                   performanceName = NULL,
-                   boxFillColouring = c("classificationName", "datasetName", "selectionName",
-                                        "validation", "None"),
-                   boxFillColours = NULL,
-                   boxLineColouring = c("classificationName", "datasetName", "selectionName",
-                                        "validation", "None"),
-                   boxLineColours = NULL,
-                   rowVariable = c("None", "validation", "datasetName", "classificationName",
-                                   "selectionName"),
-                   columnVariable = c("datasetName", "classificationName", "validation",
-                                      "selectionName", "None"),
-                   yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
-                   xLabel = "Analysis", yLabel = performanceName,
-                   margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
-                   showLegend = TRUE, plot = TRUE)
+  \S4method{performancePlot}{list}(results, aggregate = character(),
+                    xVariable = c("classificationName", "datasetName", "selectionName",
+                              "validation"),
+                performanceName = NULL,
+                    boxFillColouring = c("classificationName", "datasetName", "selectionName",
+                                     "validation", "None"),
+                boxFillColours = NULL,
+                    boxLineColouring = c("classificationName", "datasetName", "selectionName",
+                                     "validation", "None"),
+                boxLineColours = NULL,
+                    rowVariable = c("None", "validation", "datasetName", "classificationName",
+                                 "selectionName"),
+                    columnVariable = c("datasetName", "classificationName", "validation",
+                                   "selectionName", "None"),
+                 yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
+                xLabel = "Analysis", yLabel = performanceName,
+                margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
+                showLegend = TRUE, plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}

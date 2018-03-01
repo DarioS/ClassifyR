@@ -1,8 +1,7 @@
 ---
 title: "An Introduction to **ClassifyR**"
-author: "Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod \\
-
-The University of Sydney, Australia."
+author: Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod <br>
+        The University of Sydney, Australia.
 output: 
   BiocStyle::html_document:
     toc: true
@@ -52,8 +51,8 @@ In the following sections, some of the most useful functions provided in **Class
 
 There are a few other frameworks for classification in R. The table below provides a comparison of which features they offer.
 
-Package | Run User-defined Classifiers | Parallel Execution on any OS | Parameter Tuning | Intel DAAL Performance Metrics | Ranking and Selection Plots | Class Distribution Plot | Error Heatmap | Direct Support for MultiAssayExperiment Input
--------|--------|-------|--------|--------|---------|-----------|----------
+Package | Run User-defined Classifiers | Parallel Execution on any OS | Parameter Tuning | Intel DAAL Performance Metrics | Ranking and Selection Plots | Class Distribution Plot | Sample-wise Error Heatmap | Direct Support for MultiAssayExperiment Input
+-------|--------|-------|--------|--------|---------|-----------|----------|----------
 **ClassifyR**    | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes
 caret        | Yes | Yes | Yes | No  | No  | No  | No  | No
 MLInterfaces | Yes | No  | No  | No  | No  | No  | No  | No
@@ -111,13 +110,15 @@ The means of the protein levels are substantially different between the responde
 
 Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced error rate is calculated considering all samples, each of which was in the test set once. The balanced error rate is defined as the average of the classification errors of each class.
 
+See the documentation of *calcCVperformance* for a list of performance metrics which may be calculated.
+
 ```{r}
 DMresults <- calcCVperformance(DMresults, "balanced error")
 DMresults
 performance(DMresults)
 ```
 
-The error rate is small. If a cross-validation scheme such as 100 permutations, 5 folds was used instead, there would be 100 data sets to cross-validate and numerous predictions made of each sample, resulting in 100 values for each performance metric. Then, the function *performancePlot* could be used to visualise the distribution of the metric and even compare different classifiers. See the documentation of *performancePlot* for more details.
+The error rate is small. If a cross-validation scheme such as 100 permutations, 5 folds was used instead, there would be 100 data sets to cross-validate and numerous predictions made of each sample, resulting in 100 values for each performance metric. Then, the function *performancePlot* could be used to visualise the distribution of the metric and even compare different classifiers. See the documentation of *performancePlot* for more details. If only a vector of predictions and a vector of actual classes is available, such as from an old study which did not use **ClassifyR**, then *calcExternalPerformance* can be used on a pair of factor vectors which have the same length.
 
 ### Comparison of Different Classifications
 
@@ -226,5 +227,5 @@ The argument *verbose* is sent from *runTest* to these functions so they must ha
 A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classses either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide felxibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.
 
 ## References
-Strbenac D., Yang, J., Mann, G.J. and Ormerod, J. T. (2015) [ClassifyR: an R package for performance assessment of classification with applications to transcriptomics](http://bioinformatics.oxfordjournals.org/content/31/11/1851), *Bioinformatics*, 31(11):1851-1853
+Strbenac D., Yang, J., Mann, G.J. and Ormerod, J. T. (2015) [ClassifyR: an R package for performance assessment of classification with applications to transcriptomics](http://bioinformatics.oxfordjournals.org/content/31/11/1851), *Bioinformatics*, 31(11):1851-1853 <br>
 Strbenac D., Mann, G.J., Yang, J. and Ormerod, J. T. (2016) [Differential distribution improves gene selection stability and has competitive classification performance for patient survival](http://nar.oxfordjournals.org/content/44/13/e119), *Nucleic Acids Research*, 44(13):e119

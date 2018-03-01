@@ -10,8 +10,8 @@ for the current classification task.
 \usage{
   \S4method{previousSelection}{matrix}(measurements, ...)
   \S4method{previousSelection}{DataFrame}(measurements, classes, datasetName,
-                               classifyResult, minimumOverlapPercent = 80,
-                               selectionName = "Previous Selection", .iteration, verbose = 3)
+                  classifyResult, minimumOverlapPercent = 80,
+                        selectionName = "Previous Selection", .iteration, verbose = 3)
   \S4method{previousSelection}{MultiAssayExperiment}(measurements, ...)
 }
 \arguments{

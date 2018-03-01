@@ -12,22 +12,27 @@ The overlaps are converted to percentages and plotted as lineplots.
        }
 \usage{
   \S4method{rankingPlot}{list}(results, topRanked = seq(10, 100, 10),
-                            comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
-                            referenceLevel = NULL,
-                            lineColourVariable = c("validation", "datasetName", "classificationName",
-                                                   "selectionName", "None"),
-                            lineColours = NULL, lineWidth = 1,
-                            pointTypeVariable = c("datasetName", "classificationName", "validation",
-                                                  "selectionName", "None"),
-                            pointSize = 2, legendLinesPointsSize = 1,
-                            rowVariable = c("None", "datasetName", "classificationName", "validation", "selectionName"),
-                            columnVariable = c("classificationName", "datasetName", "validation", "selectionName", "None"),
-                            yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16),
-                            title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
-                            xLabelPositions = seq(10, 100, 10),
-                            yLabel = if(is.null(referenceLevel)) "Average Common Features (\%)" else paste("Average Common Features with", referenceLevel, "(\%)"),
-                            margin = grid::unit(c(0, 0, 0, 0), "lines"),
-                            showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
+            comparison = c("within", "classificationName", "validation",
+                           "datasetName", "selectionName"),
+            referenceLevel = NULL,
+            lineColourVariable = c("validation", "datasetName", "classificationName",
+                                   "selectionName", "None"),
+            lineColours = NULL, lineWidth = 1,
+            pointTypeVariable = c("datasetName", "classificationName", "validation",
+                                  "selectionName", "None"),
+            pointSize = 2, legendLinesPointsSize = 1,
+            rowVariable = c("None", "datasetName", "classificationName", "validation",
+                            "selectionName"),
+            columnVariable = c("classificationName", "datasetName", "validation",
+                               "selectionName", "None"),
+            yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16),
+            title = if(comparison[1] == "within") "Feature Ranking Stability" else
+                    "Feature Ranking Commonality",
+            xLabelPositions = seq(10, 100, 10),
+            yLabel = if(is.null(referenceLevel)) "Average Common Features (\%)" else
+            paste("Average Common Features with", referenceLevel, "(\%)"),
+            margin = grid::unit(c(0, 0, 0, 0), "lines"),
+            showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} or \code{\link{SelectResult}} objects.}
@@ -101,16 +106,16 @@ The overlaps are converted to percentages and plotted as lineplots.
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   rankList <- list(list(1:100, c(5:1, 6:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection", LETTERS[1:10], LETTERS[10:1],
-                            rankList,
+  result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection",
+                            LETTERS[1:10], LETTERS[10:1], rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, list("resampleFold", 2, 2))
   
   predicted[, "class"] <- sample(predicted[, "class"])
   rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection", LETTERS[1:10], LETTERS[10:1],
-                            rankList,
+  result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection",
+                            LETTERS[1:10], LETTERS[10:1], rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, validation = list("resampleFold", 2, 2))

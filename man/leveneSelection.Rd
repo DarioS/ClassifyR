@@ -10,8 +10,8 @@
 \usage{
   \S4method{leveneSelection}{matrix}(measurements, classes, ...)
   \S4method{leveneSelection}{DataFrame}(measurements, classes, datasetName,
-                                        trainParams, predictParams, resubstituteParams,
-                                        selectionName = "Levene Test", verbose = 3)
+                trainParams, predictParams, resubstituteParams,
+                selectionName = "Levene Test", verbose = 3)
   \S4method{leveneSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

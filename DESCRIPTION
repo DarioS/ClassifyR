@@ -9,7 +9,7 @@ Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
 biocViews: Classification, Survival
-Depends: R (>= 3.4.0), methods, S4Vectors, MultiAssayExperiment, BiocParallel
+Depends: R, methods, S4Vectors (>= 0.17.35), MultiAssayExperiment (>= 1.5.80), BiocParallel
 Imports: locfit, grid, utils
 Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
         BiocStyle, pamr, sparsediscrim, PoiClaClu, parathyroidSE, knitr, gtable,

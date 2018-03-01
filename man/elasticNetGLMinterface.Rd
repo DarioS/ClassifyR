@@ -18,13 +18,11 @@
 \usage{
   \S4method{elasticNetGLMtrainInterface}{matrix}(measurements, classes, ...)
   \S4method{elasticNetGLMtrainInterface}{DataFrame}(measurements, classes, lambda = NULL,
-                                                    ..., verbose = 3)
-  \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements,
-                                           targets = names(measurements), ...)
+                             ..., verbose = 3)
+  \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, test, ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, lambda, ..., verbose = 3)
-  \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test,
-                                           targets = names(test), ...)                                   
+  \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test, targets = names(test), ...)                                   
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or

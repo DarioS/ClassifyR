@@ -14,23 +14,31 @@ Additionally, a heatmap of selection size frequencies can be made.
        }
 \usage{
   \S4method{selectionPlot}{list}(results,
-                   comparison = c("within", "size", "classificationName", "validation", "datasetName", "selectionName"),
-                   referenceLevel = NULL,
-                   xVariable = c("classificationName", "datasetName", "validation", "selectionName"),
-                   boxFillColouring = c("classificationName", "size", "datasetName", "validation",
-                                        "selectionName", "None"),
-                   boxFillColours = NULL,
-                   boxFillBinBoundaries = NULL, setSizeBinBoundaries = NULL,
-                   boxLineColouring = c("validation", "classificationName", "datasetName", "selectionName", "None"),
-                   boxLineColours = NULL,
-                   rowVariable = c("None", "validation", "datasetName", "classificationName", "selectionName"),
-                   columnVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16),
-                   title = if(comparison[1] == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
-                   xLabel = "Analysis",
-                   yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (\%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(\%)"),
-                   margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
-                   showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
+              comparison = c("within", "size", "classificationName",
+                             "validation", "datasetName", "selectionName"),
+              referenceLevel = NULL,
+              xVariable = c("classificationName", "datasetName", "validation", "selectionName"),
+              boxFillColouring = c("classificationName", "size", "datasetName",
+                                   "validation", "selectionName", "None"),
+              boxFillColours = NULL,
+              boxFillBinBoundaries = NULL, setSizeBinBoundaries = NULL,
+              boxLineColouring = c("validation", "classificationName",
+                                   "datasetName", "selectionName", "None"),
+              boxLineColours = NULL,
+              rowVariable = c("None", "validation", "datasetName",
+                              "classificationName", "selectionName"),
+              columnVariable = c("datasetName", "classificationName",
+                                 "validation", "selectionName", "None"),
+              yMax = 100, fontSizes = c(24, 16, 12, 16),
+              title = if(comparison[1] == "within") "Feature Selection Stability"
+                      else if(comparison == "size") "Feature Selection Size" else
+                      "Feature Selection Commonality",
+              xLabel = "Analysis",
+              yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (\%)"
+                       else if(comparison == "size") "Set Size" else
+                       paste("Common Features with", referenceLevel, "(\%)"),
+              margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
+              showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} or \code{\link{SelectResult}} objects.}
@@ -107,30 +115,42 @@ Additionally, a heatmap of selection size frequencies can be made.
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  rankList <- list(list(1:100, c(5:1, 6:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection", LETTERS[1:10], LETTERS[10:1],
+  rankList <- list(list(1:100, c(5:1, 6:100)),
+                   list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
+  result1 <- ClassifyResult("Example", "Differential Expression",
+                            "Example Selection", LETTERS[1:10], LETTERS[10:1],
                             rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, list("resampleFold", 2, 2))
   
   predicted[, "class"] <- sample(predicted[, "class"])
-  rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection", LETTERS[1:10], LETTERS[10:1],
-                            rankList,
+  rankList <- list(list(1:100, c(sample(20), 21:100)),
+                   list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
+  result2 <- ClassifyResult("Example", "Differential Variability",
+                            "Example Selection",
+                            LETTERS[1:10], LETTERS[10:1], rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
                             list(predicted), actual, validation = list("resampleFold", 2, 2))
                             
-  selectionPlot(list(result1, result2), xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "classificationName")
+  selectionPlot(list(result1, result2), xVariable = "classificationName",
+                xLabel = "Analysis", columnVariable = "None", rowVariable = "None",
+                boxFillColouring = "classificationName")
   
-  selectionPlot(list(result1, result2), comparison = "size", xVariable = "classificationName", xLabel = "Analysis", columnVariable = "None", rowVariable = "None", boxFillColouring = "size", boxFillBinBoundaries = seq(0, 100, 10),
-  setSizeBinBoundaries = seq(0, 25, 5), boxLineColouring = "None")
+  selectionPlot(list(result1, result2), comparison = "size",
+                xVariable = "classificationName", xLabel = "Analysis",
+                columnVariable = "None", rowVariable = "None",
+                boxFillColouring = "size", boxFillBinBoundaries = seq(0, 100, 10),
+                setSizeBinBoundaries = seq(0, 25, 5), boxLineColouring = "None")
   
   oneRanking <- c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)
   otherRanking <- c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)
   oneResult <- SelectResult("Example", "One Method", list(oneRanking), list(oneRanking[1:5]))
   otherResult <- SelectResult("Example", "Another Method", list(otherRanking), list(otherRanking[1:2]))
   
-  selectionPlot(list(oneResult, otherResult), comparison = "selectionName", xVariable = "selectionName", xLabel = "Selection Method", columnVariable = "None", rowVariable = "None", boxFillColouring = "selectionName", boxLineColouring = "None")
+  selectionPlot(list(oneResult, otherResult), comparison = "selectionName",
+                xVariable = "selectionName", xLabel = "Selection Method",
+                columnVariable = "None", rowVariable = "None",
+                boxFillColouring = "selectionName", boxLineColouring = "None")
 }

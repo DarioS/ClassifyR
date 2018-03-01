@@ -9,7 +9,7 @@
 \usage{
   \S4method{getLocationsAndScales}{matrix}(measurements, ...)
   \S4method{getLocationsAndScales}{DataFrame}(measurements, location = c("mean", "median"),
-                                              scale = c("SD", "MAD", "Qn"))
+                      scale = c("SD", "MAD", "Qn"))
   \S4method{getLocationsAndScales}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

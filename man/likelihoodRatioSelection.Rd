@@ -10,9 +10,9 @@
 \usage{
   \S4method{likelihoodRatioSelection}{matrix}(measurements, classes, ...)
   \S4method{likelihoodRatioSelection}{DataFrame}(measurements, classes, datasetName,
-                                     trainParams, predictParams, resubstituteParams,
-                                     alternative = c(location = "different", scale = "different"),
-                                     ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
+                         trainParams, predictParams, resubstituteParams,
+                                alternative = c(location = "different", scale = "different"),
+                                ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
   \S4method{likelihoodRatioSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

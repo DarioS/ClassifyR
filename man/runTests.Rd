@@ -11,12 +11,11 @@
 \usage{
   \S4method{runTests}{matrix}(measurements, classes, ...)
   \S4method{runTests}{DataFrame}(measurements, classes, datasetName, classificationName,
-                      validation = c("permute", "leaveOut", "fold"),
-                      permutePartition = c("fold", "split"),
-                      permutations = 100, percent = 25, folds = 5, leave = 2,
-                      seed, parallelParams = bpparam(),
-                      params = list(SelectParams(), TrainParams(), PredictParams()),
-                      verbose = 1)
+         validation = c("permute", "leaveOut", "fold"),
+         permutePartition = c("fold", "split"),
+         permutations = 100, percent = 25, folds = 5, leave = 2,
+         seed, parallelParams = bpparam(),
+            params = list(SelectParams(), TrainParams(), PredictParams()), verbose = 1)
   \S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

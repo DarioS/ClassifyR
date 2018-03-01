@@ -17,9 +17,9 @@
   \S4method{mixModelsTrain}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{mixModelsTest}{list,matrix}(models, test, ...)
   \S4method{mixModelsTest}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
-                         weight = c("all", "height difference", "crossover distance", "sum differences"),
-                         densityXvalues = 1024, minDifference = 0,
-                         returnType = c("class", "score", "both"), verbose = 3)
+                  weight = c("all", "height difference", "crossover distance", "sum differences"),
+              densityXvalues = 1024, minDifference = 0,
+              returnType = c("class", "score", "both"), verbose = 3)
   \S4method{mixModelsTest}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  
 }
 \arguments{

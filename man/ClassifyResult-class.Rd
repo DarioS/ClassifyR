@@ -31,8 +31,10 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures, rankedFeatures,
-      chosenFeatures, predictions, actualClasses, validation, tune = list(NULL))}}
+      \code{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures,\cr
+            rankedFeatures, chosenFeatures, predictions, actualClasses, validation,\cr
+            tune = list(NULL))}
+            }
     }
   \describe{
             \item{\code{datasetName}}{A name associated with the dataset used.}

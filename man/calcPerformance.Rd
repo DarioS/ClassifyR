@@ -1,4 +1,5 @@
 \name{calcPerformance}
+\alias{calcPerformance}
 \alias{calcExternalPerformance}
 \alias{calcCVperformance}
 \alias{calcExternalPerformance,factor,factor-method}
@@ -8,43 +9,44 @@
 }
 \usage{
   \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
-                                             performanceType = c("error", "balanced error", "average accuracy",
-                                                                 "micro precision", "micro recall",
-                                                                 "micro F1", "macro precision",
-                                                                 "macro recall", "macro F1"))
-  \S4method{calcCVperformance}{ClassifyResult}(result,
-                                             performanceType = c("error", "balanced error", "sample error",
-                                                                 "sample accuracy", "average accuracy",
-                                                                 "micro precision", "micro recall",
-                                                                 "micro F1", "macro precision",
-                                                                 "macro recall", "macro F1"))
+                              performanceType = c("error", "balanced error", "average accuracy",
+                                           "micro precision", "micro recall",
+                                           "micro F1", "macro precision",
+                                           "macro recall", "macro F1"))
+  \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "balanced error", "sample error",
+                                                  "sample accuracy", "average accuracy",
+                                              "micro precision", "micro recall",
+                                              "micro F1", "macro precision",
+                                              "macro recall", "macro F1"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
-  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}.
-                         Must be one of the following options:
-                         \code{"balanced error"}: balanced error rate,                         
-                         \code{"error"}: ordinary error rate,
-                         \code{"sample error"}: error rate for each sample in the dataset,
-                         \code{"sample accuracy"}: accuracy for each sample in the dataset,
-                         \code{"average accuracy"}: Sum of accuracies of each class,
-                                                    divided by the number of classes.
-                         \code{"micro precision"}: Sum of the number of correct predictions in each class,
+  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}.\cr
+                         Must be one of the following options:\cr
+                         \itemize{
+                         \item{\code{"balanced error"}: balanced error rate.}                         
+                         \item{\code{"error"}: ordinary error rate.}
+                         \item{\code{"sample error"}: error rate for each sample in the dataset.}
+                         \item{\code{"sample accuracy"}: accuracy for each sample in the dataset.}
+                         \item{\code{"average accuracy"}: Sum of accuracies of each class,
+                                                    divided by the number of classes.}
+                         \item{\code{"micro precision"}: Sum of the number of correct predictions in each class,
                                                    divided by the sum of number of samples
-                                                   in each class.
-                         \code{"micro recall"}: Sum of the number of correct predictions in each class,
+                                                   in each class.}
+                         \item{\code{"micro recall"}: Sum of the number of correct predictions in each class,
                                                 divided by the sum of number of samples predicted
-                                                as belonging to each class.
-                         \code{"micro F1"}: F1 score obtained by calculating the harmonic mean of
-                                            micro precision and micro recall.
-                         \code{"macro precision"}: Sum of the ratios of the number of correct predictions
+                                                as belonging to each class.}
+                         \item{\code{"micro F1"}: F1 score obtained by calculating the harmonic mean of
+                                            micro precision and micro recall.}
+                         \item{\code{"macro precision"}: Sum of the ratios of the number of correct predictions
                                                    in each class to the number of samples in each class,
-                                                   divided by the number of classes.
-                         \code{"macro recall"}: Sum of the ratios of the number of correct predictions
+                                                   divided by the number of classes.}
+                         \item{\code{"macro recall"}: Sum of the ratios of the number of correct predictions
                                                 in each class to the number of samples predicted to be
-                                                in each class, divided by the number of classes.
-                         \code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
-                                            macro precision and macro recall.
+                                                in each class, divided by the number of classes.}
+                         \item{\code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
+                                            macro precision and macro recall.}
+                        }
                         }
   \item{actualClasses}{A factor vector specifying each sample's correct class.}
   \item{predictedClasses}{A factor vector of the same length as \code{actualClasses}

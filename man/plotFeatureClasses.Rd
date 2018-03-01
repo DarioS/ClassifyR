@@ -8,15 +8,15 @@
 \usage{
   \S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
   \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL,
-                                groupingName = NULL, whichNumericPlots = c("both", "density", "stripchart"),
-                                measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
-                                xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
-                                showXtickLabels = TRUE, showYtickLabels = TRUE,
-                                xLabelPositions = "auto", yLabelPositions = "auto",
-                                fontSizes = c(24, 16, 12, 12, 12),
-                                colours = c("#3F48CC", "#880015"),
-                                showDatasetName = TRUE, plot = TRUE)
-  \S4method{plotFeatureClasses}{MultiAssayExperiment}(measurements, targets, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
+                        groupingName = NULL, whichNumericPlots = c("both", "density", "stripchart"),
+                    measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
+                    xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
+                   showXtickLabels = TRUE, showYtickLabels = TRUE,
+                   xLabelPositions = "auto", yLabelPositions = "auto",
+                   fontSizes = c(24, 16, 12, 12, 12),
+                   colours = c("#3F48CC", "#880015"), showDatasetName = TRUE, plot = TRUE)
+  \S4method{plotFeatureClasses}{MultiAssayExperiment}(measurements, targets, groupBy = NULL, groupingName = NULL,
+                   showDatasetName = TRUE, ...)
 }
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
@@ -117,7 +117,7 @@
   infectionResults <- c(rep(c("No", "Yes"), c(20, 5)), rep(c("No", "Yes"), c(5, 20)))
   genders <- factor(rep(c("Male", "Female"), each = 10, length.out = 50))
   clinicalData <- DataFrame(Gender = genders, Sugar = runif(50, 4, 10),
-                            Infection = factor(infectionResults, levels = c("No", "Yes")),
+                              Infection = factor(infectionResults, levels = c("No", "Yes")),
                             row.names = colnames(genesMatrix))
   plotFeatureClasses(clinicalData, classes, targets = "Infection")
   plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")

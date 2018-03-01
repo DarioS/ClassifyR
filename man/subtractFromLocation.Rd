@@ -9,12 +9,11 @@
              }
 \usage{
   \S4method{subtractFromLocation}{matrix}(measurements, training, location = c("mean", "median"),
-                                          absolute = TRUE, verbose = 3)
+                     absolute = TRUE, verbose = 3)
   \S4method{subtractFromLocation}{DataFrame}(measurements, training, location = c("mean", "median"),
-                                             absolute = TRUE, verbose = 3)
+                     absolute = TRUE, verbose = 3)
   \S4method{subtractFromLocation}{MultiAssayExperiment}(measurements, training, targets = names(measurements),
-                                                        location = c("mean", "median"),
-                                                        absolute = TRUE, verbose = 3)
+                           location = c("mean", "median"), absolute = TRUE, verbose = 3)
 }
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a

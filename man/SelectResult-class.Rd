@@ -35,7 +35,7 @@
 
   \describe{
     \item{}{
-      \code{show(result)}{Prints a short summary of what \code{result} contains.}
+      \code{show(result)}{ Prints a short summary of what \code{result} contains.}
     }}
 }
 

@@ -13,8 +13,7 @@
 \usage{
   \S4method{randomForestInterface}{matrix}(measurements, classes, test, ...)
   \S4method{randomForestInterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
-  \S4method{randomForestInterface}{MultiAssayExperiment}(measurements, targets = names(measurements),
-                                                         test, ...)
+  \S4method{randomForestInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), test, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or

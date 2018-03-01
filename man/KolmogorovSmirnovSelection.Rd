@@ -10,8 +10,8 @@
 \usage{
   \S4method{KolmogorovSmirnovSelection}{matrix}(measurements, classes, ...)
   \S4method{KolmogorovSmirnovSelection}{DataFrame}(measurements, classes, datasetName,
-                                       trainParams, predictParams, resubstituteParams, ...,
-                                       selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
+                                   trainParams, predictParams, resubstituteParams, ...,
+                                   selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
   \S4method{KolmogorovSmirnovSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{

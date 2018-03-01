@@ -9,10 +9,10 @@ identifying outlier samples that are difficult to classify.
 }
 \usage{
   \S4method{distribution}{ClassifyResult}(result, dataType = c("features", "samples"),
-                   plotType = c("density", "histogram"), summaryType = c("percentage", "count"),
-                   plot = TRUE, xMax = NULL, xLabel = "Percentage of Cross-validations",
-                   yLabel = "Density", title = "Distribution of Feature Selections",
-                   fontSizes = c(24, 16, 12), ...)
+                 plotType = c("density", "histogram"), summaryType = c("percentage", "count"),
+                 plot = TRUE, xMax = NULL, xLabel = "Percentage of Cross-validations",
+                 yLabel = "Density", title = "Distribution of Feature Selections",
+                 fontSizes = c(24, 16, 12), ...)
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}

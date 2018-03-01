@@ -11,10 +11,10 @@
 \usage{
   \S4method{naiveBayesKernel}{matrix}(measurements, classes, test, ...)
   \S4method{naiveBayesKernel}{DataFrame}(measurements, classes, test,
-                   densityFunction = density,
-                   densityParameters = list(bw = "nrd0", n = 1024,
-                                            from = expression(min(featureValues)),
-                                            to = expression(max(featureValues))),
+                 densityFunction = density,
+                 densityParameters = list(bw = "nrd0", n = 1024,
+                                                 from = expression(min(featureValues)),
+                                              to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
                    minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)

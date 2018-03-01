@@ -11,8 +11,8 @@
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
   \S4method{runTest}{DataFrame}(measurements, classes, datasetName, classificationName,
-                     training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
-                     verbose = 1, .iteration = NULL)
+            training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
+        verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
