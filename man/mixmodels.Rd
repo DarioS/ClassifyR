@@ -4,10 +4,10 @@
 \alias{mixModelsTrain,matrix-method}
 \alias{mixModelsTrain,DataFrame-method}
 \alias{mixModelsTrain,MultiAssayExperiment-method}
-\alias{mixModelsTest}
-\alias{mixModelsTest,list,matrix-method}
-\alias{mixModelsTest,list,DataFrame-method}
-\alias{mixModelsTest,list,MultiAssayExperiment-method}
+\alias{mixModelsPredict}
+\alias{mixModelsPredict,list,matrix-method}
+\alias{mixModelsPredict,list,DataFrame-method}
+\alias{mixModelsPredict,list,MultiAssayExperiment-method}
 \title{Classification based on Differential Distribution utilising Mixtures of Normals}
 \description{Fits mixtures of normals for every feature, separately for each class.
 }
@@ -15,12 +15,12 @@
   \S4method{mixModelsTrain}{matrix}(measurements, ...)
   \S4method{mixModelsTrain}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{mixModelsTrain}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{mixModelsTest}{list,matrix}(models, test, ...)
-  \S4method{mixModelsTest}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
+  \S4method{mixModelsPredict}{list,matrix}(models, test, ...)
+  \S4method{mixModelsPredict}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
                   weight = c("all", "height difference", "crossover distance", "sum differences"),
               densityXvalues = 1024, minDifference = 0,
               returnType = c("class", "score", "both"), verbose = 3)
-  \S4method{mixModelsTest}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  
+  \S4method{mixModelsPredict}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -51,7 +51,7 @@
                   calculated simultaneously.}
   \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
                 or \code{"sum differences"}. The type of weight to calculate. For \code{"height difference"},
-                the weight of each prediction is equal to the sum of the verical distances for all of the
+                the weight of each prediction is equal to the sum of the vertical distances for all of the
                 mixture components within one class subtracted from the sum of the components of
                 the other class, summed for each value of x. For \code{"crossover distance"},
                 the x positions where two mixture densities cross is firstly calculated.
@@ -87,7 +87,7 @@
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.
-  For \code{mixModelsTest}, a vector or list of class prediction information, as long as the
+  For \code{mixModelsPredict}, a vector or list of class prediction information, as long as the
   number of samples in the test data, or lists of such information, if both weighted and unweighted voting
   or a range of \code{minDifference} values was provided.
 }
@@ -109,5 +109,5 @@
   
   trained <- mixModelsTrain(genesMatrix[, trainSamples], classes[trainSamples],
                             nbCluster = 1:3)
-  mixModelsTest(trained, genesMatrix[, testSamples], minDifference = 0:3)
+  mixModelsPredict(trained, genesMatrix[, testSamples], minDifference = 0:3)
 }

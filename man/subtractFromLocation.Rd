@@ -35,7 +35,7 @@
 }
 \value{
   The same class of variable as the input variable \code{measurements} is, with the numeric features
-  subtracted from the calcuated location.
+  subtracted from the calculated location.
 }
 \author{Dario Strbenac}
 

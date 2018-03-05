@@ -1,15 +1,15 @@
-\name{nearestShrunkenCentroidPredictInterface}
-\alias{nearestShrunkenCentroidPredictInterface}
-\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,matrix-method}
-\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,DataFrame-method}
-\alias{nearestShrunkenCentroidPredictInterface,pamrtrained,MultiAssayExperiment-method}
+\name{NSCpredictInterface}
+\alias{NSCpredictInterface}
+\alias{NSCpredictInterface,pamrtrained,matrix-method}
+\alias{NSCpredictInterface,pamrtrained,DataFrame-method}
+\alias{NSCpredictInterface,pamrtrained,MultiAssayExperiment-method}
 
 \title{Interface for \code{pamr.predict} Function from \code{pamr} CRAN Package}
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
-  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,DataFrame}(trained, test, ..., verbose = 3)  
-  \S4method{nearestShrunkenCentroidPredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
+  \S4method{NSCpredictInterface}{pamrtrained,matrix}(trained, test, ...)
+  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, ..., verbose = 3)  
+  \S4method{NSCpredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
   \item{trained}{An object of class \code{pamrtrained}.}             
@@ -43,7 +43,7 @@
                                  c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
-    fit <- nearestShrunkenCentroidTrainInterface(genesMatrix[, c(1:20, 26:45)], classes[c(1:20, 26:45)])
-    nearestShrunkenCentroidPredictInterface(fit, genesMatrix[, c(21:25, 46:50)])
+    fit <- NSCtrainInterface(genesMatrix[, c(1:20, 26:45)], classes[c(1:20, 26:45)])
+    NSCpredictInterface(fit, genesMatrix[, c(21:25, 46:50)])
   }
 }

@@ -27,7 +27,7 @@
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{aggregate}{A character vector of the levels of \code{xVariable} to aggregate to a single number
-                   by taking the mean. This is partciularly meaningful when the cross-validation is leave-k-out,
+                   by taking the mean. This is particularly meaningful when the cross-validation is leave-k-out,
                    when k is small.}
   \item{xVariable}{The factor to make separate boxes for.}
   \item{performanceName}{The name of the performance measure to make comparisons of. This is

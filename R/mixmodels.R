@@ -54,15 +54,15 @@ setMethod("mixModelsTrain", "MultiAssayExperiment",
   mixModelsTrain(dataTable, classes, ...)
 })
 
-setGeneric("mixModelsTest", function(models, test, ...)
-           {standardGeneric("mixModelsTest")})
+setGeneric("mixModelsPredict", function(models, test, ...)
+           {standardGeneric("mixModelsPredict")})
 
-setMethod("mixModelsTest", c("list", "matrix"), function(models, test, ...)
+setMethod("mixModelsPredict", c("list", "matrix"), function(models, test, ...)
 {
-  mixModelsTest(models, DataFrame(t(test), check.names = FALSE), ...)
+  mixModelsPredict(models, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
+setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
           function(models, test, weighted = c("both", "unweighted", "weighted"),
                    weight = c("all", "height difference", "crossover distance", "sum differences"),
                    densityXvalues = 1024, minDifference = 0,
@@ -242,9 +242,9 @@ setMethod("mixModelsTest", c("list", "DataFrame"), # Clinical data only.
 })
 
 # One or more omics datasets, possibly with clinical data.
-setMethod("mixModelsTest", c("list", "MultiAssayExperiment"),
+setMethod("mixModelsPredict", c("list", "MultiAssayExperiment"),
           function(models, test, targets = names(test), ...)
 {
   testingMatrix <- .MAEtoWideTable(test, targets)
-  mixModelsTest(models, testingMatrix, ...)
+  mixModelsPredict(models, testingMatrix, ...)
 })

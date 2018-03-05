@@ -57,7 +57,7 @@
 
   If \code{\link{runTests}} was run in resampling mode, one performance measure is produced
   for every resampling. If the leave-k-out mode was used, then the predictions are
-  concatenated, and one performance measure is calcuated for all classifications.
+  concatenated, and one performance measure is calculated for all classifications.
   
   \code{"balanced error"} calculates the balanced error rate and is better suited to class-imbalanced datasets
   than the ordinary error rate specified by {\code{"error"}}. \code{"sample error"} calculates the error rate

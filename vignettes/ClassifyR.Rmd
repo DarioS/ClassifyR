@@ -1,6 +1,6 @@
 ---
 title: "An Introduction to **ClassifyR**"
-author: Dario Strbenac, Grahan Mann, Jean Yang, John Ormerod <br>
+author: Dario Strbenac, Graham Mann, Jean Yang, John Ormerod <br>
         The University of Sydney, Australia.
 output: 
   BiocStyle::html_document:
@@ -122,7 +122,7 @@ The error rate is small. If a cross-validation scheme such as 100 permutations, 
 
 ### Comparison of Different Classifications
 
-The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heursitic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
+The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heuristic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
 DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribution",
@@ -187,7 +187,7 @@ This ROC plot shows the classifiability of the melanoma dataset is high. Other i
 
 Some classifiers allow the setting of a tuning parameter, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more.
 
-This is acheived in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. If *tuneParams* has more than one element, all combination of values of the tuning variables are tried. The performance criterion specified to *resubstituteParams* is also used as the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
+This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. If *tuneParams* has more than one element, all combination of values of the tuning variables are tried. The performance criterion specified to *resubstituteParams* is also used as the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
 SVMresults <- runTests(measurements, classes, "Melanoma", "Tuned SVM",
@@ -213,6 +213,24 @@ These are the cost values chosen for the three folds of the first resampling.
 
 **ClassifyR** is a framework for cross-validated classification that provides a variety of unique functions for performance evaluation. It provides wrappers for many popular classifiers but is designed to be extensible if other classifiers are desired.
 
+## Provided Feature Selection and Classification Methods
+
+A number of feature selection methods are provided for users. Functions with names ending in "interface" indicate wrappers for existing methods implemented in other packages. Different methods select different types of changes between classes.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("providedSelection.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+Likewise, a variety of classifiers is also provided.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("providedClassifiers.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+If a desired selection or classification method is not already implemented, rules for writing functions to work with **ClassifyR** are outlined in the next section.
+
 ## Rules Regarding Input Variables of New Functions
 
 The required inputs and type of output that each stage of classifiation has is summarised by the table below. The functions can have any number of other arguments after the set of arguments which are mandatory.
@@ -224,7 +242,7 @@ htmltools::img(src = knitr::image_uri("functionRules.png"),
 
 The argument *verbose* is sent from *runTest* to these functions so they must handle it, even if not explicitly using it. In the **ClassifyR** framework, *verbose* is a number which indicates the amount of progress messages to be printed. If verbose is 0, no progress messages are printed. If it is 1, only one message is printed for every 10 cross-validations completed. If it is 2, in addition to the messages printed when it is 1, a message is printed each time one of the stages of classification (transformation, feature selection, training, prediction) is done. If it is 3, in addition to the messages printed for values 1 and 2, progress messages are printed from within the classification functions themselves.
 
-A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classses either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide felxibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.
+A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classes either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide flexibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.
 
 ## References
 Strbenac D., Yang, J., Mann, G.J. and Ormerod, J. T. (2015) [ClassifyR: an R package for performance assessment of classification with applications to transcriptomics](http://bioinformatics.oxfordjournals.org/content/31/11/1851), *Bioinformatics*, 31(11):1851-1853 <br>

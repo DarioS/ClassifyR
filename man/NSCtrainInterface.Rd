@@ -1,16 +1,16 @@
-\name{nearestShrunkenCentroidTrainInterface}
-\alias{nearestShrunkenCentroidTrainInterface}
-\alias{nearestShrunkenCentroidTrainInterface,matrix-method}
-\alias{nearestShrunkenCentroidTrainInterface,DataFrame-method}
-\alias{nearestShrunkenCentroidTrainInterface,MultiAssayExperiment-method}
+\name{NSCtrainInterface}
+\alias{NSCtrainInterface}
+\alias{NSCtrainInterface,matrix-method}
+\alias{NSCtrainInterface,DataFrame-method}
+\alias{NSCtrainInterface,MultiAssayExperiment-method}
 
 \title{Interface for \code{pamr.train} Function from \code{pamr} CRAN Package}
 \description{Restructures variables from ClassifyR framework to be compatible with
              \code{\link[pamr]{pamr.train}} definition.}
 \usage{
-  \S4method{nearestShrunkenCentroidTrainInterface}{matrix}(measurements, classes, ...)
-  \S4method{nearestShrunkenCentroidTrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
-  \S4method{nearestShrunkenCentroidTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{NSCtrainInterface}{matrix}(measurements, classes, ...)
+  \S4method{NSCtrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
+  \S4method{NSCtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -47,6 +47,6 @@
                                  c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
-    nearestShrunkenCentroidTrainInterface(genesMatrix, classes)
+    NSCtrainInterface(genesMatrix, classes)
   }
 }

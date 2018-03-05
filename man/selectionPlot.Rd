@@ -84,7 +84,7 @@ Additionally, a heatmap of selection size frequencies can be made.
   for a particular analysis. If \code{comparison} is \code{"classificationName"}, then the feature
   selections are compared across different classification algorithm types, for each level of \code{"datasetName"},
   \code{"selectionName"} and \code{"validation"}. The result will inform how stable the feature selections
-  are between different classification algorithms, for every cross-validation scheme, selction algorithm and
+  are between different classification algorithms, for every cross-validation scheme, selection algorithm and
   dataset. If \code{comparison} is \code{"selectionName"}, then the feature selections are compared across
   different feature selection algorithms, for each level of \code{"datasetName"}, \code{"classificationName"} and
   \code{"validation"}. The result will inform how stable the feature selections are between feature selection

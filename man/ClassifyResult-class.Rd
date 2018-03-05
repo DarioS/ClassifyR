@@ -50,8 +50,8 @@
                                       containing information about samples, their actual class and
                                       predicted class.}            
             \item{\code{actualClasses}}{Factor of class of each sample.}                                      
-            \item{\code{validation}}{List with first elment being name of the validation scheme,
-            and other elements providing details about scehme.}
+            \item{\code{validation}}{List with first element being the name of the validation scheme,
+            and other elements providing details about the scheme.}
             \item{\code{tune}}{A description of the tuning parameters, and the value chosen of
                                each parameter.}
            }

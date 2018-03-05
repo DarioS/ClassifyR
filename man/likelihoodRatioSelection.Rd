@@ -49,7 +49,7 @@
 \details{
   Likelihood ratio test of null hypothesis that the location and scale are the same for
   both groups, and an alternate hypothesis that is specified by parameters. The location and scale
-  of features is calucated by \code{\link{getLocationsAndScales}}. The distribution fitted to the data
+  of features is calculated by \code{\link{getLocationsAndScales}}. The distribution fitted to the data
   is the normal distribution.
   
   Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}

@@ -5,7 +5,7 @@
 \alias{runTests,MultiAssayExperiment-method}
 \title{Reproducibly Run Various Kinds of Cross-Validation}
 \description{Enables doing classification schemes such as ordinary 10-fold,
-             100 permutations 5-fold, and leave one out cross-validaion.
+             100 permutations 5-fold, and leave one out cross-validation.
              Processing in parallel is possible by leveraging the package \code{\link{BiocParallel}}.
 }
 \usage{

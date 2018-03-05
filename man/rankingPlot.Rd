@@ -78,7 +78,7 @@ The overlaps are converted to percentages and plotted as lineplots.
   analysis. The result will inform how stable the feature rankings are between different iterations of cross-validation for a particular analysis. If \code{comparison} is \code{"classificationName"}, then the feature
   rankings are compared across different classification algorithm types, for each level of \code{"datasetName"},
   \code{"selectionName"} and \code{"validation"}. The result will inform how stable the feature rankings
-  are between different classification algorithms, for every cross-validation scheme, selction algorithm and
+  are between different classification algorithms, for every cross-validation scheme, selection algorithm and
   dataset. If \code{comparison} is \code{"selectionName"}, then the feature rankings are compared across different
   feature selection algorithms, for each level of \code{"datasetName"}, \code{"classificationName"} and
   \code{"validation"}. The result will inform how stable the feature rankings are between feature selection

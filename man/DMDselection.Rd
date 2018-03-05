@@ -29,7 +29,7 @@
   \item{datasetName}{Default: \code{"Differences of Medians and Deviations"}. A name for the
                      dataset used. Stored in the result.}
   \item{differences}{Default: \code{"both"}. Either \code{"both"}, \code{"location"}, or \code{"scale"}.
-                     The type of differences to consider. If both are considred then the
+                     The type of differences to consider. If both are considered then the
                      absolute difference in location and the absolute difference in scale are summed.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}

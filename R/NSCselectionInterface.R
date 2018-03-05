@@ -1,12 +1,12 @@
-setGeneric("nearestShrunkenCentroidSelectionInterface", function(measurements, ...)
-{standardGeneric("nearestShrunkenCentroidSelectionInterface")})
+setGeneric("NSCselectionInterface", function(measurements, ...)
+{standardGeneric("NSCselectionInterface")})
 
-setMethod("nearestShrunkenCentroidSelectionInterface", "matrix", function(measurements, classes, ...)
+setMethod("NSCselectionInterface", "matrix", function(measurements, classes, ...)
 {
-  nearestShrunkenCentroidSelectionInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  NSCselectionInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("nearestShrunkenCentroidSelectionInterface", "DataFrame", # Clinical data only.
+setMethod("NSCselectionInterface", "DataFrame", # Clinical data only.
           function(measurements, classes, datasetName, trained, ...,
                    selectionName = "Shrunken Centroids", verbose = 3)
 {
@@ -37,7 +37,7 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "DataFrame", # Clinical d
   SelectResult(datasetName, selectionName, list(), list(chosen)) 
 })
 
-setMethod("nearestShrunkenCentroidSelectionInterface", "MultiAssayExperiment",
+setMethod("NSCselectionInterface", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
@@ -47,5 +47,5 @@ setMethod("nearestShrunkenCentroidSelectionInterface", "MultiAssayExperiment",
   if(ncol(measurements) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    nearestShrunkenCentroidSelectionInterface(measurements, classes, ...)
+    NSCselectionInterface(measurements, classes, ...)
 })

@@ -48,7 +48,7 @@
   \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
                 or \code{"sum differences"}. The type of weight to calculate.
                 For \code{"height difference"}, the weight of each prediction is equal to the
-                verical distance between two densities, for a particular value of x. For
+                vertical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
                 the weight is the distance of x from the nearest density crossover point. For

@@ -12,7 +12,7 @@
   An Interface for glmnet Package's glmnet Function
 }
 \description{
-  An elastic net GLM classifier uses a penalty which is a combination of a lasso penality and
+  An elastic net GLM classifier uses a penalty which is a combination of a lasso penalty and
   a ridge penalty, scaled by a lambda value, to fit a sparse linear model to the data.
 }
 \usage{

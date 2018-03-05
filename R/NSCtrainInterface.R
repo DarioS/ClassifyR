@@ -1,12 +1,12 @@
-setGeneric("nearestShrunkenCentroidTrainInterface", function(measurements, ...)
-{standardGeneric("nearestShrunkenCentroidTrainInterface")})
+setGeneric("NSCtrainInterface", function(measurements, ...)
+{standardGeneric("NSCtrainInterface")})
 
-setMethod("nearestShrunkenCentroidTrainInterface", "matrix", function(measurements, classes, ...)
+setMethod("NSCtrainInterface", "matrix", function(measurements, classes, ...)
 {
-  nearestShrunkenCentroidTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  NSCtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("nearestShrunkenCentroidTrainInterface", "DataFrame", # Clinical data only.
+setMethod("NSCtrainInterface", "DataFrame", # Clinical data only.
           function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -27,7 +27,7 @@ setMethod("nearestShrunkenCentroidTrainInterface", "DataFrame", # Clinical data 
   trainedModel  
 })
 
-setMethod("nearestShrunkenCentroidTrainInterface", "MultiAssayExperiment",
+setMethod("NSCtrainInterface", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 { 
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
@@ -37,5 +37,5 @@ setMethod("nearestShrunkenCentroidTrainInterface", "MultiAssayExperiment",
   if(ncol(measurements) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    nearestShrunkenCentroidTrainInterface(measurements, classes, ...)
+    NSCtrainInterface(measurements, classes, ...)
 })
