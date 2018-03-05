@@ -72,7 +72,7 @@ head(classes)
 
 The numeric matrix variable *measurements* stores the normalised values of the protein abundances for each sample and the factor vector *classes* identifies which class the samples belong to.
 
-For more complex datasets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a **MultiAssayExperiment** is recommended for data storage and supported by **ClassifyR**'s methods.
+For more complex datasets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
 
 ### runTests Driver Function of Cross-validated Classification
 

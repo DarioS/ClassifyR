@@ -2,6 +2,21 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 2.0.0}{\itemize{
+  \item
+  Broad support for DataFrame and MultiAssayExperiment data sets by feature selection and classification functions.
+  \item
+  The majority of processing is now done in the DataFrame method for functions that implement methods for
+  multiple kinds of inputs.
+  \item
+  Elastic net GLM classifier and multinomial logistic regression classifier wrapper functions.
+  \item
+  Plotting functions have a new default style using a white background with black axes.
+  \item
+  Vignette simplified and uses a new mass cytometry dataset with clearer differences between classes to
+  demonstrate classification and its performance evaluation.
+}}
+
 \section{Version 1.12.0}{\itemize{
   \item
   Alterations to make plots compatible with ggplot versions 2.2 and greater.
