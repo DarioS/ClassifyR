@@ -112,7 +112,7 @@
   colnames(genesMatrix) <- paste("Sample", 1:50)
   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
   plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
-                     xAxisLabel = expression(log[2](expression)))
+                     xAxisLabel = expression(log[2](expression)), dotBinWidth = 0.5)
   
   infectionResults <- c(rep(c("No", "Yes"), c(20, 5)), rep(c("No", "Yes"), c(5, 20)))
   genders <- factor(rep(c("Male", "Female"), each = 10, length.out = 50))
@@ -125,7 +125,7 @@
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
-  #plotFeatureClasses(dataContainer, targets = targetFeatures,
-  #                   groupBy = c("clinical", "Gender"),
-  #                   xAxisLabel = expression(log[2](expression))) Wait for MultiAssayExperiment update.
+  plotFeatureClasses(dataContainer, targets = targetFeatures,
+                     groupBy = c("clinical", "Gender"),
+                     xAxisLabel = expression(log[2](expression)))
 }

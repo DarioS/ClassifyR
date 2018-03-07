@@ -35,8 +35,9 @@
   mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
   colnames(mcols(dataTable))[1] <- "dataset"
   
-  mcols(dataTable)[, "feature"] <- mcols(dataTable)[, "rowname"]
-  mcols(dataTable)[is.na(mcols(dataTable)[, "rowname"]), "feature"] <- mcols(dataTable)[, "colname"]
+  mcols(dataTable)[, "feature"] <- as.character(mcols(dataTable)[, "rowname"])
+  missingIndices <- is.na(mcols(dataTable)[, "feature"])
+  mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
   mcols(dataTable) <- mcols(dataTable)[, c("dataset", "feature")]
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
@@ -57,9 +58,7 @@
   }
 
   # Only return independent variables in the table.
-  dropColumns <- na.omit(match("primary", colnames(dataTable)))
-  if("class" %in% colnames(dataTable))
-    dropColumns <- c(dropColumns, na.omit(match("class", colnames(dataTable))))
+  dropColumns <- na.omit(match(c("primary", "class"), colnames(dataTable)))
   if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
   
   if(!is.null(classes))

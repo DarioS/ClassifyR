@@ -31,9 +31,9 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures,\cr
-            rankedFeatures, chosenFeatures, predictions, actualClasses, validation,\cr
-            tune = list(NULL))}
+      \preformatted{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures,
+           rankedFeatures, chosenFeatures, predictions, actualClasses,
+           validation, tune = list(NULL))}
             }
     }
   \describe{

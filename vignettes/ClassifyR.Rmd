@@ -103,7 +103,8 @@ The most frequently selected protein can be identified using the *distribution* 
 ```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
 selectionPercentages <- distribution(DMresults, plot = FALSE)
 mostChosen <- names(sort(selectionPercentages, decreasing = TRUE)[1])
-bestProteinPlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1)
+bestProteinPlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1,
+                                      xAxisLabel = "Standardised Expression")
 ```
 
 The means of the protein levels are substantially different between the responder and non-responder patients. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.

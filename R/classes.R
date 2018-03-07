@@ -142,17 +142,37 @@ setMethod("show", c("SelectResult"),
             if(class(object@chosenFeatures[[1]]) == "list")
             {
               selectionSizes <- unlist(lapply(object@chosenFeatures, function(resampling)
-                lapply(resampling, function(fold) length(fold))))
-            } else {selectionSizes <- sapply(object@chosenFeatures, length)}
+                                       {
+                                         lapply(resampling, function(fold)
+                                         {
+                                               if(is.vector(fold)) length(fold)
+                                               else nrow(fold) # Stored in a data frame.
+                                         })
+                                       })
+                                       )
+            } else {
+              if(is.vector(object@chosenFeatures[[1]]))
+                selectionSizes <- sapply(object@chosenFeatures, length)
+              else
+                selectionSizes <- sapply(object@chosenFeatures, nrow) # Stored in a data frame.
+            }
             cat("An object of class 'SelectResult'.\n")
             cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectionName, ".\n", sep = '')
             if(!is.null(object@rankedFeatures[[1]])) # Some methods don't use rankings.
             {
               if(class(object@rankedFeatures[[1]]) == "list") # Must be from resampling and folding.
-                featureLength <- length(object@rankedFeatures[[1]][[1]])
-              else # Either from direct feature selection, or a cross-validation method that doesn't have folds.
-                featureLength <- length(object@rankedFeatures[[1]])
+              {
+                if(is.vector(object@rankedFeatures[[1]][[1]]))
+                  featureLength <- length(object@rankedFeatures[[1]][[1]])
+                else
+                  featureLength <- nrow(object@rankedFeatures[[1]][[1]]) # Stored in a data frame.
+              } else { # Either from direct feature selection, or a cross-validation method that doesn't have folds.
+                if(is.vector(object@rankedFeatures[[1]]))
+                  featureLength <- length(object@rankedFeatures[[1]])
+                else
+                  featureLength <- nrow(object@rankedFeatures[[1]]) # Stored in a data frame.
+              }
               cat("Features Considered: ", featureLength, ".\n", sep = '')
             }
             selectionsText <- paste("Selections: List of length", length(object@chosenFeatures))

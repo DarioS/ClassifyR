@@ -20,8 +20,8 @@
       object for the characteristics of their data, once they are familiar with this software.
   }
     \item{}{
-      \code{SelectParams(featureSelection, selectionName, minPresence = 1, intermediate = character(0),\cr
-             subsetToSelections = TRUE, ...)}
+      \preformatted{SelectParams(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
+          subsetToSelections = TRUE, ...)}
       Creates a SelectParams object which stores the function which will do the
       selection and parameters that the function will use.
 	\describe{

@@ -22,8 +22,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
 {
   if(missing(targets))
     stop("'targets' must be specified.")
-  
-  groupingName <- NULL
+
   if(is.character(groupBy))
   {
     groupingName <- groupBy
@@ -36,9 +35,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
-  
+
   if(!requireNamespace("ggplot2", quietly = TRUE))
-    stop("The package 'ggplot2' could not be found. Please install it.")  
+    stop("The package 'ggplot2' could not be found. Please install it.")
   if(!requireNamespace("grid", quietly = TRUE))
     stop("The package 'grid' could not be found. Please install it.")
   if(!requireNamespace("gridExtra", quietly = TRUE))
@@ -212,6 +211,9 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(measurements)[, "sourceName"])
   colnames(mcols(measurements))[1] <- "dataset"
   mcols(measurements)[, "feature"] <- mcols(measurements)[, "rowname"]
-  mcols(measurements)[is.na(mcols(measurements)[, "feature"]), "feature"] <- mcols(measurements)[, "colname"]
+  missingIndices <- is.na(mcols(measurements)[, "feature"])
+  mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
+  mcols(measurements) <- mcols(measurements)[, c("dataset", "feature")]
+
   plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
 })
