@@ -26,10 +26,10 @@ setMethod("NSCselectionInterface", "DataFrame", # Clinical data only.
   params <- c(list(trained), list(list(x = t(as.matrix(measurements)), y = classes, geneid = 1:ncol(measurements))), threshold)
   chosen <- as.numeric(do.call(pamr::pamr.listgenes, params)[, 1])
   
-  if(is.null(mcols(measurements)))
+  if(is.null(S4Vectors::mcols(measurements)))
     chosen <- colnames(measurements)[chosen]
   else
-    chosen <- mcols(measurements)[chosen, ]
+    chosen <- S4Vectors::mcols(measurements)[chosen, ]
   
   if(verbose == 3)
     message("Nearest shrunken centroid feature selection completed.")

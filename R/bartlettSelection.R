@@ -36,6 +36,7 @@ setMethod("bartlettSelection", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets)
   measurements <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
   
   if(ncol(measurements) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

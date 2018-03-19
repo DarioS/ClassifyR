@@ -19,7 +19,7 @@ setMethod("SVMtrainInterface", "DataFrame", function(measurements, classes, ...,
   if(verbose == 3)
     message("Fitting SVM classifier to data.")
 
-  e1071::svm(measurements, classes, ...)  
+  e1071::svm(measurements, classes, ...)
 })
 
 setMethod("SVMtrainInterface", "MultiAssayExperiment",
@@ -44,10 +44,13 @@ setMethod("SVMpredictInterface", c("svm", "matrix"),
   SVMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, ..., verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(test, classes)
-  testMatrix <- splitDataset[["measurements"]]
+  if(!is.null(classes))
+  {
+    splitDataset <- .splitDataAndClasses(test, classes) # Remove classes, if present.
+    testMatrix <- splitDataset[["measurements"]]
+  } else {testMatrix <- test}
   isNumeric <- sapply(testMatrix, is.numeric)
   testMatrix <- testMatrix[, isNumeric, drop = FALSE]
   
@@ -62,12 +65,11 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, ..
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
-  test <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(test, targets)
+  test <- tablesAndClasses[["dataTable"]] # Remove any classes, if present.
             
   if(ncol(test) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    SVMpredictInterface(model, test, classes, ...)
+    SVMpredictInterface(model, test, ...)
 })

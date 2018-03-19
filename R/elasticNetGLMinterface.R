@@ -54,10 +54,13 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
 })
 
 # Clinical data only.
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, lambda, ..., verbose = 3)
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
-  splitDataset <- .splitDataAndClasses(test, classes)
-  test <- splitDataset[["measurements"]]
+  if(!is.null(classes))
+  {
+    splitDataset <- .splitDataAndClasses(test, classes)  # Remove any classes, if present.
+    test <- splitDataset[["measurements"]]
+  }
   
   if(!requireNamespace("sparsediscrim", quietly = TRUE))
     stop("The package 'sparsediscrim' could not be found. Please install it.")
@@ -73,7 +76,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
 setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(test, targets)
   test <- tablesAndClasses[["dataTable"]]
 
   elasticNetGLMpredictInterface(model, test, ...)

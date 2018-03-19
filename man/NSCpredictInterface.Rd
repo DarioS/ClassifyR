@@ -8,7 +8,7 @@
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
   \S4method{NSCpredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, ..., verbose = 3)  
+  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ..., verbose = 3)  
   \S4method{NSCpredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
@@ -16,6 +16,7 @@
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
               \code{measurements} used in the training stage and the same number of features as it.
               Also, if a \code{DataFrame}, the \code{class} column must be absent.}
+  \item{classes}{Either NULL or a character vector of length 1, specifying the column name to remove.}            
   \item{targets}{If \code{test} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}   

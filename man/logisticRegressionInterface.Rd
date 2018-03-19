@@ -20,7 +20,7 @@
   \S4method{logisticRegressionTrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{logisticRegressionTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{logisticRegressionPredictInterface}{mnlogit,matrix}(model, test, ...)
-  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, verbose = 3)
+  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, classes = NULL, verbose = 3)
   \S4method{logisticRegressionPredictInterface}{mnlogit,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{

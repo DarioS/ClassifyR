@@ -120,12 +120,12 @@ setMethod("calcCVperformance", c("ClassifyResult"),
       }
       if(performanceType %in% c("macro recall", "macro F1"))
       {
-        marcoR <- sum(truePositives / (truePositives + falseNegatives)) / nrow(confusionMatrix)
+        macroR <- sum(truePositives / (truePositives + falseNegatives)) / nrow(confusionMatrix)
         if(performanceType == "macro recall") return(macroR)
       }
       if(performanceType == "macro F1")
       {
-        return(2 * macroP * marcoR / (macroP + marcoR))
+        return(2 * macroP * macroR / (macroP + macroR))
       }
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
   }

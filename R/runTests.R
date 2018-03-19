@@ -30,8 +30,8 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"testing\" must not be before \"training\" in 'params'.")
   
-  if(!is.null(mcols(measurements)))
-    allFeatures <- mcols(measurements)
+  if(!is.null(S4Vectors::mcols(measurements)))
+    allFeatures <- S4Vectors::mcols(measurements)
   else
     allFeatures <- colnames(measurements)
   

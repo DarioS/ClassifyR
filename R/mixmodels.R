@@ -114,7 +114,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
       classScores <- models[["classSizes"]][2] * featureSplines[["otherClass"]](testSamples) - models[["classSizes"]][1] * featureSplines[["oneClass"]](testSamples)
       classPredictions <- ifelse(classScores > 0, classLevels[2], classLevels[1])
       classScores <- sapply(testSamples, function(testSample) min(abs(testSample - featureCrosses)))
-      classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
+      classScores <- mapply(function(score, prediction) if(prediction == classLevels[1]) -score else score, classScores, classPredictions)
       classScores
     }, crosses, splines, test, SIMPLIFY = FALSE)))
     class1RelativeSize <- models[["classSizes"]][1] / models[["classSizes"]][2]
@@ -178,12 +178,12 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
           useFeatures <- abs(distances[, sampleCol]) > difference
           if(sum(useFeatures) == 0) # No features have a large enough density difference.
           {                          # Simply vote for the larger class.
-            if(largerClass == levels(classes)[1])
+            if(largerClass == classLevels[1])
             {
-              class <- levels(classes)[1]
+              class <- classLevels[1]
               score <- -1
             } else {
-              class <- levels(classes)[2]
+              class <- classLevels[2]
               score <- 1
             }
           } else { # One or more features are available to vote with.
@@ -191,15 +191,15 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
             if(isWeighted == "unweighted")
             {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleValues > 0) > length(sampleValues) / 2) + 1]
+              class <- classLevels[(sum(sampleValues > 0) > length(sampleValues) / 2) + 1]
               score <- sum(sampleValues > 0) / length(sampleValues)
             } else {
               # For being in second class.
-              class <- levels(classes)[(sum(sampleValues) > 0) + 1]
+              class <- classLevels[(sum(sampleValues) > 0) + 1]
               score <- sum(sampleValues)
             }
           }
-          data.frame(class = factor(class, levels = levels(classes)), score = score,
+          data.frame(class = factor(class, levels = classLevels), score = score,
                      weighted = isWeighted, weight = weightNames,
                      minDifference = difference)
         }))

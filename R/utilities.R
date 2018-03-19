@@ -22,9 +22,9 @@
 
   if("clinical" %in% targets)
   {
-    clinicalColumns <- colnames(colData(measurements))
+    clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))
     targets <- targets[-match("clinical", targets)]
-  } else if("class" %in% colnames(colData(measurements))) {
+  } else if("class" %in% colnames(MultiAssayExperiment::colData(measurements))) {
     clinicalColumns <- "class"
   } else {
     clinicalColumns <- NULL
@@ -32,13 +32,13 @@
 
   measurements <- measurements[, , targets]
   dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
-  mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(dataTable)[, "sourceName"])
-  colnames(mcols(dataTable))[1] <- "dataset"
+  S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
+  colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
   
-  mcols(dataTable)[, "feature"] <- as.character(mcols(dataTable)[, "rowname"])
-  missingIndices <- is.na(mcols(dataTable)[, "feature"])
-  mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
-  mcols(dataTable) <- mcols(dataTable)[, c("dataset", "feature")]
+  S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
+  missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
+  S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
+  S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
   if("class" %in% colnames(dataTable))
     classes <- dataTable[, "class"]
   else
@@ -225,7 +225,7 @@
             paramList <- list(model, measurementsTrain) # Model and test set same as training set.
             if(length(predictParams@otherParams) > 0)
               paramList <- c(paramList, predictParams@otherParams)
-            paramList <- c(paramList, tuneParams, verbose = verbose)
+            paramList <- c(paramList, verbose = verbose)
             predicted <- do.call(predictParams@predictor, paramList)
             if(class(predicted) != "list" || sum(grepl('=', names(predicted))) == 0)
               predicted <- list(predictParams@getClasses(predicted))
@@ -468,9 +468,9 @@
   rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) orderedFeatures)
   pickedFeatures <- lapply(pickedFeatures, function(pickedSet) orderedFeatures[pickedSet])
   
-  if(!is.null(mcols(measurements))) # Table describing source table and variable name is present.
+  if(!is.null(S4Vectors::mcols(measurements))) # Table describing source table and variable name is present.
   {
-    varInfo <- mcols(measurements)
+    varInfo <- S4Vectors::mcols(measurements)
     rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])
     pickedFeatures <- lapply(pickedFeatures, function(features) varInfo[features, ])
   } else { # Vectors of feature names.

@@ -27,7 +27,7 @@ setMethod("previousSelection", "DataFrame",
     overlapPercent <- length(commonFeatures) / length(previousIDs) * 100
   } else { # A data.frame describing the dataset and variable name of the chosen feature.
     keepRows <- numeric()
-    varInfo <- mcols(measurements) # mcols stores source information about variables.
+    varInfo <- S4Vectors::mcols(measurements) # mcols stores source information about variables.
     variable <- varInfo[, "rowname"]
     variable[is.na(variable)] <- varInfo[is.na(variable), "colname"]
     for(index in 1:length(previousIDs))
@@ -47,8 +47,8 @@ setMethod("previousSelection", "DataFrame",
 setMethod("previousSelection", "MultiAssayExperiment", 
           function(measurements, ...)
           {
-            clinicalColumns <- colnames(colData(clinicalColumns))
+            clinicalColumns <- colnames(MultiAssayExperiment::colData(clinicalColumns))
             dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
-            mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", mcols(dataTable)[, "sourceName"])
+            S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
             previousSelection(dataTable, ...)
           })

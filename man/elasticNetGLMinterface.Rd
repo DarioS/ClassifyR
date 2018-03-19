@@ -21,7 +21,7 @@
                              ..., verbose = 3)
   \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, test, ...)
-  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, lambda, ..., verbose = 3)
+  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., verbose = 3)
   \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test, targets = names(test), ...)                                   
 }
 \arguments{

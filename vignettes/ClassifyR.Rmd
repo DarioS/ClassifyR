@@ -194,7 +194,8 @@ This is achieved in ClassifyR by providing a variable called *tuneParams* to the
 SVMresults <- runTests(measurements, classes, "Melanoma", "Tuned SVM",
                        validation = "leave", leave = 1,
                        params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
-                                     TrainParams(SVMtrainInterface, doesTests = FALSE, kernel = "linear",                                                    resubstituteParams = resubstituteParams,
+                                     TrainParams(SVMtrainInterface, doesTests = FALSE, kernel = "linear",
+                                                 resubstituteParams = resubstituteParams,
                                                  tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
                                      PredictParams(SVMpredictInterface,
                                                    getClasses = function(result) result))

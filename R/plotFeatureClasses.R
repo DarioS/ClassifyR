@@ -59,14 +59,14 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
       plotData[, "facets grouping"] <- groupBy[["facets"]]
     }
 
-    if(is.null(mcols(measurements)))
+    if(is.null(S4Vectors::mcols(measurements)))
     {
       featureText <- colnames(measurements)[columnIndex]
     } else {
-      featureText <- mcols(measurements)[columnIndex, "feature"]
+      featureText <- S4Vectors::mcols(measurements)[columnIndex, "feature"]
       if(showDatasetName == TRUE)
       {
-        featureText <- paste(featureText, paste('(', mcols(measurements)[columnIndex, "dataset"], ')', sep = ''))
+        featureText <- paste(featureText, paste('(', S4Vectors::mcols(measurements)[columnIndex, "dataset"], ')', sep = ''))
       }
     }
     
@@ -183,7 +183,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   assaysTargets <- targets[targets[, 1] != "clinical", ]
   sampleInfoTargets <- targets[targets[, 1] == "clinical", ]
   measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
-  classes <- colData(measurements)[, "class"]
+  classes <- MultiAssayExperiment::colData(measurements)[, "class"]
 
   if(!is.null(groupBy))
   {
@@ -192,7 +192,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
     groupingTable <- groupBy[1]
     if(groupingTable == "clinical")
     {
-      groupBy <- colData(measurements)[, groupBy[2]]
+      groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
     } else { # One of the omics tables.
       groupBy <- measurements[groupBy[2], , groupingTable]
       if(showDatasetName == TRUE)
@@ -205,15 +205,15 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
                     )
   }
 
-  colData(measurements) <- colData(measurements)[colnames(colData(measurements)) %in% sampleInfoTargets[, 2]]
-  measurements <- wideFormat(measurements, colDataCols = seq_along(colData(measurements)), check.names = FALSE)
+  MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfoTargets[, 2]]
+  measurements <- wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE)
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
-  mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", mcols(measurements)[, "sourceName"])
-  colnames(mcols(measurements))[1] <- "dataset"
-  mcols(measurements)[, "feature"] <- mcols(measurements)[, "rowname"]
-  missingIndices <- is.na(mcols(measurements)[, "feature"])
-  mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
-  mcols(measurements) <- mcols(measurements)[, c("dataset", "feature")]
+  S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(measurements)[, "sourceName"])
+  colnames(S4Vectors::mcols(measurements))[1] <- "dataset"
+  S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
+  missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])
+  S4Vectors::mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
+  S4Vectors::mcols(measurements) <- S4Vectors::mcols(measurements)[, c("dataset", "feature")]
 
-  plotFeatureClasses(measurements, classes, mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
+  plotFeatureClasses(measurements, classes, S4Vectors::mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
 })

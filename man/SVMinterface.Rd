@@ -19,7 +19,7 @@
   \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
-  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, ..., verbose = 3)
+  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, verbose = 3)
   \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{

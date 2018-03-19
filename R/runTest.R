@@ -23,8 +23,8 @@ function(measurements, classes, datasetName, classificationName, training, testi
   trainParams <- params[[match("TrainParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   
-  if(!is.null(mcols(measurements)))
-    allFeatures <- mcols(measurements)
+  if(!is.null(S4Vectors::mcols(measurements)))
+    allFeatures <- S4Vectors::mcols(measurements)
   else
     allFeatures <- colnames(measurements)
   
@@ -75,7 +75,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                        assaysFeatures <- subset(selectedFeatures, dataset != "clinical")
                                                        sampleInfoFeatures <- subset(selectedFeatures, dataset == "clinical")
                                                        variety <- variety[assaysFeatures[, "feature"], , assaysFeatures[, "dataset"]]
-                                                       colData(variety) <- colData(variety)[sampleInfoFeatures[, "variable"]]
+                                                       MultiAssayExperiment::colData(variety) <- MultiAssayExperiment::colData(variety)[sampleInfoFeatures[, "variable"]]
                                                        variety
                                                      }
                                                    })
@@ -99,7 +99,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                            assaysFeatures <- subset(features, dataset != "clinical")
                                                            sampleInfoFeatures <- subset(features, dataset == "clinical")
                                                            variety <- variety[assaysFeatures[, "feature"], , assaysFeatures[, "dataset"]]
-                                                           colData(variety) <- colData(variety)[sampleInfoFeatures[, "variable"]]
+                                                           MultiAssayExperiment::colData(variety) <- MultiAssayExperiment::colData(variety)[sampleInfoFeatures[, "variable"]]
                                                            variety
                                                          }
                                                        })

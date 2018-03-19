@@ -65,30 +65,30 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
   if("clinical" %in% targets)
   {
     targets <- targets[-which(match, "clinical")]
-    isNumeric <- sapply(colData(measurements), is.numeric)
-    clinicalTrain <- colData(measurements)[training, isNumeric]
+    isNumeric <- sapply(MultiAssayExperiment::colData(measurements), is.numeric)
+    clinicalTrain <- MultiAssayExperiment::colData(measurements)[training, isNumeric]
     if(location == "mean")
       locations <- apply(clinicalTrain, 2, mean, na.rm = TRUE)
     else # median.
       locations <- apply(clinicalTrain, 2, median, na.rm = TRUE)
-    transformedClinical <- apply(colData(measurements), 1, '-', locations)
+    transformedClinical <- apply(MultiAssayExperiment::colData(measurements), 1, '-', locations)
     if(absolute == TRUE)
       transformedClinical <- abs(transformedClinical)
-    colData(transformed)[, isNumeric] <- transformedClinical
+    MultiAssayExperiment::colData(transformed)[, isNumeric] <- transformedClinical
   }
   
   measurementsTrain <- measurements[, training, targets]
   if(location == "mean")
-    featureTrainingLocations <- lapply(experiments(measurementsTrain), rowMeans, na.rm = TRUE)
+    featureTrainingLocations <- lapply(MultiAssayExperiment::experiments(measurementsTrain), rowMeans, na.rm = TRUE)
   else # median.
-    featureTrainingLocations <- lapply(experiments(measurementsTrain), function(dataTable)
+    featureTrainingLocations <- lapply(MultiAssayExperiment::experiments(measurementsTrain), function(dataTable)
                                                 apply(dataTable, 1, median, na.rm = TRUE))
   transformedTables <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
-              experiments(measurements[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
+              MultiAssayExperiment::experiments(measurements[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
   if(absolute == TRUE)
     transformedTables <- lapply(transformedTables, abs)
   
-  experiments(transformed)[targets] <- ExperimentList(transformedTables)
+  MultiAssayExperiment::experiments(transformed)[targets] <- ExperimentList(transformedTables)
 
   if(verbose == 3)
     message("Subtraction from ", location,
