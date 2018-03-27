@@ -108,24 +108,40 @@
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsVariety[training, ], trainParams = trainParams,
+        paramList <- list(measurementsVariety[training, ], classes[training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
       }, selectParams@featureSelection, selectParams@otherParams, SIMPLIFY = FALSE)
-      
-      if(class(featuresLists[[1]]) == "SelectResult")
+
+      if(class(featuresLists[[1]]) == "SelectResult") # No varieties were returned by the classifier used for resubstitution.
       {
-        featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]])))
-        selectedFeatures <- as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
+        if(is.vector(featureSet@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
+        {
+          featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]])))
+          selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
+          selectedFeatures
+        } else { # Selected feature information is stored in a data frame.
+          chosenFeaturesEnsemble <- do.call(rbind, lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]]))
+          selectedFeatures <- chosenFeaturesEnsemble[plyr::count(chosenFeaturesEnsemble)[, "freq"] >= selectParams@minPresence, c("dataset", "feature")]
+          selectedFeatures
+        }
       } else { # The prediction function used for resubstitution returned a variety of lists.
         selectedFeatures <- lapply(1:length(featuresLists[[1]]), function(variety)
         {
           varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatures[[1]])
-          featuresCounts <- table(unlist(varietyFeatures))
-          as.integer(names(featuresCounts))[featuresCounts >= selectParams@minPresence]
+          if(is.vector(featureSet@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
+          {
+            featuresCounts <- table(unlist(varietyFeatures))
+            selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
+            selectedFeatures
+          } else { # Selected feature information is stored in a data frame.
+            chosenFeaturesEnsemble <- do.call(rbind, varietyFeatures)
+            selectedFeatures <- chosenFeaturesEnsemble[plyr::count(chosenFeaturesEnsemble)[, "freq"] >= selectParams@minPresence, c("dataset", "feature")]
+            selectedFeatures
+          }
         })
-        names(selectedFeatures) <- names(featuresLists[[1]])
+        names(selectedFeatures) <- names(featuresLists[[1]]) # Add variety names to selected list.
       }
       list(NULL, selectedFeatures)
     }

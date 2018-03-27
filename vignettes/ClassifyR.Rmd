@@ -90,7 +90,7 @@ DMresults <- runTests(measurements, classes, "Melanoma", "Different Means",
                                     PredictParams(DLDApredictInterface,
                                                   getClasses = function(result)
                                                                result[["class"]])),
-                      parallelParams = bpparam(), verbose = 1)
+                      verbose = 1)
 DMresults
 ```
 
