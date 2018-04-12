@@ -86,7 +86,7 @@
                                              
     # alpha is a user-specified tuning parameter.
     # lambda is automatically tuned, based on glmnet defaults, if not user-specified.                 
-    trainParams <- TrainParams(elasticNetGLMtrainInterface, doesTests = FALSE,
+    trainParams <- TrainParams(elasticNetGLMtrainInterface,
                                tuneParams = list(alpha = c(0, 0.5, 1)),
                                resubstituteParams = resubstituteParams)
     predictParams <- PredictParams(elasticNetGLMpredictInterface,

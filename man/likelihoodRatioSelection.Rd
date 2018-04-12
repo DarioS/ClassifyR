@@ -80,8 +80,8 @@
                                            performanceType = "balanced error",
                                            better = "lower")
   selected <- likelihoodRatioSelection(genesMatrix, classes, "Example",
-                                       trainParams = TrainParams(naiveBayesKernel, TRUE),
-                           predictParams = PredictParams(function(){},
+                                       trainParams = TrainParams(naiveBayesKernel),
+                           predictParams = PredictParams(NULL,
                                            getClasses = function(result) result),
                            resubstituteParams = resubstituteParams)
                  

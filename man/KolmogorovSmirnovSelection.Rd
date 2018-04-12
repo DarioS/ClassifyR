@@ -74,8 +74,8 @@
                                            performanceType = "balanced error",
                                            better = "lower")
   selected <- KolmogorovSmirnovSelection(genesMatrix, classes, "Example",
-                             trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
-                             predictParams = PredictParams(function(){},
+                             trainParams = TrainParams(naiveBayesKernel),
+                             predictParams = PredictParams(NULL,
                                              getClasses = function(result) result),
                              resubstituteParams = resubstituteParams)
                              

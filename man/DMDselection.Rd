@@ -71,8 +71,7 @@
                                            performanceType = "balanced error",
                                            better = "lower")
   DMDselection(genesMatrix, classes, datasetName = "Example",
-               trainParams = TrainParams(naiveBayesKernel, doesTests = TRUE),
-               predictParams = PredictParams(function(){},
-                                             getClasses = function(result) result),
+               trainParams = TrainParams(naiveBayesKernel),
+               predictParams = PredictParams(NULL, getClasses = function(result) result),
                resubstituteParams = resubstituteParams)
 }

@@ -54,7 +54,7 @@ identifying outlier samples that are difficult to classify.
                        validation = "leaveOut", leave = 1,
                        params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                   resubstituteParams = resubstituteParams),
-                                     TrainParams(DLDAtrainInterface, doesTests = FALSE),
+                                     TrainParams(DLDAtrainInterface),
                                      PredictParams(DLDApredictInterface,
                                                    getClasses = function(result)
                                                                 result[["class"]]))

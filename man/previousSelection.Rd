@@ -69,7 +69,7 @@ for the current classification task.
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",
                                      classifyResult = result),
-                       TrainParams(DLDAtrainInterface, FALSE),
+                       TrainParams(DLDAtrainInterface),
                        PredictParams(DLDApredictInterface,
                                      getClasses = function(result) result[["class"]])))
                                      

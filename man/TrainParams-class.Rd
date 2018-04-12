@@ -19,20 +19,25 @@
             characteristics of their data, once they are familiar with this software.
   }
     \item{}{
-      \code{TrainParams(classifier, doesTests, intermediate = character(0), ...)}
+      \code{TrainParams(classifier, intermediate = character(0), getFeatures = NULL, ...)}
             Creates a TrainParams object which stores the function which will do the
             classifier building and parameters that the function will use.
   \describe{
             \item{\code{classifier}}{A function which will construct a classifier, and also
-            possibly make the predictions. The first argument must be a \code{\link{matrix}}
-            object. The second argument must be a vector of classes. If doesTests is \code{TRUE}, the third
-            argument must be a \code{matrix} of test data. The function must also accept a parameter named
-            \code{verbose} The function's return value can be either a trained classifier when
-            \code{doesTests} is \code{FALSE} or a vector of class predictions if \code{doesTests} is \code{TRUE}.}
-            \item{\code{doesTests}}{Set to \code{TRUE} if \code{classifier} also performs
-            and returns predictions.}
+            possibly make the predictions. The first argument must be a \code{\link{DataFrame}}
+            object. The second argument must be a vector of classes. If the function also makes predictions
+            and the value of the \code{predictor} setting of \code{PredictParams} is therefore \code{NULL},
+            the third argument must be a \code{DataFrame} of test data. The function must also accept a
+            parameter named \code{verbose}. The function's return value can be either a trained classifier
+            if the function only does training or a vector or data frame of class predictions if
+            it also does prediction with the test set samples.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
-            \code{\link{runTest}} that need to be passed to \code{classifier}.}            
+            \code{\link{runTest}} that need to be passed to \code{classifier}.}   
+            \item{\code{getFeatures}}{A function may be specified that extracts the selected features from
+            the trained model. This is relevant if using a classifier that does feature selection within
+            training (e.g. random forest). The function must return a list of two vectors. The first vector
+            contains the ranked features (or empty if the training algorithm doesn't produce rankings) and
+            the second vector contains the selected features.}
             \item{\code{...}}{Other named parameters which will be used by the classifier.}
 	         }
     }
@@ -41,8 +46,5 @@
 \author{Dario Strbenac}
 \examples{
 if(require(sparsediscrim))
-  trainParams <- TrainParams(dlda, doesTests = FALSE)
-# The package sparsediscrim has a separate predict method for trained DLDA objects.
-# It doesn't formally have a verbose parameter, but it is effectively consumed
-# by ... in its formal definition.
+  trainParams <- TrainParams(dlda)
 }

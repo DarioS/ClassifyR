@@ -3,6 +3,7 @@ setOldClass("dlda")
 setOldClass("svm")
 setOldClass("mnlogit")
 setOldClass("multnet")
+setOldClass("randomForest")
 
 setClass("TransformParams", representation(
   transform = "function",
@@ -20,6 +21,7 @@ setMethod("TransformParams", c("function"),
                 intermediate = intermediate, otherParams = list(...))
           })
 
+setClassUnion("functionOrNULL", c("function", "NULL"))
 setClassUnion("functionOrList", c("function", "list"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
@@ -82,8 +84,8 @@ setMethod("SelectParams", c("functionOrList"),
 
 setClass("TrainParams", representation(
   classifier = "function",
-  doesTests = "logical",
-  intermediate = "character",  
+  intermediate = "character",
+  getFeatures = "functionOrNULL",
   otherParams = "list")
 )
 
@@ -91,17 +93,17 @@ setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
 setMethod("TrainParams", character(0), function()
 {
-  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), doesTests = FALSE)
+  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), getFeatures = NULL)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, doesTests, intermediate = character(0), ...)
+          function(classifier, intermediate = character(0), getFeatures = NULL, ...)
           {
-            new("TrainParams", classifier = classifier, doesTests = doesTests,
-                intermediate = intermediate, otherParams = list(...))
+            new("TrainParams", classifier = classifier, intermediate = intermediate,
+                getFeatures = getFeatures, otherParams = list(...))
           })
 
 setClass("PredictParams", representation(
-  predictor = "function",
+  predictor = "functionOrNULL",
   intermediate = "character",    
   getClasses = "function",
   otherParams = "list")
@@ -114,9 +116,14 @@ setMethod("PredictParams", character(0), function()
   new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0),
       getClasses = function(result){result[["class"]]})
 })
-setMethod("PredictParams", c("function"),
+setMethod("PredictParams", c("functionOrNULL"),
           function(predictor, intermediate = character(0), getClasses, ...)
           {
+            if(missing(predictor))
+              stop("Either a function or NULL must be specified by 'predictor'.")
+            if(missing(getClasses))
+              stop("A function must be specified by 'getClasses'.")
+            
             new("PredictParams", predictor = predictor, intermediate = intermediate,
                 getClasses = getClasses, otherParams = list(...))
           })

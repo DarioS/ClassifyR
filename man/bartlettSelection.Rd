@@ -80,8 +80,8 @@
                                            performanceType = "balanced error",
                                            better = "lower")
   bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
-                    trainParams = TrainParams(fisherDiscriminant, TRUE),
-                    predictParams = PredictParams(function(){},
-                    getClasses = function(result) result),
+                    trainParams = TrainParams(fisherDiscriminant),
+                    predictParams = PredictParams(NULL,
+                                        getClasses = function(result) result),
                     resubstituteParams = resubstituteParams)
 }

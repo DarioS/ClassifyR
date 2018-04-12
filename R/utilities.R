@@ -31,7 +31,7 @@
   }
 
   measurements <- measurements[, , targets]
-  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
+  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
   S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
   colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
   
@@ -116,7 +116,7 @@
 
       if(class(featuresLists[[1]]) == "SelectResult") # No varieties were returned by the classifier used for resubstitution.
       {
-        if(is.vector(featureSet@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
+        if(is.vector(featuresLists[[1]]@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
         {
           featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]])))
           selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
@@ -130,7 +130,7 @@
         selectedFeatures <- lapply(1:length(featuresLists[[1]]), function(variety)
         {
           varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatures[[1]])
-          if(is.vector(featureSet@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
+          if(is.vector(featuresLists[[1]]@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
           {
             featuresCounts <- table(unlist(varietyFeatures))
             selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
@@ -204,7 +204,7 @@
       trainParams@otherParams <- trainParams@otherParams[-tuneIndex]
     } else tuneCombinations <- NULL
     paramList <- list(measurementsTrain, classes[training])
-    if(trainParams@doesTests == FALSE) # Training and prediction are separate.
+    if(!is.null(predictParams@predictor)) # Training and prediction are separate.
     {
       if(is.null(tuneCombinations))
       {
@@ -384,7 +384,7 @@
 
   predicted <- mapply(function(model, data, variety)
   {
-    if(!grepl("{}", paste(utils::capture.output(predictParams@predictor), collapse = ''), fixed = TRUE))
+    if(!is.null(predictParams@predictor))
     {
       testMeasurements <- data[testing, ]
       
@@ -432,7 +432,7 @@
     trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                         trainParams, predictParams, verbose)
 
-    if(trainParams@doesTests == FALSE)
+    if(!is.null(predictParams@predictor))
     {
         predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
                                predictParams, verbose)

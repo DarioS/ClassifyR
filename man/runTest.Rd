@@ -66,7 +66,7 @@
     runTest(measurements, classes, "Melanoma", "Different Means",
             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                        resubstituteParams = resubstituteParams),
-                          TrainParams(DLDAtrainInterface, doesTests = FALSE),
+                          TrainParams(DLDAtrainInterface),
                           PredictParams(DLDApredictInterface,
                                         getClasses = function(result) result[["class"]])),
             training = (1:ncol(measurements)) \%\% 2 == 0,

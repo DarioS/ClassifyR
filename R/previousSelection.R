@@ -48,7 +48,7 @@ setMethod("previousSelection", "MultiAssayExperiment",
           function(measurements, ...)
           {
             clinicalColumns <- colnames(MultiAssayExperiment::colData(clinicalColumns))
-            dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE)
+            dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
             S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
             previousSelection(dataTable, ...)
           })

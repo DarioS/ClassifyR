@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 1.99.7
-Date: 2018-03-27
+Version: 1.99.8
+Date: 2018-04-12
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -25,7 +25,7 @@ Description: The software formalises a framework for classification in R.
              may be developed by the user, by creating an interface to the framework.
 Collate: classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInterface.R
          DLDAinterface.R DMDselection.R distribution.R edgeRselection.R elasticNetGLMinterface.R
-         fisherDiscriminant.R getLocationsAndScales.R KolmogorovSmirnovSelection.R
+         fisherDiscriminant.R forestFeatures.R getLocationsAndScales.R KolmogorovSmirnovSelection.R
          KullbackLeiblerSelection.R leveneSelection.R likelihoodRatioSelection.R limmaSelection.R 
          logisticRegressionInterface.R mixmodels.R naiveBayesKernel.R
          NSCselectionInterface.R NSCtrainInterface.R NSCpredictInterface.R

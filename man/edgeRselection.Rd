@@ -77,8 +77,8 @@
     
     getClasses <- function(result) result[["ytehat"]]
     selected <- edgeRselection(expression, classes, "DPN Treatment",
-                   trainParams = TrainParams(classifyInterface, doesTests = TRUE),
-                   predictParams = PredictParams(function(){}, getClasses = getClasses),
+                   trainParams = TrainParams(classifyInterface),
+                   predictParams = PredictParams(NULL, getClasses = getClasses),
                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
                                         performanceType = "balanced error", better = "lower"))
                                         

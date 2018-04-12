@@ -86,7 +86,7 @@ DMresults <- runTests(measurements, classes, "Melanoma", "Different Means",
                       validation = "leaveOut", leave = 1,
                       params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                  resubstituteParams = resubstituteParams),
-                                    TrainParams(DLDAtrainInterface, doesTests = FALSE),
+                                    TrainParams(DLDAtrainInterface),
                                     PredictParams(DLDApredictInterface,
                                                   getClasses = function(result)
                                                                result[["class"]])),
@@ -94,7 +94,7 @@ DMresults <- runTests(measurements, classes, "Melanoma", "Different Means",
 DMresults
 ```
 
-Here, leave-one-out cross-validation (LOOCV) is specified by the values of *validation* and *leave*. The specification of feature selection and classifier algorithm is made by the list of parameter classes specified to *params*. Some classifiers available from repositories like CRAN do training and test set prediction with one function and others with two separate functions. Hence, it's necessary to specify a value for *doesTests* to the *TrainParams* constructor whenever doing classification. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. Although not used in this example, the parameter *seed* is important to set for result reproducibility when doing a cross-validation such as 100 sample permutations and 5 folds, because it employs randomisation to partition the samples into folds. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
+Here, leave-one-out cross-validation (LOOCV) is specified by the values of *validation* and *leave*. The specification of feature selection and classifier algorithm is made by the list of parameter classes specified to *params*. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. Although not used in this example, the parameter *seed* is important to set for result reproducibility when doing a cross-validation such as 100 sample permutations and 5 folds, because it employs randomisation to partition the samples into folds. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
 ### Evalulation of a Classification
 
@@ -130,15 +130,15 @@ DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribut
                       validation = "leaveOut", leave = 1,
                       params = list(SelectParams(KullbackLeiblerSelection,
                                                  resubstituteParams = resubstituteParams),
-                                    TrainParams(naiveBayesKernel, doesTests = TRUE),
-                                    PredictParams(predictor = function(){}, getClasses = function(result) result,
+                                    TrainParams(naiveBayesKernel),
+                                    PredictParams(predictor = NULL, getClasses = function(result) result,
                                                   weighted = "weighted", weight = "height difference",
                                                   returnType = "both")),
                                 verbose = 1)
 DDresults
 ```
 
-Here, *doesTests* is TRUE because *naiveBayesKernel* has input parameters for the training data and the test data. The naive Bayes kernel classifier has many options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
+The naive Bayes kernel classifier has many options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
@@ -194,7 +194,7 @@ This is achieved in ClassifyR by providing a variable called *tuneParams* to the
 SVMresults <- runTests(measurements, classes, "Melanoma", "Tuned SVM",
                        validation = "leave", leave = 1,
                        params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
-                                     TrainParams(SVMtrainInterface, doesTests = FALSE, kernel = "linear",
+                                     TrainParams(SVMtrainInterface, kernel = "linear",
                                                  resubstituteParams = resubstituteParams,
                                                  tuneParams = list(cost = c(0.01, 0.1, 1, 10))),
                                      PredictParams(SVMpredictInterface,

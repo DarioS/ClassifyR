@@ -206,7 +206,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   }
 
   MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfoTargets[, 2]]
-  measurements <- wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE)
+  measurements <- wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
   S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(measurements)[, "sourceName"])
   colnames(S4Vectors::mcols(measurements))[1] <- "dataset"

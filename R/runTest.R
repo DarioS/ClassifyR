@@ -66,16 +66,16 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                      measurements <- list(measurements)
                                    measurements <- lapply(measurements, function(variety)
                                                    {
-                                                     if(class(variety) == "matrix")
-                                                     {
-                                                       variety[selectedFeatures, ]
-                                                     } else if(class(variety) == "DataFrame") {
+                                                     if(is.null(S4Vectors::mcols(variety)) == TRUE)
+                                                     { # Input was ordinary matrix or DataFrame.
                                                        variety[, selectedFeatures]
-                                                     } else {
-                                                       assaysFeatures <- subset(selectedFeatures, dataset != "clinical")
-                                                       sampleInfoFeatures <- subset(selectedFeatures, dataset == "clinical")
-                                                       variety <- variety[assaysFeatures[, "feature"], , assaysFeatures[, "dataset"]]
-                                                       MultiAssayExperiment::colData(variety) <- MultiAssayExperiment::colData(variety)[sampleInfoFeatures[, "variable"]]
+                                                     } else { # Input was MultiAssayExperiment.
+                                                       selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
+                                                       {
+                                                         intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
+                                                                   which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
+                                                       })
+                                                       variety <- variety[, selectedColumns]
                                                        variety
                                                      }
                                                    })
@@ -90,16 +90,16 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                    {
                                                      lapply(selectedFeatures, function(features)
                                                      {
-                                                         if(class(variety) == "matrix")
-                                                         {   
-                                                           variety[features, ]
-                                                         } else if(class(variety) == "DataFrame") {
+                                                         if(is.null(S4Vectors::mcols(variety)) == TRUE)
+                                                         { # Input was ordinary matrix or DataFrame.
                                                            variety[, features]
-                                                         } else { # MultiAssayExperiment
-                                                           assaysFeatures <- subset(features, dataset != "clinical")
-                                                           sampleInfoFeatures <- subset(features, dataset == "clinical")
-                                                           variety <- variety[assaysFeatures[, "feature"], , assaysFeatures[, "dataset"]]
-                                                           MultiAssayExperiment::colData(variety) <- MultiAssayExperiment::colData(variety)[sampleInfoFeatures[, "variable"]]
+                                                         } else { # Input was MultiAssayExperiment.
+                                                           selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
+                                                           {
+                                                             intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
+                                                                       which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
+                                                           })
+                                                           variety <- variety[, selectedColumns]
                                                            variety
                                                          }
                                                        })
@@ -148,9 +148,22 @@ function(measurements, classes, datasetName, classificationName, training, testi
                               
                               lastSize <- newSize
                               if("list" %in% class(trained))
+                              {
                                 tuneDetails <- lapply(trained, attr, "tune")
-                              else
+                                if(!is.null(trainParams@getFeatures)) # Features chosen inside classifier.
+                                {
+                                  featureInfo <- lapply(trained, trainParams@getFeatures)
+                                  rankedFeatures <- lapply(featureInfo, '[[', 1)
+                                  selectedFeatures <- lapply(featureInfo, '[[', 2)
+                                }
+                              } else {
                                 tuneDetails <- attr(trained, "tune")
+                                if(!is.null(trainParams@getFeatures)) # Features chosen inside classifier.
+                                {                                
+                                  rankedFeatures <- trainParams@getFeatures(trained)[[1]]
+                                  selectedFeatures <- trainParams@getFeatures(trained)[[2]]
+                                }
+                              }
                                 if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
                               },
               PredictParams = {
@@ -173,7 +186,6 @@ function(measurements, classes, datasetName, classificationName, training, testi
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
-    
     if(class(predictedClasses) != "list")
     {
       return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
@@ -181,13 +193,18 @@ function(measurements, classes, datasetName, classificationName, training, testi
                             classes, list("independent"), tuneDetails)
              )
     } else { # A variety of predictions were made.
-      return(mapply(function(varietyPredictions, varietyTunes)
+      if(!"list" %in% class(selectedFeatures))
+      {
+        rankedFeatures <- list(rankedFeatures)
+        selectedFeatures <- list(selectedFeatures)
+      }
+      return(mapply(function(varietyPredictions, varietyTunes, varietyRanked, varietySelected)
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
         ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
                        list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, class = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
-      }, predictedClasses, tuneDetails, SIMPLIFY = FALSE))
+      }, predictedClasses, tuneDetails, rankedFeatures, selectedFeatures, SIMPLIFY = FALSE))
     }
   }  
 })
