@@ -53,7 +53,8 @@
                           specifying each sample's predicted class.}
 }
 \details{
-  All metrics are suitable for evaluating classification scenarios with more than two classes.
+  All metrics are suitable for evaluating classification scenarios with more than two classes
+  and are reimplementations of those available from \href{https://software.intel.com/en-us/daal-programming-guide-details-40}{Intel DAAL}.
 
   If \code{\link{runTests}} was run in resampling mode, one performance measure is produced
   for every resampling. If the leave-k-out mode was used, then the predictions are

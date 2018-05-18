@@ -9,7 +9,7 @@
 \description{
   Some feature selection functions provided in the framework use resubstitution error
   rate to choose the best number of features for classification. This class stores
-  parameters related to that process
+  parameters related to that process.
 }
 \section{Constructor}{
   \describe{
@@ -27,12 +27,12 @@
   \describe{
             \item{\code{nFeatures}}{A vector for the top number of features to test the
                        resubstitution error for.}
-	          \item{\code{performanceType}}{Either \code{"balanced"} or one of the options provided
-                       by \code{\link[ROCR]{performance}}.}
+	          \item{\code{performanceType}}{One of the eleven types of performance metrics which can be
+	                                        calculated by \code{\link{calcCVperformance}}.}
             \item{\code{better}}{Either \code{"lower"} or \code{"higher"}. Determines whether higher
                        or lower values of the performance measure are desirable.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
-            \code{\link{runTest}} that need to be passed to \code{classifier}.}            
+            \code{\link{runTest}} that need to be passed to the classifier.}            
             \item{\code{...}}{Other named parameters which will be used by the classifier.}
 	         }
     }

@@ -23,7 +23,7 @@
 
 \title{Container for Storing Classification Results}
 \description{
-  Contains a table of actual sample classes and predicted classes, the indices of
+  Contains a table of actual sample classes and predicted classes, the identifiers of
   features selected for each fold of each permutation or each hold-out
   classification, and error rates. This class is not intended to be created by
   the user, but could be used in another package. It is created by \code{\link{runTests}}.

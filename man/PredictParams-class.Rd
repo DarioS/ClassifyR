@@ -37,7 +37,7 @@
 \author{Dario Strbenac}
 
 \examples{
-predictParams <- PredictParams(predictor = predict, getClasses = function(result) result)
+predictParams <- PredictParams(predictor = DLDApredictInterface, getClasses = function(result) result)
 # For prediction by trained object created by DLDA function.
 PredictParams(predictor = NULL, getClasses = function(result) result)
 # For when the training function also does prediction and directly returns the

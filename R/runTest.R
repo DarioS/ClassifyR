@@ -68,14 +68,14 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                    {
                                                      if(is.null(S4Vectors::mcols(variety)) == TRUE)
                                                      { # Input was ordinary matrix or DataFrame.
-                                                       variety[, selectedFeatures]
+                                                       variety[, selectedFeatures, drop = FALSE]
                                                      } else { # Input was MultiAssayExperiment.
                                                        selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
                                                        {
                                                          intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
                                                                    which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
                                                        })
-                                                       variety <- variety[, selectedColumns]
+                                                       variety <- variety[, selectedColumns, drop = FALSE]
                                                        variety
                                                      }
                                                    })
@@ -92,14 +92,14 @@ function(measurements, classes, datasetName, classificationName, training, testi
                                                      {
                                                          if(is.null(S4Vectors::mcols(variety)) == TRUE)
                                                          { # Input was ordinary matrix or DataFrame.
-                                                           variety[, features]
+                                                           variety[, features, drop = FALSE]
                                                          } else { # Input was MultiAssayExperiment.
                                                            selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
                                                            {
                                                              intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
                                                                        which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
                                                            })
-                                                           variety <- variety[, selectedColumns]
+                                                           variety <- variety[, selectedColumns, drop = FALSE]
                                                            variety
                                                          }
                                                        })
@@ -202,7 +202,7 @@ function(measurements, classes, datasetName, classificationName, training, testi
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
         ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures,
-                       list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, class = varietyPredictions)),
+                       list(varietyRanked), list(varietySelected), list(data.frame(sample = testing, class = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
       }, predictedClasses, tuneDetails, rankedFeatures, selectedFeatures, SIMPLIFY = FALSE))
     }

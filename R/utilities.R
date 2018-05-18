@@ -17,6 +17,8 @@
 
 .MAEtoWideTable <- function(measurements, targets, restrict = "numeric")
 {
+  if(is.null(targets))
+    stop("'targets' is not specified but must be.")  
   if(!all(targets %in% c(names(measurements), "clinical")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
 
@@ -86,7 +88,7 @@
   {
     if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(measurementsVariety[training, ], classes[training], verbose = verbose)
+      paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], verbose = verbose)
       if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
@@ -108,7 +110,7 @@
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsVariety[training, ], classes[training], trainParams = trainParams,
+        paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
@@ -190,7 +192,9 @@
       names(individiualParams) <- sapply(multiplierParams, '[', 1)
       individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
       trainFormals <- names(.methodFormals(trainParams@classifier))
-      predictFormals <- names(.methodFormals(predictParams@predictor))
+      predictFormals <- character()
+      if(!is.null(predictParams@predictor)) # Only check for formals if a function was specified by the user.
+        predictFormals <- names(.methodFormals(predictParams@predictor))
       changeTrain <- intersect(names(individiualParams), trainFormals)
       changePredict <- intersect(names(individiualParams), predictFormals)
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
@@ -386,7 +390,7 @@
   {
     if(!is.null(predictParams@predictor))
     {
-      testMeasurements <- data[testing, ]
+      testMeasurements <- data[testing, , drop = FALSE]
       
       if(variety != "data") # Single expression set is in a list with name 'data'.
       {

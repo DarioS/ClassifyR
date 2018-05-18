@@ -266,11 +266,11 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       {
         sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
         switch(class(resultVariety[["predictions"]][[resample]]),
-               factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]][[resample]]),
-               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]]),
+               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]]), stringsAsFactors = FALSE),
+               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE),
                data.frame = data.frame(sample = sampleNames,
-                                       label = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"],
-                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"]))
+                                       class = factor(resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"]),
+                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"], stringsAsFactors = FALSE))
                 
       })
     } else { # leave k out or ordinary, unresampled k-fold cross-validation.

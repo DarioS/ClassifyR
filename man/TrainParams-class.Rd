@@ -46,5 +46,5 @@
 \author{Dario Strbenac}
 \examples{
 if(require(sparsediscrim))
-  trainParams <- TrainParams(dlda)
+  trainParams <- TrainParams(DLDAtrainInterface)
 }

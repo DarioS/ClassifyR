@@ -3,7 +3,7 @@
 \alias{limmaSelection,matrix-method}
 \alias{limmaSelection,DataFrame-method}
 \alias{limmaSelection,MultiAssayExperiment-method}
-\title{Selection of Differentially Expressed Features}
+\title{Selection of Differentially Abundant Features}
 \description{Uses a moderated t-test with empirical Bayes shrinkage to select
              differentially expressed features.
        }
@@ -25,7 +25,7 @@
                  used in the analysis.}                  
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or optional settings that are
-            passed to \code{\link[pamr]{pamr.predict}}.}
+            passed to \code{\link[limma]{lmFit}}.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
