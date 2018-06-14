@@ -110,7 +110,7 @@
                                          better = "lower")
     classified <-
     runTests(measurements, classes, "Asthma", "Different Means",
-             validation = "leaveOut", leave = 1,
+             permutations = 5,
              params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),

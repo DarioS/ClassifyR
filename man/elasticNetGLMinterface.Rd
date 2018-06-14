@@ -92,7 +92,7 @@
     predictParams <- PredictParams(elasticNetGLMpredictInterface,
                                    getClasses = function(result) result)                           
     classified <- runTests(genesMatrix, classes, "Example", "Differential Expression",
-                           validation = "leaveOut", leave = 1,
+                           permutations = 5,
                            params = list(trainParams, predictParams))
                            
     classified <- calcCVperformance(classified, "balanced error")
