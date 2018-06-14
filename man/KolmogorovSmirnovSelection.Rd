@@ -70,7 +70,7 @@
   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
-  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                            performanceType = "balanced error",
                                            better = "lower")
   selected <- KolmogorovSmirnovSelection(genesMatrix, classes, "Example",

@@ -41,5 +41,5 @@
 
 \author{Dario Strbenac}
 \examples{
-    SelectResult("Melanoma", "Moderated t-test", list(1:50), list(1:10))
+    SelectResult("Asthma", "Moderated t-test", list(1:50), list(1:10))
 }

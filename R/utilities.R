@@ -11,6 +11,8 @@
       stop("Specified column name of classes is not present in the data table.")
     classes <- measurements[, classColumn]
     measurements <- measurements[, -classColumn]
+    if(class(classes) != "factor")
+      classes <- factor(classes)    
   }
   list(measurements = measurements, classes = classes)
 }

@@ -103,14 +103,13 @@
 \examples{
   if(require(sparsediscrim))
   {
-    data(melanomaResponse)
+    data(asthma)
     
-    # Leave-one-out cross-validation.
-    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
     classified <-
-    runTests(measurements, classes, "Melanoma", "Different Means",
+    runTests(measurements, classes, "Asthma", "Different Means",
              validation = "leaveOut", leave = 1,
              params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                         resubstituteParams = resubstituteParams),

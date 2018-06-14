@@ -4,6 +4,8 @@ setGeneric("runTests", function(measurements, ...)
 setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
+  if(is.null(colnames(measurements)))
+    stop("'measurements' matrix must have sample identifiers as its column names.")
   runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
@@ -16,6 +18,8 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
                       params = list(SelectParams(), TrainParams(), PredictParams()),
                       verbose = 1)
 {
+  if(is.null(rownames(measurements)))
+    stop("'measurements' DataFrame must have sample identifiers as its row names.")
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
@@ -266,10 +270,10 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       {
         sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
         switch(class(resultVariety[["predictions"]][[resample]]),
-               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]]), stringsAsFactors = FALSE),
+               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]], levels = levels(classes)), stringsAsFactors = FALSE),
                numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE),
                data.frame = data.frame(sample = sampleNames,
-                                       class = factor(resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"]),
+                                       class = factor(resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"], levels = levels(classes)),
                                        score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"], stringsAsFactors = FALSE))
                 
       })
@@ -279,8 +283,8 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
              factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]]),
              numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]]),
              data.frame = data.frame(sample = sampleNames,
-                                     class = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"],
-                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"])))
+                                     class = factor(resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"], levels = levels(classes)),
+                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"], stringsAsFactors = FALSE)))
     }
   })
 

@@ -45,13 +45,13 @@ identifying outlier samples that are difficult to classify.
 \examples{
   if(require(sparsediscrim))
   {
-    data(melanomaResponse)
-    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+    data(asthma)
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
     
-    result <- runTests(measurements, classes, "Melanoma", "Different Means",
-                       validation = "leaveOut", leave = 1,
+    result <- runTests(measurements, classes, "Asthma", "Different Means",
+                       permutations = 5,
                        params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                   resubstituteParams = resubstituteParams),
                                      TrainParams(DLDAtrainInterface),

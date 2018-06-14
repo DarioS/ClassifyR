@@ -35,8 +35,8 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{lambda}{The lambda value passed directly to \code{link[glmnet]{glmnet}} if the training
-  function is used or passed as \code{s} to \code{link[glmnet]{predict.glmnet}} if the prediction
+  \item{lambda}{The lambda value passed directly to \code{\link[glmnet]{glmnet}} if the training
+  function is used or passed as \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction
   function is used.}
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
               \code{measurements} and the same number of features as it.}                
@@ -61,7 +61,7 @@
   classification with more than 2 classes is possible. During classifier training, if more than
   one lambda value is considered by specifying a vector of them as input, then the chosen value
   is determined based on classifier resubstitution performance. Leaving the default value of NULL,
-  however, causes the \code{link[glmnet]{glmnet}} function to determine a set of values to evaluate
+  however, causes the \code{\link[glmnet]{glmnet}} function to determine a set of values to evaluate
   and then a single lambda value is chosen based on the fraction of (null) deviance explained by the
   fitted model.
 }

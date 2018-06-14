@@ -31,7 +31,7 @@
                  integer variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or
-             options which are accepted by the \code{link[randomForest]{randomForest}} function.}
+             options which are accepted by the \code{\link[randomForest]{randomForest}} function.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}             
 }

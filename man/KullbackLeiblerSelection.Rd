@@ -68,7 +68,7 @@
   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
-  resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+  resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                            performanceType = "balanced error",
                                            better = "lower")
   KullbackLeiblerSelection(genesMatrix, classes, "Example",

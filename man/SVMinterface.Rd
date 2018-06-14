@@ -42,7 +42,7 @@
   \item{model}{A fitted model as returned by \code{SVMtrainInterface}.}                 
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or options
-             that are used by the \code{link[e1071]{svm}} function.}
+             that are used by the \code{\link[e1071]{svm}} function.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }
