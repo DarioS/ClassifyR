@@ -40,7 +40,7 @@ setMethod("edgeRselection", "DataFrame",
   result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
   orderedFeatures <- match(rownames(result[["table"]]), colnames(counts))
   
-  .pickFeatures(counts, classes, datasetName,
+  .pickFeatures(counts, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)    
 })

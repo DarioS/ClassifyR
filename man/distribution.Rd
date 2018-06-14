@@ -11,8 +11,8 @@ identifying outlier samples that are difficult to classify.
   \S4method{distribution}{ClassifyResult}(result, dataType = c("features", "samples"),
                  plotType = c("density", "histogram"), summaryType = c("percentage", "count"),
                  plot = TRUE, xMax = NULL, xLabel = "Percentage of Cross-validations",
-                 yLabel = "Density", title = "Distribution of Feature Selections",
-                 fontSizes = c(24, 16, 12), ...)
+               yLabel = "Density", title = "Distribution of Feature Selections",
+             fontSizes = c(24, 16, 12), ...)
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -45,13 +45,14 @@ identifying outlier samples that are difficult to classify.
 \examples{
   if(require(sparsediscrim))
   {
-    data(melanomaResponse)
-    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+    data(asthma)
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
     
-    result <- runTests(measurements, classes, "Melanoma", "Different Means",
-                       validation = "leaveOut", leave = 1,
+    result <- runTests(measurements, classes, datasetName = "Asthma",
+                       classificationName = "Different Means",
+                       permutations = 5,
                        params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                   resubstituteParams = resubstituteParams),
                                      TrainParams(DLDAtrainInterface),

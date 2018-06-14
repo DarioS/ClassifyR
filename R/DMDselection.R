@@ -40,7 +40,7 @@ setMethod("DMDselection", "DataFrame", # Clinical data only.
     divergence <- divergence + scaleDifference
 
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickFeatures(measurements, classes, datasetName, trainParams, predictParams,
+  .pickFeatures(measurements, classes, NULL, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedFeatures, selectionName, verbose)  
 })
 

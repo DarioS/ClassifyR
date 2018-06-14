@@ -2,6 +2,12 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 2.2.0}{\itemize{
+  \item
+  Feature selection using gene sets and networks. Classification can use meta-features derived
+  from the individual features used for feature selection.
+}}
+
 \section{Version 2.0.0}{\itemize{
   \item
   Broad support for DataFrame and MultiAssayExperiment data sets by feature selection and classification functions.

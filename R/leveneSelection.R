@@ -28,7 +28,7 @@ setMethod("leveneSelection", "DataFrame", # Clinical data only.
              car::leveneTest(featureColumn, classes)[["Pr(>F)"]][1])
   orderedFeatures <- order(pValues)
  
-  .pickFeatures(measurements, classes, datasetName,
+  .pickFeatures(measurements, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)  
 })

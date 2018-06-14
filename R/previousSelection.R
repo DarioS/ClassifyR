@@ -41,7 +41,7 @@ setMethod("previousSelection", "DataFrame",
   if(overlapPercent < minimumOverlapPercent)
     signalCondition(simpleError(paste("Number of features in common between previous and current dataset is lower than", minimumOverlapPercent, "percent.")))
   
-  SelectResult(datasetName, selectionName, list(), list(commonFeatures)) # Ranking isn't transferred across.
+  SelectResult(datasetName, selectionName, ncol(measurements), list(), list(commonFeatures)) # Ranking isn't transferred across.
 })
 
 setMethod("previousSelection", "MultiAssayExperiment", 

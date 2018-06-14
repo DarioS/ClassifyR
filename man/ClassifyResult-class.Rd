@@ -23,7 +23,7 @@
 
 \title{Container for Storing Classification Results}
 \description{
-  Contains a table of actual sample classes and predicted classes, the indices of
+  Contains a table of actual sample classes and predicted classes, the identifiers of
   features selected for each fold of each permutation or each hold-out
   classification, and error rates. This class is not intended to be created by
   the user, but could be used in another package. It is created by \code{\link{runTests}}.
@@ -103,14 +103,13 @@
 \examples{
   if(require(sparsediscrim))
   {
-    data(melanomaResponse)
+    data(asthma)
     
-    # Leave-one-out cross-validation.
-    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
     classified <-
-    runTests(measurements, classes, "Melanoma", "Different Means",
+    runTests(measurements, classes, "Asthma", "Different Means",
              validation = "leaveOut", leave = 1,
              params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                         resubstituteParams = resubstituteParams),

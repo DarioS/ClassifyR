@@ -46,7 +46,7 @@ setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data only.
   switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
   orderedFeatures <- order(logLikelihoodRatios, decreasing = TRUE)
   
-  .pickFeatures(measurements, classes, datasetName,
+  .pickFeatures(measurements, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)
 })

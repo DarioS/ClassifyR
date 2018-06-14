@@ -10,7 +10,7 @@
 }
 \usage{
   \S4method{runTests}{matrix}(measurements, classes, ...)
-  \S4method{runTests}{DataFrame}(measurements, classes, datasetName, classificationName,
+  \S4method{runTests}{DataFrame}(measurements, classes, metaFeatures = NULL, datasetName, classificationName,
          validation = c("permute", "leaveOut", "fold"),
          permutePartition = c("fold", "split"),
          permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -21,12 +21,16 @@
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
-                      For a \code{matrix}, the rows are features, and the columns are samples.}
+                      For a \code{matrix}, the rows are features, and the columns are samples.
+                      The sample identifiers must be present as column names of the \code{matrix}
+                      or the row names of the \code{DataFrame}.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements} or if the measurements are
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{metaFeatures}{Either \code{NULL} or a \code{DataFrame} which has meta-features
+                      of the numeric data of interest.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
@@ -74,14 +78,13 @@
 \examples{
   if(require(sparsediscrim))
   {
-    data(melanomaResponse)
+    data(asthma)
     
-    # Leave-one-out cross-validation.
-    resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
-    runTests(measurements, classes, "Melanoma", "Different Means",
-             validation = "leaveOut", leave = 1,
+    runTests(measurements, classes, "Asthma", "Different Means",
+             permutations = 5,
              params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),

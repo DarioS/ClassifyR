@@ -1,4 +1,5 @@
 \name{logisticRegressionInterface}
+\alias{logisticRegressionInterface}
 \alias{logisticRegressionTrainInterface}
 \alias{logisticRegressionTrainInterface,matrix-method}
 \alias{logisticRegressionTrainInterface,DataFrame-method}

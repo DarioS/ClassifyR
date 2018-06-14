@@ -26,7 +26,7 @@ setMethod("bartlettSelection", "DataFrame", # Clinical data or one of the other 
     stats::bartlett.test(featureColumn, classes)[["p.value"]])
   orderedFeatures <- order(pValues)
   
-  .pickFeatures(measurements, classes, datasetName, trainParams, predictParams,
+  .pickFeatures(measurements, classes, NULL, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedFeatures, selectionName, verbose)
 })
 

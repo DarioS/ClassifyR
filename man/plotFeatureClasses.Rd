@@ -29,12 +29,11 @@
                  length 1 containing the column name in \code{measurement} is also permitted.
                  Not used if \code{measurements} is a \code{MultiAssayExperiment} object.}
   \item{targets}{If \code{measurements} is a \code{matrix} or \code{DataFrame}, then
-                a vector of numeric or character indicies corresponding to the row number
-                or the row name of the feature(s) to be plotted. If \code{measurements} is a
-                \code{MultiAssayExperiment}, then a \code{DataFrame} of 2 columns
-                must be specified. The first column contains the names of the tables and the
-                second contains the names of the variables, thus each row unambiguously
-                specifies a variable to be plotted.}
+                a vector of numeric or character indicies or the feature identifiers corresponding to the
+                feature(s) to be plotted. If \code{measurements} is a \code{MultiAssayExperiment}, then
+                a \code{DataFrame} of 2 columns must be specified. The first column contains the
+                names of the tables and the second contains the names of the variables, thus
+                each row unambiguously specifies a variable to be plotted.}
   \item{groupBy}{If \code{measurements} is a \code{DataFrame}, then a character vector of
                 length 1, which contains the name of a categorical feature, may be specified.
                 If \code{measurements} is a \code{MultiAssayExperiment}, then a

@@ -33,7 +33,7 @@ setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data only.
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
 
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickFeatures(measurements, classes, datasetName,
+  .pickFeatures(measurements, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)  
 })

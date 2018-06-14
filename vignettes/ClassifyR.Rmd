@@ -21,7 +21,6 @@ vignette: >
 
 ```{r, echo = FALSE, results = "asis"}
 options(width = 130)
-set.seed(44)
 ```
 
 ## Overview
@@ -59,18 +58,18 @@ MLInterfaces | Yes | No  | No  | No  | No  | No  | No  | No
 MCRestimate  | Yes | No  | Yes | No  | No  | No  | No  | No
 CMA          | No  | No  | Yes | No  | No  | No  | No  | No
 
-## Case Study : Classifying Cancer Types
+## Case Study : Diagnosing Asthma
 
-To demonstrate some key features of ClassifyR, a small dataset consisting of 35 features and 20 blood samples from stage 4 melanoma samples will be used to quickly obtain results. The 20 patients which were treated by either nivolumab or pembrolizumab are divided into 11 responders and 9 non-responders. The journal article corresponding to the dataset was published in 2018 and is titled [High-dimensional Single-cell Analysis Predicts Response to Anti-PD-1 Immunotherapy](https://www.nature.com/articles/nm.4466). Although thousands of cells were measured for each sample, those measurements have been summarised to 1 value per protein by taking the median of all cells' measurements for a particular protein.
+To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The 20 patients which were treated by either nivolumab or pembrolizumab are divided into 11 responders and 9 non-responders. The journal article corresponding to the dataset was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4). Although thousands of cells were measured for each sample, those measurements have been summarised to 1 value per protein by taking the median of all cells' measurements for a particular protein.
 
 ```{r, message = FALSE}
 library(ClassifyR)
-data(melanomaResponse) # Replace with real dataset soon. This is rnorm.
+data(asthma)
 measurements[1:5, 1:5]
 head(classes)
 ```
 
-The numeric matrix variable *measurements* stores the normalised values of the protein abundances for each sample and the factor vector *classes* identifies which class the samples belong to.
+The numeric matrix variable *measurements* stores the normalised values of the RNA gene abundances for each sample and the factor vector *classes* identifies which class the samples belong to. The measurements were normalised using **DESeq2**'s *varianceStabilizingTransformation* function, which produces $log_2$-like data.
 
 For more complex datasets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
 
@@ -79,11 +78,12 @@ For more complex datasets with multiple kinds of experiments (e.g. DNA methylati
 *runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be specified. It uses a **limma** moderated t-test ranking for feature selection and DLDA for classification. The *limmaSelection* function also uses DLDA for estimating a resubstitution error rate for a number of top-*f* ranked features, as a heuristic for picking *f* features from the feature ranking which are used in the training and prediction stages of classification. This classifier relies on differences in means between classes.
 
 ```{r, tidy = FALSE}
-resubstituteParams <- ResubstituteParams(nFeatures = 2:10,
+resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 50, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
-DMresults <- runTests(measurements, classes, "Melanoma", "Different Means",
-                      validation = "leaveOut", leave = 1,
+DMresults <- runTests(measurements, classes, datasetName = "Asthma",
+                      classificationName = "Different Means",
+                      permutations = 20, folds = 5, seed = 2018,
                       params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                  resubstituteParams = resubstituteParams),
                                     TrainParams(DLDAtrainInterface),
@@ -94,7 +94,7 @@ DMresults <- runTests(measurements, classes, "Melanoma", "Different Means",
 DMresults
 ```
 
-Here, leave-one-out cross-validation (LOOCV) is specified by the values of *validation* and *leave*. The specification of feature selection and classifier algorithm is made by the list of parameter classes specified to *params*. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. Although not used in this example, the parameter *seed* is important to set for result reproducibility when doing a cross-validation such as 100 sample permutations and 5 folds, because it employs randomisation to partition the samples into folds. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
+Here, 20 permutations and 5 folds cross-validation is specified by the values of *permutations* and *folds*. The specification of feature selection and classifier algorithm is made by the list of parameter classes specified to *params*. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
 ### Evalulation of a Classification
 
@@ -119,15 +119,16 @@ DMresults
 performance(DMresults)
 ```
 
-The error rate is small. If a cross-validation scheme such as 100 permutations, 5 folds was used instead, there would be 100 data sets to cross-validate and numerous predictions made of each sample, resulting in 100 values for each performance metric. Then, the function *performancePlot* could be used to visualise the distribution of the metric and even compare different classifiers. See the documentation of *performancePlot* for more details. If only a vector of predictions and a vector of actual classes is available, such as from an old study which did not use **ClassifyR**, then *calcExternalPerformance* can be used on a pair of factor vectors which have the same length.
+The error rate is about 20%. If only a vector of predictions and a vector of actual classes is available, such as from an old study which did not use **ClassifyR**, then *calcExternalPerformance* can be used on a pair of factor vectors which have the same length.
 
 ### Comparison of Different Classifications
 
 The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heuristic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
-DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribution",
-                      validation = "leaveOut", leave = 1,
+DDresults <- runTests(measurements, classes, datasetName = "Asthma",
+                      classificationName = "Differential Distribution",
+                      permutations = 20, folds = 5, seed = 2018,
                       params = list(SelectParams(KullbackLeiblerSelection,
                                                  resubstituteParams = resubstituteParams),
                                     TrainParams(naiveBayesKernel),
@@ -138,7 +139,7 @@ DDresults <- runTests(measurements, classes, "Melanoma", "Differential Distribut
 DDresults
 ```
 
-The naive Bayes kernel classifier has many options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
+The naive Bayes kernel classifier has options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
@@ -147,22 +148,24 @@ library(grid)
 DMresults <- calcCVperformance(DMresults, "sample error")
 DDresults <- calcCVperformance(DDresults, "sample error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
-errorPlot <- samplesMetricMap(resultsList, metric = "error", plot = FALSE)
+errorPlot <- samplesMetricMap(resultsList, metric = "error", xAxisLabel = "Sample",
+                              showXtickLabels = FALSE, plot = FALSE)
 grid.draw(errorPlot)
 ```
 
-The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them.
+The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
 The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 10 different features were for the differential distribution classifier for all 20 cross-validations.
 
 ```{r}
-rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:10, xLabelPositions = 1:10,
+rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:50,
+                            xLabelPositions = c(1, seq(5, 50, 5)),
                             lineColourVariable = "None", pointTypeVariable = "None",
                             columnVariable = "None", plot = FALSE)
 rankOverlaps
 ```
 
-The top-ranked features are highly consistent between all pairs of the 20 cross-validations, as is intuitively expected if only one sample changes between each cross-validation.
+The top-ranked features are fairly similar between all pairs of the 20 cross-validations.
 
 For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
@@ -182,7 +185,7 @@ Some classifiers can be set to output scores or probabilities representing how l
 ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
-This ROC plot shows the classifiability of the melanoma dataset is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
+This ROC plot shows the classifiability of the asthma dataset is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
 ## Parameter Tuning
 
@@ -191,8 +194,8 @@ Some classifiers allow the setting of a tuning parameter, which controls some as
 This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. If *tuneParams* has more than one element, all combination of values of the tuning variables are tried. The performance criterion specified to *resubstituteParams* is also used as the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
-SVMresults <- runTests(measurements, classes, "Melanoma", "Tuned SVM",
-                       validation = "leave", leave = 1,
+SVMresults <- runTests(measurements, classes, datasetName = "Asthma",
+                       classificationName = "Tuned SVM", permutations = 20, folds = 5, seed = 2018,
                        params = list(SelectParams(limmaSelection, resubstituteParams = resubstituteParams),
                                      TrainParams(SVMtrainInterface, kernel = "linear",
                                                  resubstituteParams = resubstituteParams,
@@ -206,10 +209,10 @@ The chosen values of the parameters are stored for every validation, and can be 
 
 ```{r}
 length(tunedParameters(SVMresults))
-tunedParameters(SVMresults)[1:3]
+tunedParameters(SVMresults)[[1]]
 ```
 
-These are the cost values chosen for the three folds of the first resampling.
+The cost value of 10 is chosen all five folds of the first sample permutation.
 
 ## Summary
 
@@ -232,6 +235,15 @@ htmltools::img(src = knitr::image_uri("providedClassifiers.png"),
 ```
 
 If a desired selection or classification method is not already implemented, rules for writing functions to work with **ClassifyR** are outlined in the next section.
+
+## Provided Network-based Methods
+
+A number of methods are provided for users to enable classification in a network-centric way. The sub-network and meta-feature creation functions should be used before cross-validation is done.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("networkFunctions.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
 
 ## Rules Regarding Input Variables of New Functions
 

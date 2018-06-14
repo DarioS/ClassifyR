@@ -28,7 +28,7 @@ setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data only.
                       stats::ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
-  .pickFeatures(measurements, classes, datasetName,
+  .pickFeatures(measurements, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)  
 })

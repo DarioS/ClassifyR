@@ -10,7 +10,7 @@ for the test set.
 \usage{
   \S4method{fisherDiscriminant}{matrix}(measurements, classes, test, ...)
   \S4method{fisherDiscriminant}{DataFrame}(measurements, classes, test, returnType = c("class", "score", "both"),
-                      verbose = 3)
+                   verbose = 3)
   \S4method{fisherDiscriminant}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{

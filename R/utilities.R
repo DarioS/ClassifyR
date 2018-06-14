@@ -11,12 +11,16 @@
       stop("Specified column name of classes is not present in the data table.")
     classes <- measurements[, classColumn]
     measurements <- measurements[, -classColumn]
+    if(class(classes) != "factor")
+      classes <- factor(classes)
   }
   list(measurements = measurements, classes = classes)
 }
 
 .MAEtoWideTable <- function(measurements, targets, restrict = "numeric")
 {
+  if(is.null(targets))
+    stop("'targets' is not specified but must be.")  
   if(!all(targets %in% c(names(measurements), "clinical")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
 
@@ -75,7 +79,7 @@
     stop("Training dataset and testing dataset contain differing numbers of features.")  
 }
 
-.doSelection <- function(measurements, classes, training, selectParams, trainParams,
+.doSelection <- function(measurements, classes, metaFeatures, training, selectParams, trainParams,
                          predictParams, verbose)
 {
   initialClass <- class(measurements)
@@ -86,9 +90,13 @@
   {
     if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(measurementsVariety[training, ], classes[training], verbose = verbose)
+      paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], verbose = verbose)
       if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
+      if(!is.null(metaFeatures))
+        paramList <- append(paramList, c(metaFeatures = metaFeatures[training, , drop = FALSE]))
+      if(!is.null(selectParams@featureSets))
+        paramList <- append(paramList, c(featureSets = selectParams@featureSets))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
       selection <- do.call(selectParams@featureSelection, paramList)
 
@@ -108,7 +116,7 @@
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsVariety[training, ], classes[training], trainParams = trainParams,
+        paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
@@ -190,7 +198,9 @@
       names(individiualParams) <- sapply(multiplierParams, '[', 1)
       individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
       trainFormals <- names(.methodFormals(trainParams@classifier))
-      predictFormals <- names(.methodFormals(predictParams@predictor))
+      predictFormals <- character()
+      if(!is.null(predictParams@predictor)) # Only check for formals if a function was specified by the user.
+        predictFormals <- names(.methodFormals(predictParams@predictor))
       changeTrain <- intersect(names(individiualParams), trainFormals)
       changePredict <- intersect(names(individiualParams), predictFormals)
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
@@ -386,7 +396,7 @@
   {
     if(!is.null(predictParams@predictor))
     {
-      testMeasurements <- data[testing, ]
+      testMeasurements <- data[testing, , drop = FALSE]
       
       if(variety != "data") # Single expression set is in a list with name 'data'.
       {
@@ -423,12 +433,20 @@
   predicted
 }
 
-.pickFeatures <- function(measurements, classes, datasetName, trainParams, predictParams,
-                          resubstituteParams, orderedFeatures, selectionName, verbose)
+.pickFeatures <- function(measurements, classes, featureSets, datasetName, trainParams, predictParams,
+                          resubstituteParams, ordering, selectionName, verbose)
 {
+  maxFeatures <- max(resubstituteParams@nFeatures)
+  if(is.null(featureSets))
+  {
+    orderedList <- as.list(ordering[1:maxFeatures])
+  } else { # Group by sets.
+    orderedList <- split(1:ncol(measurements), S4Vectors::mcols(measurements)[["original"]])[ordering[1:maxFeatures]]
+  }
+
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
-    measurementsSubset <- measurements[, orderedFeatures[1:topFeatures], drop = FALSE]
+    measurementsSubset <- measurements[, unlist(orderedList[1:topFeatures]), drop = FALSE]
     trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                         trainParams, predictParams, verbose)
 
@@ -454,7 +472,7 @@
       else
         predictedClasses <- predictions
     }
-    
+
     if(class(predictedClasses) == "list")
     {
       lapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, resubstituteParams@performanceType))
@@ -480,27 +498,37 @@
   
   if(verbose == 3)
     message("Features selected.")
+
+  rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) ordering)
+  pickedFeatures <- lapply(pickedFeatures, function(pickedSet) ordering[pickedSet])
   
-  rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) orderedFeatures)
-  pickedFeatures <- lapply(pickedFeatures, function(pickedSet) orderedFeatures[pickedSet])
-  
-  if(!is.null(S4Vectors::mcols(measurements))) # Table describing source table and variable name is present.
+  if(!is.null(S4Vectors::mcols(measurements)) && "dataset" %in% colnames(S4Vectors::mcols(measurements))) # Table describing source table and variable name is present.
   {
     varInfo <- S4Vectors::mcols(measurements)
     rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])
     pickedFeatures <- lapply(pickedFeatures, function(features) varInfo[features, ])
   } else { # Vectors of feature names.
-    rankedFeatures <- lapply(rankedFeatures, function(features) colnames(measurements)[features])
-    pickedFeatures <- lapply(pickedFeatures, function(features) colnames(measurements)[features])
+    if(is.null(featureSets))
+    {
+      rankedFeatures <- lapply(rankedFeatures, function(features) colnames(measurements)[features])
+      pickedFeatures <- lapply(pickedFeatures, function(features) colnames(measurements)[features])
+    } else {
+      rankedFeatures <- lapply(rankedFeatures, function(features) names(featureSets@sets)[features])
+      pickedFeatures <- lapply(pickedFeatures, function(features) names(featureSets@sets)[features])
+    }
   }
-  
+
+  if(is.null(featureSets))
+    totalFeatures <- ncol(measurements)
+  else
+    totalFeatures <- length(featureSets@sets)
   selectResults <- lapply(1:length(rankedFeatures), function(variety)
   {
-    SelectResult(datasetName, selectionName,
+    SelectResult(datasetName, selectionName, totalFeatures,
                  list(rankedFeatures[[variety]]), list(pickedFeatures[[variety]]))
   })
   names(selectResults) <- names(pickedFeatures)
-  
+
   if(length(selectResults) == 1) selectResults <- selectResults[[1]] else selectResults
 }
 

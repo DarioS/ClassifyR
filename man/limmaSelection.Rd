@@ -3,15 +3,15 @@
 \alias{limmaSelection,matrix-method}
 \alias{limmaSelection,DataFrame-method}
 \alias{limmaSelection,MultiAssayExperiment-method}
-\title{Selection of Differentially Expressed Features}
+\title{Selection of Differentially Abundant Features}
 \description{Uses a moderated t-test with empirical Bayes shrinkage to select
              differentially expressed features.
        }
 \usage{
   \S4method{limmaSelection}{matrix}(measurements, classes, ...)
   \S4method{limmaSelection}{DataFrame}(measurements, classes, datasetName,
-              trainParams, predictParams, resubstituteParams, ...,
-              selectionName = "Moderated t-test", verbose = 3)
+               trainParams, predictParams, resubstituteParams, ...,
+               selectionName = "Moderated t-test", verbose = 3)
   \S4method{limmaSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
@@ -25,7 +25,7 @@
                  used in the analysis.}                  
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or optional settings that are
-            passed to \code{\link[pamr]{pamr.predict}}.}
+            passed to \code{\link[limma]{lmFit}}.}
   \item{datasetName}{A name for the dataset used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
@@ -33,7 +33,7 @@
                        prediction is to be done.}
   \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
                             describing the performance measure to consider and the numbers of
-                            top features to try for resubstitution classification.}                       
+                            top features to try for resubstitution classification.}                     
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}

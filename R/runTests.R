@@ -4,11 +4,13 @@ setGeneric("runTests", function(measurements, ...)
 setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
+  if(is.null(colnames(measurements)))
+    stop("'measurements' matrix must have sample identifiers as its column names.")
   runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
 setMethod("runTests", c("DataFrame"), # Clinical data only.
-          function(measurements, classes, datasetName, classificationName,
+          function(measurements, classes, metaFeatures = NULL, datasetName, classificationName,
                       validation = c("permute", "leaveOut", "fold"),
                       permutePartition = c("fold", "split"),
                       permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -16,10 +18,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
                       params = list(SelectParams(), TrainParams(), PredictParams()),
                       verbose = 1)
 {
+  if(is.null(rownames(measurements)))
+    stop("'measurements' DataFrame must have sample identifiers as its row names.")
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
-  
+
   validation <- match.arg(validation)
   permutePartition <- match.arg(permutePartition)
   if(!missing(seed)) set.seed(seed)
@@ -30,10 +34,19 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
   if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
     stop("\"testing\" must not be before \"training\" in 'params'.")
   
+  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
+  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
+  
   if(!is.null(S4Vectors::mcols(measurements)))
     allFeatures <- S4Vectors::mcols(measurements)
   else
     allFeatures <- colnames(measurements)
+  
+  # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
+  if(!is.null(selectParams) && !is.null(selectParams@featureSets))
+    consideredFeatures <- length(selectParams@featureSets@sets)
+  else
+    consideredFeatures <- ncol(measurements)
   
   if(validation == "permute")
   {
@@ -55,12 +68,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       {
         lapply(1:folds, function(foldIndex)
         {
-          runTest(measurements, classes, training = unlist(sampleFolds[-foldIndex]),
+          runTest(measurements, classes, metaFeatures, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
         })
       } else { # Split mode.
-        runTest(measurements, classes, training = sampleFolds[[1]],
+        runTest(measurements, classes, metaFeatures, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -72,7 +85,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(measurements, classes, training = trainingSample, testing = testSample,
+      runTest(measurements, classes, metaFeatures, training = trainingSample, testing = testSample,
               params = params, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -113,9 +126,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       results <- lapply(results, function(resample) resample[!sapply(resample, is.character)])
     }
   }
-
-  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
-  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
+  
   if(validation == "permute")
   {
     if(permutePartition == "fold")
@@ -266,21 +277,21 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       {
         sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
         switch(class(resultVariety[["predictions"]][[resample]]),
-               factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]][[resample]]),
-               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]]),
+               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]], levels = levels(classes)), stringsAsFactors = FALSE),
+               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE),
                data.frame = data.frame(sample = sampleNames,
-                                       label = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"],
-                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"]))
+                                       class = factor(resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"], levels = levels(classes)),
+                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"], stringsAsFactors = FALSE))
                 
       })
     } else { # leave k out or ordinary, unresampled k-fold cross-validation.
       sampleNames <- rownames(measurements)[resultVariety[["testSet"]]]
       list(switch(class(resultVariety[["predictions"]]),
-             factor = data.frame(sample = sampleNames, class = resultVariety[["predictions"]]),
-             numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]]),
+             factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]]), stringsAsFactors = FALSE),
+             numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]], stringsAsFactors = FALSE),
              data.frame = data.frame(sample = sampleNames,
-                                     class = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"],
-                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"])))
+                                     class = factor(resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"], levels = levels(classes)),
+                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"], stringsAsFactors = FALSE)))
     }
   })
 
@@ -315,7 +326,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
   {
     # Might be NULL if selection is done within training.
     selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)    
-    ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures,
+    ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures, consideredFeatures,
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["predictions"]],
                    classes, validationInfo, resultsByVariety[[variety]][["tune"]])
   })

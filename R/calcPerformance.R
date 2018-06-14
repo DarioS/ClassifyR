@@ -29,7 +29,7 @@ setMethod("calcCVperformance", c("ClassifyResult"),
   samples <- lapply(result@predictions, function(sample) factor(sample[, "sample"], levels = sampleNames(result)))
   predictedClasses <- lapply(result@predictions, function(sample) factor(sample[, "class"], levels = classLevels))
   actualClasses <- lapply(result@predictions, function(sample)
-                   factor(actualClasses(result)[sample[, "sample"]], levels = classLevels, ordered = TRUE))
+                   factor(actualClasses(result)[match(sample[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE))
 
   performance <- .calcPerformance(actualClasses, predictedClasses, samples, performanceType)
   

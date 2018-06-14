@@ -34,7 +34,7 @@ setMethod("NSCselectionInterface", "DataFrame", # Clinical data only.
   if(verbose == 3)
     message("Nearest shrunken centroid feature selection completed.")
   
-  SelectResult(datasetName, selectionName, list(), list(chosen)) 
+  SelectResult(datasetName, selectionName, ncol(measurements), list(), list(chosen))
 })
 
 setMethod("NSCselectionInterface", "MultiAssayExperiment",

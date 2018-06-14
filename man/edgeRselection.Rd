@@ -12,8 +12,8 @@
   \S4method{edgeRselection}{matrix}(counts, classes, ...)
   \S4method{edgeRselection}{DataFrame}(counts, classes, datasetName,
                    normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-                trainParams, predictParams, resubstituteParams,
-                selectionName = "edgeR LRT", verbose = 3)
+               trainParams, predictParams, resubstituteParams,
+               selectionName = "edgeR LRT", verbose = 3)
   \S4method{edgeRselection}{MultiAssayExperiment}(counts, targets = NULL, ...)
 }
 \arguments{

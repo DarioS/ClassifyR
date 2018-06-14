@@ -24,7 +24,7 @@ setMethod("limmaSelection", "DataFrame",
   orderedFeatures <- match(rownames(limma::topTable(linearModel, 2, number = Inf, sort.by = "p")),
                            colnames(measurements))
 
-  .pickFeatures(measurements, classes,
+  .pickFeatures(measurements, classes, NULL,
                 datasetName, trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)  
 })

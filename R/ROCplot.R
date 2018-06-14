@@ -21,8 +21,8 @@ setMethod("ROCplot", "list",
     predictions <- result@predictions
     if(class(predictions) == "list") # A list of data.frames. Concatenate them.
       predictions <- do.call(rbind, predictions)
-    
-    actualClasses <- result@actualClasses[predictions[, "sample"]]
+
+    actualClasses <- actualClasses(result)[match(predictions[, "sample"], sampleNames(result))]
     samplesBins <- .binValues(predictions[, "score"], resultBins)
     boundaries <- sapply(split(predictions[, "score"], samplesBins), min)
     totalPositives <- sum(actualClasses == levels(actualClasses)[2])

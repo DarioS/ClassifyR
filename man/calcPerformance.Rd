@@ -10,14 +10,14 @@
 \usage{
   \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
                               performanceType = c("error", "balanced error", "average accuracy",
-                                           "micro precision", "micro recall",
-                                           "micro F1", "macro precision",
-                                           "macro recall", "macro F1"))
+                                       "micro precision", "micro recall",
+                                       "micro F1", "macro precision",
+                                       "macro recall", "macro F1"))
   \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "balanced error", "sample error",
-                                                  "sample accuracy", "average accuracy",
+                                                     "sample accuracy", "average accuracy",
                                               "micro precision", "micro recall",
-                                              "micro F1", "macro precision",
-                                              "macro recall", "macro F1"))
+                                             "micro F1", "macro precision",
+                                             "macro recall", "macro F1"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -53,7 +53,8 @@
                           specifying each sample's predicted class.}
 }
 \details{
-  All metrics are suitable for evaluating classification scenarios with more than two classes.
+  All metrics are suitable for evaluating classification scenarios with more than two classes
+  and are reimplementations of those available from \href{https://software.intel.com/en-us/daal-programming-guide-details-40}{Intel DAAL}.
 
   If \code{\link{runTests}} was run in resampling mode, one performance measure is produced
   for every resampling. If the leave-k-out mode was used, then the predictions are
@@ -75,7 +76,7 @@
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
   result <- ClassifyResult("Example", "Differential Expression", "A Selection",
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
-                           list(1:50, 1:50), list(1:5, 6:15),
+                           50, list(1:50, 1:50), list(1:5, 6:15),
                            list(predictTable), actual, list("leave", 2))
   result <- calcCVperformance(result, "balanced error") 
   performance(result)

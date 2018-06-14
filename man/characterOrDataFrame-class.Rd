@@ -10,5 +10,9 @@
 
 \author{Dario Strbenac}
 \examples{
-  # Used for the originalFeatures slot of a ClassifyResult object.
+  setClass("Selections", representation(features = "characterOrDataFrame"))
+  selections <- new("Selections", features = c("BRAF", "NRAS"))
+  featuresTable <- DataFrame(assay = c("RNA-seq", "Mass spectrometry"),
+                             feature = c("PD-1", "MITF"))
+  omicsSelections <- new("Selections", features = featuresTable)
 }
