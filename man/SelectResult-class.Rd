@@ -9,7 +9,7 @@
 \description{
   Contains a list of ranked names of features, from most discriminative to least discriminative,
   and a list of features selected for use in classification. The names will be in a data frame
-  if the input dataset is a \code{\link{MultiAssayExperiment}}, with the first column containing the name of the
+  if the input data set is a \code{\link{MultiAssayExperiment}}, with the first column containing the name of the
   data table the feature is from and the second column containing the name of the feature. Each vector or data frame element
   in the list corresponds to a particular iteration of classifier training. Nested lists will be present if
   the permutation and folding cross-validation scheme was used. This class is not intended to be created by the user,
@@ -21,9 +21,9 @@
       \code{SelectResult(datasetName, selectionName, totalFeatures, rankedFeatures, chosenFeatures)}}
     }
   \describe{
-            \item{\code{datasetName}}{A name associated with the dataset used.}
+            \item{\code{datasetName}}{A name associated with the data set used.}
             \item{\code{selectionName}}{A name associated with the classification.}
-            \item{\code{totalFeatures}}{The total number of features in the dataset.}
+            \item{\code{totalFeatures}}{The total number of features in the data set.}
             \item{\code{rankedFeatures}}{Identifiers of all features or meta-features if meta-features were used by the classifier, from most to least
                                          discriminative.}
             \item{\code{chosenFeatures}}{Identifiers of features or meta-features if meta-features were used by the classifier selected at each fold.}

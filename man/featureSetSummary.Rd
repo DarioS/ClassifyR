@@ -20,7 +20,7 @@
                       the training data. For a \code{matrix}, the rows are features, and
                       the columns are samples.}
   \item{target}{If the input is a \code{\link{MultiAssayExperiment}}, this specifies which
-                dataset will be transformed. Can either be an integer or a character string
+                data set will be transformed. Can either be an integer or a character string
                 specifying the name of the table. Must have length 1.}
   \item{location}{Default: The median. The type of location to summarise a set of features
                   belonging to a feature set by.}

@@ -26,8 +26,8 @@
                          \itemize{
                          \item{\code{"balanced error"}: balanced error rate.}                         
                          \item{\code{"error"}: ordinary error rate.}
-                         \item{\code{"sample error"}: error rate for each sample in the dataset.}
-                         \item{\code{"sample accuracy"}: accuracy for each sample in the dataset.}
+                         \item{\code{"sample error"}: error rate for each sample in the data set.}
+                         \item{\code{"sample accuracy"}: accuracy for each sample in the data set.}
                          \item{\code{"average accuracy"}: Sum of accuracies of each class,
                                                     divided by the number of classes.}
                          \item{\code{"micro precision"}: Sum of the number of correct predictions in each class,
@@ -60,7 +60,7 @@
   for every resampling. If the leave-k-out mode was used, then the predictions are
   concatenated, and one performance measure is calculated for all classifications.
   
-  \code{"balanced error"} calculates the balanced error rate and is better suited to class-imbalanced datasets
+  \code{"balanced error"} calculates the balanced error rate and is better suited to class-imbalanced data sets
   than the ordinary error rate specified by {\code{"error"}}. \code{"sample error"} calculates the error rate
   of each sample individually. This may help to identify which samples are contributing the most to the
   overall error rate and check them for confounding factors. Precision, recall and F1 score have micro and macro

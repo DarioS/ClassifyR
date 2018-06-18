@@ -44,7 +44,7 @@ setMethod("DMDselection", "DataFrame", # Clinical data only.
                 resubstituteParams, orderedFeatures, selectionName, verbose)  
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("DMDselection", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {

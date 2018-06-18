@@ -24,7 +24,7 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}                 
-  \item{datasetName}{A name for the dataset used. Stored in the result.}
+  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{trained}{The output of \code{\link{NSCtrainInterface}}, which is identical to the output
                  of \code{\link[pamr]{pamr.listgenes}}.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method

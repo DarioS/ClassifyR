@@ -45,7 +45,7 @@ setMethod("edgeRselection", "DataFrame",
                 orderedFeatures, selectionName, verbose)    
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("edgeRselection", "MultiAssayExperiment",
           function(counts, targets = NULL, ...)
 {

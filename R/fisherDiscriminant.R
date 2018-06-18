@@ -48,7 +48,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
   switch(returnType, class = classes, score = scores, both = data.frame(class = classes, score = scores))  
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("fisherDiscriminant", "MultiAssayExperiment", 
           function(measurements, test, targets = names(measurements), ...)
 {

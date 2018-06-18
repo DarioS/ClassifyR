@@ -28,7 +28,7 @@
                  numeric variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name for the dataset used. Stored in the result.}                    
+  \item{datasetName}{A name for the data set used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how

@@ -16,7 +16,7 @@
                                                  from = expression(min(featureValues)),
                                               to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
-                   weight = c("all", "height difference", "crossover distance", "sum differences"),
+                   weight = c("both", "height difference", "crossover distance"),
                    minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
   \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }
@@ -45,15 +45,13 @@
   \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}. 
                   In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
-  \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
-                or \code{"sum differences"}. The type of weight to calculate.
+  \item{weight}{Default: \code{"both"}. Either \code{"both"}, \code{"height difference"},
+                or \code{"crossover distance"}. The type of weight to calculate.
                 For \code{"height difference"}, the weight of each prediction is equal to the
                 vertical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
-                the weight is the distance of x from the nearest density crossover point. For
-                \code{"sum differences"}, the weight is the sum of the weights calculated by both types
-                of distances.}              
+                the weight is the distance of x from the nearest density crossover point.              
   \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
@@ -79,9 +77,6 @@
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
   distance between y values of the two densities at every x value. x values for which the sign of the difference
   changes compared to the difference of the closest lower value of x are used as the crossover points.
-  
-  Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
-  differentially expressed and differentially variable.
 }
 \value{
   A vector or list of class prediction information, as long as the number of samples in the test data,

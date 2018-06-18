@@ -12,7 +12,7 @@
 }
 \description{
   \code{DLDAtrainInterface} generates a trained diagonal LDA classifier and \code{DLDApredictInterface}
-  uses it to make predictions on a test dataset.
+  uses it to make predictions on a test data set.
 }
 \usage{
   \S4method{DLDAtrainInterface}{matrix}(measurements, classes, ...)
@@ -26,7 +26,7 @@
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                      \code{\link{MultiAssayExperiment}} containing the training data.
                      For a \code{matrix}, the rows are features, and the columns are samples.
-                     If of type \code{\link{DataFrame}}, the dataset is subset to only those
+                     If of type \code{\link{DataFrame}}, the data set is subset to only those
                      features of type \code{integer}.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements} or if the measurements are

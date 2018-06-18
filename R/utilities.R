@@ -76,7 +76,7 @@
   if(ncol(trainingMatrix) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else if(ncol(trainingMatrix) != ncol(testingMatrix))
-    stop("Training dataset and testing dataset contain differing numbers of features.")  
+    stop("Training data set and testing data set contain differing numbers of features.")  
 }
 
 .doSelection <- function(measurements, classes, metaFeatures, training, selectParams, trainParams,

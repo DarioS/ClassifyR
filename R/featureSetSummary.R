@@ -13,7 +13,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
-         "% with the dataset's feature identifiers.")
+         "% with the data set's feature identifiers.")
   
   if(any(keepSets == FALSE)) # Filter out those sets without adequate identifier overlap.
   {
@@ -57,7 +57,7 @@ setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
-         "% with the dataset's feature identifiers.")
+         "% with the data set's feature identifiers.")
   
   if(any(keepSets == FALSE)) # Filter out those sets without adequate identifier overlap.
   {
@@ -93,7 +93,7 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
                    featureSets, minimumOverlapPercent = 80, verbose = 3)
 {
   if(is.null(target))
-    stop("'target' is NULL but must specify one of the datasets in 'measurements'.")
+    stop("'target' is NULL but must specify one of the data sets in 'measurements'.")
   if(class(featureSets) != "FeatureSetCollection")
     stop("'featureSets' is not of type FeatureSetCollection but must be.")
 
@@ -103,7 +103,7 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
-         "% with the dataset's feature identifiers.")
+         "% with the data set's feature identifiers.")
   
   if(any(keepSets == FALSE)) # Filter out those sets without adequate identifier overlap.
   {

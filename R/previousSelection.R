@@ -25,7 +25,7 @@ setMethod("previousSelection", "DataFrame",
   {
     commonFeatures <- intersect(previousIDs, colnames(measurements))
     overlapPercent <- length(commonFeatures) / length(previousIDs) * 100
-  } else { # A data.frame describing the dataset and variable name of the chosen feature.
+  } else { # A data.frame describing the data set and variable name of the chosen feature.
     keepRows <- numeric()
     varInfo <- S4Vectors::mcols(measurements) # mcols stores source information about variables.
     variable <- varInfo[, "rowname"]
@@ -39,7 +39,7 @@ setMethod("previousSelection", "DataFrame",
     overlapPercent <- nrow(commonFeatures) / nrow(previousIDs) * 100
   }
   if(overlapPercent < minimumOverlapPercent)
-    signalCondition(simpleError(paste("Number of features in common between previous and current dataset is lower than", minimumOverlapPercent, "percent.")))
+    signalCondition(simpleError(paste("Number of features in common between previous and current data set is lower than", minimumOverlapPercent, "percent.")))
   
   SelectResult(datasetName, selectionName, ncol(measurements), list(), list(commonFeatures)) # Ranking isn't transferred across.
 })

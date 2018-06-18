@@ -26,7 +26,7 @@
                  data tables of counts to be used.}              
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name for the dataset used. Stored in the result.}
+  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{normFactorsOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{estimateDisp}}.}
   \item{fitOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{glmFit}}.}                
@@ -73,7 +73,7 @@
     control <- which(colData(parathyroidGenesSE)[, "treatment"] == "Control")
     expression <- expression[, c(control, DPN)]
     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
-    expression <- expression[rowSums(expression > 1000) > 8, ] # Make small dataset.
+    expression <- expression[rowSums(expression > 1000) > 8, ] # Make small data set.
     
     getClasses <- function(result) result[["ytehat"]]
     selected <- edgeRselection(expression, classes, "DPN Treatment",

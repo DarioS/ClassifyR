@@ -85,18 +85,18 @@ Additionally, a heatmap of selection size frequencies can be made.
   selections are compared across different classification algorithm types, for each level of \code{"datasetName"},
   \code{"selectionName"} and \code{"validation"}. The result will inform how stable the feature selections
   are between different classification algorithms, for every cross-validation scheme, selection algorithm and
-  dataset. If \code{comparison} is \code{"selectionName"}, then the feature selections are compared across
+  data set. If \code{comparison} is \code{"selectionName"}, then the feature selections are compared across
   different feature selection algorithms, for each level of \code{"datasetName"}, \code{"classificationName"} and
   \code{"validation"}. The result will inform how stable the feature selections are between feature selection
-  algorithms, for every dataset, classification algorithm, and cross-validation scheme. If \code{comparison}
+  algorithms, for every data set, classification algorithm, and cross-validation scheme. If \code{comparison}
   is \code{"validation"}, then the feature selections are compared across different cross-validation schemes,
   for each level of \code{"classificationName"}, \code{"selectionName"} and \code{"datasetName"}. The result
   will inform how stable the feature selections are between different cross-validation schemes, for every
-  selection algorithm, classification algorithm and every dataset. If \code{comparison} is
-  \code{"datasetName"}, then the feature selections are compared across different datasets,
+  selection algorithm, classification algorithm and every data set. If \code{comparison} is
+  \code{"datasetName"}, then the feature selections are compared across different data sets,
   for each level of \code{"classificationName"}, \code{"selectionName"}, and \code{"validation"}.
-  The result will inform how stable the feature selections are between different datasets, for every
-  classification algorithm and every dataset. This could be used to consider if different
+  The result will inform how stable the feature selections are between different data sets, for every
+  classification algorithm and every data set. This could be used to consider if different
   experimental studies have a highly overlapping feature selection pattern.
   
   Calculating all pair-wise set overlaps can be time-consuming. This stage can be done on multiple CPUs by

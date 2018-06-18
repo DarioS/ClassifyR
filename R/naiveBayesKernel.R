@@ -13,7 +13,7 @@ setMethod("naiveBayesKernel", "DataFrame",
           function(measurements, classes, test,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
                    weighted = c("both", "unweighted", "weighted"),
-                   weight = c("all", "height difference", "crossover distance", "sum differences"),
+                   weight = c("both", "height difference", "crossover distance"),
                    minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -101,21 +101,19 @@ setMethod("naiveBayesKernel", "DataFrame",
     )
   }
 
-  if(weight == "all")
-    weightExpanded <-  c("height difference", "crossover distance", "sum differences")
+  if(weight == "both")
+    weightExpanded <-  c("height difference", "crossover distance")
   else weightExpanded <- weight
   allPosteriors <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = posteriorsVertical,
-           `crossover distance` = posteriorsHorizontal,
-           `sum differences` = posteriorsVertical + posteriorsHorizontal
+           `crossover distance` = posteriorsHorizontal
     )
   })
   allDistances <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = distancesVertical,
-           `crossover distance` = distancesHorizontal,
-           `sum differences` = distancesVertical + distancesHorizontal
+           `crossover distance` = distancesHorizontal
     )
   })
   
@@ -174,7 +172,7 @@ setMethod("naiveBayesKernel", "DataFrame",
   
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
+  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
 

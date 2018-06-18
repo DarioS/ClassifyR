@@ -17,7 +17,7 @@
   \S4method{mixModelsTrain}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{mixModelsPredict}{list,matrix}(models, test, ...)
   \S4method{mixModelsPredict}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
-                  weight = c("all", "height difference", "crossover distance", "sum differences"),
+                  weight = c("both", "height difference", "crossover distance"),
               densityXvalues = 1024, minDifference = 0,
               returnType = c("class", "score", "both"), verbose = 3)
   \S4method{mixModelsPredict}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  
@@ -49,16 +49,15 @@
                   In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each feature's vote is worth the same. Both can be
                   calculated simultaneously.}
-  \item{weight}{Default: \code{"all"}. Either \code{"all"}, \code{"height difference"}, \code{"crossover distance"}
-                or \code{"sum differences"}. The type of weight to calculate. For \code{"height difference"},
+  \item{weight}{Default: \code{"both"}. Either \code{"both"}, \code{"height difference"}, or
+                \code{"crossover distance"}. The type of weight to calculate. For \code{"height difference"},
                 the weight of each prediction is equal to the sum of the vertical distances for all of the
                 mixture components within one class subtracted from the sum of the components of
                 the other class, summed for each value of x. For \code{"crossover distance"},
                 the x positions where two mixture densities cross is firstly calculated.
                 The predicted class is the class with the highest mixture sum at the
                 particular value of x and the weight is the distance of x from the
-                nearest density crossover point. For \code{"sum differences"}, the weight is the
-                sum of the weights calculated by both types of distances.}
+                nearest density crossover point.
   \item{densityXvalues}{Default: 1024. Only relevant when \code{weight} is \code{"crossover distance"}. The number of
                         equally-spaced locations at which to calculate y values for each mixture density.}
   \item{minDifference}{Default: 0. The minimum difference in sums of mixture densities within each class for a
@@ -80,10 +79,9 @@
   class sizes in the training set.
 
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
-  distance between y values of the two densities at every x value. x values for which the sign of the difference
-  changes compared to the difference of the closest lower value of x are used as the crossover points.
-  Setting weight to \code{"sum differences"} is intended to find a mix of features which are strongly
-  differentially expressed and differentially variable.  
+  distance between y values of the two densities at every x value. x values for which the sign of the
+  difference changes compared to the difference of the closest lower value of x are used as
+  the crossover points.
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.

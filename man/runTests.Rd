@@ -36,11 +36,11 @@
                  numeric variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}        
-  \item{datasetName}{A name associated with the dataset used.}
+  \item{datasetName}{A name associated with the data set used.}
   \item{classificationName}{A name associated with the classification.}
   \item{validation}{Default: \code{"permute"}. \code{"permute"} for repeated permuting.
                     \code{"leaveOut"} for leaving all possible combinations of k samples as test samples.
-                    \code{"fold"} for folding of the dataset (no resampling).}
+                    \code{"fold"} for folding of the data set (no resampling).}
   \item{permutePartition}{Default: \code{"fold"}. Either \code{"fold"} or \code{"split"}. Only applicable if
                           \code{validation} is \code{"permute"}. If \code{"fold"}, then the samples are
                           split into folds and in each iteration one is used as the test set. If
@@ -54,7 +54,7 @@
                  samples to be in the test set.}        
   \item{folds}{Default: 5. Relevant when repeated permutations are done and \code{permutePartition} is
                set to \code{"fold"} or when \code{validation} is set to \code{"fold"}. The number of folds
-               to break the dataset into. Each fold is used once as the test set.}
+               to break the data set into. Each fold is used once as the test set.}
   \item{leave}{Default: 2. Relevant when leave-k-out cross-validation is used. The number of samples to
                leave for testing.}
   \item{seed}{The random number generator used for repeated resampling will use this seed,

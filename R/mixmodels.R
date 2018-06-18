@@ -44,7 +44,7 @@ setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
   models
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("mixModelsTrain", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
@@ -64,7 +64,7 @@ setMethod("mixModelsPredict", c("list", "matrix"), function(models, test, ...)
 
 setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
           function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   weight = c("all", "height difference", "crossover distance", "sum differences"),
+                   weight = c("both", "height difference", "crossover distance"),
                    densityXvalues = 1024, minDifference = 0,
                    returnType = c("class", "score", "both"), verbose = 3)
 {
@@ -147,21 +147,19 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
     )
   }
   
-  if(weight == "all")
-    weightExpanded <-  c("height difference", "crossover distance", "sum differences")
+  if(weight == "both")
+    weightExpanded <-  c("height difference", "crossover distance")
   else weightExpanded <- weight
   allPosteriors <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = posteriorsVertical,
-           `crossover distance` = posteriorsHorizontal,
-           `sum differences` = posteriorsVertical + posteriorsHorizontal
+           `crossover distance` = posteriorsHorizontal
     )
   })
   allDistances <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = distancesVertical,
-           `crossover distance` = distancesHorizontal,
-           `sum differences` = distancesVertical + distancesHorizontal
+           `crossover distance` = distancesHorizontal
     )
   })  
 
@@ -220,7 +218,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
   
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "all") whichVarieties <- c(whichVarieties, "weight")
+  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
   if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
   
@@ -241,7 +239,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
     resultsList  
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("mixModelsPredict", c("list", "MultiAssayExperiment"),
           function(models, test, targets = names(test), ...)
 {
