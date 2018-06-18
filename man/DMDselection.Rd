@@ -27,7 +27,7 @@
              are passed into and used by the \code{DataFrame} method or parameters for
              \code{\link{getLocationsAndScales}}, such as \code{location}, \code{scale}.}
   \item{datasetName}{Default: \code{"Differences of Medians and Deviations"}. A name for the
-                     dataset used. Stored in the result.}
+                     data set used. Stored in the result.}
   \item{differences}{Default: \code{"both"}. Either \code{"both"}, \code{"location"}, or \code{"scale"}.
                      The type of differences to consider. If both are considered then the
                      absolute difference in location and the absolute difference in scale are summed.}

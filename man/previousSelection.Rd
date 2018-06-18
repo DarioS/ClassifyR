@@ -22,10 +22,10 @@ for the current classification task.
                  parameters with other feature selection methods.}                      
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}  
-  \item{datasetName}{A name for the dataset used. Stored in the result.}
+  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{classifyResult}{An existing classification result from which to take the feature selections from.}
   \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
-                               current dataset, then the selection stops with an error.}
+                               current data set, then the selection stops with an error.}
   \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{.iteration}{Do not specify this variable. It is set by \code{\link{runTests}} if this function
                     is being repeatedly called by \code{runTests}.}
@@ -55,7 +55,7 @@ for the current classification task.
                        PredictParams(predict,
                        getClasses = function(result) result[["class"]])))
                        
-    # Genes 50 to 74 have differential expression in new dataset.
+    # Genes 50 to 74 have differential expression in new data set.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     newDataset <- cbind(newDataset, rbind(sapply(1:25, function(sample) rnorm(49, 9, 2)),
                                           sapply(1:25, function(sample) rnorm(25, 14, 2)),
@@ -64,7 +64,7 @@ for the current classification task.
     rownames(newDataset) <- rownames(genesMatrix)
     colnames(newDataset) <- colnames(genesMatrix)
                                            
-    newerResult <- runTests(newDataset, classes, "Latest Dataset",
+    newerResult <- runTests(newDataset, classes, "Latest Data Set",
                             "Differential Expression", permutations = 2, fold = 2,
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",

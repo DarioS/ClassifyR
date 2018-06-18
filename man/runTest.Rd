@@ -4,7 +4,7 @@
 \alias{runTest,DataFrame-method}
 \alias{runTest,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
-\description{For a dataset of features and samples, the classification process is run.
+\description{For a data set of features and samples, the classification process is run.
              It consists of data transformation, feature selection, classifier training
              and testing (prediction of samples not used in training).
        }
@@ -31,7 +31,7 @@
                  numeric variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name associated with the dataset used.}
+  \item{datasetName}{A name associated with the data set used.}
   \item{classificationName}{A name associated with the classification.}  
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    

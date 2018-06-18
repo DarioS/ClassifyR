@@ -139,16 +139,16 @@ setMethod("selectionPlot", "list",
         else
           featuresList <- aDataset@chosenFeatures        
         
-        overlapToOther <- lapply(otherDatasets, function(anotherDataset) # Other datasets to compare to.
+        overlapToOther <- lapply(otherDatasets, function(anotherDataset) # Other data sets to compare to.
         {
-          unlist(lapply(featuresList, function(features) # List of features of a dataset.
+          unlist(lapply(featuresList, function(features) # List of features of a data set.
           {
             if(resultsType == "classification")
               otherFeaturesList <- features(anotherDataset)
             else
               otherFeaturesList <- anotherDataset@chosenFeatures
             
-            sapply(otherFeaturesList, function(otherFeatures) # List of features of another dataset.
+            sapply(otherFeaturesList, function(otherFeatures) # List of features of another data set.
             {
               length(intersect(features, otherFeatures)) / length(union(features, otherFeatures)) * 100
             })

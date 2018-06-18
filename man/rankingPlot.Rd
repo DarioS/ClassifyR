@@ -79,18 +79,18 @@ The overlaps are converted to percentages and plotted as lineplots.
   rankings are compared across different classification algorithm types, for each level of \code{"datasetName"},
   \code{"selectionName"} and \code{"validation"}. The result will inform how stable the feature rankings
   are between different classification algorithms, for every cross-validation scheme, selection algorithm and
-  dataset. If \code{comparison} is \code{"selectionName"}, then the feature rankings are compared across different
+  data set. If \code{comparison} is \code{"selectionName"}, then the feature rankings are compared across different
   feature selection algorithms, for each level of \code{"datasetName"}, \code{"classificationName"} and
   \code{"validation"}. The result will inform how stable the feature rankings are between feature selection
-  classification algorithms, for every dataset, classification algorithm, and cross-validation scheme.
+  classification algorithms, for every data set, classification algorithm, and cross-validation scheme.
   If \code{comparison} is \code{"validation"}, then the feature rankings are compared across different
   cross-validation schemes, for each level of \code{"classificationName"}, \code{"selectionName"} and
   \code{"datasetName"}. The result will inform how stable the feature rankings are between different
-  cross-validation schemes, for every selection algorithm, classification algorithm and every dataset.
-  If \code{comparison} is \code{"datasetName"}, then the feature rankings are compared across different datasets,
+  cross-validation schemes, for every selection algorithm, classification algorithm and every data set.
+  If \code{comparison} is \code{"datasetName"}, then the feature rankings are compared across different data sets,
   for each level of \code{"classificationName"}, \code{"selectionName"} and \code{"validation"}.
-  The result will inform how stable the feature rankings are between different datasets, for every
-  classification algorithm and every dataset. This could be used to consider if different experimental
+  The result will inform how stable the feature rankings are between different data sets, for every
+  classification algorithm and every data set. This could be used to consider if different experimental
   studies have a highly overlapping feature ranking pattern.
   
   Calculating all pair-wise set overlaps for a large cross-validation result can be time-consuming.

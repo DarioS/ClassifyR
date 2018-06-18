@@ -4,7 +4,7 @@
 \alias{plotFeatureClasses,DataFrame-method}
 \alias{plotFeatureClasses,MultiAssayExperiment-method}
 \title{Plot Density, Scatterplot or Bar Chart for Features By Class}
-\description{Allows the visualisation of measurements in the dataset.}
+\description{Allows the visualisation of measurements in the data set.}
 \usage{
   \S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
   \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL,
@@ -79,7 +79,7 @@
                    the size of the axes values. The fourth number is the size of the
                    legends' titles. The fifth number is the font size of the legend labels.}
   \item{colours}{The colours to plot data of each class in. The length of this vector must be as
-                 long as the distinct number of classes in the dataset.}
+                 long as the distinct number of classes in the data set.}
   \item{showDatasetName}{Logical. Default: \code{TRUE}. If \code{TRUE} and the data is in a
                          \code{MultiAssayExperiment} object, the the name of the table in
                          which the feature is stored in is added to the plot title.}                 

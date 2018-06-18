@@ -117,16 +117,16 @@ setMethod("rankingPlot", "list",
         else
           featuresList <- aDataset@rankedFeatures
         
-        overlapToOther <- do.call(cbind, unname(lapply(otherDatasets, function(anotherDataset) # Other datasets to compare to.
+        overlapToOther <- do.call(cbind, unname(lapply(otherDatasets, function(anotherDataset) # Other data sets to compare to.
         { 
-          rowMeans(do.call(cbind, lapply(featuresList, function(features) # List of features of a dataset.
+          rowMeans(do.call(cbind, lapply(featuresList, function(features) # List of features of a data set.
           {
             if(resultsType == "classification")
               otherFeaturesList <- anotherDataset@selectResult@rankedFeatures
             else
               otherFeaturesList <- anotherDataset@rankedFeatures
 
-            sapply(otherFeaturesList, function(otherFeatures) # List of features of another dataset.
+            sapply(otherFeaturesList, function(otherFeatures) # List of features of another data set.
             {
               sapply(topRanked, function(top)
               {

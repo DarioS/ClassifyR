@@ -37,15 +37,15 @@
             }
     }
   \describe{
-            \item{\code{datasetName}}{A name associated with the dataset used.}
+            \item{\code{datasetName}}{A name associated with the data set used.}
             \item{\code{classificationName}}{A name associated with the classification.}
             \item{\code{originalNames}}{All sample names.}
             \item{\code{originalFeatures}}{All feature names. Character vector or DataFrame with one row
-                                           for each feature if the dataset is a \code{\link{MultiAssayExperiment}}.}
+                                           for each feature if the data set is a \code{\link{MultiAssayExperiment}}.}
             \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-                                         or DataFrame if dataset is a \code{MultiAssayExperiment}.}
+                                         or DataFrame if data set is a \code{MultiAssayExperiment}.}
             \item{\code{chosenFeatures}}{Features selected at each fold. Character vector or DataFrame if
-                                         dataset is a \code{MultiAssayExperiment}.}
+                                         data set is a \code{MultiAssayExperiment}.}
             \item{\code{predictions}}{A \code{\link{list}} of \code{\link{data.frame}}
                                       containing information about samples, their actual class and
                                       predicted class.}            
@@ -75,9 +75,9 @@
   \code{result} is a \code{ClassifyResult} object.
 
   \describe{
-  \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the dataset.}}
+  \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
   \describe{
-  \item{\code{featureNames(result)}}{Returns a vector of features present in the dataset.}}
+  \item{\code{featureNames(result)}}{Returns a vector of features present in the data set.}}
   \describe{
   \item{\code{predictions(result)}}{Returns a \code{list} of \code{data.frame}.
      Each data.frame contains columns \code{sample}, \code{predicted}, and \code{actual}. For

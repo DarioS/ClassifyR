@@ -9,7 +9,7 @@
 \description{
   Contains a list of ranked indices or names of features, from most discriminative to least discriminative,
   and a list of indicies of features selected for use in classification. The names or indices will be in a data frame
-  if the input dataset is a \code{\link{MultiAssayExperiment}}, with the first column containing the name of the
+  if the input data set is a \code{\link{MultiAssayExperiment}}, with the first column containing the name of the
   data table the feature is from and the second column the index or name of the feature. Each vector or data frame element
   in the list corresponds to a particular iteration of classifier training. Nested lists will be present if
   the permutation and folding cross-validation scheme was used. This class is not intended to be created by the user,
@@ -21,7 +21,7 @@
       \code{SelectResult(datasetName, selectionName, rankedFeatures, chosenFeatures)}}
     }
   \describe{
-            \item{\code{datasetName}}{A name associated with the dataset used.}
+            \item{\code{datasetName}}{A name associated with the data set used.}
             \item{\code{selectionName}}{A name associated with the classification.}
             \item{\code{rankedFeatures}}{Indices or names of all features, from most to least
                                          discriminative.}

@@ -13,7 +13,7 @@
   \item
   Plotting functions have a new default style using a white background with black axes.
   \item
-  Vignette simplified and uses a new mass cytometry dataset with clearer differences between classes to
+  Vignette simplified and uses a new mass cytometry data set with clearer differences between classes to
   demonstrate classification and its performance evaluation.
 }}
 
@@ -21,7 +21,7 @@
   \item
   Alterations to make plots compatible with ggplot versions 2.2 and greater.
   \item
-  calcPerformance can calculate some performance metrics for classification tasks based on datasets
+  calcPerformance can calculate some performance metrics for classification tasks based on data sets
   with more than two classes.
   \item
   Sample-wise metrics, like sample-specific error rate and sample-specific accuracy are calculated by
@@ -53,7 +53,7 @@
   or a list of them.
   \item
   priorSelection is a new selection function for using features selected in a prior cross
-  validation for a new dataset classification.
+  validation for a new data set classification.
   \item
   New weighted voting mode, where the weight is the distance of the x value from the
   nearest crossover point of the two densities. Useful for predictions with skewed 

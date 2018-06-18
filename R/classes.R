@@ -164,7 +164,7 @@ setMethod("show", c("SelectResult"),
                 selectionSizes <- sapply(object@chosenFeatures, nrow) # Stored in a data frame.
             }
             cat("An object of class 'SelectResult'.\n")
-            cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
+            cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectionName, ".\n", sep = '')
             if(!is.null(object@rankedFeatures[[1]])) # Some methods don't use rankings.
             {
@@ -219,7 +219,7 @@ setMethod("show", c("ClassifyResult"),
           function(object)
           {
             cat("An object of class 'ClassifyResult'.\n")
-            cat("Dataset Name: ", object@datasetName, ".\n", sep = '')
+            cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
             if(object@validation[[1]] != "resampleFold")

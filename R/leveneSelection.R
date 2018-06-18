@@ -33,7 +33,7 @@ setMethod("leveneSelection", "DataFrame", # Clinical data only.
                 orderedFeatures, selectionName, verbose)  
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("leveneSelection", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {

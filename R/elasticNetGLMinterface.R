@@ -29,7 +29,7 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
   fitted
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
 function(measurements, targets = names(measurements), ...)
 {
@@ -72,7 +72,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   factor(predict(model, as.matrix(test), s = lambda, type = "class"))
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {

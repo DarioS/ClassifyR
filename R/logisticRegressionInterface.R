@@ -28,7 +28,7 @@ setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements
   mnlogit::mnlogit(modelFormula, data = reshaped, ...)
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("logisticRegressionTrainInterface", "MultiAssayExperiment",
 function(measurements, targets = names(measurements), ...)
 {
@@ -73,7 +73,7 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
   unname(predict(model, reshaped, probability = FALSE))
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("logisticRegressionPredictInterface", c("mnlogit", "MultiAssayExperiment"),
           function(model, test, targets = names(test), ...)
 {

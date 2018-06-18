@@ -44,7 +44,7 @@ setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
   models
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("mixModelsTrain", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
@@ -241,7 +241,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
     resultsList  
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics data sets, possibly with clinical data.
 setMethod("mixModelsPredict", c("list", "MultiAssayExperiment"),
           function(models, test, targets = names(test), ...)
 {

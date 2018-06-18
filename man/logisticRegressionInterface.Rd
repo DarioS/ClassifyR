@@ -14,7 +14,7 @@
 \description{
   \code{logisticRegressionTrainInterface} generates a multinomial logistic regression model trained on some
   training data and \code{logisticRegressionPredictInterface} makes class predictions for samples in 
-  the test dataset.
+  the test data set.
 }
 \usage{
   \S4method{logisticRegressionTrainInterface}{matrix}(measurements, classes, ...)
@@ -52,7 +52,7 @@
   with column name \code{"class"}.
   
   This wrapper works with individual-specific variables. If more a complex experimental design is utilised,
-  such as a market research dataset with both individual-specific and alternative-specific variables, then
+  such as a market research data set with both individual-specific and alternative-specific variables, then
   this wrapper is not suitable to classify it.
 }
 \value{

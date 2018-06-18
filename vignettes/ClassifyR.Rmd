@@ -42,7 +42,7 @@ htmltools::img(src = knitr::image_uri("ClassifyRprocedure.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
-Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means, **ClassifyR** also allows for classification using differential deviation (changes in scale) and differential distribution (changes in location and/or scale).
+Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential varibility (DV; changes in scale) and differential distribution (DD; changes in location and/or scale).
 
 In the following sections, some of the most useful functions provided in **ClassifyR** will be demonstrated. However, a user can provide any feature selection, training, or prediction function to the classification framework, as long as it meets some simple rules about the input and return parameters. See the last section of this guide "Rules for New Functions" for a description of these.
 
@@ -60,7 +60,7 @@ CMA          | No  | No  | Yes | No  | No  | No  | No  | No
 
 ## Case Study : Diagnosing Asthma
 
-To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The 20 patients which were treated by either nivolumab or pembrolizumab are divided into 11 responders and 9 non-responders. The journal article corresponding to the dataset was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4). Although thousands of cells were measured for each sample, those measurements have been summarised to 1 value per protein by taking the median of all cells' measurements for a particular protein.
+To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).
 
 ```{r, message = FALSE}
 library(ClassifyR)
@@ -71,7 +71,7 @@ head(classes)
 
 The numeric matrix variable *measurements* stores the normalised values of the RNA gene abundances for each sample and the factor vector *classes* identifies which class the samples belong to. The measurements were normalised using **DESeq2**'s *varianceStabilizingTransformation* function, which produces $log_2$-like data.
 
-For more complex datasets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
+For more complex data sets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
 
 ### runTests Driver Function of Cross-validated Classification
 
@@ -98,16 +98,16 @@ Here, 20 permutations and 5 folds cross-validation is specified by the values of
 
 ### Evalulation of a Classification
 
-The most frequently selected protein can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
+The most frequently selected gene can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
 
 ```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
 selectionPercentages <- distribution(DMresults, plot = FALSE)
 mostChosen <- names(sort(selectionPercentages, decreasing = TRUE)[1])
-bestProteinPlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1,
-                                      xAxisLabel = "Standardised Expression")
+bestGenePlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1,
+                                   xAxisLabel = "Standardised Expression")
 ```
 
-The means of the protein levels are substantially different between the responder and non-responder patients. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
+The means of the abundance levels of *ZDHHC1* are substantially different between the people with and without asthma. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
 
 Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced error rate is calculated considering all samples, each of which was in the test set once. The balanced error rate is defined as the average of the classification errors of each class.
 
@@ -119,7 +119,7 @@ DMresults
 performance(DMresults)
 ```
 
-The error rate is about 20%. If only a vector of predictions and a vector of actual classes is available, such as from an old study which did not use **ClassifyR**, then *calcExternalPerformance* can be used on a pair of factor vectors which have the same length.
+The error rate is about 20%. If only a vector of predictions and a vector of actual classes is available, such as from an old study which did not use **ClassifyR** for cross-validation, then *calcExternalPerformance* can be used on a pair of factor vectors which have the same length.
 
 ### Comparison of Different Classifications
 
@@ -155,7 +155,7 @@ grid.draw(errorPlot)
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 10 different features were for the differential distribution classifier for all 20 cross-validations.
+The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 50 different features were for the differential distribution classifier for all 5 folds in the 20 cross-validations.
 
 ```{r}
 rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:50,
@@ -165,7 +165,7 @@ rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:50,
 rankOverlaps
 ```
 
-The top-ranked features are fairly similar between all pairs of the 20 cross-validations.
+The top-ranked features are fairly similar between all pairs of the 100 cross-validations.
 
 For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
@@ -173,9 +173,9 @@ For a large cross-validation scheme, such as leave-2-out cross-validation, or wh
 
 Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are well-designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
 
-## Cross-validating Selected Features on a Different Dataset
+## Cross-validating Selected Features on a Different Data Set
 
-Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone.
+Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another data set. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one dataset are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone.
 
 ## Generating a ROC Plot
 
@@ -185,7 +185,7 @@ Some classifiers can be set to output scores or probabilities representing how l
 ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
-This ROC plot shows the classifiability of the asthma dataset is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
+This ROC plot shows the classifiability of the asthma data set is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
 ## Parameter Tuning
 
