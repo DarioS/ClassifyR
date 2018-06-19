@@ -224,7 +224,7 @@ setMethod("show", c("ClassifyResult"),
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
             if(object@validation[[1]] != "resampleFold")
             {
-              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature indices.\n", sep = '')
+              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature identifiers.\n", sep = '')
             } else # Resample and fold. Nested lists.
             {
               elementsLengths <- sapply(object@selectResult@chosenFeatures, length)
@@ -236,7 +236,7 @@ setMethod("show", c("ClassifyResult"),
                 subListText <- paste("lengths between", min(elementsLengths), "and", max(elementsLengths))
               }
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of ",
-                  subListText, " of feature indices.\n", sep = '')
+                  subListText, " of feature identifiers.\n", sep = '')
             }            
             cat("Validation: ")
             cat(.validationText(object), ".\n", sep = '')
