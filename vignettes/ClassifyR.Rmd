@@ -104,7 +104,7 @@ The most frequently selected gene can be identified using the *distribution* fun
 selectionPercentages <- distribution(DMresults, plot = FALSE)
 mostChosen <- names(sort(selectionPercentages, decreasing = TRUE)[1])
 bestGenePlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1,
-                                   xAxisLabel = "Standardised Expression")
+                                   xAxisLabel = "Normalised Expression")
 ```
 
 The means of the abundance levels of *ZDHHC1* are substantially different between the people with and without asthma. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
