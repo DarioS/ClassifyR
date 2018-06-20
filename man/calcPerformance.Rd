@@ -9,7 +9,7 @@
 }
 \usage{
   \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
-                              performanceType = c("error", "balanced error", "average accuracy",
+                              performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
                                        "macro recall", "macro F1"))
@@ -69,7 +69,9 @@
   substantial class imbalance and the classifier predicts all samples as belonging to the majority class.
 }
 \value{
-  An updated \code{\linkS4class{ClassifyResult}} object, with new information in the \code{performance} slot.
+  If \code{calcCVperformance} was run, an updated \code{\linkS4class{ClassifyResult}} object, with
+  new metric values in the \code{performance} slot. If \code{calcExternalPerformance} was run, the performance
+  metric value itself.
 }
 \examples{
   predictTable <- data.frame(sample = 1:10,
