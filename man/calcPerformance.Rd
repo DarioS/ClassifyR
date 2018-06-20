@@ -13,8 +13,8 @@
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
                                        "macro recall", "macro F1"))
-  \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "balanced error", "sample error",
-                                                     "sample accuracy", "average accuracy",
+  \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
+                                               "sample error", "sample accuracy",
                                               "micro precision", "micro recall",
                                              "micro F1", "macro precision",
                                              "macro recall", "macro F1"))
@@ -24,12 +24,13 @@
   \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}.\cr
                          Must be one of the following options:\cr
                          \itemize{
-                         \item{\code{"balanced error"}: balanced error rate.}                         
-                         \item{\code{"error"}: ordinary error rate.}
-                         \item{\code{"sample error"}: error rate for each sample in the data set.}
-                         \item{\code{"sample accuracy"}: accuracy for each sample in the data set.}
-                         \item{\code{"average accuracy"}: Sum of accuracies of each class,
-                                                    divided by the number of classes.}
+                         \item{\code{"error"}: Ordinary error rate.}
+                         \item{\code{"accuracy"}: Ordinary accuracy.}
+                         \item{\code{"balanced error"}: Balanced error rate.}
+                         \item{\code{"balanced accuracy"}: Balanced accuracy.}
+                         \item{\code{"sample error"}: Error rate for each sample in the data set.}
+                         \item{\code{"sample accuracy"}: Accuracy for each sample in the data set.}
+
                          \item{\code{"micro precision"}: Sum of the number of correct predictions in each class,
                                                    divided by the sum of number of samples
                                                    in each class.}

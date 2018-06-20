@@ -17,8 +17,8 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
 })
 
 setMethod("calcCVperformance", c("ClassifyResult"),
-          function(result, performanceType = c("error", "balanced error", "sample error",
-                                               "sample accuracy", "average accuracy",
+          function(result, performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
+                                               "sample error", "sample accuracy",
                                                "micro precision", "micro recall",
                                                "micro F1", "macro precision",
                                                "macro recall", "macro F1"))
@@ -58,29 +58,42 @@ setMethod("calcCVperformance", c("ClassifyResult"),
     performanceValues <- as.numeric(sampleMetricValues / table(factor(resultTable[, "sample"], levels = allIDs)))
     names(performanceValues) <- allIDs
     performanceName <- ifelse(performanceType == "sample error", "Sample-wise Error Rate", "Sample-wise Accuracy")
-  } else if(performanceType == "error") {
+  } else if(performanceType %in% c("accuracy", "error")) {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       # Columns are predicted classes, rows are actual classes.
       confusionMatrix <- table(iterationClasses, iterationPredictions)
       totalPredictions <- sum(confusionMatrix)
+      correctPredictions <- sum(diag(confusionMatrix))
       diag(confusionMatrix) <- 0
       wrongPredictions <- sum(confusionMatrix)
-      wrongPredictions / totalPredictions
+      if(performanceType == "accuracy")
+        correctPredictions / totalPredictions
+      else # It is "error".
+        wrongPredictions / totalPredictions
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
-    performanceName <- "Error Rate"    
-  } else if(performanceType == "balanced error") {
+    if(performanceType == "accuracy")
+      performanceName <- "Accuracy"
+    else # It is "error".
+      performanceName <- "Error Rate"
+  } else if(performanceType %in% c("balanced accuracy", "balanced error")) {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       # Columns are predicted classes, rows are actual classes.
       confusionMatrix <- table(iterationClasses, iterationPredictions)
       classSizes <- rowSums(confusionMatrix)
       classErrors <- classSizes - diag(confusionMatrix)
-      mean(classErrors / classSizes)
+      if(performanceType == "balanced accuracy")
+        mean(diag(confusionMatrix) / classSizes)
+      else
+        mean(classErrors / classSizes)
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
-    performanceName <- "Balanced Error Rate"
+    if(performanceType == "accuracy")
+      performanceName <- "Balanced Accuracy"
+    else # It is "error".
+      performanceName <- "Balanced Error Rate"
   } else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
-    performanceName <- switch(performanceType, `average accuracy` = "Average Accuracy",
+    performanceName <- switch(performanceType,
                               `micro precision` = "Micro Precision",
                               `micro recall` = "Micro Recall",
                               `micro F1` = "Micro F1 Score",

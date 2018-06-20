@@ -51,7 +51,7 @@
                 vertical distance between two densities, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
-                the weight is the distance of x from the nearest density crossover point.              
+                the weight is the distance of x from the nearest density crossover point.}              
   \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}

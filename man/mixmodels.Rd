@@ -57,7 +57,7 @@
                 the x positions where two mixture densities cross is firstly calculated.
                 The predicted class is the class with the highest mixture sum at the
                 particular value of x and the weight is the distance of x from the
-                nearest density crossover point.
+                nearest density crossover point.}
   \item{densityXvalues}{Default: 1024. Only relevant when \code{weight} is \code{"crossover distance"}. The number of
                         equally-spaced locations at which to calculate y values for each mixture density.}
   \item{minDifference}{Default: 0. The minimum difference in sums of mixture densities within each class for a

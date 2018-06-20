@@ -141,9 +141,9 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
   
   if(verbose == 3)
   {
-    switch(returnType, class = ,
-           both = message("Calculating class scores and determining class labels."),
-           score = message("Calculating class scores.")
+    switch(returnType, class = message("Determining class labels."),
+                       both = message("Calculating class scores and determining class labels."),
+                       score = message("Calculating class scores.")
     )
   }
   
