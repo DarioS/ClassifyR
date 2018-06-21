@@ -315,7 +315,10 @@ setMethod("show", c("ClassifyResult"),
             cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
-            if(object@validation[[1]] != "resampleFold")
+            if(length(unlist(object@selectResult@chosenFeatures)) == 0)
+            {
+              cat("Features: All used.\n")
+            } else if(object@validation[[1]] != "resampleFold")
             {
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature identifiers.\n", sep = '')
             } else # Resample and fold. Nested lists.

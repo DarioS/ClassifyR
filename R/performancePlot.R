@@ -88,7 +88,7 @@ setMethod("performancePlot", "list",
   }
   
   if(rotate90 == TRUE)
-    performancePlot <- performancePlot + ggplot2::coord_flip()
+    performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
   if(legendPosition != "none")
     performancePlot <- performancePlot + ggplot2::labs(colour = switch(boxLineColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), fill = switch(boxFillColouring, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection"))
   
