@@ -240,7 +240,7 @@ setMethod("selectionPlot", "list",
     selectionPlot <- selectionPlot + ggplot2::scale_colour_manual(values = boxLineColours)
   
   if(rotate90 == TRUE)
-    selectionPlot <- selectionPlot + ggplot2::coord_flip()
+    selectionPlot <- selectionPlot + ggplot2::coord_flip(ylim = c(0, yMax))
   
   if(rowVariable != "None" || columnVariable != "None")
     selectionPlot <- selectionPlot + ggplot2::facet_grid(reformulate(switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = '.'), switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = '.'))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
