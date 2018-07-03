@@ -9,9 +9,11 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
                    performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
-                                       "macro recall", "macro F1"))
+                                       "macro recall", "macro F1", "matthews"))
 {
   performanceType <- match.arg(performanceType)
+  if(length(levels(actualClasses)) > 2 && performanceType == "matthews")
+    stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
   levels(predictedClasses) <- levels(actualClasses)
   .calcPerformance(list(actualClasses), list(predictedClasses), performanceType = performanceType)[["values"]]
 })
@@ -21,9 +23,11 @@ setMethod("calcCVperformance", c("ClassifyResult"),
                                                "sample error", "sample accuracy",
                                                "micro precision", "micro recall",
                                                "micro F1", "macro precision",
-                                               "macro recall", "macro F1"))
+                                               "macro recall", "macro F1", "matthews"))
 {
   performanceType <- match.arg(performanceType)
+  if(length(levels(actualClasses)) > 2 && performanceType == "matthews")
+    stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
   
   classLevels <- levels(actualClasses(result))
   samples <- lapply(result@predictions, function(sample) factor(sample[, "sample"], levels = sampleNames(result)))
@@ -99,7 +103,8 @@ setMethod("calcCVperformance", c("ClassifyResult"),
                               `micro F1` = "Micro F1 Score",
                               `macro precision` = "Macro Precision",
                               `macro recall` = "Macro Recall",
-                              `macro F1` = "Macro F1 Score")
+                              `macro F1` = "Macro F1 Score",
+                               matthews = "Matthews Correlation Coefficient")
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       confusionMatrix <- table(iterationClasses, iterationPredictions)
@@ -139,6 +144,10 @@ setMethod("calcCVperformance", c("ClassifyResult"),
       if(performanceType == "macro F1")
       {
         return(2 * macroP * macroR / (macroP + macroR))
+      }
+      if(performanceType == "matthews")
+      {
+       return((truePositives * trueNegatives - falsePositives * falseNegatives) / sqrt((truePositives + falsePositives) * (truePositives + falseNegatives) * (trueNegatives + falsePositives) * (trueNegatives + falseNegatives)))
       }
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
   }

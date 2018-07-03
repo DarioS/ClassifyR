@@ -12,12 +12,12 @@
                               performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
-                                       "macro recall", "macro F1"))
+                                       "macro recall", "macro F1", "matthews"))
   \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
                                                "sample error", "sample accuracy",
                                               "micro precision", "micro recall",
                                              "micro F1", "macro precision",
-                                             "macro recall", "macro F1"))
+                                             "macro recall", "macro F1", "matthews"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -47,6 +47,9 @@
                                                 in each class, divided by the number of classes.}
                          \item{\code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
                                             macro precision and macro recall.}
+                         \item{\code{"matthews"}: Matthews Correlation Coefficient (MCC). A score between -1 and
+                                                  1 indicating how concordant the predicted classes are to the
+                                                  actual classes. Only defined if there are two classes.}                                            
                         }
                         }
   \item{actualClasses}{A factor vector specifying each sample's correct class.}
@@ -54,8 +57,9 @@
                           specifying each sample's predicted class.}
 }
 \details{
-  All metrics are suitable for evaluating classification scenarios with more than two classes
-  and are reimplementations of those available from \href{https://software.intel.com/en-us/daal-programming-guide-details-40}{Intel DAAL}.
+  All metrics except Matthews Correlation Coefficient are suitable for evaluating
+  classification scenarios with more than two classes and are reimplementations of those available
+  from \href{https://software.intel.com/en-us/daal-programming-guide-details-40}{Intel DAAL}.
 
   If \code{\link{runTests}} was run in resampling mode, one performance measure is produced
   for every resampling. If the leave-k-out mode was used, then the predictions are
