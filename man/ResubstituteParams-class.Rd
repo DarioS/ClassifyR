@@ -26,7 +26,7 @@
       and if higher or lower values of the measure are better.
   \describe{
             \item{\code{nFeatures}}{A vector for the top number of features to test the
-                       resubstitution error for.}
+                       resubstitution error rate for.}
 	          \item{\code{performanceType}}{One of the eleven types of performance metrics which can be
 	                                        calculated by \code{\link{calcCVperformance}}.}
             \item{\code{better}}{Either \code{"lower"} or \code{"higher"}. Determines whether higher

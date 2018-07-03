@@ -31,7 +31,7 @@ The overlaps are converted to percentages and plotted as lineplots.
             xLabelPositions = seq(10, 100, 10),
             yLabel = if(is.null(referenceLevel)) "Average Common Features (\%)" else
             paste("Average Common Features with", referenceLevel, "(\%)"),
-            margin = grid::unit(c(0, 0, 0, 0), "lines"),
+            margin = grid::unit(c(1, 1, 1, 1), "lines"),
             showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{

@@ -56,19 +56,19 @@
 \author{Dario Strbenac}
 
 \examples{
-  predicted <- list(data.frame(sample = c(1, 8, 15, 3, 11, 20, 19, 18),
+  predicted <- list(data.frame(sample = LETTERS[c(1, 8, 15, 3, 11, 20, 19, 18)],
                                score = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75)),
-                    data.frame(sample = c(11, 18, 15, 4, 6, 10, 11, 12),
+                    data.frame(sample = LETTERS[c(11, 18, 15, 4, 6, 10, 11, 12)],
                                score = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60)))
   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
-                            LETTERS[1:10], LETTERS[10:1],
+                            LETTERS[1:20], LETTERS[10:1],
                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
                             predicted, actual, list("resampleFold", 2, 1))
   predicted[[1]][, "score"][c(2, 6)] <- c(0.60, 0.40)
   
   result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
-                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+                            LETTERS[1:20], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
                             list(sample(10, 10), sample(10, 10)),
                             predicted, actual, validation = list("resampleFold", 2, 1))
   ROCplot(list(result1, result2), lineColourVariable = "classificationName",
