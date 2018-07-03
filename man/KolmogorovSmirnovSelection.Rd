@@ -79,7 +79,7 @@
                                              getClasses = function(result) result),
                              resubstituteParams = resubstituteParams)
                              
-  head(selected[["weighted=unweighted"]]@chosenFeatures)
+  head(selected@chosenFeatures)
   plotFeatureClasses(genesMatrix, classes, "Gene 13", dotBinWidth = 0.25,
                      xAxisLabel = expression(log[2](expression)))
   

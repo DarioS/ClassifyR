@@ -85,6 +85,5 @@
                                            getClasses = function(result) result),
                            resubstituteParams = resubstituteParams)
                  
-  classifierVariety <- "weighted=weighted,weight=crossover distance"                         
-  head(selected[[classifierVariety]]@chosenFeatures[[1]])
+  head(selected@chosenFeatures[[1]])
 }

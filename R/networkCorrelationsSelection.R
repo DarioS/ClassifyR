@@ -43,9 +43,9 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
            totalEdges * (oneClassCorr - overallCorr)^2 + totalEdges * (otherClassCorr - overallCorr)^2
          }, as.list(edgesPerNetwork), oneClassSubnetworkCorrelations, otherClassSubnetworkCorrelations, overallSubnetworkCorrelations)
   
-  WSS <- mapply(function(oneClassFeatureCorr, otherClassFeatureCorr, oneClassHubCorr, otherClassHubCorr)
+  WSS <- mapply(function(oneClassFeatureCorr, otherClassFeatureCorr, oneClassOtherFeatureCorr, otherClassOtherFeatureCorr)
          {
-           sum((oneClassFeatureCorr - oneClassHubCorr)^2) + sum((otherClassFeatureCorr - otherClassHubCorr)^2)
+           sum((oneClassFeatureCorr - oneClassOtherFeatureCorr)^2) + sum((otherClassFeatureCorr - otherClassOtherFeatureCorr)^2)
          }, split(oneClassFeatureCorrelations, networkIDsPerEdge), split(otherClassFeatureCorrelations, networkIDsPerEdge),
          as.list(oneClassSubnetworkCorrelations), as.list(otherClassSubnetworkCorrelations))
 

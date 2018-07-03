@@ -16,8 +16,8 @@
   \S4method{mixModelsTrain}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{mixModelsTrain}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{mixModelsPredict}{list,matrix}(models, test, ...)
-  \S4method{mixModelsPredict}{list,DataFrame}(models, test, weighted = c("both", "unweighted", "weighted"),
-                  weight = c("both", "height difference", "crossover distance"),
+  \S4method{mixModelsPredict}{list,DataFrame}(models, test, weighted = c("unweighted", "weighted", "both"),
+                  weight = c("height difference", "crossover distance", "both"),
               densityXvalues = 1024, minDifference = 0,
               returnType = c("class", "score", "both"), verbose = 3)
   \S4method{mixModelsPredict}{list,MultiAssayExperiment}(models, test, targets = names(test), ...)  

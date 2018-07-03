@@ -37,7 +37,7 @@ Additionally, a heatmap of selection size frequencies can be made.
               yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (\%)"
                        else if(comparison == "size") "Set Size" else
                        paste("Common Features with", referenceLevel, "(\%)"),
-              margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
+              margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE,
               showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 }
 \arguments{

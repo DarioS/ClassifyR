@@ -164,8 +164,8 @@ setGeneric("SelectParams", function(featureSelection, ...)
 {standardGeneric("SelectParams")})
 setMethod("SelectParams", character(0), function()
 {
-  new("SelectParams", featureSelection = limmaSelection,
-      selectionName = "Limma moderated t-test", minPresence = 1,
+  new("SelectParams", featureSelection = tTestSelection,
+      selectionName = "t-test", minPresence = 1,
       intermediate = character(0), featureSets = NULL, subsetToSelections = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })

@@ -228,8 +228,8 @@
         returnResult <- trained
       } else {# Tuning Parameter selection.
         trainedList <- list()
-        resubstituteParams <- trainParams@otherParams[["resubstituteParams"]]
-        trainParams@otherParams <- trainParams@otherParams[-match("resubstituteParams", names(trainParams@otherParams))] # Don't pass the resubstitution parameters directly to the classifier.
+        tuneOptimise <- trainParams@otherParams[["tuneOptimise"]]
+        trainParams@otherParams <- trainParams@otherParams[-match("tuneOptimise", names(trainParams@otherParams))] # Don't pass the tuning optimisation parameters directly to the classifier.
         performances <- apply(tuneCombinations, 1, function(tuneCombination)
         {
           tuneParams <- as.list(tuneCombination)
@@ -263,7 +263,7 @@
                stop("Only numeric predictions are available. Predicted classes must be provided.")
             lapply(predicted, function(predictions)
             {
-              calcExternalPerformance(classes[training], predictions, resubstituteParams@performanceType)
+              calcExternalPerformance(classes[training], predictions, tuneOptimise[1])
             })
           })
         })
@@ -273,9 +273,9 @@
           lapply(1:length(trainVariety[[1]]), function(predictVariety)
           {
               performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[trainVariety]][[predictVariety]])
-              if(resubstituteParams@better == "lower")
+              if(tuneOptimise[2] == "lower")
                 chosenTune <- which.min(performanceValues)[1]
-              else
+              else # It is "higher"
                 chosenTune <- which.max(performanceValues)[1]
 
               chosenModel <- trainedList[[chosenTune]]
@@ -320,7 +320,8 @@
           message("Training and prediction completed.")    
         returnResult <- predictions
       } else { # Tuning Parameter selection.
-        resubstituteParams <- trainParams@otherParams[["resubstituteParams"]]
+        tuneOptimise <- trainParams@otherParams[["tuneOptimise"]]
+        trainParams@otherParams <- trainParams@otherParams[-match("tuneOptimise", names(trainParams@otherParams))] # Don't pass the tuning optimisation parameters directly to the classifier.
         performances <- apply(tuneCombinations, 1, function(tuneCombination)
         {
           tuneParams <- as.list(tuneCombination)
@@ -341,7 +342,7 @@
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
             performanceValue <- calcExternalPerformance(classes[training], predictedFactor[[predictIndex]],
-                                                        resubstituteParams@performanceType)
+                                                        tuneOptimise[1])
             list(predictedClasses[[predictIndex]], performanceValue)
           })
         })
@@ -349,9 +350,9 @@
         chosenPredictions <- lapply(1:length(performances[[1]]), function(predictVariety)
         {
           performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[predictVariety]][[2]]) # Value is in second position.
-          if(resubstituteParams@better == "lower")
+          if(tuneOptimise[2] == "lower")
             chosenTune <- which.min(performanceValues)[1]
-          else
+          else # It is "higher"
             chosenTune <- which.max(performanceValues)[1]
             
           chosenPredict <- performances[[chosenTune]][[predictVariety]][[1]] # Prediction object is in position 1.
@@ -476,7 +477,6 @@
     if(class(predictedClasses) == "list")
     {
       lapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, resubstituteParams@performanceType))
-      
     } else {
       calcExternalPerformance(classes, predictedClasses, resubstituteParams@performanceType)
     }

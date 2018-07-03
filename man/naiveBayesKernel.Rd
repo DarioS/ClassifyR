@@ -15,8 +15,8 @@
                  densityParameters = list(bw = "nrd0", n = 1024,
                                                  from = expression(min(featureValues)),
                                               to = expression(max(featureValues))),
-                   weighted = c("both", "unweighted", "weighted"),
-                   weight = c("both", "height difference", "crossover distance"),
+                   weighted = c("unweighted", "weighted", "both"),
+                   weight = c("height difference", "crossover distance", "both"),
                    minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
   \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }

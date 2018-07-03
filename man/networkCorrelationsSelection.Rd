@@ -106,16 +106,14 @@
   rownames(measurements) <- LETTERS[1:10]
   colnames(measurements) <- names(classes) <- paste("Patient", 1:10)
   
-  IHdifferences <- interactorDifferences(measurements, netSets)
+  Idifferences <- interactorDifferences(measurements, netSets)
 
   # The features are sub-networks and there are only two in this example.
   resubstituteParams <- ResubstituteParams(nFeatures = 1:2,
                                 performanceType = "balanced error", better = "lower")
   
-  predictParams <- PredictParams(NULL, weighted = "unweighted",
-                                 weight = "height difference",
-                                 getClasses = function(result) result)
-  networkCorrelationsSelection(measurements, classes, metaFeatures = IHdifferences,
+  predictParams <- PredictParams(NULL, getClasses = function(result) result)
+  networkCorrelationsSelection(measurements, classes, metaFeatures = Idifferences,
                                networkSets = netSets, datasetName = "Example",
                                trainParams = TrainParams(naiveBayesKernel),
                                predictParams = predictParams,

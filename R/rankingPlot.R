@@ -15,7 +15,7 @@ setMethod("rankingPlot", "list",
                    title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
                    xLabelPositions = seq(10, 100, 10),
                    yLabel = if(is.null(referenceLevel)) "Average Common Features (%)" else paste("Average Common Features with", referenceLevel, "(%)"),
-                   margin = grid::unit(c(0, 0, 0, 0), "lines"),
+                   margin = grid::unit(c(1, 1, 1, 1), "lines"),
                    showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))

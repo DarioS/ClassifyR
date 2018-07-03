@@ -3,15 +3,15 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 2.1.6
-Date: 2018-06-21
+Version: 2.1.7
+Date: 2018-07-03
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
 biocViews: Classification, Survival
 Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 1.6.0), BiocParallel
 Imports: locfit, grid, utils, plyr
-Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
+Suggests: limma, genefilter, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
         BiocStyle, pamr, sparsediscrim, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
         scales, e1071, rmarkdown, IRanges, randomForest, robustbase, mlogit, mnlogit, glmnet
 Description: The software formalises a framework for classification in R.
@@ -31,6 +31,6 @@ Collate: classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInt
          mixmodels.R naiveBayesKernel.R networkCorrelationsSelection.R NSCselectionInterface.R NSCtrainInterface.R
          NSCpredictInterface.R performancePlot.R plotFeatureClasses.R previousSelection.R randomForestInterface.R
          rankingPlot.R ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R
-         subtractFromLocation.R SVMinterface.R
+         subtractFromLocation.R SVMinterface.R tTestSelection.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

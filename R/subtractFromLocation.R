@@ -41,9 +41,9 @@ setMethod("subtractFromLocation", "DataFrame",
             else # median.
               locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
             transformed <- measurements
-            transformed[, isNumeric] <- apply(measurements[, isNumeric], 1, '-', locations)
+            transformed[, isNumeric] <- DataFrame(t(apply(measurements[, isNumeric], 1, '-', locations)))
             if(absolute == TRUE)
-              transformed <- abs(transformed)
+              transformed[, isNumeric] <- DataFrame(lapply(transformed[, isNumeric], abs))
             
             if(verbose == 3)
               message("Subtraction from ", location,
@@ -71,9 +71,9 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
       locations <- apply(clinicalTrain, 2, mean, na.rm = TRUE)
     else # median.
       locations <- apply(clinicalTrain, 2, median, na.rm = TRUE)
-    transformedClinical <- apply(MultiAssayExperiment::colData(measurements), 1, '-', locations)
+    transformedClinical <- DataFrame(t(apply(MultiAssayExperiment::colData(measurements), 1, '-', locations)))
     if(absolute == TRUE)
-      transformedClinical <- abs(transformedClinical)
+      transformedClinical <- DataFrame(lapply(transformedClinical, abs))
     MultiAssayExperiment::colData(transformed)[, isNumeric] <- transformedClinical
   }
   

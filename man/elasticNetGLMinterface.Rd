@@ -88,7 +88,7 @@
     # lambda is automatically tuned, based on glmnet defaults, if not user-specified.                 
     trainParams <- TrainParams(elasticNetGLMtrainInterface,
                                tuneParams = list(alpha = c(0, 0.5, 1)),
-                               resubstituteParams = resubstituteParams)
+                               tuneOptimise = c("balanced error", "lower"))
     predictParams <- PredictParams(elasticNetGLMpredictInterface,
                                    getClasses = function(result) result)                           
     classified <- runTests(genesMatrix, classes, datasetName = "Example",

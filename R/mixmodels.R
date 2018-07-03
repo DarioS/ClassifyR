@@ -7,7 +7,7 @@ setMethod("mixModelsTrain", "matrix", # Matrix of numeric measurements.
   mixModelsTrain(DataFrame(t(measurements), check.names = FALSE), ...)
 })
 
-setMethod("mixModelsTrain", "DataFrame", # Clinical data only.
+setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
           function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -63,8 +63,8 @@ setMethod("mixModelsPredict", c("list", "matrix"), function(models, test, ...)
 })
 
 setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
-          function(models, test, weighted = c("both", "unweighted", "weighted"),
-                   weight = c("both", "height difference", "crossover distance"),
+          function(models, test, weighted = c("unweighted", "weighted", "both"),
+                   weight = c("height difference", "crossover distance", "both"),
                    densityXvalues = 1024, minDifference = 0,
                    returnType = c("class", "score", "both"), verbose = 3)
 {
@@ -82,27 +82,28 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
   if(verbose == 3)
     message("Predicting using normal mixtures.")
 
+  densities <- mapply(function(oneClassModel, otherClassModel)
+  {
+    featureValues <- c(oneClassModel@data, otherClassModel@data)
+    xValues <- seq(min(featureValues), max(featureValues), length.out = densityXvalues)
+    setNames(lapply(list(oneClassModel, otherClassModel), function(model)
+    {
+      yValues <- Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
+      {
+        model@bestResult@parameters@proportions[index] * dnorm(xValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
+      }))
+      list(x = xValues, y = yValues)
+    }), c("oneClass", "otherClass"))
+  }, models[[1]], models[[2]], SIMPLIFY = FALSE)
+  splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
+                                                               otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
+  
   if(weight != "height difference") # Calculate the crossover distance.
   {
     if(verbose == 3)
       message("Calculating crossover points of normal mixture densities.")
-    # Convert to a density, so the crossover points can be calculated.
-    densities <- mapply(function(oneClassModel, otherClassModel)
-    {
-      featureValues <- c(oneClassModel@data, otherClassModel@data)
-      xValues <- seq(min(featureValues), max(featureValues), length.out = densityXvalues)
-      setNames(lapply(list(oneClassModel, otherClassModel), function(model)
-      {
-        yValues <- Reduce('+', lapply(1:model@bestResult@nbCluster, function(index)
-        {
-          model@bestResult@parameters@proportions[index] * dnorm(xValues, model@bestResult@parameters@mean[index], sqrt(as.numeric(model@bestResult@parameters@variance[[index]])))
-        }))
-        list(x = xValues, y = yValues)
-      }), c("oneClass", "otherClass"))
-    }, models[[1]], models[[2]], SIMPLIFY = FALSE)
+
     crosses <- lapply(densities, function(densityPair) .densityCrossover(densityPair[[1]], densityPair[[2]]))
-    splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
-                                                                 otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
 
     distancesHorizontal <- t(do.call(cbind, mapply(function(featureCrosses, testSamples)
     {
@@ -153,14 +154,14 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
   allPosteriors <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = posteriorsVertical,
-           `crossover distance` = posteriorsHorizontal
-    )
+                 `crossover distance` = posteriorsHorizontal
+          )
   })
   allDistances <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = distancesVertical,
-           `crossover distance` = distancesHorizontal
-    )
+                 `crossover distance` = distancesHorizontal
+          )
   })  
 
   weightingText <- weighted

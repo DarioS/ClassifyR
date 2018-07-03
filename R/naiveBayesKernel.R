@@ -12,8 +12,8 @@ setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
 setMethod("naiveBayesKernel", "DataFrame", 
           function(measurements, classes, test,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
-                   weighted = c("both", "unweighted", "weighted"),
-                   weight = c("both", "height difference", "crossover distance"),
+                   weighted = c("unweighted", "weighted", "both"),
+                   weight = c("height difference", "crossover distance", "both"),
                    minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
