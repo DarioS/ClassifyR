@@ -9,10 +9,11 @@ and one row for each classification result.
   \S4method{samplesMetricMap}{list}(results,
                      comparison = c("classificationName", "datasetName", "selectionName",
                                 "validation"),
-                 metric = c("error", "accuracy"),
+                 metric = c("error", "accuracy"), groups = NULL,
                      metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
-                     classColours = c("#3F48CC", "#880015"), fontSizes = c(24, 16, 12, 12, 12),
+                     classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
+                     fontSizes = c(24, 16, 12, 12, 12),
                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE,
                  xAxisLabel = "Sample Name", showXtickLabels = TRUE,
                  yAxisLabel = "Analysis", showYtickLabels = TRUE,
@@ -22,11 +23,14 @@ and one row for each classification result.
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{comparison}{The aspect of the experimental design to compare.}
   \item{metric}{The sample-wise metric to calculate and plot.}
+  \item{groups}{If not NULL, can be a named factor factor specifying
+                some variable of interest to plot underneath the class bar.}
   \item{metricColours}{A vector of colours for metric levels.}
   \item{classColours}{Either a vector of colours for class levels if both classes should
                       have same colour, or a list of length 2, with each component
                       being a vector of the same length. The vector has the colour gradient
                       for each class.}
+  \item{groupColours}{A vector of colours for group levels. Only useful if \code{groups} is not NULL.}
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
                    the size of the axes values. The fourth number is the size of the
@@ -65,5 +69,9 @@ be discretised to.
                             list(predicted), actual, validation = list("leave", 2))
   result1 <- calcCVperformance(result1, "sample error")
   result2 <- calcCVperformance(result2, "sample error")
+  groups <- factor(rep(c("Male", "Female"), length.out = 10))
+  names(groups) <- LETTERS[1:10]
+  
   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2))
+  wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2), groups = groups)
 }

@@ -130,7 +130,7 @@ bestGenePlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidt
                                    xAxisLabel = "Normalised Expression")
 ```
 
-The means of the abundance levels of *ZDHHC1* are substantially different between the people with and without asthma. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
+The means of the abundance levels of `r names(sortedPercentages)[1]` are substantially different between the people with and without asthma. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
 
 Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced error rate is calculated considering all samples, each of which was in the test set once. The balanced error rate is defined as the average of the classification errors of each class.
 

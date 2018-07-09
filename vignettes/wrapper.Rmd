@@ -1,0 +1,105 @@
+---
+title: "Example: Creating a Wrapper Function for *k* Nearest Neighbours Classification"
+author: Dario Strbenac<br>
+        The University of Sydney, Australia.
+output: 
+  BiocStyle::html_document:
+    toc: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Example: Creating a Wrapper Function for the k-NN Classifier}
+---
+
+<style>
+    body .main-container {
+        max-width: 1600px;
+    }
+    p {
+      padding: 20px;
+    }
+</style>
+
+```{r, echo = FALSE, results = "asis"}
+options(width = 130)
+```
+
+## Introduction
+
+**ClassifyR** is a *framework* for cross-validated classification, with the rules for functions to be used with it explained in Section 0.11 of the introductory vignette. A fully worked example is shown how to incorporate an existing classifier from 
+
+## *k* Nearest Neighbours
+
+There is an implementation of the *k* Nearest Neighbours algorithm in the package **class**. Its function has the form `knn(train, test, cl, k = 1, l = 0, prob = FALSE, use.all = TRUE)`.  It accepts a `matrix` or a `data.frame` variable as input, but **ClassifyR** calls transformation, feature selection and classifier functions with a `DataFrame`, a core Bioconductor data container from [S4Vectors](https://bioconductor.org/packages/release/bioc/html/S4Vectors.html). It also expects training data to be the first parameter, the classes of it to be the second parameter and the test data to be the third. Therefore, a wrapper for `DataFrame` reordering the parameters is created.
+
+```{r, eval = FALSE}
+setGeneric("kNNinterface", function(measurements, ...) {standardGeneric("kNNinterface")})
+
+setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
+  isNumeric <- sapply(measurements, is.numeric)
+  measurements <- measurements[, isNumeric, drop = FALSE]
+  isNumeric <- sapply(test, is.numeric)
+  test <- test[, isNumeric, drop = FALSE]  
+  
+  if(!requireNamespace("class", quietly = TRUE))
+    stop("The package 'class' could not be found. Please install it.")
+  if(verbose == 3)
+    message("Fitting k Nearest Neighbours classifier to data and predicting classes.")
+  
+  class::knn(as.matrix(measurements), as.matrix(test), classes, ...)
+})
+```
+
+The function only emits a progress message if `verbose` is 3. The verbosity levels are explained in the introductory vignette. `.splitDataAndClasses` is an internal function in **ClassifyR** which ensures that classes are not in `measurements`. If `classes` is a factor vector, then the function has no effect. If `classes` is the character name of a column in `measurements`, that column is removed from the table and returned as a separate variable. The `...` parameter captures any options to be passed onto `knn`, such as `k` (number of neighbours considered) and `l` (minimum vote for a definite decision), for example. The function is also defensive and removes any non-numeric columns from the input table.
+
+**ClassifyR** also accepts a `matrix` and a `MultiAssayExperiment` as input. Provide convenience methods for these inputs which converts them into a `DataFrame`. In this way, only the `DataFrame` version of `kNNinterface` does the classification.
+
+```{r, eval = FALSE}
+setMethod("kNNinterface", "matrix",
+          function(measurements, classes, test, ...)
+{
+  kNNinterface(DataFrame(t(measurements), check.names = FALSE),
+               classes,
+               DataFrame(t(test), check.names = FALSE), ...)
+})
+
+setMethod("kNNinterface", "MultiAssayExperiment",
+function(measurements, test, targets = names(measurements), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  trainingTable <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  testingTable <- .MAEtoWideTable(test, targets)
+            
+  .checkVariablesAndSame(trainingTable, testingTable)
+  kNNinterface(trainingTable, classes, testingTable, ...)
+})
+```
+
+The `matrix` method simply involves transposing the input matrices, which **ClassifyR** expects to store features in the rows and samples in the columns (customary in bioinformatics), and casting them to a `DataFrame`, which dispatches to the kNNinterface method for a `DataFrame`, which carries out the classification.
+
+The conversion of a `MultiAssayExperiment` is more complicated. **ClassifyR** has an internal function `.MAEtoWideTable` which converts a `MultiAssayExperiment` to a wide `DataFrame`. `targets` specifies which assays to include in the conversion. By default, it can also filters the resultant table to contain only numeric variables. The internal validity function `.checkVariablesAndSame` checks that there is at least 1 column after filtering and that the training and testing table have the same number of variables.
+
+## Verifying the Implementation
+
+Create a data set with 10 samples and 10 features with a clear difference between the two classes. Run leave-out-out cross-validation.
+
+```{r, message = FALSE}
+classes <- factor(rep(c("Healthy", "Disease"), each = 5), levels = c("Healthy", "Disease"))
+measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), ncol = 10)
+colnames(measurements) <- paste("Sample", 1:10)
+rownames(measurements) <- paste("mRNA", 1:10)
+
+library(ClassifyR)
+trainParams <- TrainParams(kNNinterface)
+predictParams <- PredictParams(NULL, getClasses = function(result) result)
+classified <- runTests(measurements, classes, datasetName = "Example",
+                       classificationName = "kNN", validation = "leaveOut", leave = 1,
+                       params = list(trainParams, predictParams))
+classified
+cbind(predictions(classified), known = actualClasses(classified))
+```
+
+`NULL` is specified instead of a function to `PredictParams` because one function does training and prediction. As expected for this easy task, the classifier predicts all samples correctly.

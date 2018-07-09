@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 2.1.8
-Date: 2018-07-03
+Version: 2.1.9
+Date: 2018-07-09
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -13,7 +13,8 @@ Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 
 Imports: locfit, grid, utils, plyr
 Suggests: limma, genefilter, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
         BiocStyle, pamr, sparsediscrim, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
-        scales, e1071, rmarkdown, IRanges, randomForest, robustbase, mlogit, mnlogit, glmnet
+        scales, e1071, rmarkdown, IRanges, randomForest, robustbase, mlogit, mnlogit, glmnet,
+        class
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
              and prediction. The requirements of variable types and names are
@@ -26,7 +27,8 @@ Description: The software formalises a framework for classification in R.
 Collate: classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInterface.R
          DLDAinterface.R DMDselection.R distribution.R edgeRselection.R edgesToHubNetworks.R
          elasticNetGLMinterface.R  featureSetSummary.R fisherDiscriminant.R forestFeatures.R
-         getLocationsAndScales.R interactorDifferences.R KolmogorovSmirnovSelection.R KullbackLeiblerSelection.R
+         getLocationsAndScales.R interactorDifferences.R kNNinterface.R
+         KolmogorovSmirnovSelection.R KullbackLeiblerSelection.R
          leveneSelection.R likelihoodRatioSelection.R limmaSelection.R  logisticRegressionInterface.R
          mixmodels.R naiveBayesKernel.R networkCorrelationsSelection.R NSCselectionInterface.R NSCtrainInterface.R
          NSCpredictInterface.R performancePlot.R plotFeatureClasses.R previousSelection.R randomForestInterface.R
