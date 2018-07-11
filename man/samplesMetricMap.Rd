@@ -9,7 +9,7 @@ and one row for each classification result.
   \S4method{samplesMetricMap}{list}(results,
                      comparison = c("classificationName", "datasetName", "selectionName",
                                 "validation"),
-                 metric = c("error", "accuracy"), groups = NULL,
+                 metric = c("error", "accuracy"), featureValues = NULL, featureName = NULL,
                      metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
                      classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
@@ -23,8 +23,10 @@ and one row for each classification result.
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{comparison}{The aspect of the experimental design to compare.}
   \item{metric}{The sample-wise metric to calculate and plot.}
-  \item{groups}{If not NULL, can be a named factor factor specifying
+  \item{featureValues}{If not NULL, can be a named factor or named numeric vector specifying
                 some variable of interest to plot underneath the class bar.}
+  \item{featureName}{A label describing the information in \code{featureValues}. It must be
+                     specified if \code{featureValues} is.}                
   \item{metricColours}{A vector of colours for metric levels.}
   \item{classColours}{Either a vector of colours for class levels if both classes should
                       have same colour, or a list of length 2, with each component
@@ -71,7 +73,12 @@ be discretised to.
   result2 <- calcCVperformance(result2, "sample error")
   groups <- factor(rep(c("Male", "Female"), length.out = 10))
   names(groups) <- LETTERS[1:10]
+  cholesterol <- c(4.0, 5.5, 3.9, 4.9, 5.7, 7.1, 7.9, 8.0, 8.5, 7.2)
+  names(cholesterol) <- LETTERS[1:10]
   
   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2))
-  wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2), groups = groups)
+  wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
+                                featureValues = groups, featureName = "Gender")
+  wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
+                                featureValues = cholesterol, featureName = "Cholesterol")                                
 }
