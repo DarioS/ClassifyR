@@ -60,7 +60,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       edgesKeep <- edgesAll[, 1] %in% featureNames & edgesAll[, 2] %in% featureNames
       edgesFiltered <- edgesAll[edgesKeep, ]
       networkNamesFiltered <- networkNames[edgesKeep]
-      setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = networkNames))
+      setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = names(featureSetsList)))
       featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
       setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
     } else { # A set of features without edges, such as a gene set.
