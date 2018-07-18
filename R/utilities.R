@@ -79,7 +79,7 @@
     stop("Training data set and testing data set contain differing numbers of features.")  
 }
 
-.doSelection <- function(measurements, classes, metaFeatures, training, selectParams, trainParams,
+.doSelection <- function(measurements, classes, featureSets, metaFeatures, training, selectParams, trainParams,
                          predictParams, verbose)
 {
   initialClass <- class(measurements)
@@ -91,12 +91,13 @@
     if(is.function(selectParams@featureSelection))
     {
       paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], verbose = verbose)
-      if("trainParams" %in% names(.methodFormals(selectParams@featureSelection))) # Needs training and prediction functions for resubstitution error rate calculation.
+      selectFormals <- names(.methodFormals(selectParams@featureSelection))
+      if("trainParams" %in% selectFormals) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       if(!is.null(metaFeatures))
         paramList <- append(paramList, c(metaFeatures = metaFeatures[training, , drop = FALSE]))
-      if(!is.null(selectParams@featureSets))
-        paramList <- append(paramList, c(featureSets = selectParams@featureSets))
+      if("featureSets" %in% selectFormals) # Pass the sets on from runTest.
+        paramList <- append(paramList, c(featureSets = featureSets))
       paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
       selection <- do.call(selectParams@featureSelection, paramList)
 

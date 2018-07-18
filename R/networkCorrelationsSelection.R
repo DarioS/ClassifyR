@@ -13,7 +13,7 @@ setMethod("networkCorrelationsSelection", "matrix", # Matrix of numeric measurem
 
 # metaFeatures must also be a DataFrame.
 setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data types.
-          function(measurements, classes, metaFeatures = NULL, networkSets,
+          function(measurements, classes, metaFeatures = NULL, featureSets,
                    datasetName, trainParams, predictParams, resubstituteParams,
                    selectionName = "Differential Correlation of Sub-networks", verbose = 3)
 {
@@ -23,10 +23,15 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
   if(verbose == 3)
     message("Ranking sub-networks by differences in correlation.")            
 
-  networkIDs <- names(networkSets@sets)
-  edgesPerNetwork <- sapply(networkSets@sets, nrow)
-  networkIDsPerEdge <- rep(names(networkSets@sets), edgesPerNetwork)
-  allInteractions <- do.call(rbind, networkSets@sets)
+  networkIDs <- names(featureSets@sets)
+  edgesPerNetwork <- sapply(featureSets@sets, nrow)
+  networkIDsPerEdge <- factor(rep(networkIDs, edgesPerNetwork), levels = networkIDs)
+  allInteractions <- do.call(rbind, featureSets@sets)
+  
+  if(!all(allInteractions[, 1] %in% colnames(measurements)) && !all(allInteractions[, 2] %in% colnames(measurements)))
+    stop("Some interactors are not found in 'measurements'. Ensure that 'featureSets' does not have
+       any features not in 'measurements'.")
+  
   interactorTable <- measurements[, allInteractions[, 1]]
   otherInteractorTable <- measurements[, allInteractions[, 2]]
   
@@ -51,7 +56,7 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
 
   networkRanking <- BSS/WSS
   orderedNetworks <- order(networkRanking, decreasing = TRUE)
-  .pickFeatures(metaFeatures, classes, networkSets, datasetName, trainParams, predictParams,
+  .pickFeatures(metaFeatures, classes, featureSets, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedNetworks, selectionName, verbose)            
 })
 

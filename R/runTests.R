@@ -10,7 +10,9 @@ setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
 })
 
 setMethod("runTests", c("DataFrame"), # Clinical data only.
-          function(measurements, classes, metaFeatures = NULL, datasetName, classificationName,
+          function(measurements, classes,
+                      featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
+                      datasetName, classificationName,
                       validation = c("permute", "leaveOut", "fold"),
                       permutePartition = c("fold", "split"),
                       permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -38,13 +40,52 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
   
   if(!is.null(S4Vectors::mcols(measurements)))
+  {
     allFeatures <- S4Vectors::mcols(measurements)
-  else
+    featureNames <- S4Vectors::mcols(measurements)[, "feature"]
+  } else {
     allFeatures <- colnames(measurements)
+    featureNames <- colnames(measurements)
+  }
+  
+  if(!is.null(featureSets)) # Feature sets provided and automatically filtered.
+  {
+    # Filter out the edges or the features from the sets which are not in measurements.
+    featureSetsList <- featureSets@sets
+    if(class(featureSetsList[[1]]) == "matrix")
+    {
+      setsSizes <- sapply(featureSetsList, nrow)
+      edgesAll <- do.call(rbind, featureSetsList)
+      networkNames <- rep(names(featureSetsList), setsSizes)
+      edgesKeep <- edgesAll[, 1] %in% featureNames & edgesAll[, 2] %in% featureNames
+      edgesFiltered <- edgesAll[edgesKeep, ]
+      networkNamesFiltered <- networkNames[edgesKeep]
+      setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = networkNames))
+      featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
+      setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
+    } else { # A set of features without edges, such as a gene set.
+      setsSizes <- sapply(setsNodes, length)
+      nodesVector <- unlist(featureSetsList)
+      setsVector <- rep(names(featureSetsList), setsSizes)
+      keepNodes <- !is.na(match(nodesVector, featureNames))
+      nodesVector <- nodesVector[keepNodes]
+      setsVector <- setsVector[keepNodes]
+      featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
+      setsSizesFiltered <- sapply(featureSetsListFiltered, length)
+    }
+    keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
+    featureSetsListFiltered <- featureSetsListFiltered[keepSets]
+    featureSets <- FeatureSetCollection(featureSetsListFiltered)
+    measurements <- measurements[, featureNames %in% unlist(featureSetsListFiltered)]
+    
+    if(verbose >= 1)
+      message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
+      
+  }
   
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-  if(!is.null(selectParams) && !is.null(selectParams@featureSets))
-    consideredFeatures <- length(selectParams@featureSets@sets)
+  if(!is.null(selectParams) && !is.null(featureSets))
+    consideredFeatures <- length(featureSets@sets)
   else
     consideredFeatures <- ncol(measurements)
   
@@ -68,12 +109,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       {
         lapply(1:folds, function(foldIndex)
         {
-          runTest(measurements, classes, metaFeatures, training = unlist(sampleFolds[-foldIndex]),
+          runTest(measurements, classes, featureSets, metaFeatures, training = unlist(sampleFolds[-foldIndex]),
                   testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
         })
       } else { # Split mode.
-        runTest(measurements, classes, metaFeatures, training = sampleFolds[[1]],
+        runTest(measurements, classes, featureSets, metaFeatures, training = sampleFolds[[1]],
                 testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -85,7 +126,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(measurements, classes, metaFeatures, training = trainingSample, testing = testSample,
+      runTest(measurements, classes, featureSets, metaFeatures, training = trainingSample, testing = testSample,
               params = params, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -97,7 +138,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data only.
       message("Processing ", folds, "-fold cross-validation.")
     results <- bplapply(1:folds, function(foldIndex)
     {
-      runTest(measurements, classes, training = unlist(samplesFolds[-foldIndex]),
+      runTest(measurements, classes, featureSets, metaFeatures, training = unlist(samplesFolds[-foldIndex]),
               testing = samplesFolds[[foldIndex]], params = params, verbose = verbose,
               .iteration = foldIndex)
     }, BPPARAM = parallelParams)

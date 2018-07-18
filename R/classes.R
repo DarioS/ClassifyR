@@ -53,12 +53,12 @@ setMethod("show", c("FeatureSetCollection"),
               setlElementsFunction <- length
             else
               setlElementsFunction <- nrow
-            cat("An object of class 'FeatureSetCollection' consisting of", length(object), setTypeText)
+            cat("An object of class 'FeatureSetCollection' consisting of", length(object@sets), setTypeText)
             setSizes <- sapply(object@sets, setlElementsFunction)
             featureText <- ifelse(setType == "features", "features.", "binary interactions.")
             cat("Smallest set:", min(setSizes), featureText, "Largest set:", max(setSizes), featureText, "\n")
             
-            maxIndex <- min(length(object), 3)
+            maxIndex <- min(length(object@sets), 3)
             featuresConcatenated <- sapply(object@sets[1:maxIndex], function(set)
             {
               if(setType == "features")
@@ -81,12 +81,14 @@ setMethod("show", c("FeatureSetCollection"),
             setsText <- paste(names(object@sets)[1:maxIndex], featuresConcatenated, sep = ": ")
             setsText <- paste(setsText, collapse = '\n')
             cat(setsText)
-            if(length(object) > 6)
+            if(length(object@sets) > 6)
               cat("\n ...                ...\n")
-            minIndex <- max(length(object) - 2, maxIndex + 1)
-            if(minIndex <= length(object))
+            else
+              cat("\n")
+            minIndex <- max(length(object@sets) - 2, maxIndex + 1)
+            if(minIndex <= length(object@sets))
             {
-              lastIndex <- length(object)
+              lastIndex <- length(object@sets)
               featuresConcatenated <- sapply(object@sets[minIndex:lastIndex], function(set)
               {
                 if(setType == "features")
@@ -155,7 +157,6 @@ setClass("SelectParams", representation(
   selectionName = "character",
   minPresence = "numeric",
   intermediate = "character",
-  featureSets = "FeatureSetCollectionOrNULL",
   subsetToSelections = "logical",  
   otherParams = "list")
 )
@@ -166,12 +167,12 @@ setMethod("SelectParams", character(0), function()
 {
   new("SelectParams", featureSelection = tTestSelection,
       selectionName = "t-test", minPresence = 1,
-      intermediate = character(0), featureSets = NULL, subsetToSelections = TRUE,
+      intermediate = character(0), subsetToSelections = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })
 setMethod("SelectParams", c("functionOrList"),
           function(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
-                   featureSets = NULL, subsetToSelections = TRUE, ...)
+                   subsetToSelections = TRUE, ...)
           {
             if(missing(selectionName) && !is.list(featureSelection))
               selectionName <- .methodFormals(featureSelection)[["selectionName"]]
@@ -181,8 +182,8 @@ setMethod("SelectParams", c("functionOrList"),
             if(is.null(others)) others <- list()
             new("SelectParams", featureSelection = featureSelection,
                 selectionName = selectionName, minPresence = minPresence,
-                intermediate = intermediate, featureSets = featureSets,
-                subsetToSelections = subsetToSelections, otherParams = others)
+                intermediate = intermediate, subsetToSelections = subsetToSelections,
+                otherParams = others)
           })
 
 setClass("TrainParams", representation(

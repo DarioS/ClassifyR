@@ -10,7 +10,9 @@ setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
 })
 
 setMethod("runTest", c("DataFrame"), # Clinical data only.
-function(measurements, classes, metaFeatures = NULL, datasetName, classificationName, training, testing,
+function(measurements, classes,
+         featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
+         datasetName, classificationName, training, testing,
          params = list(SelectParams(), TrainParams(), PredictParams()),
          verbose = 1, .iteration = NULL)
 {
@@ -34,10 +36,49 @@ function(measurements, classes, metaFeatures = NULL, datasetName, classification
     allFeatures <- colnames(measurements)
   
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-  if(!is.null(selectParams) && !is.null(selectParams@featureSets))
-    consideredFeatures <- length(selectParams@featureSets@sets)
+  if(!is.null(selectParams) && !is.null(featureSets))
+    consideredFeatures <- length(featureSets@sets)
   else
     consideredFeatures <- ncol(measurements)
+  
+  if(!is.null(featureSets) && is.null(.iteration)) # Feature sets provided and runTest is being called by the user, so need to be filtered now.
+  {
+    if(!is.null(S4Vectors::mcols(measurements)))
+      featureNames <- S4Vectors::mcols(measurements)[, "feature"]
+    else
+      featureNames <- colnames(measurements)
+    
+    # Filter out the edges or the features from the sets which are not in measurements.
+    featureSetsList <- featureSets@sets
+    if(class(featureSetsList[[1]]) == "matrix")
+    {
+      setsSizes <- sapply(featureSetsList, nrow)
+      edgesAll <- do.call(rbind, featureSetsList)
+      networkNames <- rep(names(featureSetsList), setsSizes)
+      edgesKeep <- edgesAll[, 1] %in% featureNames & edgesAll[, 2] %in% featureNames
+      edgesFiltered <- edgesAll[edgesKeep, ]
+      networkNamesFiltered <- networkNames[edgesKeep]
+      setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = networkNames))
+      featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
+      setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
+    } else { # A set of features without edges, such as a gene set.
+      setsSizes <- sapply(setsNodes, length)
+      nodesVector <- unlist(featureSetsList)
+      setsVector <- rep(names(featureSetsList), setsSizes)
+      keepNodes <- !is.na(match(nodesVector, featureNames))
+      nodesVector <- nodesVector[keepNodes]
+      setsVector <- setsVector[keepNodes]
+      featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
+      setsSizesFiltered <- sapply(featureSetsListFiltered, length)
+    }
+    keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
+    featureSetsListFiltered <- featureSetsListFiltered[keepSets]
+    featureSets <- FeatureSetCollection(featureSetsListFiltered)
+    measurements <- measurements[, featureNames %in% unlist(featureSetsListFiltered)]
+    
+    if(verbose >= 1 && is.null(.iteration)) # Being used by the user, not called by runTests.
+      message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
+  }
   
   lastSize <- 1
   for(stageIndex in 1:length(params))
@@ -55,7 +96,7 @@ function(measurements, classes, metaFeatures = NULL, datasetName, classification
                                if(length(selectParams@intermediate) != 0)
                                  selectParams@otherParams <- c(selectParams@otherParams, mget(selectParams@intermediate))
 
-                               topFeatures <- tryCatch(.doSelection(measurements, classes, metaFeatures, training, selectParams,
+                               topFeatures <- tryCatch(.doSelection(measurements, classes, featureSets, metaFeatures, training, selectParams,
                                                                 trainParams, predictParams, verbose), error = function(error) error[["message"]])
                                if(is.character(topFeatures)) return(topFeatures) # An error occurred.
 

@@ -10,7 +10,8 @@
        }
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
-  \S4method{runTest}{DataFrame}(measurements, classes, metaFeatures = NULL, datasetName, classificationName,
+  \S4method{runTest}{DataFrame}(measurements, classes, featureSets = NULL, metaFeatures = NULL,
+            minimumOverlapPercent = 80, datasetName, classificationName,
             training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
         verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
@@ -26,8 +27,15 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{featureSets}{An object of type \code{\link{FeatureSetCollection}} which defines sets of
+                     features or sets of edges.}                 
   \item{metaFeatures}{Either \code{NULL} or a \code{DataFrame} which has meta-features
-                      of the numeric data of interest.}                 
+                      of the numeric data of interest.}
+  \item{minimumOverlapPercent}{If \code{featureSets} stores sets of features, the minimum overlap
+                               of feature IDs with \code{measurements} for a feature set to be retained
+                               in the analysis. If \code{featureSets} stores sets of network edges,
+                               the minimum percentage of edges with both vertex IDs found in \code{measurements}
+                               that a set has to have to be retained in the analysis.}                      
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
@@ -66,7 +74,8 @@
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
-    runTest(measurements, classes, "Asthma", "Different Means",
+    runTest(measurements, classes,
+            datasetName = "Asthma", classificationName = "Different Means",
             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                        resubstituteParams = resubstituteParams),
                           TrainParams(DLDAtrainInterface),

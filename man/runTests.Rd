@@ -10,7 +10,8 @@
 }
 \usage{
   \S4method{runTests}{matrix}(measurements, classes, ...)
-  \S4method{runTests}{DataFrame}(measurements, classes, metaFeatures = NULL, datasetName, classificationName,
+  \S4method{runTests}{DataFrame}(measurements, classes, featureSets = NULL, metaFeatures = NULL,
+         minimumOverlapPercent = 80, datasetName, classificationName,
          validation = c("permute", "leaveOut", "fold"),
          permutePartition = c("fold", "split"),
          permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -29,8 +30,15 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{featureSets}{An object of type \code{\link{FeatureSetCollection}} which defines sets of
+                     features or sets of edges.}               
   \item{metaFeatures}{Either \code{NULL} or a \code{DataFrame} which has meta-features
-                      of the numeric data of interest.}                 
+                      of the numeric data of interest.}
+  \item{minimumOverlapPercent}{If \code{featureSets} stores sets of features, the minimum overlap
+                               of feature IDs with \code{measurements} for a feature set to be retained
+                               in the analysis. If \code{featureSets} stores sets of network edges,
+                               the minimum percentage of edges with both vertex IDs found in \code{measurements}
+                               that a set has to have to be retained in the analysis.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
@@ -83,8 +91,8 @@
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
                                          better = "lower")
-    runTests(measurements, classes, "Asthma", "Different Means",
-             permutations = 5,
+    runTests(measurements, classes, datasetName = "Asthma",
+             classificationName = "Different Means", permutations = 5,
              params = list(SelectParams(tTestSelection, "t Statistic",
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),

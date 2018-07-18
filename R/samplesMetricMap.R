@@ -277,7 +277,7 @@ setMethod("samplesMetricMap", "list",
   classLegend[["vp"]][["valid.just"]] <- c(0.7, 0.5)
   if(!is.null(featureValues) && is.factor(featureValues))
     featureValuesLegend[["vp"]][["valid.just"]] <- c(0.7, 0.33)
-#browser()
+
   grobTable <- gtable::gtable(widths, heights)
   grobTable <- gtable::gtable_add_grob(grobTable, classGrob, 1, 1)
   if(!is.null(featureValues))

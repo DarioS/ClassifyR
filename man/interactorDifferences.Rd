@@ -9,7 +9,7 @@
 }
 \usage{
   \S4method{interactorDifferences}{matrix}(measurements, ...)
-  \S4method{interactorDifferences}{DataFrame}(measurements, networkSets = NULL, verbose = 3)
+  \S4method{interactorDifferences}{DataFrame}(measurements, networkSets = NULL, absolute = FALSE, verbose = 3)
   \S4method{interactorDifferences}{MultiAssayExperiment}(measurements, target = NULL, ...)
 }
 \arguments{
@@ -19,6 +19,7 @@
   \item{networkSets}{A object of type \code{\link{FeatureSetCollection}}. The \code{sets} slot must contain
                      a list of two-column matrices with each row corresponding to a binary interaction. Such
                      sub-networks may be determined by a community detection algorithm.}
+  \item{absolute}{If TRUE, then the absolute values of the differences are returned.}
   \item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the name of the
                  data table to be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which

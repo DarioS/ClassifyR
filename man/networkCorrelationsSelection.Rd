@@ -11,7 +11,7 @@
 \usage{
   \S4method{networkCorrelationsSelection}{matrix}(measurements, classes, metaFeatures = NULL, ...)
   \S4method{networkCorrelationsSelection}{DataFrame}(measurements, classes, metaFeatures = NULL,
-                  networkSets, datasetName, trainParams, predictParams, resubstituteParams,
+                  featureSets, datasetName, trainParams, predictParams, resubstituteParams,
                   selectionName = "Differential Correlation of Sub-networks", verbose = 3)
   \S4method{networkCorrelationsSelection}{MultiAssayExperiment}(measurements, target = NULL, ...)
 }
@@ -30,7 +30,7 @@
                       must return a \code{DataFrame} which has an "original" column with as many rows
                       as there are meta-features and specifies the feature which the meta-feature is
                       originally derived from (e.g. network name).}
-  \item{networkSets}{A object of type \code{\link{FeatureSetCollection}}. The \code{sets} slot must contain
+  \item{featureSets}{A object of type \code{\link{FeatureSetCollection}}. The \code{sets} slot must contain
                      a list of two-column matrices with each row corresponding to a binary interaction. Such
                      sub-networks may be determined by a community detection algorithm. This will be used
                      to determine which features belong to which sub-networks before calculating a
@@ -114,7 +114,7 @@
   
   predictParams <- PredictParams(NULL, getClasses = function(result) result)
   networkCorrelationsSelection(measurements, classes, metaFeatures = Idifferences,
-                               networkSets = netSets, datasetName = "Example",
+                               featureSets = netSets, datasetName = "Example",
                                trainParams = TrainParams(naiveBayesKernel),
                                predictParams = predictParams,
                                resubstituteParams = resubstituteParams)
