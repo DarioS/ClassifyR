@@ -14,7 +14,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
          "% with the data set's feature identifiers.")
- 
+browser() 
   if(any(keepSets == FALSE)) # Filter out those sets without adequate identifier overlap.
   {
     if(verbose == 3)
@@ -23,7 +23,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   }
   
   # Reduce set representations to only those features which were assayed.
-  featureSets <- lapply(featureSets, function(featureSet) intersect(featureSet, assayedFeatures))
+  featureSets <- lapply(featureSets@sets, function(featureSet) intersect(featureSet, assayedFeatures))
   
   location <- match.arg(location)
   if(location == "mean")
