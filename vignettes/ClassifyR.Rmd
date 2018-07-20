@@ -301,17 +301,17 @@ predictParams <- PredictParams(SVMpredictInterface, getClasses = function(result
 params = list(selectParams, trainParams, predictParams)
 ```
 
-- Network-based classification. The features are sub-networks, such as communities of features which may be identified by a community detection algorithm, such as ones provided by **igraph**. The sub-networks are ranked based on the difference of median of edge correlations within each class, scaled by the correlation variability within each class. The classifier training and testing is done with metafeatures, such as the difference in value between the edges in a chosen sub-network. The feature selection function needs the feature sets to calculate the correlations between relevant pairs of features, so this information needs to be specified to SelectParams by *networksSets*. The metafeatures are a transformation of the feature-wise measurements determined independently of cross-validation, so they are specified via *metaFeatures* to *runTests*, not by any of the parameter classes. Consider using the *interactorDifferences* function to create the metafeatures.
+- Network-based classification. The features are sub-networks, such as communities of features which may be identified by a community detection algorithm, such as ones provided by **igraph**. The sub-networks are ranked based on the difference of median of edge correlations within each class, scaled by the correlation variability within each class. The classifier training and testing is done with metafeatures, such as the difference in value between the edges in a chosen sub-network. The information about which pairs of interactors belong to which sub-network is specified by *featureSets* to *runTests*. Filtering of sub-networks that do not have many features in common with the experimentally measured features is automatically done by *runTests*. The metafeatures are a transformation of the feature-wise measurements determined independently of cross-validation and they are specified via *metaFeatures* to *runTests*. The *interactorDifferences* function may be utilised to create the metafeatures, for example.
 
 ```{r, eval = FALSE}
 resubstituteParams <- ResubstituteParams(nFeatures = 1:10, # The top 1 to 10 sub-networks.
                       performanceType = "balanced error", better = "lower")
-selectParams <- SelectParams(networkCorrelationsSelection,
-                             networksSets = sets, resubstituteParams = resubstituteParams)
+selectParams <- SelectParams(networkCorrelationsSelection, resubstituteParams = resubstituteParams)
 trainParams <- TrainParams(naiveBayesKernel)
 predictParams <- PredictParams(NULL, getClasses = function(result) result)
-params = list(selectParams, trainParams, predictParams)
-metaFeatures = interactorDiffsTable # Creation by interactorDifferences function is recommended.
+params <- list(selectParams, trainParams, predictParams)
+metaFeatures <- interactorDiffsTable # Creation by interactorDifferences function is suggested.
+featureSets <- networkSets # An object of class FeatureSetCollection.
 ```
 
 ## Appendix: Rules Regarding Input Variables of New Functions
