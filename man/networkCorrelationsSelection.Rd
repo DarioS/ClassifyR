@@ -13,7 +13,7 @@
   \S4method{networkCorrelationsSelection}{DataFrame}(measurements, classes, metaFeatures = NULL,
                   featureSets, datasetName, trainParams, predictParams, resubstituteParams,
                   selectionName = "Differential Correlation of Sub-networks", verbose = 3)
-  \S4method{networkCorrelationsSelection}{MultiAssayExperiment}(measurements, target = NULL, ...)
+  \S4method{networkCorrelationsSelection}{MultiAssayExperiment}(measurements, target = NULL, metaFeatures = NULL, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or

@@ -19,8 +19,7 @@
             characteristics of their data, once they are familiar with this software.
   }
     \item{}{
-      \preformatted{TrainParams(classifier, intermediate = character(0), transform = NULL,
-         getFeatures = NULL, ...)}
+      \preformatted{TrainParams(classifier, intermediate = character(0), getFeatures = NULL, ...)}
             Creates a TrainParams object which stores the function which will do the
             classifier building and parameters that the function will use.
   \describe{
@@ -34,10 +33,6 @@
             it also does prediction with the test set samples.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by
             \code{\link{runTest}} that need to be passed to \code{classifier}.}
-            \item{\code{transform}}{Either NULL or a function. The function transforms the training data
-            into a different format before it is passed into the classifier. For example, a set of
-            features may be replaced by their median value. The set of features might be part of
-            a network.}            
             \item{\code{getFeatures}}{A function may be specified that extracts the selected features from
             the trained model. This is relevant if using a classifier that does feature selection within
             training (e.g. random forest). The function must return a list of two vectors. The first vector

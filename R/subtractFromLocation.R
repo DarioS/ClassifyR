@@ -22,7 +22,7 @@ setMethod("subtractFromLocation", "matrix",
   transformed # Return an endomorphic variable; a matrix.
 })
 
-setMethod("subtractFromLocation", "DataFrame", 
+setMethod("subtractFromLocation", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, training, location = c("mean", "median"),
                    absolute = TRUE, verbose = 3)
           {

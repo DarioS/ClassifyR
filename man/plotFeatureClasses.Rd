@@ -3,12 +3,14 @@
 \alias{plotFeatureClasses,matrix-method}
 \alias{plotFeatureClasses,DataFrame-method}
 \alias{plotFeatureClasses,MultiAssayExperiment-method}
-\title{Plot Density, Scatterplot or Bar Chart for Features By Class}
-\description{Allows the visualisation of measurements in the data set.}
+\title{Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class}
+\description{Allows the visualisation of measurements in the data set. If \code{targets} is of type
+             \code{\link{Pairs}}, then a parallel plot is automatically drawn. If it's a single categorical
+             variable, then a bar chart is automatically drawn.}
 \usage{
   \S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
   \S4method{plotFeatureClasses}{DataFrame}(measurements, classes, targets, groupBy = NULL,
-                        groupingName = NULL, whichNumericPlots = c("both", "density", "stripchart"),
+                        groupingName = NULL, whichNumericFeaturePlots = c("both", "density", "stripchart"),
                     measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
                     xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
                    showXtickLabels = TRUE, showYtickLabels = TRUE,
@@ -44,22 +46,22 @@
                 object. A density plot will have additional lines of different line types for
                 each category. A strip chart plot will have a separate strip chart created for
                 each category and the charts will be drawn in a single column on the
-                graphics device. A bar chart plot will similarly be laid out.}
+                graphics device. A parallel plot and bar chart plot will similarly be laid out.}
   \item{groupingName}{A label for the grouping variable to be used in plots.}                
   \item{...}{Unused variables by the three top-level methods passed to the internal method
              which generates the plot(s).}
-  \item{whichNumericPlots}{If the feature has numeric measurements, this option specifies which
-                           types of plot(s) to draw. The default value is \code{"both"}, which draws a
-                           density plot and also a stip chart below the density plot. Other options
-                           are \code{"density"} for drawing only a density plot and
-                           \code{"stripchart"} for drawing only a strip chart.}
+  \item{whichNumericFeaturePlots}{If the feature is a single feature and has numeric measurements,
+                           this option specifies which types of plot(s) to draw. The default value is
+                           \code{"both"}, which draws a density plot and also a stip chart below
+                           the density plot. Other options are \code{"density"} for drawing only
+                           a density plot and \code{"stripchart"} for drawing only a strip chart.}
   \item{measurementLimits}{The minimum and maximum expression values to plot. Default: \code{NULL}.
                            By default, the limits are automatically computed from the data values.}
   \item{lineWidth}{Numeric value that alters the line thickness for density plots. Default: 1.}
   \item{dotBinWidth}{Numeric value that alters the diameter of dots in the strip chart. Default: 1.}                  
   \item{xAxisLabel}{The axis label for the plot's horizontal axis. Default: \code{NULL}.}
   \item{yAxisLabels}{A character vector of length 1 or 2. If the feature's measurements are numeric an
-                     \code{whichNumericPlots} has the value \code{"both"}, the first value is the
+                     \code{whichNumericFeaturePlots} has the value \code{"both"}, the first value is the
                      y-axis label for the density plot and the second value is the y-axis label
                      for the strip chart. Otherwise, if the feature's measurements are numeric and
                      only one plot is drawn, then a character vector of length 1 specifies the
@@ -111,7 +113,9 @@
   colnames(genesMatrix) <- paste("Sample", 1:50)
   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
   plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
-                     xAxisLabel = expression(log[2](expression)), dotBinWidth = 0.5)
+                     xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
+                     
+                     
   
   infectionResults <- c(rep(c("No", "Yes"), c(20, 5)), rep(c("No", "Yes"), c(5, 20)))
   genders <- factor(rep(c("Male", "Female"), each = 10, length.out = 50))
@@ -126,5 +130,5 @@
   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures,
                      groupBy = c("clinical", "Gender"),
-                     xAxisLabel = expression(log[2](expression)))
+                     xAxisLabel = bquote(log[2]*'(expression)'))
 }

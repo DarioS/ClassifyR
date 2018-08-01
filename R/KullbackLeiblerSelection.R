@@ -7,7 +7,7 @@ setMethod("KullbackLeiblerSelection", "matrix", function(measurements, classes, 
   KullbackLeiblerSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data only.
+setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, datasetName,
                    trainParams, predictParams, resubstituteParams, ...,
                    selectionName = "Kullback-Leibler Divergence", verbose = 3)

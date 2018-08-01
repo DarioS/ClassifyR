@@ -9,7 +9,7 @@ setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
   runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("runTests", c("DataFrame"), # Clinical data only.
+setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs, transformed.
           function(measurements, classes,
                       featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                       datasetName, classificationName,

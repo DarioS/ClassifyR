@@ -7,7 +7,7 @@ setMethod("leveneSelection", "matrix", function(measurements, classes, ...)
   leveneSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("leveneSelection", "DataFrame", # Clinical data only.
+setMethod("leveneSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, datasetName,
                    trainParams, predictParams, resubstituteParams,
                    selectionName = "Levene Test", verbose = 3)

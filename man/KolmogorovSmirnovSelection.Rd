@@ -81,6 +81,6 @@
                              
   head(selected@chosenFeatures)
   plotFeatureClasses(genesMatrix, classes, "Gene 13", dotBinWidth = 0.25,
-                     xAxisLabel = expression(log[2](expression)))
+                     xAxisLabel = bquote(log[2]*'(expression)'))
   
 }

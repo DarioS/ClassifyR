@@ -6,7 +6,7 @@ setMethod("NSCtrainInterface", "matrix", function(measurements, classes, ...)
   NSCtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("NSCtrainInterface", "DataFrame", # Clinical data only.
+setMethod("NSCtrainInterface", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)

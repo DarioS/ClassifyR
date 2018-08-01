@@ -207,7 +207,7 @@
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
       predictParams@otherParams[changePredict] <- individiualParams[changePredict]
     }
-
+    
     tuneIndex <- which(names(trainParams@otherParams) == "tuneParams")
     if(length(tuneIndex) > 0)
     {
@@ -221,7 +221,6 @@
       {
         if(length(trainParams@otherParams) > 0)
           paramList <- c(paramList, trainParams@otherParams)
-
         paramList <- c(paramList, verbose = verbose)
         trained <- do.call(trainParams@classifier, paramList)
         if(verbose >= 2)
@@ -307,10 +306,39 @@
       }
     } else { # Some classifiers do training and testing with a single function.
       paramList <- append(paramList, list(measurementsTest))
+      if(length(trainParams@otherParams) > 0)
+      {
+        whichList <- which(sapply(trainParams@otherParams, is.list))
+        extras <- trainParams@otherParams
+        if(length(whichList) > 0) # Used when selected features is passed as an intermediate and there are multiple varieties.
+        {
+          extras[whichList] <- lapply(whichList, function(paramIndex)
+                               {
+                                 varietyIndex <- match(variety, names(extras[[paramIndex]]))
+                                 if(!is.na(varietyIndex))
+                                   extras[[paramIndex]][[varietyIndex]]
+                                 else
+                                   extras[[whichList]]
+                               })
+        }
+        paramList <- c(paramList, extras)
+      }
       if(length(predictParams@otherParams) > 0)
       {
-        useOthers <- setdiff(names(predictParams@otherParams), names(trainParams@otherParams))
-        paramList <- c(paramList, trainParams@otherParams, predictParams@otherParams[useOthers])
+        whichList <- which(sapply(predictParams@otherParams, is.list))
+        extras <- predictParams@otherParams
+        if(length(whichList) > 0) # Used when selected features is passed as an intermediate and there are multiple varieties.
+        {
+          extras[whichList] <- lapply(whichList, function(paramIndex)
+                               {
+                                 varietyIndex <- match(variety, names(extras[[paramIndex]]))
+                                 if(!is.na(varietyIndex))
+                                   extras[[paramIndex]][[varietyIndex]]
+                                 else
+                                   extras[[whichList]]
+                               })
+        }
+        paramList <- c(paramList, extras)
       }
       paramList <- c(paramList, verbose = verbose)
             
@@ -443,14 +471,24 @@
   {
     orderedList <- as.list(ordering[1:maxFeatures])
   } else { # Group by sets.
-    orderedList <- split(1:ncol(measurements), S4Vectors::mcols(measurements)[["original"]])[ordering[1:maxFeatures]]
+    if(!"Pairs" %in% class(featureSets))
+      orderedList <- split(1:ncol(measurements), S4Vectors::mcols(measurements)[["original"]])[ordering[1:maxFeatures]]
+    else # Is a Pairs object.
+      orderedList <- featureSets
   }
 
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
   {
-    measurementsSubset <- measurements[, unlist(orderedList[1:topFeatures]), drop = FALSE]
-    trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
-                        trainParams, predictParams, verbose)
+    if(!"Pairs" %in% class(featureSets))
+    {
+      measurementsSubset <- measurements[, unlist(orderedList[1:topFeatures]), drop = FALSE]
+      trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
+                          trainParams, predictParams, verbose)
+    } else { # Don't subset.
+      trainParams@otherParams <- c(trainParams@otherParams, featurePairs = featureSets)
+      trained <- .doTrain(measurements, classes, 1:nrow(measurements), 1:nrow(measurements),
+                          trainParams, predictParams, verbose)
+    }
 
     if(!is.null(predictParams@predictor))
     {
@@ -514,15 +552,24 @@
       rankedFeatures <- lapply(rankedFeatures, function(features) colnames(measurements)[features])
       pickedFeatures <- lapply(pickedFeatures, function(features) colnames(measurements)[features])
     } else {
-      rankedFeatures <- lapply(rankedFeatures, function(features) names(featureSets@sets)[features])
-      pickedFeatures <- lapply(pickedFeatures, function(features) names(featureSets@sets)[features])
+      if(!"Pairs" %in% class(featureSets))
+      {
+        rankedFeatures <- lapply(rankedFeatures, function(features) names(featureSets@sets)[features])
+        pickedFeatures <- lapply(pickedFeatures, function(features) names(featureSets@sets)[features])
+      } else {
+        rankedFeatures <- lapply(rankedFeatures, function(features) featureSets[features])
+        pickedFeatures <- lapply(pickedFeatures, function(features) featureSets[features])
+      }
     }
   }
 
   if(is.null(featureSets))
     totalFeatures <- ncol(measurements)
-  else
+  else if(!"Pairs" %in% class(featureSets))
     totalFeatures <- length(featureSets@sets)
+  else
+    totalFeatures <- length(featureSets)
+  
   selectResults <- lapply(1:length(rankedFeatures), function(variety)
   {
     SelectResult(datasetName, selectionName, totalFeatures,

@@ -9,7 +9,7 @@ setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
                      DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
 })
 
-setMethod("fisherDiscriminant", "DataFrame", # Clinical data only.
+setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, test, returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)

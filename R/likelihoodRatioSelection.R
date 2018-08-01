@@ -7,7 +7,7 @@ setMethod("likelihoodRatioSelection", "matrix", function(measurements, classes, 
   likelihoodRatioSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data only.
+setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, datasetName,
                    trainParams, predictParams, resubstituteParams,
                    alternative = c(location = "different", scale = "different"),

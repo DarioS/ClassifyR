@@ -9,7 +9,7 @@ setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
   runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("runTest", c("DataFrame"), # Clinical data only.
+setMethod("runTest", c("DataFrame"), # Clinical data or one of the other inputs, transformed..
 function(measurements, classes,
          featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
          datasetName, classificationName, training, testing,
@@ -86,7 +86,12 @@ function(measurements, classes,
     switch(stagesParamClasses[[stageIndex]],
            TransformParams = {
                                if(length(transformParams@intermediate) != 0)
-                                 transformParams@otherParams <- c(transformParams@otherParams, mget(transformParams@intermediate))
+                               {
+                                 intermediates <- mget(transformParams@intermediate)
+                                  if(!is.null(names(transformParams@intermediate)))
+                                    names(intermediates) <- names(transformParams@intermediate)
+                                  transformParams@otherParams <- c(transformParams@otherParams, intermediates)                                 
+                               }
 
                                measurements <- tryCatch(.doTransform(measurements, transformParams, verbose), error = function(error) error[["message"]])
                                if(is.character(measurements)) return(measurements) # An error occurred.
@@ -94,12 +99,17 @@ function(measurements, classes,
                              },
               SelectParams = {
                                if(length(selectParams@intermediate) != 0)
-                                 selectParams@otherParams <- c(selectParams@otherParams, mget(selectParams@intermediate))
+                               {
+                                 intermediates <- mget(selectParams@intermediate)
+                                  if(!is.null(names(selectParams@intermediate)))
+                                    names(intermediates) <- names(selectParams@intermediate)
+                                  selectParams@otherParams <- c(selectParams@otherParams, intermediates)
+                               }
 
                                topFeatures <- tryCatch(.doSelection(measurements, classes, featureSets, metaFeatures, training, selectParams,
                                                                 trainParams, predictParams, verbose), error = function(error) error[["message"]])
                                if(is.character(topFeatures)) return(topFeatures) # An error occurred.
-
+  
                                if(class(topFeatures[[2]]) == "list") # Check the chosen features list element, because a ranking is not present for ensemble selection.
                                {
                                  multiSelection <- TRUE
@@ -219,7 +229,12 @@ function(measurements, classes,
                              }, 
               TrainParams = {
                               if(length(trainParams@intermediate) != 0)
-                                trainParams@otherParams <- c(trainParams@otherParams, mget(trainParams@intermediate))
+                              {
+                                intermediates <- mget(trainParams@intermediate)
+                                if(!is.null(names(trainParams@intermediate)))
+                                  names(intermediates) <- names(trainParams@intermediate)
+                                trainParams@otherParams <- c(trainParams@otherParams, intermediates)
+                              }
 
                               if(is.null(metaFeatures))
                                 useData <- measurements
@@ -245,7 +260,7 @@ function(measurements, classes,
                                   names(metaFeatures) <- names(trained)
                                 }
                               }
-                              
+
                               lastSize <- newSize
                               if("list" %in% class(trained))
                               {
@@ -270,14 +285,21 @@ function(measurements, classes,
                                 if(is.null(metaFeatures))
                                   useData <- measurements
                                 else # Used some derived features instead.
-                                  useData <- metaFeatures                
-                                 if(length(predictParams@intermediate) != 0)
-                                   predictParams@otherParams <- c(predictParams@otherParams, mget(predictParams@intermediate))
-                                  predictedClasses <- tryCatch(.doTest(trained, useData, testing, predictParams, verbose),
-                                                               error = function(error) error[["message"]])
-                                  if(is.character(predictedClasses)) # An error occurred.
-                                    return(predictedClasses) # Return early. Don't make a ClassifyResult below.
-                               }
+                                  useData <- metaFeatures
+                                
+                                if(length(predictParams@intermediate) != 0)
+                                {
+                                  intermediates <- mget(predictParams@intermediate)
+                                  if(!is.null(names(predictParams@intermediate)))
+                                    names(intermediates) <- names(predictParams@intermediate)
+                                  predictParams@otherParams <- c(predictParams@otherParams, intermediates)                                  
+                                }
+                                 
+                                predictedClasses <- tryCatch(.doTest(trained, useData, testing, predictParams, verbose),
+                                                             error = function(error) error[["message"]])
+                                if(is.character(predictedClasses)) # An error occurred.
+                                  return(predictedClasses) # Return early. Don't make a ClassifyResult below.
+                              }
            )
     
   }
@@ -285,7 +307,7 @@ function(measurements, classes,
   # Rankings and selections might not be explicitly returned, such as for random forest classifier.
   if(!exists("rankedFeatures")) rankedFeatures <- NULL
   if(!exists("selectedFeatures")) selectedFeatures <- NULL
-  
+
   if(!is.null(.iteration)) # This function was called by runTests.
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, testSet = testing, predictions = predictedClasses, tune = tuneDetails)

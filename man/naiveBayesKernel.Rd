@@ -42,7 +42,7 @@
                           Default: \code{list(bw = "nrd0", n = 1024,
                                               from = expression(min(featureValues)),
                                               to = expression(max(featureValues))}.}                       
-  \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}. 
+  \item{weighted}{Default: \code{"unweighted"}. Either \code{"unweighted"}, \code{"weighted"} or \code{"both"}. 
                   In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
   \item{weight}{Default: \code{"both"}. Either \code{"both"}, \code{"height difference"},

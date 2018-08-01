@@ -6,7 +6,7 @@ setMethod("NSCselectionInterface", "matrix", function(measurements, classes, ...
   NSCselectionInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("NSCselectionInterface", "DataFrame", # Clinical data only.
+setMethod("NSCselectionInterface", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, datasetName, trained, ...,
                    selectionName = "Shrunken Centroids", verbose = 3)
 {

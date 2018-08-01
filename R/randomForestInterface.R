@@ -9,6 +9,7 @@ setMethod("randomForestInterface", "matrix", # Matrix of numeric measurements.
                         DataFrame(t(test), check.names = FALSE), ...)
 })
 
+# Clinical data or one of the other inputs, transformed.
 setMethod("randomForestInterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)

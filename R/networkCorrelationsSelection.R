@@ -48,9 +48,9 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
            totalEdges * (oneClassCorr - overallCorr)^2 + totalEdges * (otherClassCorr - overallCorr)^2
          }, as.list(edgesPerNetwork), oneClassSubnetworkCorrelations, otherClassSubnetworkCorrelations, overallSubnetworkCorrelations)
   
-  WSS <- mapply(function(oneClassFeatureCorr, otherClassFeatureCorr, oneClassOtherFeatureCorr, otherClassOtherFeatureCorr)
+  WSS <- mapply(function(oneClassFeatureCorr, otherClassFeatureCorr, oneClassNetworkCorr, otherClassNetworkCorr)
          {
-           sum((oneClassFeatureCorr - oneClassOtherFeatureCorr)^2) + sum((otherClassFeatureCorr - otherClassOtherFeatureCorr)^2)
+           sum((oneClassFeatureCorr - oneClassNetworkCorr)^2) + sum((otherClassFeatureCorr - otherClassNetworkCorr)^2)
          }, split(oneClassFeatureCorrelations, networkIDsPerEdge), split(otherClassFeatureCorrelations, networkIDsPerEdge),
          as.list(oneClassSubnetworkCorrelations), as.list(otherClassSubnetworkCorrelations))
 
@@ -61,8 +61,11 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
 })
 
 setMethod("networkCorrelationsSelection", "MultiAssayExperiment", # Pick one numeric table from the data set.
-          function(measurements, target = NULL, ...)
+          function(measurements, target = NULL, metaFeatures = NULL, ...)
 {
+  if(is.null(metaFeatures))
+    stop("'metaFeatures' is NULL but must be provided.")            
+            
   tablesAndClasses <- .MAEtoWideTable(measurements, target)
   dataTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]            

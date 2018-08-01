@@ -7,6 +7,7 @@ setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
   SVMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
+# Clinical data or one of the other inputs, transformed.
 setMethod("SVMtrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)

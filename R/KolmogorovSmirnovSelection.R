@@ -7,7 +7,7 @@ setMethod("KolmogorovSmirnovSelection", "matrix", function(measurements, classes
   KolmogorovSmirnovSelection(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data only.
+setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, datasetName,
                    trainParams, predictParams, resubstituteParams, ...,
                    selectionName = "Kolmogorov-Smirnov Test", verbose = 3)

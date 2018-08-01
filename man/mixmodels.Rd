@@ -45,7 +45,7 @@
                 of features in the expression data for one class. The second element
                 has the same information for the other class. The third element has the class sizes of
                 the classes in the training data.}             
-  \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}.
+  \item{weighted}{Default: \code{"unweighted"}. Either \code{"unweighted"}, \code{"weighted"} or \code{"both"}. 
                   In weighted mode, the difference in densities is summed over all features.
                   If unweighted mode, each feature's vote is worth the same. Both can be
                   calculated simultaneously.}

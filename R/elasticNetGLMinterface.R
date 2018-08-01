@@ -7,7 +7,7 @@ setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measureme
   elasticNetGLMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-# Clinical data only.
+# Clinical data or one of the other inputs, transformed.
 setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, lambda = NULL, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)

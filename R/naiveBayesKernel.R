@@ -9,7 +9,7 @@ setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
                    DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
 })
 
-setMethod("naiveBayesKernel", "DataFrame", 
+setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, test,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
                    weighted = c("unweighted", "weighted", "both"),

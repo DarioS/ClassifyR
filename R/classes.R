@@ -189,7 +189,6 @@ setMethod("SelectParams", c("functionOrList"),
 setClass("TrainParams", representation(
   classifier = "function",
   intermediate = "character",
-  transform = "functionOrNULL",
   getFeatures = "functionOrNULL",
   otherParams = "list")
 )
@@ -198,19 +197,18 @@ setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
 setMethod("TrainParams", character(0), function()
 {
-  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), transform = NULL, getFeatures = NULL)
+  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), getFeatures = NULL)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, intermediate = character(0), transform = NULL, getFeatures = NULL, ...)
+          function(classifier, intermediate = character(0), getFeatures = NULL, ...)
           {
             new("TrainParams", classifier = classifier, intermediate = intermediate,
-                transform = transform, getFeatures = getFeatures, otherParams = list(...))
+                getFeatures = getFeatures, otherParams = list(...))
           })
 
 setClass("PredictParams", representation(
   predictor = "functionOrNULL",
   intermediate = "character",
-  transform = "functionOrNULL",
   getClasses = "function",
   otherParams = "list")
 )
@@ -220,10 +218,10 @@ setGeneric("PredictParams", function(predictor, ...)
 setMethod("PredictParams", character(0), function()
 {
   new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0),
-      transform = NULL, getClasses = function(result){result[["class"]]})
+      getClasses = function(result){result[["class"]]})
 })
 setMethod("PredictParams", c("functionOrNULL"),
-          function(predictor, intermediate = character(0), transform = NULL, getClasses, ...)
+          function(predictor, intermediate = character(0), getClasses, ...)
           {
             if(missing(predictor))
               stop("Either a function or NULL must be specified by 'predictor'.")
@@ -231,7 +229,7 @@ setMethod("PredictParams", c("functionOrNULL"),
               stop("A function must be specified by 'getClasses'.")
             
             new("PredictParams", predictor = predictor, intermediate = intermediate,
-                transform = transform, getClasses = getClasses, otherParams = list(...))
+                getClasses = getClasses, otherParams = list(...))
           })
 
 setGeneric("SelectResult", function(dataset, selection, totalFeatures, rankedFeatures, chosenFeatures, ...)
@@ -267,7 +265,7 @@ setMethod("show", c("SelectResult"),
                                        })
                                        )
             } else {
-              if(is.vector(object@chosenFeatures[[1]]))
+              if(is.vector(object@chosenFeatures[[1]]) || "Pairs" %in% class(object@chosenFeatures[[1]]))
                 selectionSizes <- sapply(object@chosenFeatures, length)
               else
                 selectionSizes <- sapply(object@chosenFeatures, nrow) # Stored in a data frame.

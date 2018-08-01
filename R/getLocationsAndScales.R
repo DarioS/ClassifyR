@@ -7,7 +7,7 @@ setMethod("getLocationsAndScales", "matrix", # Matrix of numeric measurements.
   getLocationsAndScales(DataFrame(t(measurements), check.names = FALSE), ...)
 })
 
-setMethod("getLocationsAndScales", "DataFrame", # Clinical data only.
+setMethod("getLocationsAndScales", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, location = c("mean", "median"), scale = c("SD", "MAD", "Qn"))
 {
   isNumeric <- sapply(measurements, is.numeric)

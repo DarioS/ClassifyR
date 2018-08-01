@@ -14,7 +14,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
          "% with the data set's feature identifiers.")
-browser() 
+ 
   if(any(keepSets == FALSE)) # Filter out those sets without adequate identifier overlap.
   {
     if(verbose == 3)

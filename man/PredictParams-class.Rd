@@ -17,7 +17,7 @@
       the classifier has a list element named "class".
   }
     \item{}{
-      \code{PredictParams(predictor, intermediate = character(0), transform = NULL, getClasses, ...)}
+      \code{PredictParams(predictor, intermediate = character(0), getClasses, ...)}
       Creates a PredictParams object which stores the function which will do the
       class prediction, if required, and parameters that the function will use. If the training
       function also makes predictions, this must be set to \code{NULL}.
@@ -27,10 +27,6 @@
             The second argument must accept a \code{\link{DataFrame}} of new data.}
             \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages in
             \code{\link{runTest}} that need to be passed to the prediction function.}
-            \item{\code{transform}}{Either NULL or a function. The function transforms the test data
-            into a different format before predictions are made with it. For example, a set of
-            features may be replaced by their median value. The set of features might be part of
-            a network. If \code{predictor} is \code{NULL}, then it should also be \code{NULL}.}
             \item{\code{getClasses}}{A \code{\link{function}} to extract the vector of class predictions
             from the result object created by \code{predictor}.}
             \item{\code{...}}{Other arguments that \code{predictor} may use.}
