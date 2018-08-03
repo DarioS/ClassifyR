@@ -64,7 +64,7 @@ be discretised to.
   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
-                            list(predicted), actual, list("resampleFold", 100, 5))
+                            list(predicted), actual, list("permuteFold", 100, 5))
   predicted[, "class"] <- sample(predicted[, "class"])
   result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),

@@ -41,6 +41,8 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
 
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
+  if(!requireNamespace("cowplot", quietly = TRUE))
+    stop("The package 'cowplot' could not be found. Please install it.")  
   if(!requireNamespace("grid", quietly = TRUE))
     stop("The package 'grid' could not be found. Please install it.")
   if(!requireNamespace("gridExtra", quietly = TRUE))
@@ -128,13 +130,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
                                                 legend.title = ggplot2::element_text(size = fontSizes[4]),
                                                 legend.text = ggplot2::element_text(size = fontSizes[5])) +
                                                 ggplot2::labs(x = NULL, y = yAxisLabels[1])
-          densityGraphicsTable <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(densPlot))
-          stripGraphicsTable <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(stripPlot))
-          maxWidth = grid::unit.pmax(densityGraphicsTable[["widths"]][2:3], stripGraphicsTable[["widths"]][2:3])
-          densityGraphicsTable[["widths"]][2:3] <- maxWidth
-          stripGraphicsTable[["widths"]][2:3] <- maxWidth
           
-          bothGraphics <- gridExtra::arrangeGrob(densityGraphicsTable, stripGraphicsTable, nrow = 2,
+          alignedPlots <- cowplot::align_plots(densPlot, stripPlot, align = 'v', axis = "lr")
+          bothGraphics <- gridExtra::arrangeGrob(alignedPlots[[1]], alignedPlots[[2]], nrow = 2,
                                                  top = grid::textGrob(featureText, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
           if(plot == TRUE)
           {

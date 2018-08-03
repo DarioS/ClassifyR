@@ -317,7 +317,7 @@ setMethod("show", c("ClassifyResult"),
             if(length(unlist(object@selectResult@chosenFeatures)) == 0)
             {
               cat("Features: All used.\n")
-            } else if(object@validation[[1]] != "resampleFold")
+            } else if(object@validation[[1]] != "permuteFold")
             {
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature identifiers.\n", sep = '')
             } else # Resample and fold. Nested lists.

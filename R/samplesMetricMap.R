@@ -179,7 +179,7 @@ setMethod("samplesMetricMap", "list",
                                                        legend.position = ifelse(showLegends, "right", "none"),
                                                        legend.key.size = legendSize)
       featureValuesGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(featureValuesPlot))     
-    } else {featureValuesGrobUnused <- grob()}
+    } else {featureValuesGrobUnused <- grid::grob()}
     
     plotData[, "Metric"] <- unlist(metricValues)
     classLegend <- NULL
@@ -213,7 +213,7 @@ setMethod("samplesMetricMap", "list",
     if(!is.null(featureValues) && is.factor(featureValues))
       featureValuesLegend <- featureValuesGrobUnused[["grobs"]][[which(sapply(featureValuesGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     else
-      featureValuesLegend <- grob()
+      featureValuesLegend <- grid::grob()
     if(showLegends == TRUE)    
       firstLegend <- metricGrobUnused[["grobs"]][[which(sapply(metricGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     
@@ -283,7 +283,7 @@ setMethod("samplesMetricMap", "list",
   if(!is.null(featureValues))
     grobTable <- gtable::gtable_add_grob(grobTable, featureValuesGrob, 2, 1)
   else
-    grobTable <- gtable::gtable_add_grob(grobTable, grob(), 2, 1)
+    grobTable <- gtable::gtable_add_grob(grobTable, grid::grob(), 2, 1)
   if(showLegends == TRUE)
   {
     if(is.list(metricColours))

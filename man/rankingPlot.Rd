@@ -106,25 +106,29 @@ The overlaps are converted to percentages and plotted as lineplots.
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
-  rankList <- list(list(1:100, c(5:1, 6:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result1 <- ClassifyResult("Example", "Differential Expression", "Example Selection",
-                            LETTERS[1:10], features, 100, rankList,
+  rankList <- list(list(features[1:100], features[c(5:1, 6:100)]),
+                   list(features[c(1:9, 11, 10, 12:100)], features[c(1:50, 60:51, 61:100)]))
+  result1 <- ClassifyResult("Example", "Differential Expression",
+                            "Example Selection", LETTERS[1:10], features,
+                            100, rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(predicted), actual, list("resampleFold", 2, 2))
+                            list(predicted), actual, list("permuteFold", 2, 2))
   
   predicted[, "class"] <- sample(predicted[, "class"])
-  rankList <- list(list(1:100, c(sample(20), 21:100)), list(c(1:9, 11:101), c(1:50, 60:51, 61:100)))
-  result2 <- ClassifyResult("Example", "Differential Variability", "Example Selection",
+  rankList <- list(list(features[1:100], features[c(sample(20), 21:100)]),
+                   list(features[c(1:9, 11, 10, 12:100)], features[c(1:50, 60:51, 61:100)]))
+  result2 <- ClassifyResult("Example", "Differential Variability",
+                            "Example Selection",
                             LETTERS[1:10], features, 100, rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(predicted), actual, validation = list("resampleFold", 2, 2))
+                            list(predicted), actual, validation = list("permuteFold", 2, 2))
                             
   rankingPlot(list(result1, result2), pointTypeVariable = "classificationName")
   
-  oneRanking <- c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)
-  otherRanking <- c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)
+  oneRanking <- features[c(10, 8, 1, 2, 3, 4, 7, 9, 5, 6)]
+  otherRanking <- features[c(8, 2, 3, 4, 1, 10, 6, 9, 7, 5)]
   oneResult <- SelectResult("Example", "One Method", 10, list(oneRanking), list(oneRanking[1:5]))
   otherResult <- SelectResult("Example", "Another Method", 10, list(otherRanking), list(otherRanking[1:2]))
   

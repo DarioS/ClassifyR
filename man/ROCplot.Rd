@@ -64,13 +64,13 @@
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:20], LETTERS[10:1], 100,
                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
-                            predicted, actual, list("resampleFold", 2, 1))
+                            predicted, actual, list("permuteFold", 2, 2))
   predicted[[1]][, "score"][c(2, 6)] <- c(0.60, 0.40)
   
   result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
                             LETTERS[1:20], LETTERS[10:1], 100, list(1:100, c(1:5, 11:105)),
                             list(sample(10, 10), sample(10, 10)),
-                            predicted, actual, validation = list("resampleFold", 2, 1))
+                            predicted, actual, validation = list("permuteFold", 2, 2))
   ROCplot(list(result1, result2), lineColourVariable = "classificationName",
           plotTitle = "Cancer ROC")
 }

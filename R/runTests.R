@@ -345,7 +345,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   if(validation == "permute")
   {
     if(permutePartition == "fold")
-      validationInfo <- list("resampleFold", permutations, folds)
+      validationInfo <- list("permuteFold", permutations, folds)
     else
       validationInfo <- list("split", permutations, percent)
   } else if(validation == "leaveOut") {

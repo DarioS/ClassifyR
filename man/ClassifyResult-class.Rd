@@ -31,7 +31,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \preformatted{ClassifyResult(datasetName, classificationName, originalNames, originalFeatures,
+      \preformatted{ClassifyResult(datasetName, classificationName, selectionName, originalNames, originalFeatures,
            rankedFeatures, chosenFeatures, predictions, actualClasses,
            validation, tune = list(NULL))}
             }
@@ -39,6 +39,7 @@
   \describe{
             \item{\code{datasetName}}{A name associated with the dataset used.}
             \item{\code{classificationName}}{A name associated with the classification.}
+            \item{\code{seletionName}}{A name associated with the feature selection.}
             \item{\code{originalNames}}{All sample names.}
             \item{\code{originalFeatures}}{All feature names. Character vector or DataFrame with one row
                                            for each feature if the data set is a \code{\link{MultiAssayExperiment}}.}
