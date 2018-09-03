@@ -55,8 +55,8 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
   isNumeric <- sapply(testMatrix, is.numeric)
   testMatrix <- testMatrix[, isNumeric, drop = FALSE]
   
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  if(!requireNamespace("e1071", quietly = TRUE))
+    stop("The package 'e1071' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained SVM classifier.")
   

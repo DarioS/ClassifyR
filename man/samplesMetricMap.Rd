@@ -1,6 +1,7 @@
 \name{samplesMetricMap}
 \alias{samplesMetricMap}
 \alias{samplesMetricMap,list-method}
+\alias{samplesMetricMap,matrix-method}
 \title{Plot a Grid of Sample Error Rates or Accuracies}
 \description{A grid of coloured tiles is drawn. There is one column for each sample
 and one row for each classification result.
@@ -18,11 +19,25 @@ and one row for each classification result.
                  xAxisLabel = "Sample Name", showXtickLabels = TRUE,
                  yAxisLabel = "Analysis", showYtickLabels = TRUE,
                  legendSize = grid::unit(1, "lines"), plot = TRUE)
+  \S4method{samplesMetricMap}{matrix}(results, classes,
+                     metric = c("error", "accuracy"),
+                     featureValues = NULL, featureName = NULL,
+                     metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
+                                        c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
+                     classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
+                     fontSizes = c(24, 16, 12, 12, 12),
+                  mapHeight = 4, title = "Error Comparison", showLegends = TRUE,
+                 xAxisLabel = "Sample Name", showXtickLabels = TRUE,
+                 yAxisLabel = "Analysis", showYtickLabels = TRUE,
+                 legendSize = grid::unit(1, "lines"), plot = TRUE)                 
 }
 \arguments{
-  \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+  \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be a matrix, for
+                 backwards compatibility.}
+  \item{classes}{If \code{results} is a matrix, this is a factor vector of the same length
+                 as the number of columns that \code{results} has.}                 
   \item{comparison}{The aspect of the experimental design to compare.}
-  \item{metric}{The sample-wise metric to calculate and plot.}
+  \item{metric}{The sample-wise metric to plot.}
   \item{featureValues}{If not NULL, can be a named factor or named numeric vector specifying
                 some variable of interest to plot underneath the class bar.}
   \item{featureName}{A label describing the information in \code{featureValues}. It must be

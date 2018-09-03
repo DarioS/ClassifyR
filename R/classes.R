@@ -1,3 +1,8 @@
+# Delete when sparsediscrim is restored to CRAN.
+dlda <- function(x, ...) {
+  UseMethod("dlda")
+}
+
 setOldClass("pamrtrained")
 setOldClass("dlda")
 setOldClass("svm")

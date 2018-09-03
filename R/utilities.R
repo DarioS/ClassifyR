@@ -631,3 +631,121 @@
     crosses <- crosses[-c(1, length(crosses))] # Remove crossings at ends of densities.
   aDensity[['x']][crosses]
 }
+
+.dlda <- function(x, y, prior = NULL){ # Remove once sparsediscrim is reinstated to CRAN.
+  obj <- list()
+  obj$labels <- y
+  obj$N <- length(y)
+  obj$p <- ncol(x)
+  obj$groups <- levels(y)
+  obj$num_groups <- nlevels(y)
+
+  est_mean <- "mle"
+
+  # Error Checking
+  if (!is.null(prior)) {
+    if (length(prior) != obj$num_groups) {
+      stop("The number of 'prior' probabilities must match the number of classes in 'y'.")
+    }
+    if (any(prior <= 0)) {
+      stop("The 'prior' probabilities must be nonnegative.")
+    }
+    if (sum(prior) != 1) {
+      stop("The 'prior' probabilities must sum to one.")
+    }
+  }
+  if (any(table(y) < 2)) {
+    stop("There must be at least 2 observations in each class.")
+  }
+
+  # By default, we estimate the 'a priori' probabilities of class membership with
+  # the MLEs (the sample proportions).
+  if (is.null(prior)) {
+    prior <- as.vector(table(y) / length(y))
+  }
+
+  # For each class, we calculate the MLEs (or specified alternative estimators)
+  # for each parameter used in the DLDA classifier. The 'est' list contains the
+  # estimators for each class.
+  obj$est <- tapply(seq_along(y), y, function(i) {
+    stats <- list()
+    stats$n <- length(i)
+    stats$xbar <- colMeans(x[i, , drop = FALSE])
+    stats$var <- with(stats, (n - 1) / n * apply(x[i, , drop = FALSE], 2, var))
+    stats
+  })
+
+  # Calculates the pooled variance across all classes.
+  obj$var_pool <- Reduce('+', lapply(obj$est, function(x) x$n * x$var)) / obj$N
+
+  # Add each element in 'prior' to the corresponding obj$est$prior
+  for(k in seq_len(obj$num_groups)) {
+    obj$est[[k]]$prior <- prior[k]
+  }
+  class(obj) <- "dlda"
+  obj
+}
+
+.predict <- function(object, newdata, ...) { # Remove once sparsediscrim is reinstated to CRAN.
+  if (!inherits(object, "dlda"))  {
+    stop("object not of class 'dlda'")
+  }
+  if (is.vector(newdata)) {
+    newdata <- as.matrix(newdata)
+  }
+
+  scores <- apply(newdata, 1, function(obs) {
+    sapply(object$est, function(class_est) {
+      with(class_est, sum((obs - xbar)^2 / object$var_pool) + log(prior))
+    })
+  })
+
+  if (is.vector(scores)) {
+    min_scores <- which.min(scores)
+  } else {
+    min_scores <- apply(scores, 2, which.min)
+  }
+
+  # Posterior probabilities via Bayes Theorem
+  means <- lapply(object$est, "[[", "xbar")
+  covs <- replicate(n=object$num_groups, object$var_pool, simplify=FALSE)
+  priors <- lapply(object$est, "[[", "prior")
+  posterior <- .posterior_probs(x=newdata,
+                               means=means,
+                               covs=covs,
+                               priors=priors)
+
+  class <- factor(object$groups[min_scores], levels = object$groups)
+
+  list(class = class, scores = scores, posterior = posterior)
+}
+
+.posterior_probs <- function(x, means, covs, priors) { # Remove once sparsediscrim is reinstated to CRAN.
+  if (is.vector(x)) {
+    x <- matrix(x, nrow=1)
+  }
+  x <- as.matrix(x)
+
+  posterior <- mapply(function(xbar_k, cov_k, prior_k) {
+    if (is.vector(cov_k)) {
+      post_k <- apply(x, 1, function(obs) {
+        .dmvnorm_diag(x=obs, mean=xbar_k, sigma=cov_k)
+      })
+    } else {
+      post_k <- dmvnorm(x=x, mean=xbar_k, sigma=cov_k)
+    }
+    prior_k * post_k
+  }, means, covs, priors)
+
+  if (is.vector(posterior)) {
+    posterior <- posterior / sum(posterior)
+  } else {
+    posterior <- posterior / rowSums(posterior)
+  }
+
+  posterior
+}
+
+.dmvnorm_diag <- function(x, mean, sigma) { # Remove once sparsediscrim is reinstated to CRAN.
+  exp(sum(dnorm(x, mean=mean, sd=sqrt(sigma), log=TRUE)))
+}
