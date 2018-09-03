@@ -43,8 +43,8 @@ identifying outlier samples that are difficult to classify.
 \author{Dario Strbenac}
 
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     data(asthma)
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
@@ -65,5 +65,5 @@ identifying outlier samples that are difficult to classify.
                                         xLabel = "Number of Cross-validations", yLabel = "Count",
                                         binwidth = 1)
     print(head(featureDistribution))
-  }
+  #}
 }

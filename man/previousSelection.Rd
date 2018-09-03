@@ -38,8 +38,8 @@ for the current classification task.
 \author{Dario Strbenac}
 
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     # Genes 76 to 100 have differential expression.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
@@ -78,5 +78,5 @@ for the current classification task.
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.
     features(newerResult)
-  }  
+  #}  
 }

@@ -62,8 +62,8 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
     test <- splitDataset[["measurements"]]
   }
   
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  if(!requireNamespace("mnlogit", quietly = TRUE))
+    stop("The package 'mnlogit' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained elastic net regularised GLM classifier.")
 

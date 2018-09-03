@@ -48,8 +48,8 @@
 
 \author{Dario Strbenac}
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     SelectParams(tTestSelection, "t-test",
                  trainParams = TrainParams(), predictParams = PredictParams(),
                  resubstituteParams = ResubstituteParams())
@@ -57,5 +57,5 @@
     # For pamr shrinkage selection.
     SelectParams(NSCselectionInterface, datasetName = "Cancer",
                  intermediate = "trained", subsetToSelections = FALSE)
-  }
+  #}
 }
