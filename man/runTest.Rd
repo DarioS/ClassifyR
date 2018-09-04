@@ -58,8 +58,8 @@
 \author{Dario Strbenac}
 
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     data(asthma)
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
                                          performanceType = "balanced error",
@@ -72,5 +72,5 @@
                                         getClasses = function(result) result[["class"]])),
             training = (1:ncol(measurements)) \%\% 2 == 0,
             testing = (1:ncol(measurements)) \%\% 2 != 0)
-  }
+  #}
 }

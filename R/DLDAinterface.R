@@ -14,12 +14,13 @@ setMethod("DLDAtrainInterface", "DataFrame", function(measurements, classes, ver
   isNumeric <- sapply(measurements, is.numeric)
   measurements <- measurements[, isNumeric, drop = FALSE]
   
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  #if(!requireNamespace("sparsediscrim", quietly = TRUE))
+    #stop("The package 'sparsediscrim' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting DLDA classifier to data.")
   
-  sparsediscrim::dlda(as.matrix(measurements), classes)
+  # sparsediscrim::dlda(as.matrix(measurements), classes)
+  .dlda(as.matrix(measurements), classes)
 })
 
 setMethod("DLDAtrainInterface", "MultiAssayExperiment",
@@ -49,12 +50,13 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, 
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]
   
-  if(!requireNamespace("sparsediscrim", quietly = TRUE))
-    stop("The package 'sparsediscrim' could not be found. Please install it.")
+  #if(!requireNamespace("sparsediscrim", quietly = TRUE))
+    #stop("The package 'sparsediscrim' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained DLDA classifier.")
   
-  predict(model, as.matrix(test))
+  #predict(model, as.matrix(test))
+  .predict(model, as.matrix(test))
 })
 
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),

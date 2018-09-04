@@ -57,8 +57,8 @@
 }
 \author{Dario Strbenac}
 \examples{
-  if(require(sparsediscrim))
-  {
+  # if(require(sparsediscrim)) Package currently removed from CRAN.
+  #{
     # Genes 76 to 100 have differential expression.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
@@ -73,5 +73,5 @@
     classifier <- DLDAtrainInterface(genesMatrix[selected, trainingSamples],
                                      classes[trainingSamples])
     DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])[["class"]]
-  }
+  #}
 }

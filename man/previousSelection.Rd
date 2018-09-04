@@ -38,8 +38,8 @@ for the current classification task.
 \author{Dario Strbenac}
 
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     # Genes 76 to 100 have differential expression.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
@@ -51,9 +51,7 @@ for the current classification task.
                         performanceType = "error", better = "lower")
     result <- runTests(genesMatrix, classes, "Example", "Differential Expression",
                        permutations = 2, fold = 2,
-                       params = list(SelectParams(), TrainParams(),
-                       PredictParams(predict,
-                       getClasses = function(result) result[["class"]])))
+                       params = list(SelectParams(), TrainParams(), PredictParams()))
                        
     # Genes 50 to 74 have differential expression in new data set.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
@@ -69,12 +67,10 @@ for the current classification task.
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",
                                      classifyResult = result),
-                       TrainParams(DLDAtrainInterface),
-                       PredictParams(DLDApredictInterface,
-                                     getClasses = function(result) result[["class"]])))
+                       TrainParams(), PredictParams()))
                                      
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.
     features(newerResult)
-  }  
+  #}  
 }

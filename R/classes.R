@@ -1,3 +1,7 @@
+dlda <- function(x, ...) {
+  UseMethod("dlda")
+}
+
 setOldClass("pamrtrained")
 setOldClass("dlda")
 setOldClass("svm")

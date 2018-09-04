@@ -52,8 +52,8 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
 }
 
 \examples{
-  if(require(sparsediscrim))
-  {
+  #if(require(sparsediscrim))
+  #{
     # Genes 76 to 100 have differential expression.
     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
@@ -69,5 +69,5 @@ Limma: linear models for microarray data, Gordon Smyth, 2005, In: Bioinformatics
                                resubstituteParams = resubstituteParams)
                                
     selected@chosenFeatures
-  }
+  #}
 }

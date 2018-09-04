@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 2.0.9
-Date: 2018-07-06
+Version: 2.0.10
+Date: 2018-09-04
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -12,7 +12,7 @@ biocViews: Classification, Survival
 Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 1.6.0), BiocParallel
 Imports: locfit, grid, utils, plyr
 Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 2.2.0), gridExtra (>= 2.0.0),
-        BiocStyle, pamr, sparsediscrim, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
+        BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
         scales, e1071, rmarkdown, IRanges, randomForest, robustbase, mlogit, mnlogit, glmnet
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
