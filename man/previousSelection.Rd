@@ -52,9 +52,7 @@ for the current classification task.
     result <- runTests(genesMatrix, classes, datasetName = "Example",
                        classificationName = "Differential Expression",
                        permutations = 2, fold = 2,
-                       params = list(SelectParams(), TrainParams(),
-                       PredictParams(predict,
-                       getClasses = function(result) result[["class"]])))
+                       params = list(SelectParams(), TrainParams(), PredictParams()))
                        
     # Genes 50 to 74 have differential expression in new data set.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
