@@ -91,14 +91,31 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   
   if(validation == "permute")
   {
-    sampleOrdering <- lapply(1:permutations, function(permutation) sample(nrow(measurements)))
     if(permutePartition == "fold")
-    {
-      sampleFold <- rep(1:folds, length.out = nrow(measurements))
-      samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
-    } else {
-      sampleFold <- rep(1:2, c(round(nrow(measurements) * (100 - percent) / 100), round(nrow(measurements) * percent / 100)))
-      samplesFolds <- lapply(sampleOrdering, function(sample) split(sample, sampleFold))
+    { 
+      samplesFolds <- lapply(1:permutations, function(permutation)
+                      {
+                        classesFolds <- lapply(levels(classes), function(className)
+                        {
+                          whichSamples <- which(classes == className)
+                          split(sample(whichSamples), rep(1:folds, length.out = length(whichSamples)))
+                        })
+                        allFolds <- lapply(1:folds, function(fold)
+                        {
+                          unlist(lapply(classesFolds, "[[", fold))
+                        })
+                      })
+    } else { # Is split.
+      samplesTrain <- (100 - percent) / 100 * table(classes)
+      samplesFolds <- lapply(1:permutations, function(permutation)
+                      {
+                        trainSet <- unlist(mapply(function(className, number)
+                        {
+                          sample(which(classes == className), number)
+                        }, levels(classes), samplesTrain))
+                        testSet <- setdiff(1:length(classes), trainSet)
+                        list(trainSet, testSet)
+                      })
     }
 
     results <- bpmapply(function(sampleFolds, sampleNumber)
@@ -131,8 +148,15 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else { # Unresampled, ordinary k-fold cross-validation.
-    sampleFold <- rep(1:folds, length.out = nrow(measurements))
-    samplesFolds <- split(1:nrow(measurements), sampleFold)
+      classesFolds <- lapply(levels(classes), function(className)
+      {
+        whichSamples <- which(classes == className)
+        split(sample(whichSamples), rep(1:folds, length.out = length(whichSamples)))
+      })
+      samplesFolds <- lapply(1:folds, function(fold)
+      {
+        unlist(lapply(classesFolds, "[[", fold))
+      })
     
     if(verbose >= 1)
       message("Processing ", folds, "-fold cross-validation.")

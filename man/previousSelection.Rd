@@ -69,9 +69,7 @@ for the current classification task.
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",
                                      classifyResult = result),
-                       TrainParams(DLDAtrainInterface),
-                       PredictParams(DLDApredictInterface,
-                                     getClasses = function(result) result[["class"]])))
+                       TrainParams(), PredictParams()))
                                      
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.

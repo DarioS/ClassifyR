@@ -4,6 +4,9 @@
 
 \section{Version 2.2.0}{\itemize{
   \item
+  Cross-validations which use folds ensure that samples belonging to each class are in approximately the same
+  proportions as they are for the entire data set.
+  \item
   Feature selection using gene sets and networks. Classification can use meta-features derived
   from the individual features used for feature selection.
   \item
