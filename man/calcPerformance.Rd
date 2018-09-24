@@ -83,7 +83,7 @@
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
   result <- ClassifyResult("Example", "Differential Expression", "A Selection",
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
-                           50, list(1:50, 1:50), list(1:5, 6:15),
+                           50, list(1:50, 1:50), list(1:5, 6:15), list(function(oracle){}),
                            list(predictTable), actual, list("leave", 2))
   result <- calcCVperformance(result, "balanced error") 
   performance(result)

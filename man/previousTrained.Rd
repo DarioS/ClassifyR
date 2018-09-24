@@ -1,38 +1,21 @@
-\name{previousSelection}
-\alias{previousSelection}
-\alias{previousSelection,matrix-method}
-\alias{previousSelection,DataFrame-method}
-\alias{previousSelection,MultiAssayExperiment-method}
-\title{Automated Selection of Previously Selected Features}
-\description{Uses the feature selection of the same cross-validation iteration of a previous classification for the current classification task.
+\name{previousTrained}
+\alias{previousTrained}
+\alias{previousTrained,ClassifyResult-method}
+\title{Automated Usage of Previously Created Classifiers}
+\description{Uses the trained classifier of the same cross-validation iteration of a previous classification for the current classification task.
 }
 \usage{
-  \S4method{previousSelection}{matrix}(measurements, ...)
-  \S4method{previousSelection}{DataFrame}(measurements, classes, datasetName,
-                  classifyResult, minimumOverlapPercent = 80,
-                        selectionName = "Previous Selection", .iteration, verbose = 3)
-  \S4method{previousSelection}{MultiAssayExperiment}(measurements, ...)
+  \S4method{previousTrained}{ClassifyResult}(classifyResult, .iteration, verbose = 3)
 }
 \arguments{
-  \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
-                      \code{\link{MultiAssayExperiment}} containing the training data.
-                      For a \code{matrix}, the rows are features, and the columns are samples.}
-  \item{classes}{Do not specify this variable. It is ignored and only used to create consistency of formal
-                 parameters with other feature selection methods.}                      
-  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
-             are passed into and used by the \code{DataFrame} method.}  
-  \item{datasetName}{A name for the data set used. Stored in the result.}
-  \item{classifyResult}{An existing classification result from which to take the feature selections from.}
-  \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
-                               current data set, then the selection stops with an error.}
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
+  \item{classifyResult}{A \code{\link{ClassifyResult}} object which stores the models fitted previously.}
   \item{.iteration}{Do not specify this variable. It is set by \code{\link{runTests}} if this function
                     is being repeatedly called by \code{runTests}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
-    This function only prints progress messages if the value is 3.}
+    This function only prints progress messages if the value is 3.}                    
 }
 \value{
-  An object of class \code{\link{SelectResult}}.
+  A trained classifier from a previously completed classification task.
 }
 \author{Dario Strbenac}
 
@@ -68,10 +51,13 @@
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",
                                      classifyResult = result),
-                       TrainParams(), PredictParams()))
+                                     TrainParams(previousTrained,
+                                     intermediate = ".iteration",
+                                     classifyResult = result),
+                                     PredictParams()))
                                      
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.
-    features(newerResult)
+    models(newerResult)
   #}  
 }

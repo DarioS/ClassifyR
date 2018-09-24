@@ -310,12 +310,12 @@ function(measurements, classes,
 
   if(!is.null(.iteration)) # This function was called by runTests.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = trained, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")
     {
       return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures, consideredFeatures,
-                            list(rankedFeatures), list(selectedFeatures), list(data.frame(sample = testing, class = predictedClasses)),
+                            list(rankedFeatures), list(selectedFeatures), list(models), list(data.frame(sample = testing, class = predictedClasses)),
                             classes, list("independent"), tuneDetails)
              )
     } else { # A variety of predictions were made.
@@ -323,14 +323,15 @@ function(measurements, classes,
       {
         rankedFeatures <- list(rankedFeatures)
         selectedFeatures <- list(selectedFeatures)
+        models <- list(models)
       }
-      return(mapply(function(varietyPredictions, varietyTunes, varietyRanked, varietySelected)
+      return(mapply(function(varietyPredictions, varietyTunes, varietyRanked, varietySelected, varietyModels)
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
         ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures, consideredFeatures,
-                       list(varietyRanked), list(varietySelected), list(data.frame(sample = testing, class = varietyPredictions)),
+                       list(varietyRanked), list(varietySelected), list(varietyModels), list(data.frame(sample = testing, class = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
-      }, predictedClasses, tuneDetails, rankedFeatures, selectedFeatures, SIMPLIFY = FALSE))
+      }, predictedClasses, tuneDetails, rankedFeatures, selectedFeatures, models, SIMPLIFY = FALSE))
     }
   }  
 })

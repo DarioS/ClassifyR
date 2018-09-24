@@ -14,6 +14,8 @@
 \alias{actualClasses,ClassifyResult-method}
 \alias{features}
 \alias{features,ClassifyResult-method}
+\alias{models}
+\alias{models,ClassifyResult-method}
 \alias{performance}
 \alias{performance,ClassifyResult-method}
 \alias{tunedParameters}
@@ -32,7 +34,7 @@
   \describe{
     \item{}{
       \preformatted{ClassifyResult(datasetName, classificationName, selectionName, originalNames, originalFeatures,
-           rankedFeatures, chosenFeatures, predictions, actualClasses,
+           rankedFeatures, chosenFeatures, predictions, actualClasses, models,
            validation, tune = list(NULL))}
             }
     }
@@ -51,6 +53,7 @@
                                       containing information about samples, their actual class and
                                       predicted class.}            
             \item{\code{actualClasses}}{Factor of class of each sample.}                                      
+            \item{\code{models}}{All of the models fitted to the training data.}                                    
             \item{\code{validation}}{List with first element being the name of the validation scheme,
             and other elements providing details about the scheme.}
             \item{\code{tune}}{A description of the tuning parameters, and the value chosen of
@@ -89,6 +92,8 @@
     each sample.}}
   \describe{
   \item{\code{features(result)}}{A \code{list} of the features selected for each training.}}
+  \describe{
+  \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
   \describe{
   \item{\code{performance(result)}}{Returns a \code{list} of performance measures. This is
     empty until \code{calcCVperformance} has been used.}}

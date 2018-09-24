@@ -113,6 +113,7 @@ The overlaps are converted to percentages and plotted as lineplots.
                             100, rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
+                            list(function(oracle){}),
                             list(predicted), actual, list("permuteFold", 2, 2))
   
   predicted[, "class"] <- sample(predicted[, "class"])
@@ -123,6 +124,7 @@ The overlaps are converted to percentages and plotted as lineplots.
                             LETTERS[1:10], features, 100, rankList,
                             list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
                                  list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
+                            list(function(oracle){}),
                             list(predicted), actual, validation = list("permuteFold", 2, 2))
                             
   rankingPlot(list(result1, result2), pointTypeVariable = "classificationName")

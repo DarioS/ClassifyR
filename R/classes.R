@@ -298,6 +298,7 @@ setClass("ClassifyResult", representation(
   originalFeatures = "characterOrDataFrame",
   selectResult = "SelectResult",
   actualClasses = "factor",
+  models = "list",
   predictions = "list",
   validation = "list",  
   performance = "list",
@@ -305,11 +306,11 @@ setClass("ClassifyResult", representation(
 )
 setMethod("ClassifyResult", c("character", "character", "character", "character", "character"),
           function(datasetName, classificationName, selectionName, originalNames, originalFeatures, totalFeatures,
-                   rankedFeatures, chosenFeatures, predictions, actualClasses, validation, tune = list(NULL))
+                   rankedFeatures, chosenFeatures, models, predictions, actualClasses, validation, tune = list(NULL))
           {
             new("ClassifyResult", datasetName = datasetName, classificationName = classificationName,
                 predictions = predictions, selectResult = SelectResult(datasetName, selectionName, totalFeatures, rankedFeatures, chosenFeatures),
-                actualClasses = actualClasses, validation = validation,
+                actualClasses = actualClasses, models = models, validation = validation,
                 originalNames = originalNames, originalFeatures = originalFeatures, tune = tune)
           })
 setMethod("show", c("ClassifyResult"),
@@ -364,20 +365,28 @@ setMethod("featureNames", c("ClassifyResult"),
             object@originalFeatures
           })
 
-setGeneric("predictions", function(object, ...)
-{standardGeneric("predictions")})
-setMethod("predictions", c("ClassifyResult"),
-          function(object)
-          {
-            object@predictions
-          })
-
 setGeneric("features", function(object, ...)
 {standardGeneric("features")})
 setMethod("features", c("ClassifyResult"),
           function(object)
           {
             object@selectResult@chosenFeatures
+          })
+
+setGeneric("models", function(object, ...)
+{standardGeneric("models")})
+setMethod("models", c("ClassifyResult"),
+          function(object)
+          {
+            object@models
+          })
+
+setGeneric("predictions", function(object, ...)
+{standardGeneric("predictions")})
+setMethod("predictions", c("ClassifyResult"),
+          function(object)
+          {
+            object@predictions
           })
 
 setGeneric("performance", function(object, ...)

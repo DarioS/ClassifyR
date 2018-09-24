@@ -79,11 +79,13 @@ be discretised to.
   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
   result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
-                            list(predicted), actual, list("permuteFold", 100, 5))
+                            list(function(oracle){}), list(predicted), actual,
+                            list("permuteFold", 100, 5))
   predicted[, "class"] <- sample(predicted[, "class"])
   result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
-                            list(predicted), actual, validation = list("leave", 2))
+                            list(function(oracle){}), list(predicted), actual,
+                            validation = list("leave", 2))
   result1 <- calcCVperformance(result1, "sample error")
   result2 <- calcCVperformance(result2, "sample error")
   groups <- factor(rep(c("Male", "Female"), length.out = 10))

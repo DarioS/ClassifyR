@@ -4,13 +4,16 @@
 
 \section{Version 2.2.0}{\itemize{
   \item
-  Cross-validations which use folds ensure that samples belonging to each class are in approximately the same
-  proportions as they are for the entire data set.
+  Cross-validations which use folds ensure that samples belonging to each class are in approximately
+  the same proportions as they are for the entire data set.
+  \item
+  Classification can reuse fitted model from previous classification by using previousTrained function.  
   \item
   Feature selection using gene sets and networks. Classification can use meta-features derived
   from the individual features used for feature selection.
   \item
-  tTestSelection function for feature selection based on ordinary t-test statistic ranking.
+  tTestSelection function for feature selection based on ordinary t-test statistic ranking. Now the default
+  feature selection function, if none is specified.
   \item
   Tuning parameter optimisation metric is specified by providing a tuneOptimise parameter to TrainParams rather than depending on ResubstituteParams being used during feature selection.
 }}

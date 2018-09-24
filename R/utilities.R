@@ -192,7 +192,7 @@
   {
     measurementsTrain <- measurementsVariety[training, , drop = FALSE]
     measurementsTest <- measurementsVariety[testing, , drop = FALSE]
-    if(variety != "data") # Single expression set is in a list with name 'data'.
+    if(variety != "data") # Single measurements table is in a list with name 'data'.
     {
       multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
       individiualParams <- lapply(multiplierParams, '[', 2)
@@ -214,7 +214,11 @@
       tuneCombinations <- expand.grid(trainParams@otherParams[[tuneIndex]])
       trainParams@otherParams <- trainParams@otherParams[-tuneIndex]
     } else tuneCombinations <- NULL
-    paramList <- list(measurementsTrain, classes[training])
+
+    if(trainParams@classifier@generic != "previousTrained")
+      paramList <- list(measurementsTrain, classes[training])
+    else # Don't pass the measurements and classes, because a pre-existing classifier is used.
+      paramList <- list()
     if(!is.null(predictParams@predictor)) # Training and prediction are separate.
     {
       if(is.null(tuneCombinations))
@@ -428,7 +432,7 @@
     {
       testMeasurements <- data[testing, , drop = FALSE]
       
-      if(variety != "data") # Single expression set is in a list with name 'data'.
+      if(variety != "data") # Single measurements table is in a list with name 'data'.
       {
         multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
         individiualParams <- lapply(multiplierParams, '[', 2)

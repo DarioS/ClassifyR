@@ -29,7 +29,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   validation <- match.arg(validation)
   permutePartition <- match.arg(permutePartition)
   if(!missing(seed)) set.seed(seed)
-  resultTypes <- c("ranked", "selected", "testSet", "predictions", "tune")
+  resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
   # Elements of list returned by runTest.
 
   stagesParamClasses <- sapply(params, class)
@@ -392,7 +392,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     # Might be NULL if selection is done within training.
     selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)    
     ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures, consideredFeatures,
-                   resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["predictions"]],
+                   resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["models"]], resultsByVariety[[variety]][["predictions"]],
                    classes, validationInfo, resultsByVariety[[variety]][["tune"]])
   })
 
