@@ -160,7 +160,7 @@
   rankedSelected
 }
 
-.doTransform <- function(measurements, transformParams, verbose)
+.doTransform <- function(measurements, training, transformParams, verbose)
 {
   initialClass <- class(measurements)
   if(class(measurements) != "list")
@@ -168,7 +168,7 @@
   
   transformed <- lapply(measurements, function(measurementsVariety)
   {
-    paramList <- list(measurementsVariety)
+    paramList <- list(measurementsVariety, training = training) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
     if(length(transformParams@otherParams) > 0)
       paramList <- c(paramList, transformParams@otherParams)
     paramList <- c(paramList, verbose = verbose)

@@ -37,7 +37,7 @@ setMethod("subtractFromLocation", "DataFrame", # Clinical data or one of the oth
             location <- match.arg(location)
             measurementsTrain <- measurements[training, isNumeric]
             if(location == "mean")
-              locations <- apply(measurementsTrain, 2, na.rm = TRUE)
+              locations <- apply(measurementsTrain, 2, mean, na.rm = TRUE)
             else # median.
               locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
             transformed <- measurements

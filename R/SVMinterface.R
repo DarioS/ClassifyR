@@ -20,7 +20,7 @@ setMethod("SVMtrainInterface", "DataFrame", function(measurements, classes, ...,
   if(verbose == 3)
     message("Fitting SVM classifier to data.")
 
-  e1071::svm(measurements, classes, ...)
+  e1071::svm(measurements, classes, probability = TRUE, ...)
 })
 
 setMethod("SVMtrainInterface", "MultiAssayExperiment",
@@ -45,8 +45,9 @@ setMethod("SVMpredictInterface", c("svm", "matrix"),
   SVMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
 {
+  returnType <- match.arg(returnType)
   if(!is.null(classes))
   {
     splitDataset <- .splitDataAndClasses(test, classes) # Remove classes, if present.
@@ -60,7 +61,12 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
   if(verbose == 3)
     message("Predicting classes using trained SVM classifier.")
   
-  predict(model, test)
+  classPredictions <- predict(model, test, probability = TRUE)
+  classScores <- attr(classPredictions, "probabilities")[, model[["levels"]][2]] # For class 2.
+  attr(classPredictions, "probabilities") <- NULL
+  switch(returnType, class = classPredictions,
+         score = classScores,
+         both = data.frame(class = classPredictions, score = classScores))
 })
 
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),

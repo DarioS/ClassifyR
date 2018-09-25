@@ -93,7 +93,7 @@ function(measurements, classes,
                                   transformParams@otherParams <- c(transformParams@otherParams, intermediates)                                 
                                }
 
-                               measurements <- tryCatch(.doTransform(measurements, transformParams, verbose), error = function(error) error[["message"]])
+                               measurements <- tryCatch(.doTransform(measurements, training, transformParams, verbose), error = function(error) error[["message"]])
                                if(is.character(measurements)) return(measurements) # An error occurred.
                                newSize <- if(class(measurements) == "list") length(measurements) else 1
                              },

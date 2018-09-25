@@ -19,7 +19,7 @@
   \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
-  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, verbose = 3)
+  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
   \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -33,6 +33,10 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}. Sets the return value
+                    from the prediction to either a vector of class labels, score for a sample belonging
+                    to the second class, as determined by the factor levels, or both labels and scores
+                    in a \code{data.frame}.}                 
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
               \code{measurements} and the same number of features as it.  Also, if a \code{DataFrame},
               the \code{class} column must be absent.}                 
@@ -53,8 +57,9 @@
 }
 \value{
   For \code{SVMtrainInterface}, a trained SVM classifier of type \code{svm}.
-  For \code{SVMpredictInterface}, a result of type \code{factor}, as created by \code{e1071}'s
-  \code{predict} method for trained SVM models.
+  For \code{SVMpredictInterface}, either a factor vector of predicted classes, a vector of secores for the
+  second class, or a table of both the class labels and second class scores, depending on the setting
+  of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{

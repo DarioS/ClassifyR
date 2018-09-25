@@ -9,7 +9,8 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
     stop("'featureSets' is not of type FeatureSetCollection but must be.")
 
   assayedFeatures <- rownames(measurements)
-  keepSets <- sapply(featureSets@sets, function(featureSet)
+  featureSets <- featureSets@sets
+  keepSets <- sapply(featureSets, function(featureSet)
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
@@ -19,11 +20,11 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   {
     if(verbose == 3)
       message("Based on ", paste(minimumOverlapPercent, "% overlap rule, reducing ", sep = ''), length(featureSets), " feature sets to ", sum(keepSets), " feature sets.")
-    featureSets <- featureSets@sets[keepSets]
+    featureSets <- featureSets[keepSets]
   }
   
   # Reduce set representations to only those features which were assayed.
-  featureSets <- lapply(featureSets@sets, function(featureSet) intersect(featureSet, assayedFeatures))
+  featureSets <- lapply(featureSets, function(featureSet) intersect(featureSet, assayedFeatures))
   
   location <- match.arg(location)
   if(location == "mean")
@@ -53,7 +54,8 @@ setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
     stop("'featureSets' is not of type FeatureSetCollection but must be.")
 
   assayedFeatures <- colnames(measurements)
-  keepSets <- sapply(featureSets@sets, function(featureSet)
+  featureSets <- featureSets@sets
+  keepSets <- sapply(featureSets, function(featureSet)
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
@@ -63,7 +65,7 @@ setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
   {
     if(verbose == 3)
       message("Based on", paste(minimumOverlapPercent, "% overlap rule, reducing", sep = ''), length(featureSets), "feature sets to", sum(keepSets), "feature sets.")
-    featureSets <- featureSets@sets[keepSets]
+    featureSets <- featureSets[keepSets]
   }
   
   # Reduce set representations to only those features which were assayed.
@@ -99,7 +101,8 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
 
   datasetUsed <- measurements[[target]]                                   
   assayedFeatures <- rownames(datasetUsed)
-  keepSets <- sapply(featureSets@sets, function(featureSet)
+  featureSets <- featureSets@sets
+  keepSets <- sapply(featureSets, function(featureSet)
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
   if(all(keepSets == FALSE))
     stop("No feature sets had an overlap of at least ", minimumOverlapPercent,
@@ -109,7 +112,7 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
   {
     if(verbose == 3)
       message("Based on", paste(minimumOverlapPercent, "% overlap rule, reducing", sep = ''), length(featureSets), "feature sets to", sum(keepSets), "feature sets.")
-    featureSets <- featureSets@sets[keepSets]
+    featureSets <- featureSets[keepSets]
   }
   
   # Reduce set representations to only those features which were assayed.
