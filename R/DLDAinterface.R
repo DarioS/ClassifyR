@@ -45,10 +45,11 @@ setMethod("DLDApredictInterface", c("dlda", "matrix"),
   DLDApredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, verbose = 3)
+setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, returnType = c("class", "score", "both"), verbose = 3)
 {
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]
+  returnType <- match.arg(returnType)
   
   #if(!requireNamespace("sparsediscrim", quietly = TRUE))
     #stop("The package 'sparsediscrim' could not be found. Please install it.")
@@ -56,7 +57,11 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, 
     message("Predicting classes using trained DLDA classifier.")
   
   #predict(model, as.matrix(test))
-  .predict(model, as.matrix(test))
+  predictions <- .predict(model, as.matrix(test))
+  
+  switch(returnType, class = predictions[["class"]],
+         score = predictions[["posterior"]][, model[["groups"]][2]],
+         both = data.frame(class = predictions[["class"]], score = predictions[["posterior"]][, model[["groups"]][2]]))
 })
 
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),

@@ -97,6 +97,6 @@
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),
                            PredictParams(DLDApredictInterface,
-                                         getClasses = function(result) result[["class"]])))
+                                         getClasses = function(result) result)))
   #}
 }

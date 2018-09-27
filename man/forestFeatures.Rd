@@ -24,13 +24,11 @@ forest.
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-    selected <- rownames(genesMatrix)[91:100]
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     
-    classified <- randomForestInterface(genesMatrix[, trainingSamples],
-                                        classes[trainingSamples],
-                                        genesMatrix[, testingSamples], ntree = 10)
+    trained <- randomForestTrainInterface(genesMatrix[, trainingSamples],
+                                          classes[trainingSamples], ntree = 10)
                                         
-    forestFeatures(classified)
+    forestFeatures(trained)
 }

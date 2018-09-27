@@ -80,7 +80,7 @@
                                        resubstituteParams = resubstituteParams),
                           TrainParams(DLDAtrainInterface),
                           PredictParams(DLDApredictInterface,
-                                        getClasses = function(result) result[["class"]])),
+                                        getClasses = function(result) result)),
             training = (1:ncol(measurements)) \%\% 2 == 0,
             testing = (1:ncol(measurements)) \%\% 2 != 0)
   #}

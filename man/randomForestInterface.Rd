@@ -1,8 +1,13 @@
 \name{randomForestInterface}
 \alias{randomForestInterface}
-\alias{randomForestInterface,matrix-method}
-\alias{randomForestInterface,DataFrame-method}
-\alias{randomForestInterface,MultiAssayExperiment-method}
+\alias{randomForestTrainInterface}
+\alias{randomForestTrainInterface,matrix-method}
+\alias{randomForestTrainInterface,DataFrame-method}
+\alias{randomForestTrainInterface,MultiAssayExperiment-method}
+\alias{randomForestPredictInterface}
+\alias{randomForestPredictInterface,randomForest,matrix-method}
+\alias{randomForestPredictInterface,randomForest,DataFrame-method}
+\alias{randomForestPredictInterface,randomForest,MultiAssayExperiment-method}
 \title{
   An Interface for randomForest Package's randomForest Function
 }
@@ -11,9 +16,13 @@
   to determine a single prediction for each test sample.
 }
 \usage{
-  \S4method{randomForestInterface}{matrix}(measurements, classes, test, ...)
-  \S4method{randomForestInterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
-  \S4method{randomForestInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), test, ...)
+  \S4method{randomForestTrainInterface}{matrix}(measurements, classes, ...)
+  \S4method{randomForestTrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
+  \S4method{randomForestTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{randomForestPredictInterface}{randomForest,matrix}(forest, test, ...)
+  \S4method{randomForestPredictInterface}{randomForest,DataFrame}(forest, test, ...,
+                                          returnType = c("class", "score", "both"), verbose = 3)
+  \S4method{randomForestPredictInterface}{randomForest,MultiAssayExperiment}(forest, test, targets = names(test), ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -24,6 +33,9 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{forest}{A trained random forest classifier, as created by
+                \code{randomForestTrainInterface}, which has the same form as the
+                output of \code{\link[randomForest]{randomForest}}.}
   \item{test}{An object of the same class as \code{measurements} with no samples in common with
               \code{measurements} and the same number of features as it.}                 
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
@@ -31,7 +43,12 @@
                  integer variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or
-             options which are accepted by the \code{\link[randomForest]{randomForest}} function.}
+             options which are accepted by the \code{\link[randomForest]{randomForest}} or
+             \code{\link[randomForest]{predict.randomForest}} functions.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the
+                    factor levels, or both labels and scores in a \code{data.frame}.}             
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}             
 }
@@ -41,8 +58,10 @@
   column name \code{"class"}.
 }
 \value{
-  An object of type \code{randomForest}. The predictions of the test set samples are stored in
-  the list element named \code{"predicted"} of the \code{"test"} element.
+  A list of length two. The first element contains the trained random forest. The second
+  contains either a factor vector of predicted classes, a vector of secores for
+  the second class, or a table of both the class labels and second class scores,
+  depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{
@@ -53,15 +72,13 @@
     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
                                       c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
-    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-    selected <- rownames(genesMatrix)[91:100]
+    colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix), sep = '')
+    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix), sep = '')
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     
-    classified <- randomForestInterface(genesMatrix[, trainingSamples],
-                                        classes[trainingSamples],
-                                        genesMatrix[, testingSamples], ntree = 10)
-    classified[["test"]][["predicted"]]
+    trained <- randomForestTrainInterface(genesMatrix[, trainingSamples],
+                                          classes[trainingSamples])
+    predicted <- randomForestPredictInterface(trained, genesMatrix[, testingSamples])
   }
 }

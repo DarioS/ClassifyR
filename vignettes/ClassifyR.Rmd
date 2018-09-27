@@ -287,8 +287,8 @@ params = list(trainParams, selectParams, predictParams)
 - A random forest classifer. Typically, feature selection is not done for random forests because they can find some interesting relationships between variables that feature selection methods may overlook. The features used by the trees can be added to the *ClassifyResult* object after the training has been done using the *forestFeatures* convenience method. The number of trees is changed from the default of 500 to 100.
 
 ```{r}
-trainParams <- TrainParams(randomForestInterface, ntree = 100, getFeatures = forestFeatures)
-predictParams <- PredictParams(NULL, getClasses = function(result) result[["test"]][["predicted"]])
+trainParams <- TrainParams(randomForestTrainInterface, ntree = 100, getFeatures = forestFeatures)
+predictParams <- PredictParams(randomForestPredictInterface, getClasses = function(result) result)
 params = list(trainParams, predictParams)
 ```
 

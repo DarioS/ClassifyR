@@ -58,7 +58,7 @@ identifying outlier samples that are difficult to classify.
                                      TrainParams(DLDAtrainInterface),
                                      PredictParams(DLDApredictInterface,
                                                    getClasses = function(result)
-                                                                result[["class"]]))
+                                                                result))
                        )
     featureDistribution <- distribution(result, "features", summaryType = "count",
                                         plotType = "histogram",
