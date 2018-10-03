@@ -151,8 +151,8 @@ The *samplesMetricMap* function allows the visual comparison of sample-wise erro
 ```{r, tidy = FALSE}
 selectParams <- SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(predictor = NULL, getClasses = function(result) result,
-                               weighted = "weighted", weight = "height difference", returnType = "both")
+predictParams <- PredictParams(predictor = NULL, weighted = "weighted",
+                               weight = "height difference", returnType = "both")
 paramsList <- list(selectParams, trainParams, predictParams)
 DDresults <- runTests(measurements, classes, datasetName = "Asthma",
                       classificationName = "Differential Distribution",
@@ -220,7 +220,7 @@ selectParams <- SelectParams(tTestSelection, resubstituteParams = ResubstitutePa
 trainParams <- TrainParams(SVMtrainInterface, kernel = "linear",
                            tuneParams = list(cost = c(0.01, 0.1, 1, 10)),
                            tuneOptimise = c(metric = "balanced error", better = "lower"))
-predictParams <- PredictParams(SVMpredictInterface, getClasses = function(result) result)
+predictParams <- PredictParams(SVMpredictInterface)
 SVMresults <- runTests(measurements, classes, datasetName = "Asthma",
                        classificationName = "Tuned SVM", permutations = 20, folds = 5, seed = 2018,
                        params = list(selectParams, trainParams, predictParams)
@@ -249,7 +249,7 @@ These sets of parameters can simply be specified as the *params* parameter to *r
 ```{r}
 selectParams <- SelectParams(edgeRselection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(classifyInterface)
-predictParams <- PredictParams(NULL, getClasses = function(result) result[["ytehat"]])
+predictParams <- PredictParams(NULL)
 params = list(selectParams, trainParams, predictParams)
 ```
 
@@ -261,7 +261,7 @@ transformParams <- TransformParams(subtractFromLocation, intermediate = "trainin
 selectParams <- SelectParams(bartlettSelection,
                              resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(fisherDiscriminant)
-predictParams <- PredictParams(NULL, getClasses = function(result) result)
+predictParams <- PredictParams(NULL)
 params = list(transformParams, selectParams, trainParams, predictParams)
 ```
 
@@ -271,7 +271,7 @@ params = list(transformParams, selectParams, trainParams, predictParams)
 selectParams <- SelectParams(KullbackLeiblerSelection,
                              resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(NULL, getClasses = function(result) result)
+predictParams <- PredictParams(NULL)
 params = list(selectParams, trainParams, predictParams)
 ```
 
@@ -280,7 +280,7 @@ params = list(selectParams, trainParams, predictParams)
 ```{r}
 trainParams <- TrainParams(NSCtrainInterface)
 selectParams <- SelectParams(NSCselectionInterface, intermediate = "trained")
-predictParams <- PredictParams(NSCpredictInterface, getClasses = function(result) result)
+predictParams <- PredictParams(NSCpredictInterface)
 params = list(trainParams, selectParams, predictParams)
 ```
 
@@ -288,7 +288,7 @@ params = list(trainParams, selectParams, predictParams)
 
 ```{r}
 trainParams <- TrainParams(randomForestTrainInterface, ntree = 100, getFeatures = forestFeatures)
-predictParams <- PredictParams(randomForestPredictInterface, getClasses = function(result) result)
+predictParams <- PredictParams(randomForestPredictInterface)
 params = list(trainParams, predictParams)
 ```
 
@@ -297,7 +297,7 @@ params = list(trainParams, predictParams)
 ```{r}
 selectParams <- SelectParams(tTestSelection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(SVMtrainInterface, kernel = "linear")
-predictParams <- PredictParams(SVMpredictInterface, getClasses = function(result) result)
+predictParams <- PredictParams(SVMpredictInterface)
 params = list(selectParams, trainParams, predictParams)
 ```
 
@@ -308,7 +308,7 @@ resubstituteParams <- ResubstituteParams(nFeatures = 1:10, # The top 1 to 10 sub
                       performanceType = "balanced error", better = "lower")
 selectParams <- SelectParams(networkCorrelationsSelection, resubstituteParams = resubstituteParams)
 trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(NULL, getClasses = function(result) result)
+predictParams <- PredictParams(NULL)
 params <- list(selectParams, trainParams, predictParams)
 metaFeatures <- interactorDiffsTable # Creation by interactorDifferences function is suggested.
 featureSets <- networkSets # An object of class FeatureSetCollection.

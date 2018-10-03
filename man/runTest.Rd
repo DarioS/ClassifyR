@@ -79,8 +79,8 @@
             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                        resubstituteParams = resubstituteParams),
                           TrainParams(DLDAtrainInterface),
-                          PredictParams(DLDApredictInterface,
-                                        getClasses = function(result) result)),
+                          PredictParams(DLDApredictInterface)
+                          ),
             training = (1:ncol(measurements)) \%\% 2 == 0,
             testing = (1:ncol(measurements)) \%\% 2 != 0)
   #}

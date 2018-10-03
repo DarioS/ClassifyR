@@ -81,7 +81,6 @@
                                            better = "lower")
   bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
                     trainParams = TrainParams(fisherDiscriminant),
-                    predictParams = PredictParams(NULL,
-                                        getClasses = function(result) result),
+                    predictParams = PredictParams(NULL),
                     resubstituteParams = resubstituteParams)
 }

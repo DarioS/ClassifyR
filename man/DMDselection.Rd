@@ -72,6 +72,6 @@
                                            better = "lower")
   DMDselection(genesMatrix, classes, datasetName = "Example",
                trainParams = TrainParams(naiveBayesKernel),
-               predictParams = PredictParams(NULL, getClasses = function(result) result),
+               predictParams = PredictParams(NULL),
                resubstituteParams = resubstituteParams)
 }

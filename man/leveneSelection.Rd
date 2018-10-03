@@ -74,8 +74,7 @@
                                            better = "lower")
   selected <- leveneSelection(genesMatrix, classes, "Example",
                               trainParams = TrainParams(fisherDiscriminant),
-                              predictParams = PredictParams(NULL,
-                                              getClasses = function(result) result),
+                              predictParams = PredictParams(NULL),
                               resubstituteParams = resubstituteParams)
   selected@chosenFeatures                            
 }

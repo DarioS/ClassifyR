@@ -50,12 +50,14 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "matrix"),
 })
 
 # Clinical data only.
-setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, classes = NULL, verbose = 3)
+setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
 {
   if(!requireNamespace("mlogit", quietly = TRUE))
     stop("The package 'mlogit' could not be found. Please install it.")
   if(!requireNamespace("mnlogit", quietly = TRUE))
     stop("The package 'mnlogit' could not be found. Please install it.")
+  returnType <- match.arg(returnType)
+  
   if(verbose == 3)
     message("Predicting classes using trained logistic regression classifier.")
   
@@ -70,7 +72,11 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
   test[, "placeholder"] <- model[["choices"]][1] # A hack.
   reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = "placeholder", shape = "wide")
   
-  unname(predict(model, reshaped, probability = FALSE))
+  classPredictions <- unname(predict(model, reshaped, probability = FALSE))
+  classScores <- unname(predict(model, reshaped, probability = TRUE))[, 2] # For class 2.
+  switch(returnType, class = classPredictions,
+         score = classScores,
+         both = data.frame(class = classPredictions, score = classScores))
 })
 
 # One or more omics data sets, possibly with clinical data.

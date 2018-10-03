@@ -21,7 +21,7 @@
   \S4method{logisticRegressionTrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{logisticRegressionTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{logisticRegressionPredictInterface}{mnlogit,matrix}(model, test, ...)
-  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, classes = NULL, verbose = 3)
+  \S4method{logisticRegressionPredictInterface}{mnlogit,DataFrame}(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
   \S4method{logisticRegressionPredictInterface}{mnlogit,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -43,6 +43,10 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or optional settings that are passed
              to \code{\link{mnlogit}}.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the
+                    factor levels, or both labels and scores in a \code{data.frame}.}               
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }
@@ -57,8 +61,9 @@
 }
 \value{
   For \code{logisticRegressionTrainInterface}, a fitted multinomial logistic regression model.
-  For \code{logisticRegressionPredictInterface}, a \code{factor} vector with class predictions for
-  the samples in the test set.
+  For \code{logisticRegressionPredictInterface}, either a factor vector of predicted classes,
+  a vector of secores for the second class, or a table of both the class labels and second class scores,
+  depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{

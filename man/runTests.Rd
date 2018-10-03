@@ -96,7 +96,8 @@
              params = list(SelectParams(tTestSelection, "t Statistic",
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),
-                           PredictParams(DLDApredictInterface,
-                                         getClasses = function(result) result)))
+                           PredictParams(DLDApredictInterface)
+                           )
+             )
   #}
 }

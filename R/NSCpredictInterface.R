@@ -6,10 +6,11 @@ setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(trained, t
   NSCpredictInterface(trained, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, classes = NULL, ..., verbose = 3)
+setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, classes = NULL, ..., returnType = c("class", "score", "both"), verbose = 3)
 {
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")
+  returnType <- match.arg(returnType)
   
   if(!is.null(classes)) # Remove them.
   {
@@ -21,11 +22,15 @@ setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained
   threshold <- trained[["threshold"]][max(which(trained[["errors"]] == minError))]
   
   test <- t(as.matrix(test))   
-  predictions <- pamr::pamr.predict(trained, test, threshold, ...)
+  classPredictions <- pamr::pamr.predict(trained, test, threshold, ...)
+  classScores <- pamr::pamr.predict(trained, test, threshold, type = "posterior", ...)[, levels(trained[["y"]])[2]] # For class 2.
   
   if(verbose == 3)
     message("Nearest shrunken centroid predictions made.")
-  predictions
+  
+  switch(returnType, class = classPredictions,
+         score = classScores,
+         both = data.frame(class = classPredictions, score = classScores))
 })
 
 setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(trained, test, targets = names(test), ...)

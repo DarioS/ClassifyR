@@ -8,7 +8,7 @@
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
   \S4method{NSCpredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ..., verbose = 3)  
+  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ..., returnType = c("class", "score", "both"), verbose = 3)  
   \S4method{NSCpredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
@@ -22,7 +22,11 @@
                  numeric variables from the clinical data table will be used.}   
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or optional settings that are
-            passed to \code{\link[pamr]{pamr.predict}}.} 
+            passed to \code{\link[pamr]{pamr.predict}}.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the
+                    factor levels, or both labels and scores in a \code{data.frame}.}             
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -31,7 +35,9 @@
   It selects the highest threshold that gives the minimum error rate in the training data.
 }
 \value{
-  A factor of predicted classes for the test data.
+  Either a factor vector of predicted classes, a vector of secores for
+  the second class, or a table of both the class labels and second class scores,
+  depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \seealso{\code{\link[pamr]{pamr.predict}} for the function that was interfaced to.}

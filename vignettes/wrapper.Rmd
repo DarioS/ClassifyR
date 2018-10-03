@@ -94,7 +94,7 @@ rownames(measurements) <- paste("mRNA", 1:10)
 
 library(ClassifyR)
 trainParams <- TrainParams(kNNinterface)
-predictParams <- PredictParams(NULL, getClasses = function(result) result)
+predictParams <- PredictParams(NULL)
 classified <- runTests(measurements, classes, datasetName = "Example",
                        classificationName = "kNN", validation = "leaveOut", leave = 1,
                        params = list(trainParams, predictParams))

@@ -54,13 +54,15 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
 })
 
 # Clinical data only.
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., verbose = 3)
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., returnType = c("class", "score", "both"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(classes))
   {
     splitDataset <- .splitDataAndClasses(test, classes)  # Remove any classes, if present.
     test <- splitDataset[["measurements"]]
   }
+  
+  returnType <- match.arg(returnType)
   
   if(!requireNamespace("mnlogit", quietly = TRUE))
     stop("The package 'mnlogit' could not be found. Please install it.")
@@ -69,7 +71,16 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
 
   if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
-  factor(predict(model, as.matrix(test), s = lambda, type = "class"))
+
+  classPredictions <- factor(as.character(predict(model, as.matrix(test), s = lambda, type = "class")), levels = model[["classnames"]])
+  classScores <- predict(model, as.matrix(test), s = lambda, type = "response")[, , 1]
+  if(class(classScores) == "matrix")
+    classScores <- classScores[, model[["classnames"]][2]]
+  else # Leave-one-out cross-validation likely used.
+    classScores <- classScores[model[["classnames"]][2]]
+  switch(returnType, class = classPredictions,
+         score = classScores,
+         both = data.frame(class = classPredictions, score = classScores))
 })
 
 # One or more omics data sets, possibly with clinical data.

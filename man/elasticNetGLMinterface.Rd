@@ -21,7 +21,7 @@
                              ..., verbose = 3)
   \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, test, ...)
-  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., verbose = 3)
+  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., returnType = c("class", "score", "both"), verbose = 3)
   \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test, targets = names(test), ...)                                   
 }
 \arguments{
@@ -49,6 +49,10 @@
              function, this variable simply contains any parameters passed from the classification
              framework to it which aren't used by glmnet's \code{predict} fuction.}
   \item{model}{A trained elastic net GLM, as created by the \code{glmnet} function.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the
+                    factor levels, or both labels and scores in a \code{data.frame}.}  
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}             
 }
@@ -66,7 +70,10 @@
   fitted model.
 }
 \value{
-  For \code{elasticNetGLMtrainInterface}, an object of type \code{glmnet}. For \code{elasticNetGLMpredictInterface}, a factor vector of class predictions.
+  For \code{elasticNetGLMtrainInterface}, an object of type \code{glmnet}. For \code{elasticNetGLMpredictInterface},
+  either a factor vector of predicted classes, a vector of secores for the second class,
+  or a table of both the class labels and second class scores, depending on the setting of
+  \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{
@@ -89,8 +96,7 @@
     trainParams <- TrainParams(elasticNetGLMtrainInterface,
                                tuneParams = list(alpha = c(0, 0.5, 1)),
                                tuneOptimise = c("balanced error", "lower"))
-    predictParams <- PredictParams(elasticNetGLMpredictInterface,
-                                   getClasses = function(result) result)                           
+    predictParams <- PredictParams(elasticNetGLMpredictInterface)                           
     classified <- runTests(genesMatrix, classes, datasetName = "Example",
                            classificationName = "Differential Expression",
                            validation = "leaveOut", leave = 1,

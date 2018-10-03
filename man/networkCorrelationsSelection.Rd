@@ -112,7 +112,7 @@
   resubstituteParams <- ResubstituteParams(nFeatures = 1:2,
                                 performanceType = "balanced error", better = "lower")
   
-  predictParams <- PredictParams(NULL, getClasses = function(result) result)
+  predictParams <- PredictParams(NULL)
   networkCorrelationsSelection(measurements, classes, metaFeatures = Idifferences,
                                featureSets = netSets, datasetName = "Example",
                                trainParams = TrainParams(naiveBayesKernel),

@@ -10,6 +10,6 @@
 
 \author{Dario Strbenac}
 \examples{
-  PredictParams(NULL, getClasses = function(result) result)
-  PredictParams(predict, getClasses = function(result) result[["classes"]])
+  PredictParams(NULL)
+  PredictParams(predict)
 }

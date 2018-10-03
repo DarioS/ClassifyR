@@ -73,8 +73,7 @@
                                            better = "lower")
   KullbackLeiblerSelection(genesMatrix, classes, "Example",
                            trainParams = TrainParams(naiveBayesKernel),
-                           predictParams = PredictParams(NULL,
-                                           getClasses = function(result) result),
+                           predictParams = PredictParams(NULL),
                            resubstituteParams = resubstituteParams
                           )
 }

@@ -58,8 +58,8 @@
   column name \code{"class"}.
 }
 \value{
-  A list of length two. The first element contains the trained random forest. The second
-  contains either a factor vector of predicted classes, a vector of secores for
+  For \code{randomForestTrainInterface}, the trained random forest. For \code{randomForestPredictInterface},
+  either a factor vector of predicted classes, a vector of secores for
   the second class, or a table of both the class labels and second class scores,
   depending on the setting of \code{returnType}.
 }

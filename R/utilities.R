@@ -257,11 +257,11 @@
               paramList <- c(paramList, predictParams@otherParams)
             paramList <- c(paramList, verbose = verbose)
             predicted <- do.call(predictParams@predictor, paramList)
+            
             if(class(predicted) != "list" || sum(grepl('=', names(predicted))) == 0)
-              predicted <- list(predictParams@getClasses(predicted))
-            else
-              predicted <- lapply(predicted, predictParams@getClasses)
-            if(class(predicted[[1]]) == "data.frame") # Predictor returned both scores and classes Just use classes.
+              predicted <- list(predicted)
+            
+            if(class(predicted[[1]]) == "data.frame") # Predictor returned both scores and classes; just use classes.
               predicted <- lapply(predicted, function(variety) variety[, sapply(variety, class) == "factor"])
             if(is.numeric(class(predicted[[1]]))) # Can't automatically decide on a threshold. Stop processing.
                stop("Only numeric predictions are available. Predicted classes must be provided.")
@@ -362,9 +362,9 @@
           paramList <- c(paramList, tuneParams)
           trained <- do.call(trainParams@classifier, paramList)
           if(class(trained) != "list" || sum(grepl('=', names(trained))) == 0)
-            predictedClasses <- list(predictParams@getClasses(trained))
+            predictedClasses <- list(trained)
           else
-            predictedClasses <- lapply(trained, predictParams@getClasses)
+            predictedClasses <- trained
           if(class(trained[[1]]) == "data.frame") # Predictor returned both scores and classes. Just use classes.
             predictedFactor <- lapply(trained, function(variety) variety[, sapply(variety, class) == "factor"])
           else if(class(trained[[1]]) == "factor")
@@ -452,14 +452,9 @@
       prediction <- model
     }
     
-    if(class(prediction) != "list" || sum(grepl('=', names(prediction))) == 0)
-      predictions <- predictParams@getClasses(prediction)
-    else
-      predictions <- lapply(prediction, predictParams@getClasses)
-    
     if(verbose >= 2)
       message("Prediction completed.")    
-    predictions
+    prediction
   }, trained, measurements, names(measurements), SIMPLIFY = FALSE)
 
   if(initialClass != "list") predicted <- predicted[[1]]
@@ -498,12 +493,10 @@
     {
         predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
                                predictParams, verbose)
-    } else { # Same function does training and testing.
-      if(class(trained) != "list" || sum(grepl('=', names(trained))) == 0)
-        predictions <- predictParams@getClasses(trained)
-      else
-        predictions <- lapply(trained, function(trainedModel) predictParams@getClasses(trainedModel))
+    } else {
+      predictions <- trained
     }
+    
     if(class(predictions) == "list") # Mutiple varieties of predictions.
     {
       if(class(predictions[[1]]) == "data.frame")

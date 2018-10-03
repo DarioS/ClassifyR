@@ -214,7 +214,6 @@ setMethod("TrainParams", c("function"),
 setClass("PredictParams", representation(
   predictor = "functionOrNULL",
   intermediate = "character",
-  getClasses = "function",
   otherParams = "list")
 )
 
@@ -222,19 +221,16 @@ setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
 setMethod("PredictParams", character(0), function()
 {
-  new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0),
-      getClasses = function(result){result})
+  new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0))
 })
 setMethod("PredictParams", c("functionOrNULL"),
-          function(predictor, intermediate = character(0), getClasses, ...)
+          function(predictor, intermediate = character(0), ...)
           {
             if(missing(predictor))
               stop("Either a function or NULL must be specified by 'predictor'.")
-            if(missing(getClasses))
-              stop("A function must be specified by 'getClasses'.")
             
             new("PredictParams", predictor = predictor, intermediate = intermediate,
-                getClasses = getClasses, otherParams = list(...))
+                otherParams = list(...))
           })
 
 setGeneric("SelectResult", function(dataset, selection, totalFeatures, rankedFeatures, chosenFeatures, ...)

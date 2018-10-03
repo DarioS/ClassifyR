@@ -75,10 +75,9 @@
     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small data set.
     
-    getClasses <- function(result) result[["ytehat"]]
     selected <- edgeRselection(expression, classes, "DPN Treatment",
                    trainParams = TrainParams(classifyInterface),
-                   predictParams = PredictParams(NULL, getClasses = getClasses),
+                   predictParams = PredictParams(NULL),
                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
                                         performanceType = "balanced error", better = "lower"))
                                         

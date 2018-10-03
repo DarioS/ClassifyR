@@ -10,7 +10,7 @@ setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
 })
 
 # Clinical data or one of the other inputs, transformed.
-setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
+setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ..., returnType = c("class", "score", "both"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]
@@ -20,14 +20,21 @@ setMethod("classifyInterface", "DataFrame", function(measurements, classes, test
   testingMatrix <- as.matrix(test[, isInteger, drop = FALSE])
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
+  returnType <- match.arg(returnType)
+  
   if(!requireNamespace("PoiClaClu", quietly = TRUE))
     stop("The package 'PoiClaClu' could not be found. Please install it.")
   
   if(verbose == 3)
     message("Fitting Poisson LDA classifier to training data and making predictions on test
             data.")
-  
-  PoiClaClu::Classify(trainingMatrix, classes, testingMatrix, ...)
+
+  predicted <- PoiClaClu::Classify(trainingMatrix, classes, testingMatrix, ...)
+  classPredictions <- predicted[["ytehat"]]
+  classScores <- predicted[["discriminant"]][, 2] # For class 2.
+  switch(returnType, class = classPredictions,
+         score = classScores,
+         both = data.frame(class = classPredictions, score = classScores))
 })
 
 setMethod("classifyInterface", "MultiAssayExperiment",

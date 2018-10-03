@@ -11,7 +11,7 @@
 }
 \usage{
   \S4method{classifyInterface}{matrix}(measurements, classes, test, ...)
-  \S4method{classifyInterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
+  \S4method{classifyInterface}{DataFrame}(measurements, classes, test, ..., returnType = c("class", "score", "both"), verbose = 3)
   \S4method{classifyInterface}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
@@ -33,6 +33,10 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or parameters that
              \code{\link[PoiClaClu]{Classify}} can accept.}
+  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+                    Sets the return value from the prediction to either a vector of class labels,
+                    score for a sample belonging to the second class, as determined by the
+                    factor levels, or both labels and scores in a \code{data.frame}.}             
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}    
 }
@@ -42,7 +46,9 @@
   in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
-  A result list, the same as is returned by \code{\link[PoiClaClu]{Classify}}.
+  Either a factor vector of predicted classes, a vector of secores for
+  the second class, or a table of both the class labels and second class scores,
+  depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{
@@ -56,7 +62,6 @@
     storage.mode(trainData) <- storage.mode(testData) <- "integer"
     classified <- classifyInterface(trainData, classes, testData)
     
-    setNames(table(readCounts[["yte"]] == classified[["ytehat"]]),
-             c("Incorrect", "Correct"))
+    setNames(table(readCounts[["yte"]] == classified), c("Incorrect", "Correct"))
   }
 }

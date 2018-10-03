@@ -56,10 +56,9 @@ identifying outlier samples that are difficult to classify.
                        params = list(SelectParams(limmaSelection, "Moderated t Statistic",
                                                   resubstituteParams = resubstituteParams),
                                      TrainParams(DLDAtrainInterface),
-                                     PredictParams(DLDApredictInterface,
-                                                   getClasses = function(result)
-                                                                result))
-                       )
+                                     PredictParams(DLDApredictInterface)
+                                    )
+                      )
     featureDistribution <- distribution(result, "features", summaryType = "count",
                                         plotType = "histogram",
                                         xLabel = "Number of Cross-validations", yLabel = "Count",
