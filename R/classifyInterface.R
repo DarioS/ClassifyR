@@ -31,10 +31,11 @@ setMethod("classifyInterface", "DataFrame", function(measurements, classes, test
 
   predicted <- PoiClaClu::Classify(trainingMatrix, classes, testingMatrix, ...)
   classPredictions <- predicted[["ytehat"]]
-  classScores <- predicted[["discriminant"]][, 2] # For class 2.
-  switch(returnType, class = classPredictions,
-         score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+  classScores <- predicted[["discriminant"]]
+  colnames(classScores) <- levels(classes)
+  switch(returnType, class = classPredictions, # Factor vector.
+         score = classScores, # Numeric matrix.
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
 setMethod("classifyInterface", "MultiAssayExperiment",

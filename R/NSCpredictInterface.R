@@ -20,17 +20,19 @@ setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained
  
   minError <- min(trained[["errors"]])
   threshold <- trained[["threshold"]][max(which(trained[["errors"]] == minError))]
-  
+
   test <- t(as.matrix(test))   
   classPredictions <- pamr::pamr.predict(trained, test, threshold, ...)
-  classScores <- pamr::pamr.predict(trained, test, threshold, type = "posterior", ...)[, levels(trained[["y"]])[2]] # For class 2.
+  classScores <- pamr::pamr.predict(trained, test, threshold, type = "posterior", ...)[, levels(trained[["y"]])]
+  if(class(classScores) != "matrix") # Only one sample was predicted and pamr isn't consistent with return types.
+    classScores <- t(classScores)
   
   if(verbose == 3)
     message("Nearest shrunken centroid predictions made.")
   
-  switch(returnType, class = classPredictions,
-         score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+  switch(returnType, class = classPredictions, # Factor vector.
+         score = classScores, # Numeric matrix.
+         both = data.frame(class = classPredictions, classScores))
 })
 
 setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(trained, test, targets = names(test), ...)

@@ -35,8 +35,7 @@
              \code{\link[PoiClaClu]{Classify}} can accept.}
   \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
-                    score for a sample belonging to the second class, as determined by the
-                    factor levels, or both labels and scores in a \code{data.frame}.}             
+                    matrix of scores for each class, or both labels and scores in a \code{data.frame}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}    
 }
@@ -46,9 +45,8 @@
   in the DataFrame accessible by the \code{colData} function with column name \code{"class"}.
 }
 \value{
-  Either a factor vector of predicted classes, a vector of secores for
-  the second class, or a table of both the class labels and second class scores,
-  depending on the setting of \code{returnType}.
+  Either a factor vector of predicted classes, a matrix of scores for each class, or a table of
+  both the class labels and class scores, depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{
@@ -57,11 +55,11 @@
     readCounts <- CountDataSet(n = 100, p = 1000, 2, 5, 0.1)
     # Rows are for features, columns are for samples.
     trainData <- t(readCounts[['x']])
-    classes <- readCounts[['y']]
+    classes <- factor(paste("Class", readCounts[['y']]))
     testData <- t(readCounts[['xte']])
     storage.mode(trainData) <- storage.mode(testData) <- "integer"
     classified <- classifyInterface(trainData, classes, testData)
     
-    setNames(table(readCounts[["yte"]] == classified), c("Incorrect", "Correct"))
+    setNames(table(paste("Class", readCounts[["yte"]]) == classified), c("Incorrect", "Correct"))
   }
 }

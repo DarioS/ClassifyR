@@ -79,8 +79,9 @@
   changes compared to the difference of the closest lower value of x are used as the crossover points.
 }
 \value{
-  A vector or list of class prediction information, as long as the number of samples in the test data,
-  or lists of such information, if a variety of predictions is generated.
+  A vector or list of class prediction information (i.e. classes and/or scores), as long as
+  the number of samples in the test data, or lists of such information, if both
+  weighted and unweighted voting was used or a range of \code{minDifference} values was provided.
 }
 \author{Dario Strbenac, John Ormerod}
 \examples{

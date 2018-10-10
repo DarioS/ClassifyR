@@ -59,9 +59,8 @@
 }
 \value{
   For \code{randomForestTrainInterface}, the trained random forest. For \code{randomForestPredictInterface},
-  either a factor vector of predicted classes, a vector of secores for
-  the second class, or a table of both the class labels and second class scores,
-  depending on the setting of \code{returnType}.
+  either a factor vector of predicted classes, a matrix of scores for each class, or a table of
+  both the class labels and class scores, depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{

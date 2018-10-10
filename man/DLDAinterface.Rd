@@ -45,8 +45,7 @@
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}).}
   \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
-                    score for a sample belonging to the second class, as determined by the
-                    factor levels, or both labels and scores in a \code{data.frame}.}             
+                    matrix of scores for each class, or both labels and scores in a \code{data.frame}.}   
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }
@@ -57,8 +56,9 @@
 }
 \value{
   For \code{DLDAtrainInterface}, a trained DLDA classifier.
-  For \code{DLDApredictInterface}, a result of type \code{list} with elements \code{class},
-  \code{scores} and \code{posterior}, as created by \code{sparsediscrim}'s \code{predict} method.
+  For \code{DLDApredictInterface}, either a factor vector of predicted classes, a matrix of
+  scores for each class, or a table of both the class labels and class scores, depending on
+  the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{

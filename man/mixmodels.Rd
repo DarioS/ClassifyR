@@ -85,9 +85,9 @@
 }
 \value{
   For \code{mixModelsTrain}, a list of trained models of class \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.
-  For \code{mixModelsPredict}, a vector or list of class prediction information, as long as the
-  number of samples in the test data, or lists of such information, if both weighted and unweighted voting
-  or a range of \code{minDifference} values was provided.
+  For \code{mixModelsPredict}, a vector or list of class prediction information (i.e. classes and/or scores),
+  as long as the number of samples in the test data, or lists of such information, if both
+  weighted and unweighted voting was used or a range of \code{minDifference} values was provided.
 }
 \author{Dario Strbenac}
 

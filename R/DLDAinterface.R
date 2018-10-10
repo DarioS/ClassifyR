@@ -59,9 +59,9 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, 
   #predict(model, as.matrix(test))
   predictions <- .predict(model, as.matrix(test))
   
-  switch(returnType, class = predictions[["class"]],
-         score = predictions[["posterior"]][, model[["groups"]][2]],
-         both = data.frame(class = predictions[["class"]], score = predictions[["posterior"]][, model[["groups"]][2]]))
+  switch(returnType, class = predictions[["class"]], # Factor vector.
+         score = predictions[["posterior"]][, model[["groups"]]], # Numeric matrix.
+         both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]]))
 })
 
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),

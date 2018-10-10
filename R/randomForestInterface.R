@@ -46,17 +46,15 @@ setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(
 setMethod("randomForestPredictInterface", c("randomForest", "DataFrame"),
 function(forest, test, ..., returnType = c("class", "score", "both"), verbose = 3)
 {
+  returnType <- match.arg(returnType)
   if(verbose == 3)
     message("Predicting using random forest.")  
-  
-  returnType <- match.arg(returnType)
-  predicted <- predict(forest, test)
-  
+  browser()
   classPredictions <- predict(forest, test)
-  classScores <- predict(forest, test, type = "vote")[, forest[["classes"]][2]] # For class 2.
+  classScores <- predict(forest, test, type = "vote")[, forest[["classes"]]]
   switch(returnType, class = classPredictions,
          score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+         both = data.frame(class = classPredictions, classScores))
 })
 
 # One or more omics data sets, possibly with clinical data.

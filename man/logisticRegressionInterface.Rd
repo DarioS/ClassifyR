@@ -61,9 +61,9 @@
 }
 \value{
   For \code{logisticRegressionTrainInterface}, a fitted multinomial logistic regression model.
-  For \code{logisticRegressionPredictInterface}, either a factor vector of predicted classes,
-  a vector of secores for the second class, or a table of both the class labels and second class scores,
-  depending on the setting of \code{returnType}.
+  For \code{logisticRegressionPredictInterface}, either a factor vector of predicted classes, a matrix of
+  scores for each class, or a table of both the class labels and class scores, depending on
+  the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \examples{

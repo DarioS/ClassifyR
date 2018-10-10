@@ -43,7 +43,7 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  DMD is defined as \eqn{|location_1 - location_2| + |scale_1 -  scale_2|}{|location1 - location2| + |scale1 -  scale2|}. The subscripts denote the group which the parameter is calculated for.
+  DMD is defined as \eqn{\sum_{i = 1}\sum_{j = i + 1}|location_i - location_j| + |scale_i -  scale_j|}{sum(|location i - location j|) + sum(|scale i -  scale j|), i not j, i < j}. The subscripts denote the class for which the parameter is calculated for.
   
   Data tables which consist entirely of non-numeric data cannot be analysed. If \code{measurements}
   is an object of class \code{MultiAssayExperiment}, the factor of sample classes must be stored

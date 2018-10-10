@@ -35,9 +35,8 @@
   It selects the highest threshold that gives the minimum error rate in the training data.
 }
 \value{
-  Either a factor vector of predicted classes, a vector of secores for
-  the second class, or a table of both the class labels and second class scores,
-  depending on the setting of \code{returnType}.
+  Either a factor vector of predicted classes, a matrix of scores for each class, or a table of
+  both the class labels and class scores, depending on the setting of \code{returnType}.
 }
 \author{Dario Strbenac}
 \seealso{\code{\link[pamr]{pamr.predict}} for the function that was interfaced to.}

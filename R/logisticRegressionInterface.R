@@ -73,10 +73,10 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
   reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = "placeholder", shape = "wide")
   
   classPredictions <- unname(predict(model, reshaped, probability = FALSE))
-  classScores <- unname(predict(model, reshaped, probability = TRUE))[, 2] # For class 2.
+  classScores <- unname(predict(model, reshaped, probability = TRUE))
   switch(returnType, class = classPredictions,
          score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+         both = data.frame(class = classPredictions, classScores))
 })
 
 # One or more omics data sets, possibly with clinical data.

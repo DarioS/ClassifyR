@@ -45,7 +45,9 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other
   }), levels = levels(classes))
   scores <- apply(test, 1, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
   
-  switch(returnType, class = classes, score = scores, both = data.frame(class = classes, score = scores))  
+  switch(returnType, class = classes,
+                     score = scores,
+                     both = data.frame(class = classes, score = scores))  
 })
 
 # One or more omics data sets, possibly with clinical data.

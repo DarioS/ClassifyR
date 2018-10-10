@@ -22,30 +22,24 @@ setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data or one of the
 
   if(verbose == 3)
     message("Selecting features by likelihood ratio ranking.")
-  
-  oneClass <- classes == levels(classes)[1]
-  otherClass <- classes == levels(classes)[2]
-  oneClassMeasurements <- measurements[oneClass, ]
-  otherClassMeasurements <- measurements[otherClass, ]
-  oneClassDistribution <- getLocationsAndScales(oneClassMeasurements, ...)
-  otherClassDistribution <- getLocationsAndScales(otherClassMeasurements, ...)
-  allDistribution <- getLocationsAndScales(measurements, ...)
 
-  logLikelihoodRatios <- -2 * (unlist(mapply(function(featureMeasurements, scale, location)
+  allDistribution <- getLocationsAndScales(measurements, ...)
+  logLikelihoodRatios <- unlist(mapply(function(featureMeasurements, scale, location)
   sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
   measurements, allDistribution[[1]], allDistribution[[2]])) -
-  unlist(mapply(function(featureMeasurements, scale, location)
-  sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
-  oneClassMeasurements,
-  switch(alternative[["location"]], same = allDistribution[[1]], different = oneClassDistribution[[1]]),
-  switch(alternative[["scale"]], same = allDistribution[[2]], different = oneClassDistribution[[2]]))) -
-  unlist(mapply(function(featureMeasurements, scale, location)
-  sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
-  otherClassMeasurements,
-  switch(alternative[["location"]], same = allDistribution[[1]], different = otherClassDistribution[[1]]),
-  switch(alternative[["scale"]], same = allDistribution[[2]], different = otherClassDistribution[[2]]))))
-  orderedFeatures <- order(logLikelihoodRatios, decreasing = TRUE)
+  rowSums(sapply(levels(classes), function(class)
+  {
+    classMeasurements <- measurements[which(classes == class), ]
+    classDistribution <- getLocationsAndScales(classMeasurements, ...)
+    
+    unlist(mapply(function(featureMeasurements, scale, location)
+    sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
+    classMeasurements,
+    switch(alternative[["location"]], same = allDistribution[[1]], different = classDistribution[[1]]),
+    switch(alternative[["scale"]], same = allDistribution[[2]], different = classDistribution[[2]])))    
+  }))
   
+  orderedFeatures <- order(logLikelihoodRatios)
   .pickFeatures(measurements, classes, NULL, datasetName,
                 trainParams, predictParams, resubstituteParams,
                 orderedFeatures, selectionName, verbose)

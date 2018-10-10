@@ -24,20 +24,21 @@ setMethod("DMDselection", "DataFrame", # Clinical data or one of the other input
     message("Selecting features by DMD.")
   differences <- match.arg(differences)
   
-  oneClassTraining <- which(classes == levels(classes)[1])
-  otherClassTraining <- which(classes == levels(classes)[2])
-  oneClassMeasurements <- measurements[oneClassTraining, ]
-  otherClassMeasurements <- measurements[otherClassTraining, ]
-  oneClassDistribution <- getLocationsAndScales(oneClassMeasurements, ...)
-  otherClassDistribution <- getLocationsAndScales(otherClassMeasurements, ...)
-  locationDifference <- abs(oneClassDistribution[[1]] - otherClassDistribution[[1]])
-  scaleDifference <- abs(oneClassDistribution[[2]] - otherClassDistribution[[2]])
+  allClassesLocationsScales <- lapply(levels(classes), function(class)
+  {
+    aClassMeasurements <- measurements[which(classes == class), ]
+    getLocationsAndScales(aClassMeasurements, ...)
+  })
+  allClassesLocations <- sapply(allClassesLocationsScales, "[[", 1)
+  allClassesScales <- sapply(allClassesLocationsScales, "[[", 2)
+  locationsDifferences <- apply(allClassesLocations, 1, function(locations) sum(abs(c(dist(locations)))))
+  scalesDifferences <- apply(allClassesScales, 1, function(scales) sum(abs(c(dist(scales)))))
   
   divergence <- 0
   if(differences %in% c("both", "location"))
-    divergence <- divergence + locationDifference
+    divergence <- divergence + locationsDifferences
   if(differences %in% c("both", "scale"))
-    divergence <- divergence + scaleDifference
+    divergence <- divergence + scalesDifferences
 
   orderedFeatures <- order(divergence, decreasing = TRUE)
   .pickFeatures(measurements, classes, NULL, datasetName, trainParams, predictParams,

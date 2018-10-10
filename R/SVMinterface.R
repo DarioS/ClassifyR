@@ -62,11 +62,11 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
     message("Predicting classes using trained SVM classifier.")
   
   classPredictions <- predict(model, test, probability = TRUE)
-  classScores <- attr(classPredictions, "probabilities")[, model[["levels"]][2]] # For class 2.
+  classScores <- attr(classPredictions, "probabilities")[, model[["levels"]], drop = FALSE]
   attr(classPredictions, "probabilities") <- NULL
   switch(returnType, class = classPredictions,
          score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+         both = data.frame(class = classPredictions, classScores))
 })
 
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),

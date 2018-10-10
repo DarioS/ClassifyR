@@ -74,13 +74,15 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
 
   classPredictions <- factor(as.character(predict(model, as.matrix(test), s = lambda, type = "class")), levels = model[["classnames"]])
   classScores <- predict(model, as.matrix(test), s = lambda, type = "response")[, , 1]
+  
   if(class(classScores) == "matrix")
-    classScores <- classScores[, model[["classnames"]][2]]
-  else # Leave-one-out cross-validation likely used.
-    classScores <- classScores[model[["classnames"]][2]]
-  switch(returnType, class = classPredictions,
-         score = classScores,
-         both = data.frame(class = classPredictions, score = classScores))
+    classScores <- classScores[, model[["classnames"]]]
+  else # Leave-one-out cross-validation likely used and glmnet doesn't have consistent return types.
+    classScores <- t(classScores[model[["classnames"]]])
+  
+  switch(returnType, class = classPredictions, # Factor vector.
+         score = classScores, # Numeric matrix.
+         both = data.frame(class = classPredictions, classScores))
 })
 
 # One or more omics data sets, possibly with clinical data.
