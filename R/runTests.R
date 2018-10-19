@@ -92,7 +92,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   if(validation == "permute")
   {
     if(permutePartition == "fold")
-    { 
+    {
       samplesFolds <- lapply(1:permutations, function(permutation)
                       {
                         classesFolds <- lapply(levels(classes), function(className)
@@ -270,7 +270,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
                   information <- factor(information, levels = levels(classes))
                 information                
               }
-            } else { # Ranked, selected features and test samples, with varieties.
+            } else { # Ranked, selected features, models or test samples, with varieties.
               if(permutePartition == "fold")
               {
                 if(is.null(sample[[1]][[resultType]]))
@@ -286,6 +286,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
             }
           }
         })
+        if(is.null(unlist(resultList))) list(NULL) else resultList # Collapse multiple NULLs into one NULL.
       })
       names(resultsLists) <- resultTypes
       resultsLists
@@ -306,7 +307,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       resultsLists <- lapply(resultTypes, function(resultType)
       {
         resultList <- lapply(results, function(sample) sample[[resultType]])
-        if(resultType == "testSet" || resultType == "predictions" && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
+        if(resultType %in% c("testSet", "predictions") && multipleVarieties == FALSE && class(resultList[[1]]) != "data.frame")
         {
           reshaped <- unlist(resultList)
           if(resultType == "predictions")
@@ -322,8 +323,9 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
           resultTable <- do.call(rbind, lapply(resultList, "[[", varietyName))
           resultTable[, "class"] <- factor(resultTable[, "class"], levels = levels(classes))
           resultTable
-        } else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune")) {
-          lapply(resultList, "[[", varietyName)
+        } else if(multipleVarieties == TRUE && resultType %in% c("ranked", "selected", "tune", "models")) {
+          returnValue <- lapply(resultList, "[[", varietyName)
+          if(is.null(unlist(returnValue))) NULL else returnValue
         } else { # For multipleVarieties being FALSE, and not the predicted classes.
           resultList
         }
@@ -333,7 +335,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     })
     names(resultsByVariety) <- varietyNames
   }
-
+  
   predictionTablesByVariety <- lapply(resultsByVariety, function(resultVariety)
   {
     if(validation == "permute")
@@ -342,21 +344,21 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       {
         sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
         switch(class(resultVariety[["predictions"]][[resample]]),
-               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]], levels = levels(classes)), stringsAsFactors = FALSE),
-               numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE),
+               factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]], levels = levels(classes)), stringsAsFactors = FALSE, row.names = NULL),
+               numeric = data.frame(sample = sampleNames, resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE, row.names = NULL),
                data.frame = data.frame(sample = sampleNames,
                                        class = factor(resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "factor"], levels = levels(classes)),
-                                       score = resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"], stringsAsFactors = FALSE))
+                                       resultVariety[["predictions"]][[resample]][, sapply(resultVariety[["predictions"]][[resample]], class) == "numeric"], stringsAsFactors = FALSE, row.names = NULL))
                 
       })
     } else { # leave k out or ordinary, unresampled k-fold cross-validation.
       sampleNames <- rownames(measurements)[resultVariety[["testSet"]]]
       list(switch(class(resultVariety[["predictions"]]),
-             factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]]), stringsAsFactors = FALSE),
-             numeric = data.frame(sample = sampleNames, score = resultVariety[["predictions"]], stringsAsFactors = FALSE),
+             factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]]), stringsAsFactors = FALSE, row.names = NULL),
+             numeric = data.frame(sample = sampleNames, resultVariety[["predictions"]], stringsAsFactors = FALSE, row.names = NULL),
              data.frame = data.frame(sample = sampleNames,
                                      class = factor(resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "factor"], levels = levels(classes)),
-                                     score = resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"], stringsAsFactors = FALSE)))
+                                     resultVariety[["predictions"]][, sapply(resultVariety[["predictions"]], class) == "numeric"], stringsAsFactors = FALSE, row.names = NULL)))
     }
   })
 
@@ -390,7 +392,8 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   classifyResults <- lapply(varietyNames, function(variety)
   {
     # Might be NULL if selection is done within training.
-    selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)    
+    selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)
+    
     ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures, consideredFeatures,
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["models"]], resultsByVariety[[variety]][["predictions"]],
                    classes, validationInfo, resultsByVariety[[variety]][["tune"]])

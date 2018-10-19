@@ -48,17 +48,19 @@
   \item{weight}{Default: \code{"both"}. Either \code{"both"}, \code{"height difference"},
                 or \code{"crossover distance"}. The type of weight to calculate.
                 For \code{"height difference"}, the weight of each prediction is equal to the
-                vertical distance between two densities, for a particular value of x. For
+                vertical distance between the highest density and the second-highest, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
                 The predicted class is the class with the highest density at the particular value of x and
                 the weight is the distance of x from the nearest density crossover point.}              
-  \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
-                       to vote. Can be a vector of cutoffs. If no features for a particular sample
-                       have a difference large enough, the class predicted is simply the largest class.}
+  \item{minDifference}{Default: 0. The minimum difference in density height between the highest density and
+                       second-highest for a feature to be allowed to vote. Can be a vector of cutoffs.
+                       If no features for a particular sample have a difference large enough, the class
+                       predicted is simply the largest class.}
   \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
-                    Sets the return value from the prediction to either a vector of class labels,
-                    score for a sample belonging to the second class, as determined by the factor levels,
-                    or both labels and scores in a \code{data.frame}.}     
+                    Sets the return value from the prediction to either a vector of predicted classes,
+                    a matrix of scores with columns corresponding to classes, as determined by the
+                    factor levels of \code{classes}, or both a column of predicted classes and columns of
+                    class scores in a \code{data.frame}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -75,8 +77,8 @@
   For example, see the default value of \code{densityParameters} above.
   
   If \code{weight} is \code{"crossover distance"}, the crossover points are computed by considering the 
-  distance between y values of the two densities at every x value. x values for which the sign of the difference
-  changes compared to the difference of the closest lower value of x are used as the crossover points.
+  distance between y values of all of the densities at every x value. x values for which a class density
+  crosses any other class' density are used as the crossover points for that class.
 }
 \value{
   A vector or list of class prediction information (i.e. classes and/or scores), as long as

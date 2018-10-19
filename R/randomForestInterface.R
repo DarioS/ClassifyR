@@ -49,9 +49,9 @@ function(forest, test, ..., returnType = c("class", "score", "both"), verbose = 
   returnType <- match.arg(returnType)
   if(verbose == 3)
     message("Predicting using random forest.")  
-  browser()
+  
   classPredictions <- predict(forest, test)
-  classScores <- predict(forest, test, type = "vote")[, forest[["classes"]]]
+  classScores <- predict(forest, test, type = "vote")[, forest[["classes"]], drop = FALSE]
   switch(returnType, class = classPredictions,
          score = classScores,
          both = data.frame(class = classPredictions, classScores))

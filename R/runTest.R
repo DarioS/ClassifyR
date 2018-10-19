@@ -307,10 +307,11 @@ function(measurements, classes,
   # Rankings and selections might not be explicitly returned, such as for random forest classifier.
   if(!exists("rankedFeatures")) rankedFeatures <- NULL
   if(!exists("selectedFeatures")) selectedFeatures <- NULL
+  if(is.null(predictParams@predictor)) models <- NULL else models <- trained # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
 
   if(!is.null(.iteration)) # This function was called by runTests.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = trained, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")
     {

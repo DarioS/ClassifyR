@@ -20,6 +20,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   trainingMatrix <- splitDataset[["measurements"]]
   isNumeric <- sapply(trainingMatrix, is.numeric)
   trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
+  classes <- splitDataset[["classes"]]
   isNumeric <- sapply(test, is.numeric)
   testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
   
@@ -30,134 +31,128 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   returnType <- match.arg(returnType)
   
   classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
-  largerClass <- names(classesSizes)[which.max(classesSizes)[1]]
+  largestClass <- names(classesSizes)[which.max(classesSizes)[1]]
   
   if(verbose == 3)
     message("Fitting densities.")
 
-  densities <- apply(measurements, 2, function(featureValues)
+  featuresDensities <- lapply(measurements, function(featureValues)
   {
-    oneClassMeasurements <- featureValues[classes == levels(classes)[1]]
-    otherClassMeasurements <- featureValues[classes == levels(classes)[2]]
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
-    oneDensity <- do.call(densityFunction, c(list(oneClassMeasurements), densityParameters))
-    otherDensity <- do.call(densityFunction, c(list(otherClassMeasurements), densityParameters))
-    
-    list(oneClass = oneDensity, otherClass = otherDensity)
+    lapply(levels(classes), function(class)
+    {
+      aClassMeasurements <- featureValues[classes == class]  
+      do.call(densityFunction, c(list(aClassMeasurements), densityParameters))
+    }) # A fitted density for each class.
   })
+
+  classesScaleFactors <- classesSizes / nrow(measurements)
+  splines <- lapply(featuresDensities, function(featureDensities) 
+             {
+               mapply(function(featureDensity, scaleFactor)
+               {
+                 splinefun(featureDensity[['x']], featureDensity[['y']] * scaleFactor, "natural")
+               }, featureDensities, classesScaleFactors)
+             })
   
-  splines <- lapply(densities, function(featureDensities) list(oneClass = splinefun(featureDensities[["oneClass"]][['x']], featureDensities[["oneClass"]][['y']], "natural"),
-                                                               otherClass = splinefun(featureDensities[["otherClass"]][['x']], featureDensities[["otherClass"]][['y']], "natural")))
+  if(verbose == 3)
+    message("Calculating vertical distances between class densities.")
+
+  # Needed even if horizontal distance weighting is used to determine the predicted class.
+  posteriorsVertical <- mapply(function(featureSplines, testSamples)
+  {
+    sapply(1:length(levels(classes)), function(classIndex)
+    {
+      featureSplines[[classIndex]](testSamples)
+    })
+  }, splines, test, SIMPLIFY = FALSE)
+    
+  classesVertical <- sapply(posteriorsVertical, function(featureVertical)
+  {
+      apply(featureVertical, 1, function(sampleVertical) levels(classes)[which.max(sampleVertical)])
+  }) # Matrix, rows are test samples, columns are features.
+    
+  distancesVertical <- sapply(posteriorsVertical, function(featureVertical)
+  { # Vertical distance between highest density and second-highest, at a particular value.
+    apply(featureVertical, 1, function(sampleVertical)
+    {
+      twoHighest <- sort(sampleVertical, decreasing = TRUE)[1:2]
+      Reduce('-', twoHighest)
+    })
+  }) # Matrix, rows are test samples, columns are features.
   
   if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
   {
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
  
-    # Distances for second class level.
-    distancesHorizontal <- t(do.call(cbind, mapply(function(featureDensities, testSamples)
+    classesVerticalIndices <- matrix(match(classesVertical, levels(classes)),
+                                     nrow = nrow(classesVertical), ncol = ncol(classesVertical))
+    distancesHorizontal <- mapply(function(featureDensities, testSamples, predictedClasses)
     {
-      crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
-      sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
-    }, densities, test, SIMPLIFY = FALSE)))
-    
-    # Score for second class level.
-    posteriorsHorizontal <- t(do.call(cbind, mapply(function(featureDensities, featureSplines, testSamples)
-    {
-      crosses <- .densityCrossover(featureDensities[["oneClass"]], featureDensities[["otherClass"]])
-      otherScores <- classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-      classPredictions <- ifelse(otherScores > 0, levels(classes)[2], levels(classes)[1])
-      classScores <- sapply(testSamples, function(testSample) min(abs(testSample - crosses)))
-      classScores <- mapply(function(score, prediction) if(prediction == levels(classes)[1]) -score else score, classScores, classPredictions)
-      classScores
-    }, densities, splines, test, SIMPLIFY = FALSE)))    
-    class1RelativeSize <- classesSizes[1] / classesSizes[2]
-    posteriorsHorizontal <- if(class1RelativeSize < 0) posteriorsHorizontal <- posteriorsHorizontal * class1RelativeSize else posteriorsHorizontal <- posteriorsHorizontal * 1/class1RelativeSize
-  }
-  
-  if(weight != "crossover distance") # Calculate the height difference.
-  {
-    if(verbose == 3)
-      message("Calculating class densities.")
-    
-    # Rows are for features, columns are for samples.
-    distancesVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
-    {
-      featureSplines[["otherClass"]](testSamples) - featureSplines[["oneClass"]](testSamples)
-    }, splines, test, SIMPLIFY = FALSE)))
-    
-    # Rows are for features, columns are for samples.
-    posteriorsVertical <- t(do.call(cbind, mapply(function(featureSplines, testSamples)
-    {
-      classesSizes[2] * featureSplines[["otherClass"]](testSamples) - classesSizes[1] * featureSplines[["oneClass"]](testSamples)
-    }, splines, test, SIMPLIFY = FALSE)))
+      classesCrosses <- .densitiesCrossover(featureDensities)
+      classesDistances <- sapply(classesCrosses, function(classCrosses)
+      {
+        sapply(testSamples, function(testSample) min(abs(testSample - classCrosses)))
+      })
+      classesDistances[cbind(1:nrow(classesDistances), predictedClasses)]
+    }, featuresDensities, test, as.data.frame(classesVerticalIndices)) # Matrix of horizontal distances to nearest cross-over involving the predicted class.
   }
 
   if(verbose == 3)
   {
     switch(returnType, class = message("Determining class labels."),
                        both = message("Calculating class scores and determining class labels."),
-                       score = message("Calculating class scores.")
-    )
+                       score = message("Calculating class scores."))
   }
 
   if(weight == "both")
     weightExpanded <-  c("height difference", "crossover distance")
   else weightExpanded <- weight
-  allPosteriors <- lapply(weightExpanded, function(type)
-  {
-    switch(type, `height difference` = posteriorsVertical,
-           `crossover distance` = posteriorsHorizontal
-    )
-  })
+  
   allDistances <- lapply(weightExpanded, function(type)
   {
     switch(type, `height difference` = distancesVertical,
-           `crossover distance` = distancesHorizontal
-    )
+                 `crossover distance` = distancesHorizontal)
   })
-  
+
   weightingText <- weighted
   if(weightingText == "both") weightingText <- c("unweighted", "weighted")
-  testPredictions <- do.call(rbind, mapply(function(weightPredictions, weightNames, distances)
+  testPredictions <- do.call(rbind, mapply(function(weightNames, distances)
   {
     do.call(rbind, lapply(weightingText, function(isWeighted)
     {
       do.call(rbind, lapply(minDifference, function(difference)
       {
-        do.call(rbind, lapply(1:ncol(weightPredictions), function(sampleCol)
+        do.call(rbind, lapply(1:nrow(distances), function(sampleRow)
         {
-          useFeatures <- abs(distances[, sampleCol]) > difference
-          if(length(useFeatures) == 0) # No features have a large enough density difference.
+          useFeatures <- abs(distances[sampleRow, ]) > difference
+          if(all(useFeatures == FALSE)) # No features have a large enough density difference.
           {                          # Simply vote for the larger class.
-            if(largerClass == levels(classes)[1])
-            {
-              class <- levels(classes)[1]
-              score <- -1
-            } else {
-              class <- levels(classes)[2]
-              score <- 1
-            }
+            classPredicted <- largestClass
+            classScores <- classesSizes / length(classes)
           } else { # One or more features are available to vote with.
-            posteriorsUsed <- weightPredictions[useFeatures, sampleCol]
+            distancesUsed <- distances[sampleRow, useFeatures]
+            classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classes))
             if(isWeighted == "unweighted")
             {
-              # For being in second class.
-              class <- levels(classes)[(sum(posteriorsUsed > 0) > length(posteriorsUsed) / 2) + 1]
-              score <- sum(posteriorsUsed > 0) / length(posteriorsUsed)
-            } else {
-              # For being in second class.
-              class <- levels(classes)[(sum(posteriorsUsed) > 0) + 1]
-              score <- sum(posteriorsUsed)
+              classScores <- table(classPredictionsUsed)
+              classScores <- setNames(as.vector(classScores), levels(classes))
+            } else { # Weighted voting.
+              classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
+              classScores[is.na(classScores)] <- 0
             }
+            classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
+            classPredicted <- names(classScores)[which.max(classScores)]
           }
-          data.frame(class = factor(class, levels = levels(classes)), score = score,
+
+          data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores),
                      weighted = isWeighted, weight = weightNames,
                      minDifference = difference)
         }))
       }))
     }))
-  }, allPosteriors, weightExpanded, allDistances, SIMPLIFY = FALSE))
+  }, weightExpanded, allDistances, SIMPLIFY = FALSE))
 
   # Remove combinations of unweighted voting and weightings.
   testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
@@ -169,7 +164,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
       weightVariety
     }
   }))
-  
+
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
   if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
@@ -181,9 +176,11 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   resultsList <- lapply(levels(varietyFactor), function(variety)
   {
     varietyPredictions <- subset(testPredictions, varietyFactor == variety)
+    rownames(varietyPredictions) <- rownames(test)
     switch(returnType, class = varietyPredictions[, "class"],
-           score = varietyPredictions[, "score"],
-           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+           score = varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)],
+           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)])
+           )
   })
   names(resultsList) <- levels(varietyFactor)
 

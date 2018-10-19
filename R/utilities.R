@@ -431,7 +431,6 @@
     if(!is.null(predictParams@predictor))
     {
       testMeasurements <- data[testing, , drop = FALSE]
-      
       if(variety != "data") # Single measurements table is in a list with name 'data'.
       {
         multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
@@ -456,7 +455,7 @@
       message("Prediction completed.")    
     prediction
   }, trained, measurements, names(measurements), SIMPLIFY = FALSE)
-
+  
   if(initialClass != "list") predicted <- predicted[[1]]
   if(class(predicted[[1]]) == "list") predicted <- unlist(predicted, recursive = FALSE)
   predicted
@@ -618,15 +617,23 @@
     })
 }
 
-.densityCrossover <- function(aDensity, anotherDensity)
+.densitiesCrossover <- function(densities) # A list of densities created by splinefun.
 {
-  if(!all(aDensity[['x']] == anotherDensity[['x']]))
-    stop("x positions are not the same for the two density variables.")
-  allDifferences <- aDensity[['y']] - anotherDensity[['y']]
-  crosses <- which(diff(sign(allDifferences)) != 0)
-  if(aDensity[['y']][crosses[1]] == 0 && aDensity[['y']][crosses[length(crosses)]] == 0)
-    crosses <- crosses[-c(1, length(crosses))] # Remove crossings at ends of densities.
-  aDensity[['x']][crosses]
+  
+  if(!all(table(unlist(lapply(densities, function(density) density[['x']]))) == length(densities)))
+    stop("x positions are not the same for all of the densities.")
+  
+  lapply(1:length(densities), function(densityIndex) # All crossing points with other class densities.
+  {
+    unlist(lapply(setdiff(1:length(densities), densityIndex), function(otherIndex)
+    {
+      allDifferences <- densities[[densityIndex]][['y']] - densities[[otherIndex]][['y']]
+      crosses <- which(diff(sign(allDifferences)) != 0)
+      if(densities[[densityIndex]][['y']][crosses[1]] < 0.000001 && densities[[densityIndex]][['y']][crosses[length(crosses)]] < 0.000001)
+        crosses <- crosses[-c(1, length(crosses))] # Remove crossings at ends of densities.      
+      densities[[densityIndex]][['x']][crosses]
+    }))
+  })
 }
 
 .dlda <- function(x, y, prior = NULL){ # Remove once sparsediscrim is reinstated to CRAN.
