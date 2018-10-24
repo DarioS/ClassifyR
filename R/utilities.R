@@ -465,6 +465,9 @@
                           resubstituteParams, ordering, selectionName, verbose)
 {
   maxFeatures <- max(resubstituteParams@nFeatures)
+  if(maxFeatures > ncol(measurements))
+    stop("Feature selection specified to consider as many as ", maxFeatures, " features, but data set has only ", ncol(measurements), " features.")
+  
   if(is.null(featureSets))
   {
     orderedList <- as.list(ordering[1:maxFeatures])
