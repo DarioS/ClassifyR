@@ -170,8 +170,8 @@ setGeneric("SelectParams", function(featureSelection, ...)
 {standardGeneric("SelectParams")})
 setMethod("SelectParams", character(0), function()
 {
-  new("SelectParams", featureSelection = tTestSelection,
-      selectionName = "t-test", minPresence = 1,
+  new("SelectParams", featureSelection = differentMeansSelection,
+      selectionName = "Difference in Means", minPresence = 1,
       intermediate = character(0), subsetToSelections = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })

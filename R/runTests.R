@@ -73,16 +73,16 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
       setsSizesFiltered <- sapply(featureSetsListFiltered, length)
     }
+      
     keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
     featureSetsListFiltered <- featureSetsListFiltered[keepSets]
     featureSets <- FeatureSetCollection(featureSetsListFiltered)
     measurements <- measurements[, featureNames %in% unlist(featureSetsListFiltered)]
-    
+      
     if(verbose >= 1)
       message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
-      
   }
-  
+
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
   if(!is.null(selectParams) && !is.null(featureSets))
     consideredFeatures <- length(featureSets@sets)

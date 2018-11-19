@@ -99,7 +99,7 @@ classified <- runTests(measurements, classes, datasetName = "Example",
                        classificationName = "kNN", validation = "leaveOut", leave = 1,
                        params = list(trainParams, predictParams))
 classified
-cbind(predictions(classified), known = actualClasses(classified))
+cbind(predictions(classified)[[1]], known = actualClasses(classified))
 ```
 
 `NULL` is specified instead of a function to `PredictParams` because one function does training and prediction. As expected for this easy task, the classifier predicts all samples correctly.

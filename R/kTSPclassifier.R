@@ -45,11 +45,12 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
 
   # Order pairs so that first < second is the rule for predicting the second class, based on factor levels.
   # Effectively the classifier training.
+  
   featurePairs <- do.call(c, lapply(featurePairs, function(pair)
   {
     isSmaller <- trainingMatrix[secondClass, S4Vectors::first(pair)] < trainingMatrix[secondClass, S4Vectors::second(pair)]
     if(sum(isSmaller) < length(isSmaller) / 2)
-      pair[2:1]
+      Pairs(S4Vectors::second(pair), S4Vectors::first(pair))
     else
       pair
   }))

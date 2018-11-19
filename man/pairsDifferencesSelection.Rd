@@ -24,7 +24,7 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{featurePairs}{An S4 object of type Pairs containing feature identifiers to calculate
+  \item{featurePairs}{An S4 object of type \code{\link{Pairs}} containing feature identifiers to calculate
                       the sum of differences within each class for.}
   \item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the name of the
                  data table to be used.}

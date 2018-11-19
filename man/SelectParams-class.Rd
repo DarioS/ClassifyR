@@ -14,9 +14,10 @@
   \describe{
     \item{}{
       \code{SelectParams()}
-      Creates a default SelectParams object. This uses an ordinary t-test and tries the top 10 to
-      top 100 features in increments of 10, and picks the number of features with the best
-      resubstitution balanced error rate. Users should create an appropriate \code{SelectParams}
+      Creates a default SelectParams object. This uses either an ordinary t-test or ANOVA
+      (depending on the number of classes) and tries the top 10 to top 100 features in
+      increments of 10, and picks the number of features with the best resubstitution
+      balanced error rate. Users should create an appropriate \code{SelectParams}
       object for the characteristics of their data, once they are familiar with this software.
   }
     \item{}{
@@ -50,7 +51,7 @@
 \examples{
   #if(require(sparsediscrim))
   #{
-    SelectParams(tTestSelection, "t-test",
+    SelectParams(differentMeansSelection, "t-test",
                  trainParams = TrainParams(), predictParams = PredictParams(),
                  resubstituteParams = ResubstituteParams())
     
