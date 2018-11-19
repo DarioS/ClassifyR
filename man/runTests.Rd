@@ -93,7 +93,7 @@
                                          better = "lower")
     runTests(measurements, classes, datasetName = "Asthma",
              classificationName = "Different Means", permutations = 5,
-             params = list(SelectParams(tTestSelection, "t Statistic",
+             params = list(SelectParams(differentMeansSelection, "t Statistic",
                                         resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),
                            PredictParams(DLDApredictInterface)

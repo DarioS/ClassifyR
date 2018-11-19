@@ -106,7 +106,7 @@ For more complex data sets with multiple kinds of experiments (e.g. DNA methylat
 
 ### runTests Driver Function of Cross-validated Classification
 
-*runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test ranking for feature selection and DLDA for classification. The *tTestSelection* function also uses DLDA for estimating a resubstitution error rate for a number of top-*f* ranked features, as a heuristic for picking *f* features from the feature ranking which are used in the training and prediction stages of classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*.
+*runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature selection and DLDA for classification. The *differentMeansSelection* function also uses DLDA for estimating a resubstitution error rate for a number of top-*f* ranked features, as a heuristic for picking *f* features from the feature ranking which are used in the training and prediction stages of classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*.
 
 ```{r, tidy = FALSE}
 DMresults <- runTests(measurements, classes, datasetName = "Asthma",
@@ -216,7 +216,7 @@ Some classifiers allow the setting of a tuning parameter, which controls some as
 This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. The parameter *tuneOptimise* is a character vector of length two for specifying the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
-selectParams <- SelectParams(tTestSelection, resubstituteParams = ResubstituteParams())
+selectParams <- SelectParams(differentMeansSelection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(SVMtrainInterface, kernel = "linear",
                            tuneParams = list(cost = c(0.01, 0.1, 1, 10)),
                            tuneOptimise = c(metric = "balanced error", better = "lower"))
@@ -295,7 +295,7 @@ params = list(trainParams, predictParams)
 - A SVM classifier with feature selection done by an ordinary t-test. A linear kernel is specified for the SVM.
 
 ```{r}
-selectParams <- SelectParams(tTestSelection, resubstituteParams = ResubstituteParams())
+selectParams <- SelectParams(differentMeansSelection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(SVMtrainInterface, kernel = "linear")
 predictParams <- PredictParams(SVMpredictInterface)
 params = list(selectParams, trainParams, predictParams)

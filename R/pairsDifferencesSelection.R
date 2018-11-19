@@ -29,8 +29,13 @@ setMethod("pairsDifferencesSelection", "DataFrame",
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
   
+  if(!all(S4Vectors::first(featurePairs) %in% colnames(measurements)) && !all(S4Vectors::second(featurePairs) %in% colnames(measurements)))
+    stop("Some interactors are not found in 'measurements'. Ensure that 'featurePairs' does not have
+         any features not in 'measurements'.")  
+  
   if(verbose == 3)
     message("Selecting pairs of features with consistent differences.")
+
 
   oneClassTraining <- which(classes == levels(classes)[1])
   otherClassTraining <- which(classes == levels(classes)[2])
@@ -41,13 +46,14 @@ setMethod("pairsDifferencesSelection", "DataFrame",
                          {
                            sum(oneClassMeasurements[, S4Vectors::first(featurePairs[pairIndex])] - oneClassMeasurements[, S4Vectors::second(featurePairs[pairIndex])])
                          })
+  
   otherClassDifferences <- sapply(1:length(featurePairs), function(pairIndex)
                            {
                              sum(otherClassMeasurements[, S4Vectors::first(featurePairs[pairIndex])] - otherClassMeasurements[, S4Vectors::second(featurePairs[pairIndex])])
                            })
   pairsClassDifferences <- otherClassDifferences - oneClassDifferences
-
   orderedFeatures <- order(abs(pairsClassDifferences), decreasing = TRUE)
+
   .pickFeatures(measurements, classes, featurePairs, datasetName, trainParams, predictParams,
                 resubstituteParams, orderedFeatures, selectionName, verbose)  
 })

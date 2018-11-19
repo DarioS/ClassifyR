@@ -475,7 +475,7 @@
     if(!"Pairs" %in% class(featureSets))
       orderedList <- split(1:ncol(measurements), S4Vectors::mcols(measurements)[["original"]])[ordering[1:maxFeatures]]
     else # Is a Pairs object.
-      orderedList <- featureSets
+      orderedList <- featureSets[ordering[1:maxFeatures]]
   }
 
   performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
@@ -485,8 +485,8 @@
       measurementsSubset <- measurements[, unlist(orderedList[1:topFeatures]), drop = FALSE]
       trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
                           trainParams, predictParams, verbose)
-    } else { # Don't subset.
-      trainParams@otherParams <- c(trainParams@otherParams, featurePairs = featureSets)
+    } else { # Pairs; don't subset.
+      trainParams@otherParams <- c(trainParams@otherParams, featurePairs = featureSets[1:topFeatures])
       trained <- .doTrain(measurements, classes, 1:nrow(measurements), 1:nrow(measurements),
                           trainParams, predictParams, verbose)
     }

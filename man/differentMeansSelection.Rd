@@ -1,17 +1,17 @@
-\name{tTestSelection}
-\alias{tTestSelection}
-\alias{tTestSelection,matrix-method}
-\alias{tTestSelection,DataFrame-method}
-\alias{tTestSelection,MultiAssayExperiment-method}
+\name{differentMeansSelection}
+\alias{differentMeansSelection}
+\alias{differentMeansSelection,matrix-method}
+\alias{differentMeansSelection,DataFrame-method}
+\alias{differentMeansSelection,MultiAssayExperiment-method}
 \title{Selection of Differentially Abundant Features}
-\description{Uses an ordinary t-test to select differentially expressed features.
+\description{Uses an ordinary t-test if the data set has two classes or one-way ANOVA if the data set has three or more classes to select differentially expressed features.
        }
 \usage{
-  \S4method{tTestSelection}{matrix}(measurements, classes, ...)
-  \S4method{tTestSelection}{DataFrame}(measurements, classes, datasetName,
+  \S4method{differentMeansSelection}{matrix}(measurements, classes, ...)
+  \S4method{differentMeansSelection}{DataFrame}(measurements, classes, datasetName,
                trainParams, predictParams, resubstituteParams,
-               selectionName = "t-test", verbose = 3)
-  \S4method{tTestSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
+               selectionName = "Difference in Means", verbose = 3)
+  \S4method{differentMeansSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -37,15 +37,13 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  This selection method looks for changes in means and uses an ordinary t-test.
+  This selection method looks for changes in means and uses \code{\link[genefilter]{rowttests}} to rank the features if there are two classes or \code{\link[genefilter]{rowFtests}} if there are three or more classes. The choice of features is based on the best resubstitution performance.
 }
 \value{
   An object of class \code{\link{SelectResult}} or a list of such objects, if the classifier
   which was used for determining the specified performance metric made a number of prediction varieties.
 }
-
 \author{Dario Strbenac}
-
 \examples{
   #if(require(sparsediscrim))
   #{
@@ -59,7 +57,7 @@
     
     resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
                             performanceType = "balanced error", better = "lower")
-    selected <- tTestSelection(genesMatrix, classes, "Example",
+    selected <- differentMeansSelection(genesMatrix, classes, "Example",
                                trainParams = TrainParams(), predictParams = PredictParams(),
                                resubstituteParams = resubstituteParams)
                                
