@@ -86,11 +86,12 @@
   if(class(measurements) != "list")
     measurements <- list(data = measurements)  
 
+  trainClasses <- droplevels(classes[training])
   rankedSelected <- lapply(measurements, function(measurementsVariety)
   {
     if(is.function(selectParams@featureSelection))
     {
-      paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], verbose = verbose)
+      paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, verbose = verbose)
       selectFormals <- names(.methodFormals(selectParams@featureSelection))
       if("trainParams" %in% selectFormals) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
@@ -117,7 +118,7 @@
     } else { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsVariety[training, , drop = FALSE], classes[training], trainParams = trainParams,
+        paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
         do.call(selector, paramList)
@@ -188,6 +189,7 @@
   if(class(measurements) != "list") # Will be a DataFrame.
     measurements <- list(data = measurements)
 
+  trainClasses <- droplevels(classes[training])
   trained <- mapply(function(measurementsVariety, variety)
   {
     measurementsTrain <- measurementsVariety[training, , drop = FALSE]
@@ -216,7 +218,7 @@
     } else tuneCombinations <- NULL
 
     if(trainParams@classifier@generic != "previousTrained")
-      paramList <- list(measurementsTrain, classes[training])
+      paramList <- list(measurementsTrain, trainClasses)
     else # Don't pass the measurements and classes, because a pre-existing classifier is used.
       paramList <- list()
     if(!is.null(predictParams@predictor)) # Training and prediction are separate.
@@ -267,7 +269,7 @@
                stop("Only numeric predictions are available. Predicted classes must be provided.")
             lapply(predicted, function(predictions)
             {
-              calcExternalPerformance(classes[training], predictions, tuneOptimise[1])
+              calcExternalPerformance(trainClasses, predictions, tuneOptimise[1])
             })
           })
         })
@@ -374,7 +376,7 @@
           
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
-            performanceValue <- calcExternalPerformance(classes[training], predictedFactor[[predictIndex]],
+            performanceValue <- calcExternalPerformance(trainClasses, predictedFactor[[predictIndex]],
                                                         tuneOptimise[1])
             list(predictedClasses[[predictIndex]], performanceValue)
           })
