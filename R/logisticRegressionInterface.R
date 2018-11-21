@@ -22,6 +22,8 @@ setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements
   # Reshape data for input into the fitting function.
   measuredVariables <- colnames(measurements)
   measurements[, "class"] <- classes
+  measurements <- as.data.frame(measurements)
+  rownames(measurements) <- NULL # mlogit can't handle data frame with row names, bizzarely.
   reshaped <- mlogit::mlogit.data(as.data.frame(measurements), choice = "class", shape = "wide")
   modelFormula <- formula(paste("class ~ 1 |", paste(measuredVariables, collapse = '+'), "| 1"))
   
@@ -57,7 +59,7 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
   if(!requireNamespace("mnlogit", quietly = TRUE))
     stop("The package 'mnlogit' could not be found. Please install it.")
   returnType <- match.arg(returnType)
-  
+
   if(verbose == 3)
     message("Predicting classes using trained logistic regression classifier.")
   
@@ -70,7 +72,9 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), funct
   # Reshape data for input into the predicting function.
   measuredVariables <- colnames(test)
   test[, "placeholder"] <- model[["choices"]][1] # A hack.
-  reshaped <- mlogit::mlogit.data(as.data.frame(test), choice = "placeholder", shape = "wide")
+  test <- as.data.frame(test)
+  rownames(test) <- NULL # mlogit can't handle data frame with row names, bizzarely.
+  reshaped <- mlogit::mlogit.data(test, choice = "placeholder", shape = "wide")
   
   classPredictions <- unname(predict(model, reshaped, probability = FALSE))
   classScores <- unname(predict(model, reshaped, probability = TRUE))
