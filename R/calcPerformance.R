@@ -147,7 +147,7 @@ setMethod("calcCVperformance", c("ClassifyResult"),
       }
       if(performanceType == "matthews")
       {
-       return((truePositives * trueNegatives - falsePositives * falseNegatives) / sqrt((truePositives + falsePositives) * (truePositives + falseNegatives) * (trueNegatives + falsePositives) * (trueNegatives + falseNegatives)))
+       return(return(unname((truePositives[2] * trueNegatives[2] - falsePositives[2] * falseNegatives[2]) / sqrt((truePositives[2] + falsePositives[2]) * (truePositives[2] + falseNegatives[2]) * (trueNegatives[2] + falsePositives[2]) * (trueNegatives[2] + falseNegatives[2])))))
       }
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
   }

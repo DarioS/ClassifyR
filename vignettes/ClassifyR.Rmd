@@ -234,7 +234,7 @@ length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[[1]]
 ```
 
-The cost value of 10 is chosen all five folds of the first sample permutation.
+The cost value of 10 is chosen in all of the folds of the first sample permutation.
 
 ## Summary
 

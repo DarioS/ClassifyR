@@ -10,22 +10,28 @@ setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measureme
 # Clinical data or one of the other inputs, transformed.
 setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, lambda = NULL, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting elastic net regularised GLM classifier to data.")
-
-  fitted <- glmnet::glmnet(as.matrix(measurements), splitDataset[["classes"]], family = "multinomial", ...)
   
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  measurements <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
+  measurementsMatrix <- model.matrix(splitDataset[["classes"]] ~ -1 + ., data = measurements, check.names = FALSE)
+  
+  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["classes"]], family = "multinomial", type.multinomial = "grouped", ...)
+
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
   { # Pick one lambda based on resubstitution performance.
-    bestLambda <- fitted[["lambda"]][which.max(fitted[["dev.ratio"]])[1]]
+    bestLambda <- fitted[["lambda"]][which.min(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
+    {
+      classPredictions <- factor(as.character(predict(fitted, measurementsMatrix, s = lambda, type = "class")), levels = fitted[["classnames"]])
+      calcExternalPerformance(classes, classPredictions, "balanced error")
+    }))[1]]
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
-  
+
+  attr(fitted, "features") <- colnames(measurements)[attr(measurementsMatrix, "assign")]
   fitted
 })
 

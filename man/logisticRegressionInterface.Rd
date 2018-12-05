@@ -12,9 +12,7 @@
   An Interface for mnlogit Package's mnlogit Function
 }
 \description{
-  \code{logisticRegressionTrainInterface} generates a multinomial logistic regression model trained on some
-  training data and \code{logisticRegressionPredictInterface} makes class predictions for samples in 
-  the test data set.
+  The training and prediction functions are deprecated and will be removed in the next release. Please see \code{\link{elasticNetGLMinterface}} for alternatives.
 }
 \usage{
   \S4method{logisticRegressionTrainInterface}{matrix}(measurements, classes, ...)

@@ -10,6 +10,7 @@ setMethod("logisticRegressionTrainInterface", "matrix", # Matrix of numeric meas
 # Clinical data only.
 setMethod("logisticRegressionTrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
 {
+  .Deprecated("Please use elasticNetGLMtrainInterface instead.", msg = "This function is redundant and will be removed from ClassifyR in April 2019.")
   splitDataset <- .splitDataAndClasses(measurements, classes)
 
   if(!requireNamespace("mlogit", quietly = TRUE))
@@ -54,6 +55,7 @@ setMethod("logisticRegressionPredictInterface", c("mnlogit", "matrix"),
 # Clinical data only.
 setMethod("logisticRegressionPredictInterface", c("mnlogit", "DataFrame"), function(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
 {
+  .Deprecated("Please use elasticNetGLMpredictInterface instead.", msg = "This function is redundant and will be removed from ClassifyR in April 2019.")
   if(!requireNamespace("mlogit", quietly = TRUE))
     stop("The package 'mlogit' could not be found. Please install it.")
   if(!requireNamespace("mnlogit", quietly = TRUE))

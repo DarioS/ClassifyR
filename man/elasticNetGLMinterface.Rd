@@ -60,13 +60,12 @@
   classes must be stored in the DataFrame accessible by the \code{colData} function with
   column name \code{"class"}.
   
-  The value of the \code{"family"} parameter is fixed to \code{"multinomial"} so that
-  classification with more than 2 classes is possible. During classifier training, if more than
-  one lambda value is considered by specifying a vector of them as input, then the chosen value
-  is determined based on classifier resubstitution performance. Leaving the default value of NULL,
-  however, causes the \code{\link[glmnet]{glmnet}} function to determine a set of values to evaluate
-  and then a single lambda value is chosen based on the fraction of (null) deviance explained by the
-  fitted model.
+  The value of the \code{family} parameter is fixed to \code{"multinomial"} so that
+  classification with more than 2 classes is possible and \code{type.multinomial} is fixed
+  to \code{"grouped"} so that a grouped lasso penalty is used. During classifier training,
+  if more than one lambda value is considered by specifying a vector of them as input or
+  leaving the default value of NULL, then the chosen value is determined based on
+  classifier resubstitution error rate.
 }
 \value{
   For \code{elasticNetGLMtrainInterface}, an object of type \code{glmnet}. For
@@ -90,15 +89,13 @@
                                              performanceType = "balanced error",
                                              better = "lower")
                                              
-    # alpha is a user-specified tuning parameter.
     # lambda is automatically tuned, based on glmnet defaults, if not user-specified.                 
-    trainParams <- TrainParams(elasticNetGLMtrainInterface,
-                               tuneParams = list(alpha = c(0, 0.5, 1)),
-                               tuneOptimise = c("balanced error", "lower"))
+    trainParams <- TrainParams(elasticNetGLMtrainInterface, nlambda = 500,
+                               getFeatures = elasticNetFeatures)
     predictParams <- PredictParams(elasticNetGLMpredictInterface)                           
     classified <- runTests(genesMatrix, classes, datasetName = "Example",
                            classificationName = "Differential Expression",
-                           validation = "leaveOut", leave = 1,
+                           validation = "fold",
                            params = list(trainParams, predictParams))
                            
     classified <- calcCVperformance(classified, "balanced error")
