@@ -9,7 +9,7 @@ setMethod("forestFeatures", "randomForest",
   selectedFeatures <- inputFeatures[randomForest::varUsed(forest) > 0]
   selectedFeatures <- selectedFeatures[na.omit(match(rankedFeatures, selectedFeatures))]
   
-  # Colon is a reserved symbol for separating data name and feature name, which is necessary for identifiability of MultiAssayExperimentFeatures. It is not permitted in feature names.
+  # Colon is a reserved symbol for separating data name and feature name, which is necessary for identifiability of MultiAssayExperiment features. It is not permitted in feature names.
   if(grepl(':', selectedFeatures[1]) == TRUE) # Convert to data.frame.
   {
     selectedFeatures <- do.call(rbind, strsplit(selectedFeatures, ':'))
