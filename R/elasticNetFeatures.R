@@ -4,8 +4,7 @@ setGeneric("elasticNetFeatures", function(model, ...)
 setMethod("elasticNetFeatures", "multnet",
           function(model)
 {
-  inputFeatures <- attr(model, "features")
-  browser()          
+  inputFeatures <- attr(model, "features") 
   # Floating point numbers test for equality.
   whichCoefficientColumn <- which(abs(model[["lambda"]] - attr(model, "tune")[["lambda"]]) < 0.00001)[1]
   coefficientsUsed <- sapply(model[["beta"]], function(classCoefficients) classCoefficients[, whichCoefficientColumn])
