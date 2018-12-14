@@ -29,6 +29,6 @@
 }
 \author{Dario Strbenac}
 \examples{
-transforParams <- TransformParams(subtractFromLocation, location = "median")
-# Subtract all values from training set median, to obtain absolute deviations.
+  transformParams <- TransformParams(subtractFromLocation, location = "median")
+  # Subtract all values from training set median, to obtain absolute deviations.
 }

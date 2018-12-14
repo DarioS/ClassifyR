@@ -48,16 +48,14 @@
     newerResult <- runTests(newDataset, classes, datasetName = "Latest Data Set",
                             classificationName = "Differential Expression",
                             permutations = 2, fold = 2,
-                       params = list(SelectParams(previousSelection,
-                                     intermediate = ".iteration",
-                                     classifyResult = result),
-                                     TrainParams(previousTrained,
-                                     intermediate = ".iteration",
-                                     classifyResult = result),
-                                     PredictParams()))
+                            params = list(SelectParams(previousSelection,
+                                                       intermediate = ".iteration",
+                                                       classifyResult = result),
+                                          TrainParams(previousTrained,
+                                                      intermediate = ".iteration",
+                                                      classifyResult = result),
+                                          PredictParams()))
                                      
-    # However, only genes 76 to 100 are chosen, because the feature selections are
-    # carried over from the first cross-validated classification.
     models(newerResult)
   #}  
 }

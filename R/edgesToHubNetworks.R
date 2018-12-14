@@ -14,5 +14,7 @@ edgesToHubNetworks <- function(edges, minCardinality = 5)
   featuresByHub <- mapply(c, featuresByFirstEdge, featuresBySecondEdge, SIMPLIFY = FALSE)
   featuresByHub <- lapply(featuresByHub, unique)
   featuresByHub <- featuresByHub[sapply(featuresByHub, length) >= minCardinality]
+  if(length(featuresByHub) == 0)
+    stop("No features have at least ", minCardinality, " interactors.")
   FeatureSetCollection(featuresByHub)
 }

@@ -29,10 +29,12 @@
   Dario Strbenac
 }
 \examples{
-  interactor <- sapply(1:10000, function(index)
-                       paste(c(sample(LETTERS, 3), sample(1:9, 1)), collapse = ''))
-  otherInteractor <- sapply(1:10000, function(index)
-                       paste(c(sample(LETTERS, 3), sample(1:9, 1)), collapse = ''))
+  interactor <- c("MITF", "MITF", "MITF", "MITF", "MITF", "MITF",
+                  "KRAS", "KRAS", "KRAS", "KRAS", "KRAS", "KRAS",
+                  "PD-1")
+  otherInteractor <- c("HINT1", "LEF1", "PSMD14", "PIAS3", "UBE2I", "PATZ1",
+                       "ARAF", "CALM1", "CALM2", "CALM3", "RAF1", "HNRNPC",
+                       "PD-L1")
   edges <- data.frame(interactor, otherInteractor, stringsAsFactors = FALSE)
   
   edgesToHubNetworks(edges, minCardinality = 4)
