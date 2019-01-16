@@ -6,7 +6,6 @@ dlda <- function(x, ...) {
 setOldClass("pamrtrained")
 setOldClass("dlda")
 setOldClass("svm")
-setOldClass("mnlogit")
 setOldClass("multnet")
 setOldClass("randomForest")
 

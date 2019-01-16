@@ -70,8 +70,8 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   
   returnType <- match.arg(returnType)
   
-  if(!requireNamespace("mnlogit", quietly = TRUE))
-    stop("The package 'mnlogit' could not be found. Please install it.")
+  if(!requireNamespace("glmnet", quietly = TRUE))
+    stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained elastic net regularised GLM classifier.")
 
