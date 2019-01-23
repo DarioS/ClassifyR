@@ -86,6 +86,7 @@
   if(class(measurements) != "list")
     measurements <- list(data = measurements)  
 
+  names(classes) <- rownames(measurements[[1]]) # In case training specified by sample IDs rather than numeric indices.
   trainClasses <- droplevels(classes[training])
   rankedSelected <- lapply(measurements, function(measurementsVariety)
   {
@@ -189,6 +190,7 @@
   if(class(measurements) != "list") # Will be a DataFrame.
     measurements <- list(data = measurements)
 
+  names(classes) <- rownames(measurements[[1]]) # In case training or testing specified by sample IDs rather than numeric indices.
   trainClasses <- droplevels(classes[training])
   trained <- mapply(function(measurementsVariety, variety)
   {
