@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
         applications to differential variability and differential
         distribution testing
-Version: 2.2.5
-Date: 2019-01-23
+Version: 2.2.6
+Date: 2019-02-15
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -13,8 +13,7 @@ Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 
 Imports: locfit, grid, utils, plyr
 Suggests: limma, genefilter, edgeR, car, Rmixmod, ggplot2 (>= 3.0.0), gridExtra (>= 2.0.0), cowplot,
         BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
-        scales, e1071, rmarkdown, IRanges, randomForest, robustbase, mlogit, mnlogit, glmnet,
-        class
+        scales, e1071, rmarkdown, IRanges, randomForest, robustbase, glmnet, class
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
              and prediction. The requirements of variable types and names are
@@ -29,8 +28,8 @@ Collate: classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInt
          elasticNetGLMinterface.R elasticNetFeatures.R featureSetSummary.R fisherDiscriminant.R forestFeatures.R
          getLocationsAndScales.R interactorDifferences.R kNNinterface.R
          KolmogorovSmirnovSelection.R KullbackLeiblerSelection.R kTSPclassifier.R
-         leveneSelection.R likelihoodRatioSelection.R limmaSelection.R  logisticRegressionInterface.R
-         mixmodels.R naiveBayesKernel.R networkCorrelationsSelection.R NSCselectionInterface.R NSCtrainInterface.R
+         leveneSelection.R likelihoodRatioSelection.R limmaSelection.R mixmodels.R
+         naiveBayesKernel.R networkCorrelationsSelection.R NSCselectionInterface.R NSCtrainInterface.R
          NSCpredictInterface.R pairsDifferencesSelection.R performancePlot.R plotFeatureClasses.R
          previousSelection.R previousTrained.R randomForestInterface.R rankingPlot.R ROCplot.R
          runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R SVMinterface.R
