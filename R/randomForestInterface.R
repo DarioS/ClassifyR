@@ -1,7 +1,5 @@
 setGeneric("randomForestTrainInterface", function(measurements, ...)
 {standardGeneric("randomForestTrainInterface")})
-setGeneric("randomForestPredictInterface", function(models, test, ...)
-           {standardGeneric("randomForestPredictInterface")})
 
 setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)

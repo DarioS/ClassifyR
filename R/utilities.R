@@ -636,7 +636,14 @@
     {
       allDifferences <- densities[[densityIndex]][['y']] - densities[[otherIndex]][['y']]
       crosses <- which(diff(sign(allDifferences)) != 0)
-      if(densities[[densityIndex]][['y']][crosses[1]] < 0.000001 && densities[[densityIndex]][['y']][crosses[length(crosses)]] < 0.000001)
+      crosses <- sapply(crosses, function(cross) # Refine location for plateaus.
+      {
+        isSmall <- rle(allDifferences[(cross+1):length(allDifferences)] < 0.000001)
+        if(isSmall[["values"]][1] == "TRUE")
+          cross <- cross + isSmall[["lengths"]][1] / 2
+        cross
+      })
+      if(length(crosses) > 1 && densities[[densityIndex]][['y']][crosses[1]] < 0.000001 && densities[[densityIndex]][['y']][crosses[length(crosses)]] < 0.000001)
         crosses <- crosses[-c(1, length(crosses))] # Remove crossings at ends of densities.      
       densities[[densityIndex]][['x']][crosses]
     }))

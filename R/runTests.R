@@ -342,7 +342,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     {
       lapply(1:length(results), function(resample)
       {
-        sampleNames <- rownames(measurements)[resultVariety[["testSet"]][[resample]]]
+        sampleNames <- resultVariety[["testSet"]][[resample]]
         switch(class(resultVariety[["predictions"]][[resample]]),
                factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]][[resample]], levels = levels(classes)), stringsAsFactors = FALSE, row.names = NULL),
                numeric = data.frame(sample = sampleNames, resultVariety[["predictions"]][[resample]], stringsAsFactors = FALSE, row.names = NULL),
@@ -352,7 +352,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
                 
       })
     } else { # leave k out or ordinary, unresampled k-fold cross-validation.
-      sampleNames <- rownames(measurements)[resultVariety[["testSet"]]]
+      sampleNames <- resultVariety[["testSet"]]
       list(switch(class(resultVariety[["predictions"]]),
              factor = data.frame(sample = sampleNames, class = factor(resultVariety[["predictions"]]), stringsAsFactors = FALSE, row.names = NULL),
              numeric = data.frame(sample = sampleNames, resultVariety[["predictions"]], stringsAsFactors = FALSE, row.names = NULL),
