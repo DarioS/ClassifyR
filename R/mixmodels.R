@@ -24,7 +24,7 @@ setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
   
   models <- lapply(levels(classes), function(class)
             {
-                aClassMeasurements <- measurements[classes == class, ]
+                aClassMeasurements <- measurements[classes == class, , drop = FALSE]
                 apply(aClassMeasurements, 2, function(featureColumn)
                 {
                    mixmodParams <- list(featureColumn)
@@ -32,11 +32,18 @@ setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
                    do.call(Rmixmod::mixmodCluster, mixmodParams)
                 })     
             })
-
+  
   if(verbose == 3)
     message("Done fitting normal mixtures.")
   
+  models <- lapply(models, function(modelSet)
+            {
+              class(modelSet) <- "MixModelsList"
+              modelSet
+            })
+  names(models)[1:length(levels(classes))] <- paste(levels(classes), "Models", sep = '')
   models[["classSizes"]] <- setNames(as.vector(table(classes)), levels(classes))
+  models <- MixModelsListsSet(models)
   models
 })
 
@@ -53,22 +60,23 @@ setMethod("mixModelsTrain", "MultiAssayExperiment",
 setGeneric("mixModelsPredict", function(models, test, ...)
            {standardGeneric("mixModelsPredict")})
 
-setMethod("mixModelsPredict", c("list", "matrix"), function(models, test, ...)
+setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, test, ...)
 {
   mixModelsPredict(models, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
+setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical data only.
           function(models, test, weighted = c("unweighted", "weighted", "both"),
                    weight = c("height difference", "crossover distance", "both"),
                    densityXvalues = 1024, minDifference = 0,
                    returnType = c("class", "score", "both"), verbose = 3)
 {
+  models <- models@set
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
-
+  
   weighted <- match.arg(weighted)
   weight <- match.arg(weight)
   returnType <- match.arg(returnType)
@@ -128,11 +136,11 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
     })
   }) # Matrix, rows are test samples, columns are features. 
   
-  if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
+  if(weight %in% c("crossover distance", "both")) # Calculate the crossover distance, even if unweighted voting to pick the class.
   {   
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
- 
+    
     classesVerticalIndices <- matrix(match(classesVertical, classesNames),
                                      nrow = nrow(classesVertical), ncol = ncol(classesVertical))
     distancesHorizontal <- mapply(function(featureDensities, testSamples, predictedClasses)
@@ -163,7 +171,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
     switch(type, `height difference` = distancesVertical,
                  `crossover distance` = distancesHorizontal)
   })
-
+  
   weightingText <- weighted
   if(weightingText == "both") weightingText <- c("unweighted", "weighted")
   testPredictions <- do.call(rbind, mapply(function(weightNames, distances)
@@ -239,7 +247,7 @@ setMethod("mixModelsPredict", c("list", "DataFrame"), # Clinical data only.
 })
 
 # One or more omics data sets, possibly with clinical data.
-setMethod("mixModelsPredict", c("list", "MultiAssayExperiment"),
+setMethod("mixModelsPredict", c("MixModelsListsSet", "MultiAssayExperiment"),
           function(models, test, targets = names(test), ...)
 {
   testingMatrix <- .MAEtoWideTable(test, targets)

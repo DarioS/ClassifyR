@@ -13,6 +13,8 @@ setClassUnion("functionOrNULL", c("function", "NULL"))
 setClassUnion("functionOrList", c("function", "list"))
 setClassUnion("integerOrNumeric", c("integer", "numeric"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
+setClassUnion("listOrNULL", c("list", "NULL"))
+setClassUnion("listOrCharacterOrNULL", c("list", "character", "NULL"))
 
 setClass("TransformParams", representation(
   transform = "function",
@@ -299,7 +301,7 @@ setClass("ClassifyResult", representation(
   performance = "list",
   tune = "list")
 )
-setMethod("ClassifyResult", c("character", "character", "character", "character", "character"),
+setMethod("ClassifyResult", c("character", "character", "character", "character", "characterOrDataFrame"),
           function(datasetName, classificationName, selectionName, originalNames, originalFeatures, totalFeatures,
                    rankedFeatures, chosenFeatures, models, predictions, actualClasses, validation, tune = list(NULL))
           {
@@ -315,10 +317,8 @@ setMethod("show", c("ClassifyResult"),
             cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
             cat("Classification Name: ", object@classificationName, ".\n", sep = '')
             cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
-            if(length(unlist(object@selectResult@chosenFeatures)) == 0)
-            {
-              cat("Features: All used.\n")
-            } else if(object@validation[[1]] != "permuteFold")
+            
+            if(object@validation[[1]] != "permuteFold")
             {
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature identifiers.\n", sep = '')
             } else # Resample and fold. Nested lists.
@@ -414,4 +414,40 @@ setMethod("totalPredictions", c("ClassifyResult"),
           function(result)
           {
               nrow(do.call(rbind, predictions(result)))
+          })
+
+setClass("EasyHardClassifier", representation(
+  easyClassifier = "listOrNULL",
+  hardClassifier = "listOrCharacterOrNULL",
+  datasetIDs = "character"
+))
+setGeneric("EasyHardClassifier", function(easyClassifier, hardClassifier, datasetIDs)
+{standardGeneric("EasyHardClassifier")})
+setMethod("EasyHardClassifier", c("listOrNULL", "listOrCharacterOrNULL", "character"),
+          function(easyClassifier, hardClassifier, datasetIDs)
+          {
+            new("EasyHardClassifier", easyClassifier = easyClassifier, hardClassifier = hardClassifier,
+                datasetIDs = datasetIDs)
+          })
+
+setMethod("show", c("EasyHardClassifier"),
+          function(object)
+          {
+            cat("An object of class 'EasyHardClassifier'.\n")
+            if(!is.null(object@easyClassifier)) easyText <- paste("A set of", length(object@easyClassifier), "rules trained on", object@datasetIDs["easy"], "data")
+            else easyText <- "None"
+            cat("Easy Classifier: ", easyText, ".\n", sep = '')
+            cat("Hard Classifier: An object of class '", class(object@hardClassifier[["model"]]), "' trained on ", object@datasetIDs["hard"], " data.\n", sep = '')
+          })
+
+setClass("MixModelsListsSet", representation(
+  set = "list")
+)
+
+setGeneric("MixModelsListsSet", function(set, ...)
+{standardGeneric("MixModelsListsSet")})
+setMethod("MixModelsListsSet", c("list"),
+          function(set)
+          {
+            new("MixModelsListsSet", set = set)
           })

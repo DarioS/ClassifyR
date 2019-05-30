@@ -2,7 +2,7 @@
 \docType{class}
 \alias{ClassifyResult}
 \alias{ClassifyResult-class}
-\alias{ClassifyResult,character,character,character,character,character-method}
+\alias{ClassifyResult,character,character,character,character,characterOrDataFrame-method}
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}

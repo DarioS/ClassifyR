@@ -81,7 +81,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     })
   }) # Matrix, rows are test samples, columns are features.
   
-  if(weight != "height difference" && weighted != "unweighted") # Calculate the crossover distance.
+  if(weight %in% c("crossover distance", "both")) # Calculate the crossover distance, even if unweighted voting to pick the class.
   {
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")

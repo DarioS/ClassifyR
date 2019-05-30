@@ -18,7 +18,7 @@
     \item{}{
       \code{PredictParams()}
       Creates a default PredictParams object. This assumes that the object returned by
-      the classifier has a list element named "class".
+      the classifier has a list element named \code{"class"}.
   }
     \item{}{
       \code{PredictParams(predictor, intermediate = character(0), ...)}

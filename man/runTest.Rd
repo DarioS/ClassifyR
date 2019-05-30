@@ -1,12 +1,14 @@
 \name{runTest}
 \alias{runTest}
+\alias{runTestEasyHard}
 \alias{runTest,matrix-method}
 \alias{runTest,DataFrame-method}
 \alias{runTest,MultiAssayExperiment-method}
+\alias{runTestEasyHard,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
 \description{For a data set of features and samples, the classification process is run.
              It consists of data transformation, feature selection, classifier training
-             and testing (prediction of samples not used in training).
+             and testing.
        }
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
@@ -15,6 +17,9 @@
             training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
         verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{runTestEasyHard}{MultiAssayExperiment}(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
+                   featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
+                   datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -39,8 +44,9 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
-             are passed into and used by the \code{DataFrame} method.}
+  \item{...}{For \code{runTest}, variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method. For \code{runTestEasyHard}, \code{easyClassifierParams}
+             and \code{hardClassifierParams} to be passed to \code{\link{easyHardClassifierTrain}}.}
   \item{datasetName}{A name associated with the data set used.}
   \item{classificationName}{A name associated with the classification.}  
   \item{training}{A vector which specifies the training samples.}
@@ -49,6 +55,10 @@
                \code{\link{SelectParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
                The order they are in the list determines the order in which the stages
                of classification are done in.}
+  \item{easyDatasetID}{The name of a data set in \code{measurements} or "clinical" to
+  indicate the patient information in the column data be used.}
+  \item{hardDatasetID}{The name of a data set in \code{measurements} different to the
+  value of \code{easyDatasetID} to be used for classifying the samples not classified by the easy classifier.}
   \item{verbose}{Default: 1. A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages as more lower-level functions
                  print messages.}
@@ -84,4 +94,27 @@
             training = (1:ncol(measurements)) \%\% 2 == 0,
             testing = (1:ncol(measurements)) \%\% 2 != 0)
   #}
+  
+  genesMatrix <- matrix(c(rnorm(90, 9, 1),
+                        9.5, 9.4, 5.2, 5.3, 5.4, 9.4, 9.6, 9.9, 9.1, 9.8),
+		      ncol = 10, byrow = TRUE)
+
+  colnames(genesMatrix) <- paste("Sample", 1:10)
+  rownames(genesMatrix) <- paste("Gene", 1:10)
+  genders <- factor(c("Male", "Male", "Female", "Female", "Female",
+                    "Female", "Female", "Female", "Female", "Female"))
+
+  # Scenario: Male gender can predict the hard-to-classify Sample 1 and Sample 2.
+  clinical <- DataFrame(age = c(31, 34, 32, 39, 33, 38, 34, 37, 35, 36),
+                        gender = genders,
+                        class = factor(rep(c("Poor", "Good"), each = 5)),
+		        row.names = colnames(genesMatrix))
+  dataset <- MultiAssayExperiment(ExperimentList(RNA = genesMatrix), clinical)
+                                    
+  selParams <- SelectParams(featureSelection = differentMeansSelection, selectionName = "Difference in Means",
+                            resubstituteParams = ResubstituteParams(1:10, "balanced error", "lower"))
+  easyHardCV <- runTestEasyHard(dataset, datasetName = "Test Data", classificationName = "Easy-Hard", training = 1:10, testing = 1:10,
+                                easyClassifierParams = list(minCardinality = 2, minPurity = 0.9),
+                                hardClassifierParams = list(selParams, TrainParams(), PredictParams())
+                               )
 }

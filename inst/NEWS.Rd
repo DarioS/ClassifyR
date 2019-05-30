@@ -2,6 +2,11 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 2.6.0}{\itemize{
+  \item
+  Two-stage easy-hard classifier added.
+}}
+
 \section{Version 2.2.0}{\itemize{
   \item
   getClasses is no longer a slot of PredictParams. Every predictor function needs to return either a

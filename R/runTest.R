@@ -343,3 +343,156 @@ setMethod("runTest", c("MultiAssayExperiment"),
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
   runTest(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
 })
+
+setGeneric("runTestEasyHard", function(measurements, ...)
+{standardGeneric("runTestEasyHard")})
+
+setMethod("runTestEasyHard", c("MultiAssayExperiment"),
+          function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
+                   featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
+                   datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
+          {
+            if(easyDatasetID == "clinical")
+            {
+              easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
+              allFeatures <- S4Vectors::DataFrame(dataset = "clinical", feature = colnames(easyDataset))
+            } else if(easyDatasetID %in% names(measurements))
+            {
+              easyDataset <- measurements[, , easyDatasetID][[1]] # Get the underlying data container e.g. matrix.
+              if(is.matrix(easyDataset))
+                easyDataset <- t(easyDataset) # Make the variables be in columns.
+              allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
+            } else {
+              stop("'easyDatasetID' is not \"clinical\" nor the name of any assay in 'measurements'.")
+            }
+            if(hardDatasetID %in% names(measurements))
+            {
+              hardDataset <- measurements[, , hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
+              hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
+              allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = rownames(hardDataset)))
+            } else {
+              stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
+            }
+            classes <- MultiAssayExperiment::colData(measurements)[, "class"]
+            
+            # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
+            easyFeaturesNumber <- sum(allFeatures[, "dataset"] == easyDatasetID)
+            if(!is.null(featureSets))
+              consideredFeatures <- length(featureSets@sets) + easyFeaturesNumber
+            else
+              consideredFeatures <- ncol(hardDataset) + easyFeaturesNumber
+            
+            if(!is.null(featureSets) && is.null(.iteration)) # Feature sets provided and runTestEasyHard is being called by the user, so need to be filtered now.
+            {
+              hardFeatureNames <- rownames(hardDataset)
+              
+              # Filter out the edges or the features from the sets which are not in measurements.
+              featureSetsList <- featureSets@sets
+              if(class(featureSetsList[[1]]) == "matrix")
+              {
+                setsSizes <- sapply(featureSetsList, nrow)
+                edgesAll <- do.call(rbind, featureSetsList)
+                networkNames <- rep(names(featureSetsList), setsSizes)
+                edgesKeep <- edgesAll[, 1] %in% hardFeatureNames & edgesAll[, 2] %in% hardFeatureNames
+                edgesFiltered <- edgesAll[edgesKeep, ]
+                networkNamesFiltered <- networkNames[edgesKeep]
+                setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = featureSetsList))
+                featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
+                setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
+              } else { # A set of features without edges, such as a gene set.
+                setsSizes <- sapply(setsNodes, length)
+                nodesVector <- unlist(featureSetsList)
+                setsVector <- rep(names(featureSetsList), setsSizes)
+                keepNodes <- !is.na(match(nodesVector, hardFeatureNames))
+                nodesVector <- nodesVector[keepNodes]
+                setsVector <- setsVector[keepNodes]
+                featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
+                setsSizesFiltered <- sapply(featureSetsListFiltered, length)
+              }
+              keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
+              featureSetsListFiltered <- featureSetsListFiltered[keepSets]
+              featureSets <- FeatureSetCollection(featureSetsListFiltered)
+              hardDataset <- hardDataset[, hardFeatureNames %in% unlist(featureSetsListFiltered)]
+              
+              if(verbose >= 1 && is.null(.iteration)) # Being used by the user, not called by runTests.
+                message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
+            }
+
+            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, datasetName = NULL, classificationName, ..., verbose)
+            predictParams <- list(...)[["hardClassifierParams"]]
+            predictParams <- predictParams[[which(sapply(predictParams, class) == "PredictParams")]]
+            test <- measurements[ , testing, ]
+            trainClass <- class(trained)
+            if(trainClass == "EasyHardClassifier")
+            {
+              trained <- list(trained)
+              predictedClasses <- lapply(trained, function(model) easyHardClassifierPredict(model, test, predictParams, verbose))
+            } else { # Modify the predictParams' otherParams.
+              trainedVarietyParams <- strsplit(names(trained), "=|,")
+              predictParams <- lapply(trainedVarietyParams, function(varietyParams)
+                               {
+                                 combinationParams <- predictParams
+                                 for(paramIndex in seq(1, length(varietyParams), 2))
+                                 {
+                                   if(varietyParams[paramIndex] %in% names(combinationParams@otherParams))
+                                   {
+                                     combinationParams@otherParams[[varietyParams[paramIndex]]] <- varietyParams[paramIndex + 1]
+                                   }
+                                 }
+                                 combinationParams
+                               })
+              predictedClasses <- mapply(function(varietyModel, varietyParams) easyHardClassifierPredict(varietyModel, test, varietyParams, verbose), trained, predictParams, SIMPLIFY = FALSE)
+            }
+
+            tuneDetails <- lapply(trained, attr, "tune")
+            if(trainClass == "EasyHardClassifier")
+            {
+              trained <- trained[[1]]
+              selectedFeatures <- easyHardFeatures(trained)[[2]]
+              predictedClasses <- unlist(predictedClasses, recursive = FALSE)
+              tuneDetails <- unlist(tuneDetails, recursive = FALSE)
+            } else {
+              selectedFeatures <- lapply(lapply(trained, easyHardFeatures), "[[", 2)
+            }
+            if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
+
+            if(is.logical(testing)) testing <- which(testing)
+            if(is.numeric(testing)) testing <- rownames(MultiAssayExperiment::colData(measurements))[testing]
+            if(!is.null(.iteration)) # This function was called by runTestsEasyHard.
+            {
+              list(selected = selectedFeatures, models = trained, testSet = testing, predictions = predictedClasses, tuneDetails = tuneDetails)
+            } else { # runTestEasyHard is being used directly, rather than from runTestsEasyHard. Create a ClassifyResult object.
+              selectionName <- "Sample Grouping Purity for Easy Data Set"
+              selectParams <- list(...)[["hardClassifierParams"]]
+              whichSelect <- which(sapply(selectParams, class) == "SelectParams")
+              
+              if(length(whichSelect) > 0)
+              {
+                selectParams <- selectParams[[whichSelect]]
+                selectionName <- paste(selectionName, "and", selectParams@selectionName, "for Hard Data Set")
+              } else {
+                selectionName <- paste(selectionName, '.', sep = '')
+              }
+              
+              if(class(predictedClasses) != "list")
+              {
+                return(ClassifyResult(datasetName, "Easy-Hard Classifier", selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
+                                      list(NULL), selectedFeatures, list(trained), list(data.frame(sample = testing, class = predictedClasses)),
+                                      classes, list("independent"), tuneDetails)
+                )
+              } else { # A variety of predictions were made.
+                if(!"list" %in% class(selectedFeatures))
+                {
+                  selectedFeatures <- list(selectedFeatures)
+                }
+                return(mapply(function(varietyPredictions, varietyTunes, varietySelected, varietyModel)
+                {
+                  if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
+                  ClassifyResult(datasetName, "Easy-Hard Classifier", selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
+                                 list(NULL), list(varietySelected), list(varietyModel), list(data.frame(sample = testing, class = varietyPredictions)),
+                                 classes, list("independent"), varietyTunes)
+                }, predictedClasses, tuneDetails, selectedFeatures, trained, SIMPLIFY = FALSE))
+              }
+            }
+          })
+          
