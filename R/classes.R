@@ -415,3 +415,16 @@ setMethod("totalPredictions", c("ClassifyResult"),
           {
               nrow(do.call(rbind, predictions(result)))
           })
+
+setClass("MixModelsListsSet", representation(
+  set = "list")
+)
+
+setGeneric("MixModelsListsSet", function(set, ...)
+{standardGeneric("MixModelsListsSet")})
+setMethod("MixModelsListsSet", c("list"),
+          function(set)
+          {
+            new("MixModelsListsSet", set = set)
+          })
+
