@@ -418,9 +418,12 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
                 message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
             }
 
-            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, datasetName = NULL, classificationName, ..., verbose)
-            predictParams <- list(...)[["hardClassifierParams"]]
-            predictParams <- predictParams[[which(sapply(predictParams, class) == "PredictParams")]]
+            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, NULL, classificationName, ..., verbose = verbose)
+            hardParams <- list(...)[["hardClassifierParams"]]
+            if(is.null(hardParams)) # They were not specified by the user. Use default value.
+              predictParams <- PredictParams()
+            else
+              predictParams <- hardParams[[which(sapply(hardParams, class) == "PredictParams")]]
             test <- measurements[ , testing, ]
             trainClass <- class(trained)
             if(trainClass == "EasyHardClassifier")
@@ -470,8 +473,6 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               {
                 selectParams <- selectParams[[whichSelect]]
                 selectionName <- paste(selectionName, "and", selectParams@selectionName, "for Hard Data Set")
-              } else {
-                selectionName <- paste(selectionName, '.', sep = '')
               }
               
               if(class(predictedClasses) != "list")

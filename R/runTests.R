@@ -527,13 +527,15 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 {
                   lapply(1:folds, function(foldIndex)
                   {
-                    runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(sampleFolds[-foldIndex]),
-                            testing = sampleFolds[[foldIndex]], ..., verbose = verbose,
-                            .iteration = c(sampleNumber, foldIndex))
+                    runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                                    datasetName, classificationName,
+                                    unlist(sampleFolds[-foldIndex]), sampleFolds[[foldIndex]], ..., verbose = verbose,
+                                    .iteration = c(sampleNumber, foldIndex))
                   })
                 } else { # Split mode.
-                  runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, training = sampleFolds[[1]],
-                          testing = sampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
+                  runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                                  datasetName, classificationName,
+                                  sampleFolds[[1]], sampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
                 }
               }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else if(validation == "leaveOut") # leave k out.
@@ -544,8 +546,9 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               {
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
-                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, training = trainingSample, testing = testSample,
-                        ..., verbose = verbose, .iteration = sampleNumber)
+                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                                datasetName, classificationName,
+                                trainingSample, testSample, ..., verbose = verbose, .iteration = sampleNumber)
               }, trainingSamples, testSamples, (1:length(trainingSamples)),
               BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else { # Unresampled, ordinary k-fold cross-validation.
@@ -563,8 +566,9 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 message("Processing ", folds, "-fold cross-validation.")
               results <- bplapply(1:folds, function(foldIndex)
               {
-                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(samplesFolds[-foldIndex]),
-                        testing = samplesFolds[[foldIndex]], ..., verbose = verbose,
+                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                                datasetName, classificationName,
+                                unlist(samplesFolds[-foldIndex]), samplesFolds[[foldIndex]], ..., verbose = verbose,
                         .iteration = foldIndex)
               }, BPPARAM = parallelParams)
             }

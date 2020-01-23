@@ -88,7 +88,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
       c(lowerRules, higherRules)
     } else { # The variable is categorical.
       classesCounts <- table(measurement, classes)
-      whichPureGroups <- which(classesCounts >= easyClassifierParams[["minCardinality"]] & apply(classesCounts, 1, function(measurementClasses) measurementClasses / sum(measurementClasses) > easyClassifierParams[["minPurity"]]), arr.ind = TRUE)
+      whichPureGroups <- which(classesCounts >= easyClassifierParams[["minCardinality"]] & t(apply(classesCounts, 1, function(measurementClasses) measurementClasses / sum(measurementClasses) > easyClassifierParams[["minPurity"]])), arr.ind = TRUE)
       if(nrow(whichPureGroups) > 0)
       {
         rownames(whichPureGroups) <- NULL
@@ -110,17 +110,19 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
     samplesHard <- rownames(easyDataset)
   }
   
-  if(hardDatasetID %in% names(measurements))
+  if(!hardDatasetID %in% names(measurements))
   {
+    stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
+  } else {
+    if(length(samplesHard) == 0)
+    {
+      return(EasyHardClassifier(predictiveRules, NULL, datasetIDs))
+    }
+    
     hardDataset <- measurements[, samplesHard, hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
     hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
     hardClasses <- classes[samplesHard]
-  } else {
-    stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
-  }
-
-  if(length(samplesHard) > 0)
-  {
+    
     samplesHardClasses <- table(hardClasses)
     if(max(samplesHardClasses) >= sum(samplesHardClasses) - 1) # All samples or all samples except one belong to a particular class. Predict that class.
     {
@@ -145,12 +147,12 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
         EasyHardClassifier(predictiveRules, hardClassifier, datasetIDs)
       }, selectionAndModel[["selected"]], selectionAndModel[["models"]], SIMPLIFY = FALSE)
       names(trainedModels) <- names(selectionAndModel[["models"]])
-
+      
       if(initialClass != "list")
         trainedModels <- trainedModels[[1]]
       trainedModels
     }
-  } else {NULL}
+  }
 })
 
 setGeneric("easyHardClassifierPredict", function(model, test, ...)
@@ -195,7 +197,9 @@ setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperi
     
     allSamplesClasses <- lapply(hardPredictions, function(varietyPredictions)
     {
-      allPredictions <- predictionsAndSamples[[1]]
+      allPredictions <- NA # In case no rules are found for easy data set.
+      if(exists("predictionsAndSamples")) # Rules exist for easy data set.
+        allPredictions <- predictionsAndSamples[[1]]
       allPredictions[is.na(allPredictions)] <- as.character(varietyPredictions)
       allPredictions <- factor(allPredictions, levels = levels(MultiAssayExperiment::colData(test)[, "class"]))
       allPredictions    
@@ -205,7 +209,7 @@ setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperi
       allSamplesClasses <- unlist(allSamplesClasses, recursive = FALSE)
     allSamplesClasses    
   } else { # All samples predicted with easy classifier. Return those predictions.
-    factor(predictionsAndSamples[[1]], )
+    factor(predictionsAndSamples[[1]], levels(MultiAssayExperiment::colData(test)[, "class"]))
   }
 })
 

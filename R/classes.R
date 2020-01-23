@@ -437,7 +437,10 @@ setMethod("show", c("EasyHardClassifier"),
             if(!is.null(object@easyClassifier)) easyText <- paste("A set of", length(object@easyClassifier), "rules trained on", object@datasetIDs["easy"], "data")
             else easyText <- "None"
             cat("Easy Classifier: ", easyText, ".\n", sep = '')
-            cat("Hard Classifier: An object of class '", class(object@hardClassifier[["model"]]), "' trained on ", object@datasetIDs["hard"], " data.\n", sep = '')
+            if(!is.null(object@hardClassifier))
+              hardText <- paste("An object of class '", class(object@hardClassifier[["model"]]), "' trained on ", object@datasetIDs["hard"], " data", sep = '')
+            else hardText <- "None"
+            cat("Hard Classifier: ", hardText, ".\n", sep = '')
           })
 
 setClass("MixModelsListsSet", representation(
