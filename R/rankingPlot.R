@@ -18,13 +18,14 @@ setMethod("rankingPlot", "list",
                    margin = grid::unit(c(1, 1, 1, 1), "lines"),
                    showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
+  comparison <- match.arg(comparison)            
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")            
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
-  comparison <- match.arg(comparison)
+  
   lineColourVariable <- match.arg(lineColourVariable)
   pointTypeVariable <- match.arg(pointTypeVariable)
   rowVariable <- match.arg(rowVariable)

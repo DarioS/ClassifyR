@@ -18,6 +18,7 @@ setMethod("selectionPlot", "list",
                    xLabel = "Analysis", yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
+  comparison <- match.arg(comparison)            
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
   if(!requireNamespace("scales", quietly = TRUE))
@@ -26,7 +27,7 @@ setMethod("selectionPlot", "list",
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")                
 
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
-  comparison <- match.arg(comparison)
+  
   xVariable <- match.arg(xVariable)
   boxFillColouring <- match.arg(boxFillColouring)
   boxLineColouring <- match.arg(boxLineColouring)

@@ -14,11 +14,11 @@ setMethod("getLocationsAndScales", "DataFrame", # Clinical data or one of the ot
   measurements <- measurements[, isNumeric, drop = FALSE]
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
+  location <- match.arg(location) 
+  scale <- match.arg(scale)
    
   if(scale == "Qn" && !requireNamespace("robustbase", quietly = TRUE))
     stop("The package 'robustbase' could not be found. Please install it.")
-  location <- match.arg(location) 
-  scale <- match.arg(scale)
  
   setNames(list(switch(location,
                        mean = apply(measurements, 2, mean),
