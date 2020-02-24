@@ -58,8 +58,8 @@
 }
 \author{Dario Strbenac}
 \references{
-  A multi-step classifier addressing cohort heterogeneity improves performance of prognostic biomarkers in three cancer types, Ellis Patrick, Sarah-Jane Schramm, John Ormerod, Richard Scolyer, Graham Mann, Samuel Mueller, and Jean Yang 2017,
-  \emph{Oncotarget}, Volume 8 Issue 2, \url{http://www.oncotarget.com/index.php?journal=oncotarget&page=article&op=view&path[]=13203&path[]=41874}.
+  Inspired by: Stepwise Classification of Cancer Samples Using Clinical and Molecular Data, Askar Obulkasim, Gerrit Meijer and Mark van de Wiel 2011,
+  \emph{BMC Bioinformatics}, Volume 12 article 422, \url{https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-422}.
 }
 \examples{
   genesMatrix <- matrix(c(rnorm(90, 9, 1),

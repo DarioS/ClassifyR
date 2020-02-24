@@ -197,7 +197,7 @@ setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperi
     
     allSamplesClasses <- lapply(hardPredictions, function(varietyPredictions)
     {
-      allPredictions <- NA # In case no rules are found for easy data set.
+      allPredictions <- rep(NA, length(varietyPredictions)) # In case no rules are found for easy data set.
       if(exists("predictionsAndSamples")) # Rules exist for easy data set.
         allPredictions <- predictionsAndSamples[[1]]
       allPredictions[is.na(allPredictions)] <- as.character(varietyPredictions)
