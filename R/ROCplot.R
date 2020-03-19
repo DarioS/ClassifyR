@@ -12,10 +12,11 @@ setMethod("ROCplot", "list",
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")   
-            
+                      
   comparisonVariable <- match.arg(comparisonVariable)
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
-  numberDistinctClasses <- length(levels(actualClasses(results[[1]])))
+  distinctClasses <- levels(actualClasses(results[[1]]))
+  numberDistinctClasses <- length(distinctClasses)
 
   plotData <- mapply(function(result, resultBins)
   {
@@ -76,7 +77,7 @@ setMethod("ROCplot", "list",
   {
     if(numberDistinctClasses == 2)
     {
-      plotData <- subset(plotData, class == levels(plotData[, "class"])[2])
+      plotData <- subset(plotData, class == distinctClasses[2])
       if(comparisonVariable == "validation")
       {
         plotData[, "validation"] <- paste(plotData[, "validation"], " (AUC", plotData[, "AUC"], ')', sep = '')

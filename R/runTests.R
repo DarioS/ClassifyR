@@ -519,7 +519,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 })
               }
               
-              results <- bpmapply(function(sampleFolds, sampleNumber)
+              results <- bpmapply(function(sampleFolds, sampleNumber, ...)
               {
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
@@ -537,19 +537,21 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                                   datasetName, classificationName,
                                   sampleFolds[[1]], sampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
                 }
-              }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
+              }, samplesFolds, as.list(1:permutations), MoreArgs = list(...), BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else if(validation == "leaveOut") # leave k out.
             {
               testSamples <- as.data.frame(utils::combn(consideredSamples, leave))
               trainingSamples <- lapply(testSamples, function(sample) setdiff(1:consideredSamples, sample))
-              results <- bpmapply(function(trainingSample, testSample, sampleNumber)
+              
+              results <- bpmapply(function(trainingSample, testSample, sampleNumber, ...)
               {
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
+                
                 runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                 datasetName, classificationName,
                                 trainingSample, testSample, ..., verbose = verbose, .iteration = sampleNumber)
-              }, trainingSamples, testSamples, (1:length(trainingSamples)),
+              }, trainingSamples, testSamples, (1:length(trainingSamples)), MoreArgs = list(...),
               BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else { # Unresampled, ordinary k-fold cross-validation.
               classesFolds <- lapply(levels(classes), function(className)
@@ -564,13 +566,13 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               
               if(verbose >= 1)
                 message("Processing ", folds, "-fold cross-validation.")
-              results <- bplapply(1:folds, function(foldIndex)
+              results <- bplapply(1:folds, function(foldIndex, ...)
               {
                 runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                 datasetName, classificationName,
                                 unlist(samplesFolds[-foldIndex]), samplesFolds[[foldIndex]], ..., verbose = verbose,
                         .iteration = foldIndex)
-              }, BPPARAM = parallelParams)
+              }, measurements, ..., BPPARAM = parallelParams)
             }
             
             if(validation == "permute" && permutePartition == "split" || validation %in% c("leaveOut", "fold"))
