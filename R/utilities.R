@@ -83,7 +83,7 @@
                          predictParams, verbose)
 {
   initialClass <- class(measurements)
-  if(class(measurements) != "list")
+  if(!"list" %in% initialClass)
     measurements <- list(data = measurements)  
 
   names(classes) <- rownames(measurements[[1]]) # In case training specified by sample IDs rather than numeric indices.
@@ -158,14 +158,14 @@
     }
   })
 
-  if(initialClass != "list") rankedSelected <- rankedSelected[[1]]
+  if(!"list" %in% initialClass) rankedSelected <- rankedSelected[[1]]
   rankedSelected
 }
 
 .doTransform <- function(measurements, training, transformParams, verbose)
 {
   initialClass <- class(measurements)
-  if(class(measurements) != "list")
+  if(!"list" %in% class(measurements))
     measurements <- list(data = measurements)
   
   transformed <- lapply(measurements, function(measurementsVariety)
@@ -177,8 +177,8 @@
     do.call(transformParams@transform, paramList)
   })
   
-  if(initialClass != "list") transformed <- transformed[[1]]
-  if(class(transformed[[1]]) == "list") transformed <- unlist(transformed, recursive = FALSE)
+  if(!"list" %in% initialClass) transformed <- transformed[[1]]
+  if("list" %in% class(transformed[[1]])) transformed <- unlist(transformed, recursive = FALSE)
   transformed
 }
 
@@ -187,7 +187,7 @@
   # Re-use inside feature selection.
 {
   initialClass <- class(measurements)
-  if(class(measurements) != "list") # Will be a DataFrame.
+  if(!"list" %in% class(measurements)) # Will be a DataFrame.
     measurements <- list(data = measurements)
 
   names(classes) <- rownames(measurements[[1]]) # In case training or testing specified by sample IDs rather than numeric indices.
@@ -269,6 +269,7 @@
               predicted <- lapply(predicted, function(variety) variety[, sapply(variety, class) == "factor"])
             if(is.numeric(class(predicted[[1]]))) # Can't automatically decide on a threshold. Stop processing.
                stop("Only numeric predictions are available. Predicted classes must be provided.")
+
             lapply(predicted, function(predictions)
             {
               calcExternalPerformance(trainClasses, predictions, tuneOptimise[1])
@@ -375,7 +376,7 @@
             predictedFactor <- trained
           else if(is.numeric(class(trained[[1]]))) # Can't automatically decide on a threshold. Stop processing.
             stop("Only numeric predictions are available. Predicted classes must be provided.")
-          
+  
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
             performanceValue <- calcExternalPerformance(trainClasses, predictedFactor[[predictIndex]],
@@ -408,8 +409,8 @@
     returnResult
   }, measurements, names(measurements), SIMPLIFY = FALSE)
 
-  if(initialClass != "list") trained <- trained[[1]]
-  if(!isS4(trained) && class(trained[[1]]) == "list") 
+  if(!"list" %in% initialClass) trained <- trained[[1]]
+  if(!isS4(trained) && "list" %in% class(trained[[1]])) 
   {
     trainNames <- sapply(trained, names)
     varietyNames <- sapply(trained[[1]], names)
@@ -424,7 +425,7 @@
   # Re-use inside feature selection.
 {
   initialClass <- class(measurements)
-  if(initialClass != "list")
+  if(!"list" %in% initialClass)
   {
     trained <- list(model = trained)
     measurements <- list(data = measurements)
@@ -460,8 +461,8 @@
     prediction
   }, trained, measurements, names(measurements), SIMPLIFY = FALSE)
   
-  if(initialClass != "list") predicted <- predicted[[1]]
-  if(class(predicted[[1]]) == "list") predicted <- unlist(predicted, recursive = FALSE)
+  if(!"list" %in% initialClass) predicted <- predicted[[1]]
+  if("list" %in% class(predicted[[1]])) predicted <- unlist(predicted, recursive = FALSE)
   predicted
 }
 
@@ -471,7 +472,7 @@
   maxFeatures <- max(resubstituteParams@nFeatures)
   if(maxFeatures > ncol(measurements))
     stop("Feature selection specified to consider as many as ", maxFeatures, " features, but data set has only ", ncol(measurements), " features.")
-  
+
   if(is.null(featureSets))
   {
     orderedList <- as.list(ordering[1:maxFeatures])
@@ -503,7 +504,7 @@
       predictions <- trained
     }
     
-    if(class(predictions) == "list") # Mutiple varieties of predictions.
+    if("list" %in% class(predictions)) # Mutiple varieties of predictions.
     {
       if(class(predictions[[1]]) == "data.frame")
         predictedClasses <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
@@ -516,14 +517,14 @@
         predictedClasses <- predictions
     }
 
-    if(class(predictedClasses) == "list")
+    if("list" %in% class(predictedClasses))
     {
       lapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, resubstituteParams@performanceType))
     } else {
       calcExternalPerformance(classes, predictedClasses, resubstituteParams@performanceType)
     }
   })
-
+  
   if(class(performances) == "numeric")
     performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
 

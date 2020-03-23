@@ -53,7 +53,7 @@ setMethod("length", c("FeatureSetCollection"),
 setMethod("show", c("FeatureSetCollection"),
           function(object)
           {
-            setType <- ifelse(class(object@sets[[1]]) == "character", "features", "interactors")
+            setType <- ifelse("character" %in% class(object@sets[[1]]), "features", "interactors")
             setTypeText <- ifelse(setType == "features", "feature sets.\n", "sets of binary interactions.\n")
             if(setType == "features")
               setlElementsFunction <- length

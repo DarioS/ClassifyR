@@ -81,7 +81,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   classPredictions <- factor(as.character(predict(model, as.matrix(test), s = lambda, type = "class")), levels = model[["classnames"]])
   classScores <- predict(model, as.matrix(test), s = lambda, type = "response")[, , 1]
   
-  if(class(classScores) == "matrix")
+  if(is.matrix(classScores))
     classScores <- classScores[, model[["classnames"]]]
   else # Leave-one-out cross-validation likely used and glmnet doesn't have consistent return types.
     classScores <- t(classScores[model[["classnames"]]])

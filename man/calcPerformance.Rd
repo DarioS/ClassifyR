@@ -78,7 +78,7 @@
   metric value itself.
 }
 \examples{
-  predictTable <- data.frame(sample = 1:10,
+  predictTable <- data.frame(sample = paste("A", 1:10, sep = ''),
                              class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
   result <- ClassifyResult("Example", "Differential Expression", "A Selection",

@@ -35,6 +35,7 @@
                        classificationName = "Differential Expression",
                        permutations = 2, fold = 2,
                        params = list(SelectParams(), TrainParams(), PredictParams()))
+    models(result)
                        
     # Genes 50 to 74 have differential expression in new data set.
     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
