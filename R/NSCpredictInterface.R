@@ -24,7 +24,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained
   test <- t(as.matrix(test))   
   classPredictions <- pamr::pamr.predict(trained, test, threshold, ...)
   classScores <- pamr::pamr.predict(trained, test, threshold, type = "posterior", ...)[, levels(trained[["y"]])]
-  if(class(classScores) != "matrix") # Only one sample was predicted and pamr isn't consistent with return types.
+  if(!is.matrix(classScores)) # Only one sample was predicted and pamr isn't consistent with return types.
     classScores <- t(classScores)
   
   if(verbose == 3)
