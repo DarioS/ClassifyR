@@ -174,9 +174,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     if(sum(resultErrors) == length(results))
     {
       message("Error: All cross-validations had an error.")
+      if(length(unique(unlist(results))) == 1)
+        message("The common problem is: ", unlist(results)[[1]])
       return(results)
     } else if(sum(resultErrors) != 0) # Filter out cross-validations resulting in error.
     {
+      warning(paste(sum(resultErrors),  "cross-validations had an error and have been removed from the results."))
       results <- results[!resultErrors]
     }
   } else { # Result has nested lists, because of permutation reordering with folding.
@@ -184,9 +187,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     if(sum(unlist(resultErrors)) == permutations * folds)
     {
       message("Error: All cross-validations had an error.")
+      if(length(unique(unlist(results))) == 1)
+        message("The common problem is: ", unlist(results)[[1]])
       return(results)
     } else if(sum(unlist(resultErrors)) != 0) # Filter out error cross-validations.
     {
+      warning(paste(sum(unlist(resultErrors)),  "cross-validations had an error and have been removed from the results."))	    
       results <- results[sapply(results, function(resample) !all(sapply(resample, is.character)))]
       results <- lapply(results, function(resample) resample[!sapply(resample, is.character)])
     }
@@ -581,9 +587,12 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               if(sum(resultErrors) == length(results))
               {
                 message("Error: All cross-validations had an error.")
+	        if(length(unique(unlist(results))) == 1)
+                  message("The common problem is: ", unlist(results)[[1]])
                 return(results)
               } else if(sum(resultErrors) != 0) # Filter out cross-validations resulting in error.
               {
+		warning(paste(sum(resultErrors),  "cross-validations had an error and have been removed from the results."))
                 results <- results[!resultErrors]
               }
             } else { # Result has nested lists, because of permutation reordering with folding.
@@ -591,9 +600,12 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               if(sum(unlist(resultErrors)) == permutations * folds)
               {
                 message("Error: All cross-validations had an error.")
+	      	if(length(unique(unlist(results))) == 1)
+                  message("The common problem is: ", unlist(results)[[1]])
                 return(results)
               } else if(sum(unlist(resultErrors)) != 0) # Filter out error cross-validations.
               {
+		warning(paste(sum(unlist(resultErrors)),  "cross-validations had an error and have been removed from the results."))
                 results <- results[sapply(results, function(resample) !all(sapply(resample, is.character)))]
                 results <- lapply(results, function(resample) resample[!sapply(resample, is.character)])
               }
