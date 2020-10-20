@@ -42,11 +42,11 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
     if(is.numeric(measurement))
     {
       ordering <- order(measurement)
-      midpoints <- zoo::rollmean(unique(measurement[ordering]), 2) # Better performance if many repeated values.
+      midpoints <- zoo::rollmean(unique(na.omit(measurement[ordering])), 2) # Better performance if many repeated values.
       
       lowerRules <- lapply(midpoints, function(midpoint)
       {
-        lowerClasses <- classes[measurement < midpoint]
+        lowerClasses <- na.omit(classes[measurement < midpoint])
         lowerClassesCounts <- table(lowerClasses)
         lowerClassesProportions <- lowerClassesCounts / sum(lowerClassesCounts)
         isLarge <- length(lowerClasses) >= easyClassifierParams[["minCardinality"]]
@@ -67,7 +67,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
       
       higherRules <- lapply(midpoints, function(midpoint)
       {
-        higherClasses <- classes[measurement > midpoint]
+        higherClasses <- na.omit(classes[measurement > midpoint])
         higherClassesCounts <- table(higherClasses)
         higherClassesProportions <- higherClassesCounts / sum(higherClassesCounts)
         isLarge <- length(higherClasses) >= easyClassifierParams[["minCardinality"]]
