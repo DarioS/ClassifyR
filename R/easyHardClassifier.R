@@ -12,6 +12,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
   if(easyDatasetID == "clinical")
   {
     easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
+    easyDataset <- easyDataset[!is.na(easyDataset[, "class"]), ]
     easyDataset <- easyDataset[, -match("class", colnames(easyDataset))]
   } else if(easyDatasetID %in% names(measurements))
   {
@@ -21,6 +22,12 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
   } else {
     stop("'easyDatasetID' is not \"clinical\" nor the name of any assay in 'measurements'.")
   }
+  
+  hardDataset <- measurements[, , hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
+  hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
+  commonSamples <- intersect(rownames(easyDataset), rownames(hardDataset))
+  easyDataset <- easyDataset[commonSamples, ]
+  hardDataset <- hardDataset[commonSamples, ]
   
   datasetIDs <- setNames(c(easyDatasetID, hardDatasetID), c("easy", "hard"))
   
@@ -118,9 +125,8 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
     {
       return(EasyHardClassifier(predictiveRules, NULL, datasetIDs))
     }
-    
-    hardDataset <- measurements[, samplesHard, hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
-    hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
+
+    hardDataset <- hardDataset[samplesHard, ]
     hardClasses <- classes[samplesHard]
     
     samplesHardClasses <- table(hardClasses)
@@ -186,7 +192,7 @@ setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperi
     {
       hardDataset <- test[, samplesHard, hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
       hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
-      hardPredictions <- .doTest(model@hardClassifier[["model"]], hardDataset[, model@hardClassifier[["selected"]], drop = FALSE], samplesHard, predictParams, verbose)
+      hardPredictions <- .doTest(model@hardClassifier[["model"]], hardDataset, samplesHard, predictParams, verbose)
     } else {
       hardPredictions <- rep(model@hardClassifier[["model"]], length(samplesHard)) # In training, samples belonging to one class left for hard classification.
     }

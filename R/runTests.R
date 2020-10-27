@@ -432,25 +432,34 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
             if(easyDatasetID == "clinical")
             {
               easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
-              allFeatures <- S4Vectors::DataFrame(dataset = "clinical", feature = colnames(easyDataset))
+              easyDataset <- easyDataset[!is.na(easyDataset[, "class"]), ]
+              easyDataset <- easyDataset[, -match("class", colnames(easyDataset))] # Don't let the class variable go into the classifier training!
             } else if(easyDatasetID %in% names(measurements))
             {
               easyDataset <- measurements[, , easyDatasetID][[1]] # Get the underlying data container e.g. matrix.
               if(is.matrix(easyDataset))
                 easyDataset <- t(easyDataset) # Make the variables be in columns.
-              allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
             } else {
               stop("'easyDatasetID' is not \"clinical\" nor the name of any assay in 'measurements'.")
             }
+            
             if(hardDatasetID %in% names(measurements))
             {
               hardDataset <- measurements[, , hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
               hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
-              allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = rownames(hardDataset)))
             } else {
               stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
             }
-            classes <- MultiAssayExperiment::colData(measurements)[, "class"]
+            
+            # Avoid samples in one dataset but absent from the other.
+            commonSamples <- intersect(rownames(easyDataset), rownames(hardDataset))
+            measurements <- measurements[ , commonSamples, ]
+            easyDataset <- easyDataset[commonSamples, ]
+            hardDataset <- hardDataset[commonSamples, ]
+            
+            allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
+            allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = colnames(hardDataset)))
+            classes <- MultiAssayExperiment::colData(measurements)[commonSamples, "class"]
             
             # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
             easyFeaturesNumber <- sum(allFeatures[, "dataset"] == easyDatasetID)
@@ -526,13 +535,14 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               }
               
               results <- bpmapply(function(sampleFolds, sampleNumber, ...)
-              {
+              {print(sampleNumber)
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
                 if(permutePartition == "fold")
                 {
                   lapply(1:folds, function(foldIndex)
-                  {
+                  {print(foldIndex)
+                    #if(sampleNumber == 4 && foldIndex == 5) browser()
                     runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                     datasetName, classificationName,
                                     unlist(sampleFolds[-foldIndex]), sampleFolds[[foldIndex]], ..., verbose = verbose,
