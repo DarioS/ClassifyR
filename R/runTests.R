@@ -535,14 +535,13 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               }
               
               results <- bpmapply(function(sampleFolds, sampleNumber, ...)
-              {print(sampleNumber)
+              {
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
                 if(permutePartition == "fold")
                 {
                   lapply(1:folds, function(foldIndex)
-                  {print(foldIndex)
-                    #if(sampleNumber == 4 && foldIndex == 5) browser()
+                  {
                     runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                     datasetName, classificationName,
                                     unlist(sampleFolds[-foldIndex]), sampleFolds[[foldIndex]], ..., verbose = verbose,

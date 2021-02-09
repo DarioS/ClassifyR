@@ -36,6 +36,7 @@
 
   measurements <- measurements[, , targets]
   dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
+  rownames(dataTable) <- dataTable[, "primary"]
   S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
   colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
   

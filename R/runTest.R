@@ -134,7 +134,7 @@ function(measurements, classes,
                                                        { # Input was ordinary matrix or DataFrame and no network features were used.
                                                          variety[, selectedFeatures, drop = FALSE]
                                                        } else { # Input was MultiAssayExperiment.
-                                                         selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
+                                                         selectedColumns <- apply(selectedFeatures, 1, function(selectedFeature)
                                                          {
                                                            intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
                                                                      which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
