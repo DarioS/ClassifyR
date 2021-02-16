@@ -34,20 +34,27 @@
     clinicalColumns <- NULL
   }
 
-  measurements <- measurements[, , targets]
-  dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
-  rownames(dataTable) <- dataTable[, "primary"]
-  S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
-  colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
+  if(length(targets) > 0)
+  {
+    measurements <- measurements[, , targets]
   
-  S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
-  missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
-  S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
-  S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
-  if("class" %in% colnames(dataTable))
+    dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
+    rownames(dataTable) <- dataTable[, "primary"]
+    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
+    colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
+  
+    S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
+    missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
+    S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
+    S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
+    if("class" %in% colnames(dataTable))
+      classes <- dataTable[, "class"]
+    else
+      classes <- NULL
+  } else { # Must have only been clinical data.
+    dataTable <- MultiAssayExperiment::colData(measurements)
     classes <- dataTable[, "class"]
-  else
-    classes <- NULL
+  }
   
   if(!is.null(restrict))
   {
