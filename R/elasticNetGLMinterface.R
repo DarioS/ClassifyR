@@ -17,9 +17,9 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
   
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
-  measurementsMatrix <- model.matrix(splitDataset[["classes"]] ~ -1 + ., data = measurements, check.names = FALSE)
-  
-  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["classes"]], family = "multinomial", type.multinomial = "grouped", ...)
+  measurementsMatrix <- glmnet::makeX(as(measurements, "data.frame"))
+
+  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["classes"]], family = "multinomial", ...)
 
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
   { # Pick one lambda based on resubstitution performance.
@@ -31,7 +31,6 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
 
-  attr(fitted, "features") <- colnames(measurements)[attr(measurementsMatrix, "assign")]
   fitted
 })
 
@@ -78,8 +77,9 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
 
-  classPredictions <- factor(as.character(predict(model, as.matrix(test), s = lambda, type = "class")), levels = model[["classnames"]])
-  classScores <- predict(model, as.matrix(test), s = lambda, type = "response")[, , 1]
+  testMatrix <- glmnet::makeX(as(test, "data.frame"))
+  classPredictions <- factor(as.character(predict(model, testMatrix, s = lambda, type = "class")), levels = model[["classnames"]])
+  classScores <- predict(model, testMatrix, s = lambda, type = "response")[, , 1]
   
   if(is.matrix(classScores))
     classScores <- classScores[, model[["classnames"]]]

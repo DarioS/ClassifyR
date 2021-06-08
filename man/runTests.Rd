@@ -9,6 +9,11 @@
 \description{Enables doing classification schemes such as ordinary 10-fold,
              100 permutations 5-fold, and leave one out cross-validation.
              Processing in parallel is possible by leveraging the package \code{\link{BiocParallel}}.
+             
+             Pre-validation is possible and activated by specifying a list named \code{"prevaliated"} to
+             \code{params}, which will use the functions specified in the list of parameters on the
+             pre-validated data table. Other named items in the list correspond to other assays to be
+             added as a pre-vaildated vector of the clinical table.
 }
 \usage{
   \S4method{runTests}{matrix}(measurements, classes, ...)
@@ -33,7 +38,9 @@
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.
                       The sample identifiers must be present as column names of the \code{matrix}
-                      or the row names of the \code{DataFrame}.}
+                      or the row names of the \code{DataFrame}. If pre-validation is activated by naming
+                      one of the lists in \code{params} \code{"prevalidated"}, this variable must be of type
+                      \code{\link{MultiAssayExperiment}}.}
   \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
                  as the number of samples in \code{measurements} or if the measurements are
                  of class \code{DataFrame} a character vector of length 1 containing the
@@ -81,7 +88,10 @@
   \item{params}{A \code{list} of objects of class of \code{\link{TransformParams}},
                \code{\link{SelectParams}}, \code{\link{TrainParams}} or \code{\link{PredictParams}}.
                The order they are in the list determines the order in which the stages
-               of classification are done in.}
+               of classification are done in. It may also be a list of such lists for pre-validation.
+               In that case, each list must be named and one of them must be named \code{"prevalidated"},
+               which specifies the functions to use on the pre-validated data table.
+               }
   \item{easyDatasetID}{The name of a data set in \code{measurements} or "clinical" to
   indicate the patient information in the column data be used.}
   \item{hardDatasetID}{The name of a data set in \code{measurements} different to the
@@ -91,7 +101,7 @@
                  print messages.}
 }
 \value{
-  If the predictor function made a single prediction, then an object of class
+  If the predictor function made a single prediction per sample, then an object of class
   \code{\link{ClassifyResult}}. If the predictor function made a set of predictions, then
   a list of such objects.
 }

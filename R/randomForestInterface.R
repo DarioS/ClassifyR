@@ -22,7 +22,7 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurements, clas
             data.")
 
   # Convert to base data.frame as randomForest doesn't understand DataFrame.
-  randomForest::randomForest(as.data.frame(splitDataset[["measurements"]]), splitDataset[["classes"]], keep.forest = TRUE, ...)
+  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["classes"]], keep.forest = TRUE, ...)
 })
 
 setMethod("randomForestTrainInterface", "MultiAssayExperiment",

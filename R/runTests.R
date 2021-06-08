@@ -22,6 +22,10 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
 {
   if(is.null(rownames(measurements)))
     stop("'measurements' DataFrame must have sample identifiers as its row names.")
+  if(missing(datasetName))          
+    stop("'datasetName' must be specified.")        
+  if(missing(classificationName))          
+    stop("'classificationName' must be specified.")            
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
@@ -32,12 +36,32 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
   # Elements of list returned by runTest.
 
-  stagesParamClasses <- sapply(params, class)
-  if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
-    stop("\"testing\" must not be before \"training\" in 'params'.")
-  
-  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
-  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
+  if("prevalidated" %in% names(params))
+  {
+    paramsList <- params
+    prevalidate <- TRUE
+    assaysWithoutParams <- setdiff(mcols(measurements)[, "dataset"], c(names(params), "clinical"))
+    if(length(assaysWithoutParams) > 0)
+      stop(paste("'params' lacks a list for", paste(assaysWithoutParams, collapse = ", "), "assay."))
+    if(validation == "permute" && permutePartition == "split")
+       stop("Split partitioning is not suitable for pre-validation.")
+  } else {
+    paramsList <- list(params)
+    prevalidate <- FALSE
+  }
+
+  # Training must always be before prediction.
+  selectParams <- list()
+  predictParams <- list()
+  lapply(paramsList, function(paramsSet)
+  {
+    stagesParamClasses <- sapply(paramsSet, class)
+    if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
+      stop("\"testing\" must not be before \"training\" in 'params'.")
+    
+    selectParams <<- c(selectParams, paramsSet[[match("SelectParams", stagesParamClasses)]])
+    predictParams <<- c(predictParams, paramsSet[[match("PredictParams", stagesParamClasses)]])
+  })
   
   if(!is.null(S4Vectors::mcols(measurements)))
   {
@@ -52,7 +76,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   {
     # Filter out the edges or the features from the sets which are not in measurements.
     featureSetsList <- featureSets@sets
-    if(class(featureSetsList[[1]]) == "matrix")
+    if(class(featureSetsList[[1]]) == "matrix") # Two columns of binary interactors.
     {
       setsSizes <- sapply(featureSetsList, nrow)
       edgesAll <- do.call(rbind, featureSetsList)
@@ -84,11 +108,31 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   }
 
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-  if(!is.null(selectParams) && !is.null(featureSets))
-    consideredFeatures <- length(featureSets@sets)
-  else
-    consideredFeatures <- ncol(measurements)
-  
+  if(prevalidate == FALSE)
+  {
+    if(length(selectParams) > 0 && !is.null(featureSets))
+      consideredFeatures <- length(featureSets@sets)
+    else
+      consideredFeatures <- ncol(measurements)
+  } else
+  {
+    consideredFeatures <- nrow(subset(mcols(measurements), dataset == "clinical")) + length(unique(subset(mcols(measurements), dataset != "clinical")[, "dataset"]))
+  }
+
+  if(prevalidate == TRUE)
+  {
+    datasetIDs <- unique(mcols(measurements)[, "dataset"])
+    datasetsList <- lapply(datasetIDs, function(datasetID) measurements[, mcols(measurements)[, "dataset"] == datasetID]) 
+    names(datasetsList) <- datasetIDs
+    names(datasetsList) <- gsub("clinical", "prevalidated", names(datasetsList))
+    paramsList <- paramsList[names(datasetsList)] # Ensure compatible order to datasets.
+    clinicalTableIndex <- which(datasetIDs == "clinical")
+    clinicalTable <- datasetsList[[clinicalTableIndex]]
+    clinicalParams <- paramsList[[clinicalTableIndex]]
+    datasetsList <- datasetsList[-clinicalTableIndex]
+    paramsList <- paramsList[-clinicalTableIndex]
+  }
+
   if(validation == "permute")
   {
     if(permutePartition == "fold")
@@ -106,6 +150,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
                         })
                       })
     } else { # Is split.
+      
       samplesTrain <- (100 - percent) / 100 * table(classes)
       samplesFolds <- lapply(1:permutations, function(permutation)
                       {
@@ -118,33 +163,115 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
                       })
     }
 
-    results <- bpmapply(function(sampleFolds, sampleNumber)
+    results <- bpmapply(function(resampleFolds, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
+      
       if(permutePartition == "fold")
       {
+        if(prevalidate == TRUE)
+        {
+          prevalPredictions <- lapply(1:folds, function(foldIndex)
+          {
+            predictionsList <- mapply(function(dataset, datasetParams)
+            {
+              runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+                      training = unlist(resampleFolds[-foldIndex]), testing = resampleFolds[[foldIndex]],
+                      params = datasetParams, verbose = verbose, .iteration = c(sampleNumber, foldIndex))[["predictions"]]
+            }, datasetsList, paramsList, SIMPLIFY = FALSE)
+          })
+          
+          predictionsPerDataset <- lapply(names(datasetsList), function(datasetID)
+          {
+            unlist(lapply(prevalPredictions, function(predictionsList) predictionsList[datasetID]))
+          })
+          names(predictionsPerDataset) <- names(datasetsList)
+          prevalidatedTable <- do.call(cbind.data.frame, predictionsPerDataset)
+          prevalidatedTable <- prevalidatedTable[order(unlist(resampleFolds)), ]
+          clinicalTable <- cbind(clinicalTable, prevalidatedTable)
+          mcols(clinicalTable) <- NULL
+        }
+
+        if(prevalidate == FALSE)
+        {
+          measurementsUse <- measurements
+          paramsUse <- params
+        } else {
+          measurementsUse <- clinicalTable
+          paramsUse <- clinicalParams
+        }
         lapply(1:folds, function(foldIndex)
         {
-          runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(sampleFolds[-foldIndex]),
-                  testing = sampleFolds[[foldIndex]], params = params, verbose = verbose,
+          runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(resampleFolds[-foldIndex]),
+                  testing = resampleFolds[[foldIndex]], params = paramsUse, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
         })
-      } else { # Split mode.
-        runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = sampleFolds[[1]],
-                testing = sampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
+      } else { # Split mode. Not suitable for pre-validation.
+        runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = resampleFolds[[1]],
+                testing = resampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
+    
   } else if(validation == "leaveOut") # leave k out.
   {
     testSamples <- as.data.frame(utils::combn(nrow(measurements), leave))
     trainingSamples <- lapply(testSamples, function(sample) setdiff(1:nrow(measurements), sample))
+
+    if(prevalidate == TRUE)
+    {
+      prevalPredictions <- bpmapply(function(trainingSample, testSample, sampleNumber)
+      {
+        predictionsList <- mapply(function(dataset, datasetParams)
+        {
+          runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+                  training = trainingSample, testing = testSample,
+                  params = datasetParams, verbose = verbose, .iteration = sampleNumber)[["predictions"]]
+        }, datasetsList, paramsList, SIMPLIFY = FALSE)
+      }, trainingSamples, testSamples, (1:length(trainingSamples)),
+      BPPARAM = parallelParams, SIMPLIFY = FALSE)
+      
+      predictionsPerDataset <- lapply(names(datasetsList), function(datasetID)
+      {
+        classesSizes <- table(classes)
+        allPredictions <- unlist(lapply(prevalPredictions, function(predictionsList) predictionsList[datasetID]))
+        allSampleIDs <- unlist(testSamples)
+        predictionsBySamples <- table(allPredictions, allSampleIDs)
+        datasetPredictions <- apply(predictionsBySamples, 2, function(samplePredictions)
+        {
+          maxRows <- which(samplePredictions == max(samplePredictions))
+          predictedClasses <- rownames(predictionsBySamples)[maxRows]
+          if(length(predictedClasses) > 1)
+          {
+            predictedClasses <- predictedClasses[which.max(classesSizes[match(predictedClasses, names(classesSizes))])]
+          }
+          
+          predictedClasses
+        })
+        names(datasetPredictions) <- colnames(predictionsBySamples)
+        datasetPredictions
+      })
+      names(predictionsPerDataset) <- names(datasetsList)
+      
+      prevalidatedTable <- do.call(cbind.data.frame, predictionsPerDataset)
+      clinicalTable <- cbind(clinicalTable, prevalidatedTable)
+      mcols(clinicalTable) <- NULL
+    }
+    
+    if(prevalidate == FALSE)
+    {
+      measurementsUse <- measurements
+      paramsUse <- params
+    } else {
+      measurementsUse <- clinicalTable
+      paramsUse <- clinicalParams
+    }
     results <- bpmapply(function(trainingSample, testSample, sampleNumber)
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = trainingSample, testing = testSample,
-              params = params, verbose = verbose, .iteration = sampleNumber)
+      runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = trainingSample, testing = testSample,
+              params = paramsUse, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else { # Unresampled, ordinary k-fold cross-validation.
@@ -160,10 +287,42 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     
     if(verbose >= 1)
       message("Processing ", folds, "-fold cross-validation.")
+      
+    if(prevalidate == TRUE)
+    {
+      prevalPredictions <- lapply(1:folds, function(foldIndex)
+      {
+        predictionsList <- mapply(function(dataset, datasetParams)
+        {
+          runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+                  training = unlist(samplesFolds[-foldIndex]), testing = samplesFolds[[foldIndex]],
+                  params = datasetParams, verbose = verbose, .iteration = foldIndex)[["predictions"]]
+        }, datasetsList, paramsList, SIMPLIFY = FALSE)
+      })
+        
+      predictionsPerDataset <- lapply(names(datasetsList), function(datasetID)
+      {
+        unlist(lapply(prevalPredictions, function(predictionsList) predictionsList[datasetID]))
+      })
+      names(predictionsPerDataset) <- names(datasetsList)
+      prevalidatedTable <- do.call(cbind.data.frame, predictionsPerDataset)
+      prevalidatedTable <- prevalidatedTable[order(unlist(samplesFolds)), ]
+      clinicalTable <- cbind(clinicalTable, prevalidatedTable)
+      mcols(clinicalTable) <- NULL
+    }
+    
+    if(prevalidate == FALSE)
+    {
+      measurementsUse <- measurements
+      paramsUse <- params
+    } else {
+      measurementsUse <- clinicalTable
+      paramsUse <- clinicalParams
+    }  
     results <- bplapply(1:folds, function(foldIndex)
     {
-      runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(samplesFolds[-foldIndex]),
-              testing = samplesFolds[[foldIndex]], params = params, verbose = verbose,
+      runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(samplesFolds[-foldIndex]),
+              testing = samplesFolds[[foldIndex]], params = paramsUse, verbose = verbose,
               .iteration = foldIndex)
     }, BPPARAM = parallelParams)
   }
@@ -392,13 +551,26 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   classifyResults <- lapply(varietyNames, function(variety)
   {
     # Might be NULL if selection is done within training.
-    selectionName <- ifelse(is.null(selectParams), "Unspecified", selectParams@selectionName)
+    if(length(selectParams) == 0)
+    {
+      selectionName <- "Unspecified" 
+    } else if(prevalidate == FALSE) {
+      selectionName <- selectParams[[1]]@selectionName
+    } else { # Prevalidation was used.
+      whichSelect <- which(sapply(params[["prevalidated"]], class) == "SelectParams")
+      if(any(whichSelect))
+      {
+        selectionName <- params[["prevalidated"]][whichSelect]@selectionName
+      } else {
+        selectionName <- "Unspecified"
+      }
+    }
     
     ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures, consideredFeatures,
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["models"]], resultsByVariety[[variety]][["predictions"]],
                    classes, validationInfo, resultsByVariety[[variety]][["tune"]])
   })
-
+    
   names(classifyResults) <- varietyNames
   if(multipleVarieties == FALSE) classifyResults <- classifyResults[[1]]
   classifyResults  
@@ -534,7 +706,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 })
               }
               
-              results <- bpmapply(function(sampleFolds, sampleNumber, ...)
+              results <- bpmapply(function(resampleFolds, sampleNumber, ...)
               {
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
@@ -544,13 +716,13 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                   {
                     runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                     datasetName, classificationName,
-                                    unlist(sampleFolds[-foldIndex]), sampleFolds[[foldIndex]], ..., verbose = verbose,
+                                    unlist(resampleFolds[-foldIndex]), resampleFolds[[foldIndex]], ..., verbose = verbose,
                                     .iteration = c(sampleNumber, foldIndex))
                   })
                 } else { # Split mode.
                   runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                   datasetName, classificationName,
-                                  sampleFolds[[1]], sampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
+                                  resampleFolds[[1]], resampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
                 }
               }, samplesFolds, as.list(1:permutations), MoreArgs = list(...), BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else if(validation == "leaveOut") # leave k out.

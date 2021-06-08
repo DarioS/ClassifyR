@@ -40,7 +40,7 @@
   
     dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
-    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clincal", S4Vectors::mcols(dataTable)[, "sourceName"])
+    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
   
     S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])

@@ -89,6 +89,27 @@ htmltools::img(src = knitr::image_uri("networkFunctions.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
+### Pre-validation
+
+Pre-validation is an approach to provide a fairer way to compare the benefit of omics data to traditional, freely-available clinical data. For each omics technology considered, training and testing is done on all of the various partitions of the data and the predictions of each sample are simply added as a column to the clinical data table. Then, cross-validation is done as usual. If an omics data set is important, it will often be included as a selected feature.
+
+Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, wihch must of of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
+
+```{r}
+resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error", better = "lower")
+paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
+                              TrainParams(DLDAtrainInterface),
+                              PredictParams(DLDApredictInterface)),
+                   protein = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
+                              TrainParams(DLDAtrainInterface),
+                              PredictParams(DLDApredictInterface)),
+                   prevalidated = list(TrainParams(elasticNetGLMtrainInterface, getFeatures = elasticNetFeatures),
+                                       PredictParams(elasticNetGLMpredictInterface))
+                   )
+```
+
+*elasticNetFeatures* is a function that enables selected features to be extracted from the trained models, which are simply the variables with a beta coefficient that is not zero. Unlike most classifiers, for elastic net GLM, the feature selection happens during model training - not independently before it.
+
 ## Case Study : Diagnosing Asthma
 
 To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).

@@ -84,7 +84,7 @@ setMethod("samplesMetricMap", "list",
   classData <- data.frame(Class = knownClasses)
   classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
     ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-    ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
+    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
     ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
     ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "npc"),
                                                    legend.title = ggplot2::element_text(size = fontSizes[4]),
@@ -99,20 +99,20 @@ setMethod("samplesMetricMap", "list",
       featureValuesData <- data.frame(Group = featureValues)
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, ggplot2::aes(1:length(featureValues), factor(1)), environment = environment()) +
       ggplot2::scale_fill_manual(name = featureName, values = groupColours) + ggplot2::geom_tile(ggplot2::aes(fill = Group)) +
-      ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
       ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
       ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 0, 0), "npc"),
                                                      legend.title = ggplot2::element_text(size = fontSizes[4]),
                                                      legend.text = ggplot2::element_text(size = fontSizes[5]),
                                                      legend.position = ifelse(showLegends, "right", "none"),
                                                      legend.key.size = legendSize)
-    } else # Numeric data about the samplles.
+    } else # Numeric data about the samples.
     {
       featureValuesData <- data.frame(Class = knownClasses, measurements = featureValues)
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, environment = environment()) +
       ggplot2::geom_point(ggplot2::aes(x = 1:length(featureValues), y = measurements, colour = Class)) +
       ggplot2::scale_colour_manual(values = classColours) +
-      ggplot2::scale_x_discrete(breaks = NULL, limits = c(1, length(featureValues))) +
+      ggplot2::scale_x_continuous(breaks = NULL, limits = c(1, length(featureValues))) +
       ggplot2::scale_y_continuous(breaks = c(min(featureValues), max(featureValues))) +
       ggplot2::labs(x = featureName, y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 1, 0), "lines"),
                                                      axis.text = ggplot2::element_text(colour = "black"),
@@ -161,7 +161,7 @@ setMethod("samplesMetricMap", "list",
 
     classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
       ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-      ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
       ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
       ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "lines"),
                                                      legend.title = ggplot2::element_text(size = fontSizes[4]),
@@ -174,7 +174,7 @@ setMethod("samplesMetricMap", "list",
     {
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, ggplot2::aes(1:length(featureValues), factor(1)), environment = environment()) +
         ggplot2::scale_fill_manual(name = featureName, values = groupColours) + ggplot2::geom_tile(ggplot2::aes(fill = Group)) +
-        ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
+        ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
         ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
         ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 0, 0), "lines"),
                                                        legend.title = ggplot2::element_text(size = fontSizes[4]),
@@ -400,7 +400,7 @@ setMethod("samplesMetricMap", "matrix",
   classData <- data.frame(Class = knownClasses)
   classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
     ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-    ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
+    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
     ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
     ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "npc"),
                                                    legend.title = ggplot2::element_text(size = fontSizes[4]),
@@ -415,20 +415,20 @@ setMethod("samplesMetricMap", "matrix",
       featureValuesData <- data.frame(Group = featureValues)
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, ggplot2::aes(1:length(featureValues), factor(1)), environment = environment()) +
       ggplot2::scale_fill_manual(name = featureName, values = groupColours) + ggplot2::geom_tile(ggplot2::aes(fill = Group)) +
-      ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
       ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
       ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 0, 0), "npc"),
                                                      legend.title = ggplot2::element_text(size = fontSizes[4]),
                                                      legend.text = ggplot2::element_text(size = fontSizes[5]),
                                                      legend.position = ifelse(showLegends, "right", "none"),
                                                      legend.key.size = legendSize)
-    } else # Numeric data about the samplles.
+    } else # Numeric data about the samples.
     {
       featureValuesData <- data.frame(Class = knownClasses, measurements = featureValues)
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, environment = environment()) +
       ggplot2::geom_point(ggplot2::aes(x = 1:length(featureValues), y = measurements, colour = Class)) +
       ggplot2::scale_colour_manual(values = classColours) +
-      ggplot2::scale_x_discrete(breaks = NULL, limits = c(1, length(featureValues))) +
+      ggplot2::scale_x_continuous(breaks = NULL, limits = c(1, length(featureValues))) +
       ggplot2::scale_y_continuous(breaks = c(min(featureValues), max(featureValues))) +
       ggplot2::labs(x = featureName, y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 1, 0), "lines"),
                                                      axis.text = ggplot2::element_text(colour = "black"),
@@ -477,7 +477,7 @@ setMethod("samplesMetricMap", "matrix",
 
     classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
       ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-      ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
       ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
       ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "lines"),
                                                      legend.title = ggplot2::element_text(size = fontSizes[4]),
@@ -490,7 +490,7 @@ setMethod("samplesMetricMap", "matrix",
     {
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, ggplot2::aes(1:length(featureValues), factor(1)), environment = environment()) +
         ggplot2::scale_fill_manual(name = featureName, values = groupColours) + ggplot2::geom_tile(ggplot2::aes(fill = Group)) +
-        ggplot2::scale_x_discrete(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
+        ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(featureValues))) +
         ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
         ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 0, 0), "lines"),
                                                        legend.title = ggplot2::element_text(size = fontSizes[4]),
