@@ -96,6 +96,7 @@ Pre-validation is an approach to provide a fairer way to compare the benefit of 
 Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, wihch must of of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
 
 ```{r}
+library(ClassifyR)
 resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error", better = "lower")
 paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
                               TrainParams(DLDAtrainInterface),
@@ -115,7 +116,6 @@ paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = 
 To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).
 
 ```{r, message = FALSE}
-library(ClassifyR)
 data(asthma)
 measurements[1:5, 1:5]
 head(classes)
