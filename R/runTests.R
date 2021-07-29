@@ -139,15 +139,22 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     {
       samplesFolds <- lapply(1:permutations, function(permutation)
                       {
-                        classesFolds <- lapply(levels(classes), function(className)
+                        allFolds <- vector(mode = "list", length = folds)
+                        foldsIndexes <- rep(1:folds, length.out = length(classes))
+                        
+                        foldsIndex = 1
+                        for(className in levels(classes))
                         {
-                          whichSamples <- which(classes == className)
-                          split(sample(whichSamples), rep(1:folds, length.out = length(whichSamples)))
-                        })
-                        allFolds <- lapply(1:folds, function(fold)
-                        {
-                          unlist(lapply(classesFolds, "[[", fold))
-                        })
+                          whichSamples <- sample(which(classes == className))
+                          whichFolds <- foldsIndexes[foldsIndex:(foldsIndex + length(whichSamples) - 1)]
+                          
+                          for(sampleIndex in 1:length(whichSamples))
+                          {
+                            allFolds[[whichFolds[sampleIndex]]] <- c(allFolds[[whichFolds[sampleIndex]]], whichSamples[sampleIndex])
+                          }
+                          foldsIndex <- foldsIndex + length(whichSamples)
+                        }
+                        allFolds
                       })
     } else { # Is split.
       
@@ -275,15 +282,21 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
   } else { # Unresampled, ordinary k-fold cross-validation.
-      classesFolds <- lapply(levels(classes), function(className)
+    samplesFolds <- vector(mode = "list", length = folds)
+    foldsIndexes <- rep(1:folds, length.out = length(classes))
+    
+    foldsIndex = 1
+    for(className in levels(classes))
+    {
+      whichSamples <- which(classes == className)
+      whichFolds <- foldsIndexes[foldsIndex:(foldsIndex + length(whichSamples) - 1)]
+      
+      for(sampleIndex in 1:length(whichSamples))
       {
-        whichSamples <- which(classes == className)
-        split(sample(whichSamples), rep(1:folds, length.out = length(whichSamples)))
-      })
-      samplesFolds <- lapply(1:folds, function(fold)
-      {
-        unlist(lapply(classesFolds, "[[", fold))
-      })
+        samplesFolds[[whichFolds[sampleIndex]]] <- c(samplesFolds[[whichFolds[sampleIndex]]], sample(whichSamples[sampleIndex]))
+      }
+      foldsIndex <- foldsIndex + length(whichSamples)
+    }
     
     if(verbose >= 1)
       message("Processing ", folds, "-fold cross-validation.")
