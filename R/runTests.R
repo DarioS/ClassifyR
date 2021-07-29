@@ -293,7 +293,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       
       for(sampleIndex in 1:length(whichSamples))
       {
-        samplesFolds[[whichFolds[sampleIndex]]] <- c(samplesFolds[[whichFolds[sampleIndex]]], sample(whichSamples[sampleIndex]))
+        samplesFolds[[whichFolds[sampleIndex]]] <- c(samplesFolds[[whichFolds[sampleIndex]]], whichSamples[sampleIndex])
       }
       foldsIndex <- foldsIndex + length(whichSamples)
     }
