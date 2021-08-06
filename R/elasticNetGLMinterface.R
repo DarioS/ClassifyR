@@ -78,6 +78,8 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
 
   testMatrix <- glmnet::makeX(as(test, "data.frame"))
+  testMatrix <- testMatrix[, rownames(model[["beta"]][[1]])]
+  
   classPredictions <- factor(as.character(predict(model, testMatrix, s = lambda, type = "class")), levels = model[["classnames"]])
   classScores <- predict(model, testMatrix, s = lambda, type = "response")[, , 1]
   
