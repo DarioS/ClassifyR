@@ -2,7 +2,7 @@
 \docType{class}
 \alias{SelectParams}
 \alias{SelectParams-class}
-\alias{SelectParams,ANY-method}
+\alias{SelectParams,missing-method}
 \alias{SelectParams,functionOrList-method}
 
 \title{Parameters for Feature Selection}

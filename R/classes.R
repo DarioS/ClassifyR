@@ -145,7 +145,7 @@ setClass("ResubstituteParams", representation(
 setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c("lower", "higher"), ...)
 {standardGeneric("ResubstituteParams")})
 
-setMethod("ResubstituteParams", numeric(0), function()
+setMethod("ResubstituteParams", "missing", function()
 {
   new("ResubstituteParams", nFeatures = seq(10, 100, 10), performanceType = "balanced error",
       better = "lower")
@@ -169,7 +169,7 @@ setClass("SelectParams", representation(
 
 setGeneric("SelectParams", function(featureSelection, ...)
 {standardGeneric("SelectParams")})
-setMethod("SelectParams", character(0), function()
+setMethod("SelectParams", "missing", function()
 {
   new("SelectParams", featureSelection = differentMeansSelection,
       selectionName = "Difference in Means", minPresence = 1,
@@ -201,7 +201,7 @@ setClass("TrainParams", representation(
 
 setGeneric("TrainParams", function(classifier, ...)
 {standardGeneric("TrainParams")})
-setMethod("TrainParams", character(0), function()
+setMethod("TrainParams", "missing", function()
 {
   new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), getFeatures = NULL)
 })
@@ -220,7 +220,7 @@ setClass("PredictParams", representation(
 
 setGeneric("PredictParams", function(predictor, ...)
 {standardGeneric("PredictParams")})
-setMethod("PredictParams", character(0), function()
+setMethod("PredictParams", "missing", function()
 {
   new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0))
 })

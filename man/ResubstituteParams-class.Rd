@@ -2,7 +2,7 @@
 \docType{class}
 \alias{ResubstituteParams}
 \alias{ResubstituteParams-class}
-\alias{ResubstituteParams,ANY,ANY,ANY-method}
+\alias{ResubstituteParams,missing,ANY,ANY-method}
 \alias{ResubstituteParams,numeric,character,character-method}
 
 \title{Parameters for Resubstitution Error Calculation}

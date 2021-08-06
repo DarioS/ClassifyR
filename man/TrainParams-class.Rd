@@ -2,7 +2,7 @@
 \docType{class}
 \alias{TrainParams}
 \alias{TrainParams-class}
-\alias{TrainParams,ANY-method}
+\alias{TrainParams,missing-method}
 \alias{TrainParams,function-method}
 
 \title{Parameters for Classifier Training}

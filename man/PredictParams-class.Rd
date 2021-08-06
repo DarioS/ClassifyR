@@ -2,7 +2,7 @@
 \docType{class}
 \alias{PredictParams}
 \alias{PredictParams-class}
-\alias{PredictParams,ANY-method}
+\alias{PredictParams,missing-method}
 \alias{PredictParams,functionOrNULL-method}
 
 \title{Parameters for Classifier Prediction}
