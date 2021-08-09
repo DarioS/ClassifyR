@@ -1,8 +1,8 @@
 setGeneric("calcExternalPerformance", function(actualClasses, predictedClasses, ...)
-{standardGeneric("calcExternalPerformance")})
+standardGeneric("calcExternalPerformance"))
 
 setGeneric("calcCVperformance", function(result, ...)
-{standardGeneric("calcCVperformance")})
+standardGeneric("calcCVperformance"))
 
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualClasses, predictedClasses,

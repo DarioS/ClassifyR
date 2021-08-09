@@ -1,5 +1,5 @@
 setGeneric("kTSPclassifier", function(measurements, ...)
-           {standardGeneric("kTSPclassifier")})
+           standardGeneric("kTSPclassifier"))
 
 setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, featurePairs = NULL, ...)

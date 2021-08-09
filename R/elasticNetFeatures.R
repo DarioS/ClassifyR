@@ -1,5 +1,5 @@
 setGeneric("elasticNetFeatures", function(model, ...)
-           {standardGeneric("elasticNetFeatures")})
+           standardGeneric("elasticNetFeatures"))
 
 setMethod("elasticNetFeatures", "multnet",
           function(model)

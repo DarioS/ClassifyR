@@ -1,5 +1,5 @@
 setGeneric("plotFeatureClasses", function(measurements, ...)
-           {standardGeneric("plotFeatureClasses")})
+           standardGeneric("plotFeatureClasses"))
 
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {

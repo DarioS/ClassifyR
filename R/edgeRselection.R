@@ -1,5 +1,5 @@
 setGeneric("edgeRselection", function(counts, ...)
-           {standardGeneric("edgeRselection")})
+           standardGeneric("edgeRselection"))
 
 setMethod("edgeRselection", "matrix", # Matrix of integer counts.
           function(counts, classes, ...)

@@ -1,5 +1,5 @@
 setGeneric("DLDAtrainInterface", function(measurements, ...)
-{standardGeneric("DLDAtrainInterface")})
+standardGeneric("DLDAtrainInterface"))
 
 setMethod("DLDAtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
@@ -37,7 +37,7 @@ function(measurements, targets = names(measurements), ...)
 })
 
 setGeneric("DLDApredictInterface", function(model, test, ...)
-{standardGeneric("DLDApredictInterface")})
+standardGeneric("DLDApredictInterface"))
 
 setMethod("DLDApredictInterface", c("dlda", "matrix"),
           function(model, test, ...)

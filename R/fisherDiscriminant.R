@@ -1,5 +1,5 @@
 setGeneric("fisherDiscriminant", function(measurements, ...)
-           {standardGeneric("fisherDiscriminant")})
+           standardGeneric("fisherDiscriminant"))
 
 setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)

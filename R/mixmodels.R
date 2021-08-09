@@ -1,5 +1,5 @@
 setGeneric("mixModelsTrain", function(measurements, ...)
-           {standardGeneric("mixModelsTrain")})
+           standardGeneric("mixModelsTrain"))
 
 setMethod("mixModelsTrain", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
@@ -58,7 +58,7 @@ setMethod("mixModelsTrain", "MultiAssayExperiment",
 })
 
 setGeneric("mixModelsPredict", function(models, test, ...)
-           {standardGeneric("mixModelsPredict")})
+           standardGeneric("mixModelsPredict"))
 
 setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, test, ...)
 {

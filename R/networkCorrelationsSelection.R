@@ -1,5 +1,5 @@
 setGeneric("networkCorrelationsSelection", function(measurements, ...)
-           {standardGeneric("networkCorrelationsSelection")})
+           standardGeneric("networkCorrelationsSelection"))
 
 setMethod("networkCorrelationsSelection", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, metaFeatures = NULL, ...)

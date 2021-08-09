@@ -1,4 +1,4 @@
-setGeneric("kNNinterface", function(measurements, ...) {standardGeneric("kNNinterface")})
+setGeneric("kNNinterface", function(measurements, ...) standardGeneric("kNNinterface"))
 
 setMethod("kNNinterface", "matrix",
           function(measurements, classes, test, ...)

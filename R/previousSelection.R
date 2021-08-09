@@ -1,5 +1,5 @@
 setGeneric("previousSelection", function(measurements, ...)
-{standardGeneric("previousSelection")})
+standardGeneric("previousSelection"))
 
 setMethod("previousSelection", "matrix", 
           function(measurements, ...)

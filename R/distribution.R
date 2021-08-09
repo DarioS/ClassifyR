@@ -1,5 +1,5 @@
 setGeneric("distribution", function(result, ...)
-           {standardGeneric("distribution")})
+           standardGeneric("distribution"))
 
 setMethod("distribution", "ClassifyResult", 
           function(result, dataType = c("features", "samples"),

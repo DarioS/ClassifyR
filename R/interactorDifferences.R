@@ -1,5 +1,5 @@
 setGeneric("interactorDifferences", function(measurements, ...)
-           {standardGeneric("interactorDifferences")})
+           standardGeneric("interactorDifferences"))
 
 setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)

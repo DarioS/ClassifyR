@@ -1,5 +1,5 @@
 setGeneric("runTest", function(measurements, ...)
-           {standardGeneric("runTest")})
+           standardGeneric("runTest"))
 
 setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
   function(measurements, classes, ...)
@@ -345,7 +345,7 @@ setMethod("runTest", c("MultiAssayExperiment"),
 })
 
 setGeneric("runTestEasyHard", function(measurements, ...)
-{standardGeneric("runTestEasyHard")})
+standardGeneric("runTestEasyHard"))
 
 setMethod("runTestEasyHard", c("MultiAssayExperiment"),
           function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],

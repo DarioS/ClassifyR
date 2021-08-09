@@ -1,5 +1,5 @@
 setGeneric("NSCselectionInterface", function(measurements, ...)
-{standardGeneric("NSCselectionInterface")})
+standardGeneric("NSCselectionInterface"))
 
 setMethod("NSCselectionInterface", "matrix", function(measurements, classes, ...)
 {

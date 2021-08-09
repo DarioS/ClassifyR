@@ -1,5 +1,5 @@
 setGeneric("selectionPlot", function(results, ...)
-{standardGeneric("selectionPlot")})
+standardGeneric("selectionPlot"))
 
 setMethod("selectionPlot", "list", 
           function(results,

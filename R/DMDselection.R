@@ -1,6 +1,6 @@
 # Mean or Median, Three Kinds of Deviations.
 setGeneric("DMDselection", function(measurements, ...)
-           {standardGeneric("DMDselection")})
+           standardGeneric("DMDselection"))
 
 setMethod("DMDselection", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)

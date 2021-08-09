@@ -1,5 +1,5 @@
 setGeneric("performancePlot", function(results, ...)
-{standardGeneric("performancePlot")})
+standardGeneric("performancePlot"))
 
 setMethod("performancePlot", "list", 
           function(results,

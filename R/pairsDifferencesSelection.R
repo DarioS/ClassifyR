@@ -1,5 +1,5 @@
 setGeneric("pairsDifferencesSelection", function(measurements, ...)
-           {standardGeneric("pairsDifferencesSelection")})
+           standardGeneric("pairsDifferencesSelection"))
 
 setMethod("pairsDifferencesSelection", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, featurePairs = NULL, ...)

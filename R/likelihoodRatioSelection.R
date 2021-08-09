@@ -1,5 +1,5 @@
 setGeneric("likelihoodRatioSelection", function(measurements, ...)
-           {standardGeneric("likelihoodRatioSelection")})
+           standardGeneric("likelihoodRatioSelection"))
 
 # Matrix of numeric measurements.
 setMethod("likelihoodRatioSelection", "matrix", function(measurements, classes, ...)

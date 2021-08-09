@@ -1,5 +1,5 @@
 setGeneric("classifyInterface", function(measurements, ...)
-{standardGeneric("classifyInterface")})
+standardGeneric("classifyInterface"))
 
 setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
           function(measurements, classes, test, ...)

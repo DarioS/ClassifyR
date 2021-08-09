@@ -1,5 +1,5 @@
 setGeneric("easyHardClassifierTrain", function(measurements, ...)
-{standardGeneric("easyHardClassifierTrain")})
+standardGeneric("easyHardClassifierTrain"))
 
 setMethod("easyHardClassifierTrain", "MultiAssayExperiment",
 function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
@@ -162,7 +162,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
 })
 
 setGeneric("easyHardClassifierPredict", function(model, test, ...)
-           {standardGeneric("easyHardClassifierPredict")})
+           standardGeneric("easyHardClassifierPredict"))
 
 setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperiment"), function(model, test, predictParams, verbose = 3)
 {

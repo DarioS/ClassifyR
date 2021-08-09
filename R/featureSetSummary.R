@@ -1,5 +1,5 @@
 setGeneric("featureSetSummary", function(measurements, ...)
-           {standardGeneric("featureSetSummary")})
+           standardGeneric("featureSetSummary"))
 
 setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
           function(measurements, location = c("median", "mean"),

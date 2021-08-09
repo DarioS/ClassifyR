@@ -1,5 +1,5 @@
 setGeneric("forestFeatures", function(forest, ...)
-           {standardGeneric("forestFeatures")})
+           standardGeneric("forestFeatures"))
 
 setMethod("forestFeatures", "randomForest",
           function(forest)

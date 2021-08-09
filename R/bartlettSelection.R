@@ -1,5 +1,5 @@
 setGeneric("bartlettSelection", function(measurements, ...)
-{standardGeneric("bartlettSelection")})
+standardGeneric("bartlettSelection"))
 
 setMethod("bartlettSelection", "matrix", # Matrix of numeric measurements.
 function(measurements, classes, ...)

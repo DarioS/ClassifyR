@@ -23,7 +23,7 @@ setClass("TransformParams", representation(
 )
 
 setGeneric("TransformParams", function(transform, ...)
-{standardGeneric("TransformParams")})
+standardGeneric("TransformParams"))
 
 setMethod("TransformParams", c("function"),
           function(transform, intermediate = character(0), ...)
@@ -37,7 +37,7 @@ setClass("FeatureSetCollection", representation(
 )
 
 setGeneric("FeatureSetCollection", function(sets, ...)
-{standardGeneric("FeatureSetCollection")})
+standardGeneric("FeatureSetCollection"))
 setMethod("FeatureSetCollection", c("list"),
           function(sets)
           {
@@ -143,7 +143,7 @@ setClass("ResubstituteParams", representation(
 )
 
 setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c("lower", "higher"), ...)
-{standardGeneric("ResubstituteParams")})
+standardGeneric("ResubstituteParams"))
 
 setMethod("ResubstituteParams", "missing", function()
 {
@@ -168,7 +168,7 @@ setClass("SelectParams", representation(
 )
 
 setGeneric("SelectParams", function(featureSelection, ...)
-{standardGeneric("SelectParams")})
+standardGeneric("SelectParams"))
 setMethod("SelectParams", "missing", function()
 {
   new("SelectParams", featureSelection = differentMeansSelection,
@@ -200,7 +200,7 @@ setClass("TrainParams", representation(
 )
 
 setGeneric("TrainParams", function(classifier, ...)
-{standardGeneric("TrainParams")})
+standardGeneric("TrainParams"))
 setMethod("TrainParams", "missing", function()
 {
   new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), getFeatures = NULL)
@@ -219,7 +219,7 @@ setClass("PredictParams", representation(
 )
 
 setGeneric("PredictParams", function(predictor, ...)
-{standardGeneric("PredictParams")})
+standardGeneric("PredictParams"))
 setMethod("PredictParams", "missing", function()
 {
   new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0))
@@ -235,7 +235,7 @@ setMethod("PredictParams", c("functionOrNULL"),
           })
 
 setGeneric("SelectResult", function(dataset, selection, totalFeatures, rankedFeatures, chosenFeatures, ...)
-{standardGeneric("SelectResult")})
+standardGeneric("SelectResult"))
 setClass("SelectResult", representation(
   datasetName = "character",
   selectionName = "character",
@@ -287,7 +287,7 @@ setMethod("show", c("SelectResult"),
           })
 
 setGeneric("ClassifyResult", function(datasetName, classificationName, selectionName, originalNames, originalFeatures, ...)
-{standardGeneric("ClassifyResult")})
+standardGeneric("ClassifyResult"))
 setClass("ClassifyResult", representation(
   datasetName = "character",
   classificationName = "character",
@@ -345,7 +345,7 @@ setMethod("show", c("ClassifyResult"),
           })
 
 setGeneric("sampleNames", function(object, ...)
-{standardGeneric("sampleNames")})
+standardGeneric("sampleNames"))
 setMethod("sampleNames", c("ClassifyResult"),
           function(object)
           {
@@ -353,7 +353,7 @@ setMethod("sampleNames", c("ClassifyResult"),
           })
 
 setGeneric("featureNames", function(object, ...)
-{standardGeneric("featureNames")})
+standardGeneric("featureNames"))
 setMethod("featureNames", c("ClassifyResult"),
           function(object)
           {
@@ -361,7 +361,7 @@ setMethod("featureNames", c("ClassifyResult"),
           })
 
 setGeneric("features", function(object, ...)
-{standardGeneric("features")})
+standardGeneric("features"))
 setMethod("features", c("ClassifyResult"),
           function(object)
           {
@@ -369,7 +369,7 @@ setMethod("features", c("ClassifyResult"),
           })
 
 setGeneric("models", function(object, ...)
-{standardGeneric("models")})
+standardGeneric("models"))
 setMethod("models", c("ClassifyResult"),
           function(object)
           {
@@ -377,7 +377,7 @@ setMethod("models", c("ClassifyResult"),
           })
 
 setGeneric("predictions", function(object, ...)
-{standardGeneric("predictions")})
+standardGeneric("predictions"))
 setMethod("predictions", c("ClassifyResult"),
           function(object)
           {
@@ -385,7 +385,7 @@ setMethod("predictions", c("ClassifyResult"),
           })
 
 setGeneric("performance", function(object, ...)
-{standardGeneric("performance")})
+standardGeneric("performance"))
 setMethod("performance", c("ClassifyResult"),
           function(object)
           {
@@ -393,7 +393,7 @@ setMethod("performance", c("ClassifyResult"),
           })
 
 setGeneric("actualClasses", function(object, ...)
-{standardGeneric("actualClasses")})
+standardGeneric("actualClasses"))
 setMethod("actualClasses", c("ClassifyResult"),
           function(object)
           {
@@ -401,7 +401,7 @@ setMethod("actualClasses", c("ClassifyResult"),
           })
 
 setGeneric("tunedParameters", function(object, ...)
-{standardGeneric("tunedParameters")})
+standardGeneric("tunedParameters"))
 setMethod("tunedParameters", c("ClassifyResult"),
           function(object)
           {
@@ -409,7 +409,7 @@ setMethod("tunedParameters", c("ClassifyResult"),
           })
 
 setGeneric("totalPredictions", function(result, ...)
-{standardGeneric("totalPredictions")})
+standardGeneric("totalPredictions"))
 setMethod("totalPredictions", c("ClassifyResult"),
           function(result)
           {
@@ -422,7 +422,7 @@ setClass("EasyHardClassifier", representation(
   datasetIDs = "character"
 ))
 setGeneric("EasyHardClassifier", function(easyClassifier, hardClassifier, datasetIDs)
-{standardGeneric("EasyHardClassifier")})
+standardGeneric("EasyHardClassifier"))
 setMethod("EasyHardClassifier", c("listOrNULL", "listOrCharacterOrNULL", "character"),
           function(easyClassifier, hardClassifier, datasetIDs)
           {
@@ -448,7 +448,7 @@ setClass("MixModelsListsSet", representation(
 )
 
 setGeneric("MixModelsListsSet", function(set, ...)
-{standardGeneric("MixModelsListsSet")})
+standardGeneric("MixModelsListsSet"))
 setMethod("MixModelsListsSet", c("list"),
           function(set)
           {

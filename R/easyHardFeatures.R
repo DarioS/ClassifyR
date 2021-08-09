@@ -1,5 +1,5 @@
 setGeneric("easyHardFeatures", function(easyHardClassifier, ...)
-{standardGeneric("easyHardFeatures")})
+standardGeneric("easyHardFeatures"))
 
 setMethod("easyHardFeatures", "EasyHardClassifier",
           function(easyHardClassifier)

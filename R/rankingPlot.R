@@ -1,5 +1,5 @@
 setGeneric("rankingPlot", function(results, ...)
-{standardGeneric("rankingPlot")})
+standardGeneric("rankingPlot"))
 
 setMethod("rankingPlot", "list", 
           function(results, topRanked = seq(10, 100, 10),

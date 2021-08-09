@@ -1,5 +1,5 @@
 setGeneric("samplesMetricMap", function(results, ...)
-{standardGeneric("samplesMetricMap")})
+standardGeneric("samplesMetricMap"))
 
 setMethod("samplesMetricMap", "list", 
           function(results,

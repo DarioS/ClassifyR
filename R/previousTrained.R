@@ -1,5 +1,5 @@
 setGeneric("previousTrained", function(classifyResult, ...)
-{standardGeneric("previousTrained")})
+standardGeneric("previousTrained"))
 
 setMethod("previousTrained", "ClassifyResult", 
           function(classifyResult, .iteration, verbose = 3)

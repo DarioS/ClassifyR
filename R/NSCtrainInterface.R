@@ -1,5 +1,5 @@
 setGeneric("NSCtrainInterface", function(measurements, ...)
-{standardGeneric("NSCtrainInterface")})
+standardGeneric("NSCtrainInterface"))
 
 setMethod("NSCtrainInterface", "matrix", function(measurements, classes, ...)
 {

@@ -1,5 +1,5 @@
 setGeneric("KolmogorovSmirnovSelection", function(measurements, ...)
-           {standardGeneric("KolmogorovSmirnovSelection")})
+           standardGeneric("KolmogorovSmirnovSelection"))
 
 # Matrix of numeric measurements.
 setMethod("KolmogorovSmirnovSelection", "matrix", function(measurements, classes, ...)

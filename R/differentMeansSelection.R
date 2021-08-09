@@ -1,5 +1,5 @@
 setGeneric("differentMeansSelection", function(measurements, ...)
-           {standardGeneric("differentMeansSelection")})
+           standardGeneric("differentMeansSelection"))
 
 # Matrix of numeric measurements.
 setMethod("differentMeansSelection", "matrix", function(measurements, classes, ...)

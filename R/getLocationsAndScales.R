@@ -1,5 +1,5 @@
 setGeneric("getLocationsAndScales", function(measurements, ...)
-           {standardGeneric("getLocationsAndScales")})
+           standardGeneric("getLocationsAndScales"))
 
 setMethod("getLocationsAndScales", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)

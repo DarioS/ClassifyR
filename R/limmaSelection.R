@@ -1,5 +1,5 @@
 setGeneric("limmaSelection", function(measurements, ...)
-           {standardGeneric("limmaSelection")})
+           standardGeneric("limmaSelection"))
 
 # Matrix of numeric measurements.
 setMethod("limmaSelection", "matrix", function(measurements, classes, ...)

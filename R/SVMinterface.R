@@ -1,5 +1,5 @@
 setGeneric("SVMtrainInterface", function(measurements, ...)
-{standardGeneric("SVMtrainInterface")})
+standardGeneric("SVMtrainInterface"))
 
 setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
@@ -37,7 +37,7 @@ function(measurements, targets = names(measurements), ...)
 })
 
 setGeneric("SVMpredictInterface", function(model, test, ...)
-{standardGeneric("SVMpredictInterface")})
+standardGeneric("SVMpredictInterface"))
 
 setMethod("SVMpredictInterface", c("svm", "matrix"),
           function(model, test, ...)

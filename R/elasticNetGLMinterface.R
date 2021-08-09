@@ -1,5 +1,5 @@
 setGeneric("elasticNetGLMtrainInterface", function(measurements, ...)
-{standardGeneric("elasticNetGLMtrainInterface")})
+standardGeneric("elasticNetGLMtrainInterface"))
 
 setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
@@ -50,7 +50,7 @@ function(measurements, targets = names(measurements), ...)
 
 # Matrix of numeric measurements.
 setGeneric("elasticNetGLMpredictInterface", function(model, test, ...)
-{standardGeneric("elasticNetGLMpredictInterface")})
+standardGeneric("elasticNetGLMpredictInterface"))
 
 setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
           function(model, test, ...)

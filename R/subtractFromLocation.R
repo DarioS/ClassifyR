@@ -1,5 +1,5 @@
 setGeneric("subtractFromLocation", function(measurements, ...)
-           {standardGeneric("subtractFromLocation")})
+           standardGeneric("subtractFromLocation"))
 
 setMethod("subtractFromLocation", "matrix", 
           function(measurements, training, location = c("mean", "median"),

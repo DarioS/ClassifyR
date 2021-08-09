@@ -1,5 +1,5 @@
 setGeneric("KullbackLeiblerSelection", function(measurements, ...)
-           {standardGeneric("KullbackLeiblerSelection")})
+           standardGeneric("KullbackLeiblerSelection"))
 
 # Matrix of numeric measurements.
 setMethod("KullbackLeiblerSelection", "matrix", function(measurements, classes, ...)

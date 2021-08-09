@@ -1,5 +1,5 @@
 setGeneric("naiveBayesKernel", function(measurements, ...)
-           {standardGeneric("naiveBayesKernel")})
+           standardGeneric("naiveBayesKernel"))
 
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, test, ...)

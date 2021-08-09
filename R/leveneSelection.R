@@ -1,5 +1,5 @@
 setGeneric("leveneSelection", function(measurements, ...)
-           {standardGeneric("leveneSelection")})
+           standardGeneric("leveneSelection"))
 
 # Matrix of numeric measurements.
 setMethod("leveneSelection", "matrix", function(measurements, classes, ...)

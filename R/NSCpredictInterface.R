@@ -1,5 +1,5 @@
 setGeneric("NSCpredictInterface", function(trained, test, ...)
-{standardGeneric("NSCpredictInterface")})
+standardGeneric("NSCpredictInterface"))
 
 setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(trained, test, ...)
 {

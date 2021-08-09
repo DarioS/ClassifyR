@@ -1,5 +1,5 @@
 setGeneric("ROCplot", function(results, ...)
-{standardGeneric("ROCplot")})
+standardGeneric("ROCplot"))
 
 setMethod("ROCplot", "list", 
           function(results, nBins = sapply(results, totalPredictions),
