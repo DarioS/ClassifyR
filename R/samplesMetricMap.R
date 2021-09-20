@@ -21,6 +21,10 @@ setMethod("samplesMetricMap", "list",
     stop("The package 'gtable' could not be found. Please install it.")
             
   comparison <- match.arg(comparison)
+  compareFactor <- switch(comparison, classificationName = sapply(results, function(result) result@classificationName),
+                          datasetName = sapply(results, function(result) result@datasetName),
+                          selectionName = sapply(results, function(result) result@selectResult@selectionName),
+                          validation = sapply(results, function(result) .validationText(result)))  
   metric <- match.arg(metric)
   metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
   metricID <- switch(metric, error = "Sample-wise Error Rate", accuracy = "Sample-wise Accuracy")
@@ -29,6 +33,11 @@ setMethod("samplesMetricMap", "list",
     stop("One or more classification results lack the calculated sample-specific metric.")
   if(!is.null(featureValues) && is.null(featureName))
     stop("featureValues is specified by featureNames isn't. Specify both.")
+  comparisonValuesCounts <- table(compareFactor)
+  if(any(comparisonValuesCounts > 1))
+    stop("Some classification results have same the comparison value. Check that each
+  clasification result is distinctive for the comparison type specified by
+  'comparison'.")
   
   nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
   metricBinEnds <- seq(0, 1, 1/nColours)
@@ -62,10 +71,6 @@ setMethod("samplesMetricMap", "list",
   
   metricValues <- lapply(metricValues, function(resultmetricValues) resultmetricValues[ordering])
   classedMetricValues <- lapply(classedMetricValues, function(resultmetricValues) resultmetricValues[ordering])
-  compareFactor <- switch(comparison, classificationName = sapply(results, function(result) result@classificationName),
-                                      datasetName = sapply(results, function(result) result@datasetName),
-                                      selectionName = sapply(results, function(result) result@selectResult@selectionName),
-                                      validation = sapply(results, function(result) .validationText(result)))
   
   plotData <- data.frame(name = factor(rep(sampleNames(results[[1]])[ordering], length(results)), levels = sampleNames(results[[1]])[ordering]),
                          type = factor(rep(compareFactor, sapply(metricValues, length)), levels = rev(compareFactor)),
