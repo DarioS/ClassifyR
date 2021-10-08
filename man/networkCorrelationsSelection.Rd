@@ -26,7 +26,7 @@
                  is a \code{MultiAssayExperiment} object.}
   \item{metaFeatures}{A \code{DataFrame} with the same number of samples as the numeric table
                       of interest. The number of derived features in this table will be different
-                      to the original input data table. The command \code{mcols(metaFeatureMeasurements)}
+                      to the original input data table. The command \code{mcols(metaFeatures)}
                       must return a \code{DataFrame} which has an "original" column with as many rows
                       as there are meta-features and specifies the feature which the meta-feature is
                       originally derived from (e.g. network name).}

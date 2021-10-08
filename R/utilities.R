@@ -344,6 +344,7 @@
       {
         whichList <- which(sapply(predictParams@otherParams, is.list))
         extras <- predictParams@otherParams
+        extras <- extras[setdiff(names(extras), names(paramList))] # Don't add same params twice.
         if(length(whichList) > 0) # Used when selected features is passed as an intermediate and there are multiple varieties.
         {
           extras[whichList] <- lapply(whichList, function(paramIndex)
@@ -512,7 +513,7 @@
       predictions <- trained
     }
     
-    if("list" %in% class(predictions)) # Mutiple varieties of predictions.
+    if("list" %in% class(predictions)) # Multiple varieties of predictions.
     {
       if(class(predictions[[1]]) == "data.frame")
         predictedClasses <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
@@ -533,7 +534,7 @@
     }
   })
   
-  if(class(performances) == "numeric")
+  if("numeric" %in% class(performances))
     performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
 
   pickedFeatures <- apply(performances, 1, function(varietyPerformances)

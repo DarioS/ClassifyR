@@ -113,7 +113,7 @@
                                     
   selParams <- SelectParams(featureSelection = differentMeansSelection, selectionName = "Difference in Means",
                             resubstituteParams = ResubstituteParams(1:10, "balanced error", "lower"))
-  easyHardCV <- runTestEasyHard(dataset, datasetName = "Test Data", classificationName = "Easy-Hard", training = 1:10, testing = 1:10,
+  easyHardCV <- runTestEasyHard(dataset, datasetName = "Test Data", classificationName = "Easy-Hard", training = paste("Sample", 1:10), testing = paste("Sample", 1:10),
                                 easyClassifierParams = list(minCardinality = 2, minPurity = 0.9),
                                 hardClassifierParams = list(selParams, TrainParams(), PredictParams())
                                )

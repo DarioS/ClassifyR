@@ -374,7 +374,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   {
     if(permutePartition == "fold")
     {
-      if(class(results[[1]][[1]][["predictions"]]) == "list") 
+      if(class(results[[1]][[1]][["predictions"]]) == "list")
       {
         multipleVarieties <- TRUE
         varietyNames <- names(results[[1]][[1]][["predictions"]])
@@ -382,7 +382,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
         multipleVarieties <- FALSE
         varietyNames <- "None"
       }
-    } else {
+    } else { # % split. Not nested.
       if(class(results[[1]][["predictions"]]) == "list")
       {
         multipleVarieties <- TRUE
@@ -699,7 +699,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                   classesFolds <- lapply(levels(classes), function(className)
                   {
                     whichSamples <- which(classes == className)
-                    split(sample(whichSamples), rep(1:folds, length.out = length(whichSamples)))
+                    split(commonSamples[sample(whichSamples)], rep(1:folds, length.out = length(whichSamples)))
                   })
                   allFolds <- lapply(1:folds, function(fold)
                   {
@@ -712,9 +712,9 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 {
                   trainSet <- unlist(mapply(function(className, number)
                   {
-                    sample(which(classes == className), number)
+                    commonSamples[sample(which(classes == className), number)]
                   }, levels(classes), samplesTrain))
-                  testSet <- setdiff(1:length(classes), trainSet)
+                  testSet <- setdiff(commonSamples, trainSet)
                   list(trainSet, testSet)
                 })
               }
@@ -740,8 +740,8 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               }, samplesFolds, as.list(1:permutations), MoreArgs = list(...), BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else if(validation == "leaveOut") # leave k out.
             {
-              testSamples <- as.data.frame(utils::combn(consideredSamples, leave))
-              trainingSamples <- lapply(testSamples, function(sample) setdiff(1:consideredSamples, sample))
+              testSamples <- as.data.frame(apply(utils::combn(consideredSamples, leave), 2, function(indexes) commonSamples[indexes], simplify = FALSE))
+              trainingSamples <- lapply(testSamples, function(sample) setdiff(commonSamples, sample))
               
               results <- bpmapply(function(trainingSample, testSample, sampleNumber, ...)
               {

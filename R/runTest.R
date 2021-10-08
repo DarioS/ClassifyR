@@ -28,6 +28,7 @@ function(measurements, classes,
   selectParams <- params[[match("SelectParams", stagesParamClasses)]]
   trainParams <- params[[match("TrainParams", stagesParamClasses)]]
   predictParams <- params[[match("PredictParams", stagesParamClasses)]]
+  testingSamplesIDs <- rownames(measurements)[testing]
   
   # All input features.
   if(!is.null(S4Vectors::mcols(measurements)))
@@ -303,20 +304,19 @@ function(measurements, classes,
            )
     
   }
-  if(is.logical(testing)) testing <- which(testing)
-  if(is.numeric(testing)) testing <- rownames(measurements)[testing]
+
   # Rankings and selections might not be explicitly returned, such as for random forest classifier.
   if(!exists("rankedFeatures")) rankedFeatures <- NULL
   if(!exists("selectedFeatures")) selectedFeatures <- NULL
   if(is.null(predictParams@predictor)) models <- NULL else models <- trained # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
   if(!is.null(.iteration)) # This function was called by runTests.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testing, predictions = predictedClasses, tune = tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testingSamplesIDs, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     if(class(predictedClasses) != "list")
     {
       return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures, consideredFeatures,
-                            list(rankedFeatures), list(selectedFeatures), list(models), list(data.frame(sample = testing, class = predictedClasses)),
+                            list(rankedFeatures), list(selectedFeatures), list(models), list(data.frame(sample = testingSamplesIDs, class = predictedClasses)),
                             classes, list("independent"), tuneDetails)
              )
     } else { # A variety of predictions were made.
@@ -352,6 +352,11 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                    datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
           {
+            if(!is.character(training))
+              stop("'training' is not character type but must be for easy-hard classifier to avoid ambiguities.")
+            if(!is.character(testing))
+              stop("'testing' is not character type but must be for easy-hard classifier to avoid ambiguities.")
+
             if(easyDatasetID == "clinical")
             {
               easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
@@ -372,12 +377,15 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
             } else {
               stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
             }
-            
+
             # Avoid samples in one dataset but absent from the other.
             commonSamples <- intersect(rownames(easyDataset), rownames(hardDataset))
             measurements <- measurements[ , commonSamples, ]
             easyDataset <- easyDataset[commonSamples, ]
             hardDataset <- hardDataset[commonSamples, ]
+            training <- intersect(training, commonSamples)
+            testing <- intersect(testing, commonSamples)
+            # If function used directly, need to be character vectors, not numbers or logical as omics order could be different to clinical order.
             
             allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
             allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = colnames(hardDataset)))
@@ -467,8 +475,6 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
             }
             if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
 
-            if(is.logical(testing)) testing <- which(testing)
-            if(is.numeric(testing)) testing <- rownames(MultiAssayExperiment::colData(measurements))[testing]
             if(!is.null(.iteration)) # This function was called by runTestsEasyHard.
             {
               list(selected = selectedFeatures, models = trained, testSet = testing, predictions = predictedClasses, tuneDetails = tuneDetails)
