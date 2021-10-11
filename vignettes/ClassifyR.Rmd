@@ -95,7 +95,7 @@ Pre-validation is an approach to provide a fairer way to compare the benefit of 
 
 Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, wihch must of of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
 
-```{r}
+```{r, message = FALSE}
 library(ClassifyR)
 resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error", better = "lower")
 paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
