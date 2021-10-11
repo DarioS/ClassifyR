@@ -139,7 +139,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
     } else { # Train a classifier on the hard to classify by rules samples.
       if(verbose == 3)
         message("Fitting hard classifier to ", length(samplesHard), " samples not easily classified by easy classifier.")
-      selectionAndModel <- runTest(hardDataset, hardClasses, featureSets, metaFeatures, 80, datasetName, classificationName, names(hardClasses), names(hardClasses), hardClassifierParams, .iteration = "internal")
+      selectionAndModel <- runTest(hardDataset, hardClasses, "none", featureSets, metaFeatures, 80, datasetName, classificationName, names(hardClasses), names(hardClasses), hardClassifierParams, .iteration = "internal")
       if(is.character(selectionAndModel)) return(selectionAndModel) # An error occurred. One such case is when only one sample or no samples are left in a particular class.
       initialClass <- class(selectionAndModel[["models"]]) 
       if(!"list" %in% initialClass)
@@ -177,7 +177,7 @@ setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperi
     if(is.matrix(easyDataset))
       easyDataset <- t(easyDataset) # Make the variables be in columns.
   }
-  
+
   if(!is.null(model@easyClassifier))
   {
     predictionsAndSamples <- .getEasyPredictions(easyDataset, model@easyClassifier)

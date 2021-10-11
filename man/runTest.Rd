@@ -12,12 +12,14 @@
        }
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
-  \S4method{runTest}{DataFrame}(measurements, classes, featureSets = NULL, metaFeatures = NULL,
+  \S4method{runTest}{DataFrame}(measurements, classes,
+            balancing = c("downsample", "upsample", "none"), featureSets = NULL, metaFeatures = NULL,
             minimumOverlapPercent = 80, datasetName, classificationName,
             training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
         verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{runTestEasyHard}{MultiAssayExperiment}(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
+  \S4method{runTestEasyHard}{MultiAssayExperiment}(measurements, balancing = c("downsample", "upsample", "none"),
+                   easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                    datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
 }
@@ -32,6 +34,14 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
+  \item{balancing}{A character vector of length 1 specifying how to balance samples in the training set
+                   so that each class ends up with an equal number of samples. \code{"downsample"}
+                   samples from each class with more samples than the smallest class so that each of
+                   those classes ends up with the same number of samples as the smallest class.
+                   \code{"upsample"} causes sampling with replacement to be done for every class that
+                   has less samples than the largest class to make all classes have equal size. Lastly,
+                   \code{"none"} means that no downsampling or upsampling is done and the
+                   class imbalance is preserved.}                 
   \item{featureSets}{An object of type \code{\link{FeatureSetCollection}} which defines sets of
                      features or sets of edges.}                 
   \item{metaFeatures}{Either \code{NULL} or a \code{DataFrame} which has meta-features

@@ -10,7 +10,7 @@ setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
 })
 
 setMethod("runTest", c("DataFrame"), # Clinical data or one of the other inputs, transformed..
-function(measurements, classes,
+function(measurements, classes, balancing = c("downsample", "upsample", "none"),
          featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
          datasetName, classificationName, training, testing,
          params = list(SelectParams(), TrainParams(), PredictParams()),
@@ -36,11 +36,25 @@ function(measurements, classes,
   else
     allFeatures <- colnames(measurements)
   
+  if(is.character(training)) training <- match(training, rownames(measurements))
+  if(is.character(testing)) testing <- match(testing, rownames(measurements))
+  if(is.logical(training)) training <- which(training)
+  if(is.logical(testing)) testing <- which(testing)
+  balancing <- match.arg(balancing)
+  
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
   if(!is.null(selectParams) && !is.null(featureSets))
     consideredFeatures <- length(featureSets@sets)
   else
     consideredFeatures <- ncol(measurements)
+  
+  # Rebalance the class sizes of the training samples by either downsampling or upsampling
+  # or leave untouched if balancing is none.
+  rebalanced <- .rebalanceTrainingClasses(measurements, classes, training, testing, balancing)
+  measurements <- rebalanced[["measurements"]] # Don't use attach to avoid warnings about variable masking.
+  classes <- rebalanced[["classes"]]
+  training <- rebalanced[["training"]]
+  testing <- rebalanced[["testing"]]
   
   if(!is.null(featureSets) && is.null(.iteration)) # Feature sets provided and runTest is being called by the user, so need to be filtered now.
   {
@@ -348,7 +362,8 @@ setGeneric("runTestEasyHard", function(measurements, ...)
 standardGeneric("runTestEasyHard"))
 
 setMethod("runTestEasyHard", c("MultiAssayExperiment"),
-          function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
+          function(measurements, balancing = c("downsample", "upsample", "none"),
+                   easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                    datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
           {
@@ -356,7 +371,8 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               stop("'training' is not character type but must be for easy-hard classifier to avoid ambiguities.")
             if(!is.character(testing))
               stop("'testing' is not character type but must be for easy-hard classifier to avoid ambiguities.")
-
+            balancing <- match.arg(balancing)
+            
             if(easyDatasetID == "clinical")
             {
               easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
@@ -386,6 +402,18 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
             training <- intersect(training, commonSamples)
             testing <- intersect(testing, commonSamples)
             # If function used directly, need to be character vectors, not numbers or logical as omics order could be different to clinical order.
+            
+            # Rebalance the class sizes of the training samples by either downsampling or upsampling
+            # or leave untouched if balancing is none.
+            training <- na.omit(match(training, commonSamples))
+            testing <- na.omit(match(testing, commonSamples))
+            classes <-colData(measurements)[, "class"] 
+            rebalanced <- .rebalanceTrainingClasses(hardDataset, classes, training, testing, balancing)
+            hardDataset <- rebalanced[["measurements"]] # Don't use attach to avoid warnings about variable masking.
+            classes <- rebalanced[["classes"]]
+            training <- rebalanced[["training"]]
+            testing <- rebalanced[["testing"]]
+            easyDataset <- easyDataset[rownames(hardDataset), ]
             
             allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
             allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = colnames(hardDataset)))
@@ -433,14 +461,14 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               if(verbose >= 1 && is.null(.iteration)) # Being used by the user, not called by runTests.
                 message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
             }
-
+            easyHardClassifierTrain
             trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, NULL, classificationName, ..., verbose = verbose)
             hardParams <- list(...)[["hardClassifierParams"]]
             if(is.null(hardParams)) # They were not specified by the user. Use default value.
               predictParams <- PredictParams()
             else
               predictParams <- hardParams[[which(sapply(hardParams, class) == "PredictParams")]]
-            test <- measurements[ , testing, ]
+            test <- measurements[ , rownames(hardDataset)[testing], ]
             trainClass <- class(trained)
             if(trainClass == "EasyHardClassifier")
             {
@@ -477,7 +505,7 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
 
             if(!is.null(.iteration)) # This function was called by runTestsEasyHard.
             {
-              list(selected = selectedFeatures, models = trained, testSet = testing, predictions = predictedClasses, tuneDetails = tuneDetails)
+              list(selected = selectedFeatures, models = trained, testSet = rownames(hardDataset)[testing], predictions = predictedClasses, tuneDetails = tuneDetails)
             } else { # runTestEasyHard is being used directly, rather than from runTestsEasyHard. Create a ClassifyResult object.
               selectionName <- "Sample Grouping Purity for Easy Data Set"
               selectParams <- list(...)[["hardClassifierParams"]]
@@ -492,7 +520,7 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               if(class(predictedClasses) != "list")
               {
                 return(ClassifyResult(datasetName, "Easy-Hard Classifier", selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
-                                      list(NULL), selectedFeatures, list(trained), list(data.frame(sample = testing, class = predictedClasses)),
+                                      list(NULL), selectedFeatures, list(trained), list(data.frame(sample = rownames(hardDataset)[testing], class = predictedClasses)),
                                       classes, list("independent"), tuneDetails)
                 )
               } else { # A variety of predictions were made.
@@ -510,4 +538,3 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               }
             }
           })
-          

@@ -10,7 +10,7 @@ setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
 })
 
 setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes,
+          function(measurements, classes, balancing = c("downsample", "upsample", "none"),
                       featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                       datasetName, classificationName,
                       validation = c("permute", "leaveOut", "fold"),
@@ -32,10 +32,11 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
 
   validation <- match.arg(validation)
   permutePartition <- match.arg(permutePartition)
+  balancing <- match.arg(balancing)
   if(!missing(seed)) set.seed(seed)
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
   # Elements of list returned by runTest.
-
+  
   if("prevalidated" %in% names(params))
   {
     paramsList <- params
@@ -183,7 +184,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
           {
             predictionsList <- mapply(function(dataset, datasetParams)
             {
-              runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+              runTest(dataset, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent,
                       training = unlist(resampleFolds[-foldIndex]), testing = resampleFolds[[foldIndex]],
                       params = datasetParams, verbose = verbose, .iteration = c(sampleNumber, foldIndex))[["predictions"]]
             }, datasetsList, paramsList, SIMPLIFY = FALSE)
@@ -210,12 +211,12 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
         }
         lapply(1:folds, function(foldIndex)
         {
-          runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(resampleFolds[-foldIndex]),
+          runTest(measurementsUse, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(resampleFolds[-foldIndex]),
                   testing = resampleFolds[[foldIndex]], params = paramsUse, verbose = verbose,
                   .iteration = c(sampleNumber, foldIndex))
         })
       } else { # Split mode. Not suitable for pre-validation.
-        runTest(measurements, classes, featureSets, metaFeatures, minimumOverlapPercent, training = resampleFolds[[1]],
+        runTest(measurements, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent, training = resampleFolds[[1]],
                 testing = resampleFolds[[2]], params = params, verbose = verbose, .iteration = sampleNumber)
       }
     }, samplesFolds, as.list(1:permutations), BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -231,7 +232,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       {
         predictionsList <- mapply(function(dataset, datasetParams)
         {
-          runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+          runTest(dataset, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent,
                   training = trainingSample, testing = testSample,
                   params = datasetParams, verbose = verbose, .iteration = sampleNumber)[["predictions"]]
         }, datasetsList, paramsList, SIMPLIFY = FALSE)
@@ -277,7 +278,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     {
       if(verbose >= 1 && sampleNumber %% 10 == 0)
         message("Processing sample set ", sampleNumber, '.')
-      runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = trainingSample, testing = testSample,
+      runTest(measurementsUse, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent, training = trainingSample, testing = testSample,
               params = paramsUse, verbose = verbose, .iteration = sampleNumber)
     }, trainingSamples, testSamples, (1:length(trainingSamples)),
     BPPARAM = parallelParams, SIMPLIFY = FALSE)
@@ -307,7 +308,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
       {
         predictionsList <- mapply(function(dataset, datasetParams)
         {
-          runTest(dataset, classes, featureSets, metaFeatures, minimumOverlapPercent,
+          runTest(dataset, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent,
                   training = unlist(samplesFolds[-foldIndex]), testing = samplesFolds[[foldIndex]],
                   params = datasetParams, verbose = verbose, .iteration = foldIndex)[["predictions"]]
         }, datasetsList, paramsList, SIMPLIFY = FALSE)
@@ -334,7 +335,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
     }  
     results <- bplapply(1:folds, function(foldIndex)
     {
-      runTest(measurementsUse, classes, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(samplesFolds[-foldIndex]),
+      runTest(measurementsUse, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(samplesFolds[-foldIndex]),
               testing = samplesFolds[[foldIndex]], params = paramsUse, verbose = verbose,
               .iteration = foldIndex)
     }, BPPARAM = parallelParams)
@@ -600,7 +601,8 @@ setGeneric("runTestsEasyHard", function(measurements, ...)
            standardGeneric("runTestsEasyHard"))
 
 setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
-          function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
+          function(measurements, balancing = c("downsample", "upsample", "none"),
+                   easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
                    datasetName = NULL, classificationName = "Easy-Hard Classifier", 
                    validation = c("permute", "leaveOut", "fold"),
@@ -610,10 +612,11 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
           {
             validation <- match.arg(validation)
             permutePartition <- match.arg(permutePartition)
+            balancing <- match.arg(balancing)
             if(!missing(seed)) set.seed(seed)
             resultTypes <- c("selected", "models", "testSet", "predictions", "tune")
             # Elements of list returned by runTest.
-            
+
             if(easyDatasetID == "clinical")
             {
               easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
@@ -727,13 +730,13 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 {
                   lapply(1:folds, function(foldIndex)
                   {
-                    runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                    runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                     datasetName, classificationName,
                                     unlist(resampleFolds[-foldIndex]), resampleFolds[[foldIndex]], ..., verbose = verbose,
                                     .iteration = c(sampleNumber, foldIndex))
                   })
                 } else { # Split mode.
-                  runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                  runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                   datasetName, classificationName,
                                   resampleFolds[[1]], resampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
                 }
@@ -748,7 +751,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 if(verbose >= 1 && sampleNumber %% 10 == 0)
                   message("Processing sample set ", sampleNumber, '.')
                 
-                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                 datasetName, classificationName,
                                 trainingSample, testSample, ..., verbose = verbose, .iteration = sampleNumber)
               }, trainingSamples, testSamples, (1:length(trainingSamples)), MoreArgs = list(...),
@@ -768,7 +771,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                 message("Processing ", folds, "-fold cross-validation.")
               results <- bplapply(1:folds, function(foldIndex, ...)
               {
-                runTestEasyHard(measurements, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
+                runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
                                 datasetName, classificationName,
                                 unlist(samplesFolds[-foldIndex]), samplesFolds[[foldIndex]], ..., verbose = verbose,
                         .iteration = foldIndex)

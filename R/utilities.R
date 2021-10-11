@@ -777,3 +777,25 @@
 .dmvnorm_diag <- function(x, mean, sigma) { # Remove once sparsediscrim is reinstated to CRAN.
   exp(sum(dnorm(x, mean=mean, sd=sqrt(sigma), log=TRUE)))
 }
+
+.rebalanceTrainingClasses <- function(measurements, classes, training, testing, balancing)
+{
+  samplesPerClassTrain <- table(classes[training])
+  downsampleTo <- min(samplesPerClassTrain)
+  upsampleTo <- max(samplesPerClassTrain)
+  trainBalanced <- as.vector(mapply(function(classSize, className)
+  {
+    if(balancing == "downsample" && classSize > downsampleTo)
+      sample(which(classes[training] == className), downsampleTo)
+    else if(balancing == "upsample" && classSize < upsampleTo)
+      sample(which(classes[training] == className), upsampleTo, replace = TRUE)
+    else
+      which(classes[training] == className)
+  }, samplesPerClassTrain, names(samplesPerClassTrain)))
+  measurements <- measurements[c(training[trainBalanced], testing), ]
+  classes <- classes[c(training[trainBalanced], testing)]
+  training <- 1:length(trainBalanced)
+  testing <- (length(training) + 1):length(classes)
+  
+  list(measurements = measurements, classes = classes, training = training, testing = testing)
+}
