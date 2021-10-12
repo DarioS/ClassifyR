@@ -44,7 +44,7 @@ setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(
 })
 
 setMethod("randomForestPredictInterface", c("randomForest", "DataFrame"),
-function(forest, test, ..., returnType = c("class", "score", "both"), verbose = 3)
+function(forest, test, ..., returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
   if(verbose == 3)

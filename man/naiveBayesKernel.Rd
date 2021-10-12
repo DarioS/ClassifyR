@@ -17,7 +17,7 @@
                                               to = expression(max(featureValues))),
                    weighted = c("unweighted", "weighted", "both"),
                    weight = c("height difference", "crossover distance", "both"),
-                   minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
   \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }
 \arguments{
@@ -56,7 +56,7 @@
                        second-highest for a feature to be allowed to vote. Can be a vector of cutoffs.
                        If no features for a particular sample have a difference large enough, the class
                        predicted is simply the largest class.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of predicted classes,
                     a matrix of scores with columns corresponding to classes, as determined by the
                     factor levels of \code{classes}, or both a column of predicted classes and columns of

@@ -19,7 +19,7 @@
   \S4method{DLDAtrainInterface}{DataFrame}(measurements, classes, verbose = 3)
   \S4method{DLDAtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{DLDApredictInterface}{dlda,matrix}(model, test, ...)
-  \S4method{DLDApredictInterface}{dlda,DataFrame}(model, test, returnType = c("class", "score", "both"),
+  \S4method{DLDApredictInterface}{dlda,DataFrame}(model, test, returnType = c("both", "class", "score"),
                                   verbose = 3)
   \S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
@@ -43,7 +43,7 @@
                  integer variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}).}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     matrix of scores for each class, or both labels and scores in a \code{data.frame}.}   
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.

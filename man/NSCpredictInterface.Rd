@@ -8,7 +8,7 @@
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.predict}} definition.}
 \usage{
   \S4method{NSCpredictInterface}{pamrtrained,matrix}(trained, test, ...)
-  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ..., returnType = c("class", "score", "both"), verbose = 3)  
+  \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ..., returnType = c("both", "class", "score"), verbose = 3)  
   \S4method{NSCpredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
@@ -23,7 +23,7 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or optional settings that are
             passed to \code{\link[pamr]{pamr.predict}}.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the
                     factor levels, or both labels and scores in a \code{data.frame}.}             

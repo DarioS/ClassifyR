@@ -21,7 +21,7 @@
   \S4method{randomForestTrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{randomForestPredictInterface}{randomForest,matrix}(forest, test, ...)
   \S4method{randomForestPredictInterface}{randomForest,DataFrame}(forest, test, ...,
-                                          returnType = c("class", "score", "both"), verbose = 3)
+                                          returnType = c("both", "class", "score"), verbose = 3)
   \S4method{randomForestPredictInterface}{randomForest,MultiAssayExperiment}(forest, test, targets = names(test), ...)
 }
 \arguments{
@@ -45,7 +45,7 @@
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or
              options which are accepted by the \code{\link[randomForest]{randomForest}} or
              \code{\link[randomForest]{predict.randomForest}} functions.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the
                     factor levels, or both labels and scores in a \code{data.frame}.}             

@@ -69,7 +69,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
           function(models, test, weighted = c("unweighted", "weighted", "both"),
                    weight = c("height difference", "crossover distance", "both"),
                    densityXvalues = 1024, minDifference = 0,
-                   returnType = c("class", "score", "both"), verbose = 3)
+                   returnType = c("both", "class", "score"), verbose = 3)
 {
   models <- models@set
   isNumeric <- sapply(test, is.numeric)

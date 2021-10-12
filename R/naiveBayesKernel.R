@@ -14,7 +14,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
                    weighted = c("unweighted", "weighted", "both"),
                    weight = c("height difference", "crossover distance", "both"),
-                   minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]

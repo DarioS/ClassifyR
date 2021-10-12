@@ -17,7 +17,7 @@ setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
 setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, test, featurePairs = NULL,
                    weighted = c("unweighted", "weighted", "both"), minDifference = 0,
-                   returnType = c("class", "score", "both"), verbose = 3)
+                   returnType = c("both", "class", "score"), verbose = 3)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")

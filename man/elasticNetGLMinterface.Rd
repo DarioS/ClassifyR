@@ -21,7 +21,7 @@
                              ..., verbose = 3)
   \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, test, ...)
-  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., returnType = c("class", "score", "both"), verbose = 3)
+  \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
   \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test, targets = names(test), ...)                                   
 }
 \arguments{
@@ -49,7 +49,7 @@
              function, this variable simply contains any parameters passed from the classification
              framework to it which aren't used by glmnet's \code{predict} fuction.}
   \item{model}{A trained elastic net GLM, as created by the \code{glmnet} function.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     matrix of scores for each class, or both labels and scores in a \code{data.frame}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.

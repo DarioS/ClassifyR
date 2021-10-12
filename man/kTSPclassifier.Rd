@@ -12,7 +12,7 @@
   \S4method{kTSPclassifier}{matrix}(measurements, classes, test, featurePairs = NULL, ...)
   \S4method{kTSPclassifier}{DataFrame}(measurements, classes, test, featurePairs = NULL,
                    weighted = c("unweighted", "weighted", "both"),
-                   minDifference = 0, returnType = c("class", "score", "both"), verbose = 3)
+                   minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
   \S4method{kTSPclassifier}{MultiAssayExperiment}(measurements, test, target = names(measurements)[1],
                    featurePairs = NULL, ...)
 }
@@ -41,7 +41,7 @@
   \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
                        to vote. Can be a vector of cutoffs. If no features for a particular sample
                        have a difference large enough, the class predicted is simply the largest class.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
                     or both labels and scores in a \code{data.frame}.}     

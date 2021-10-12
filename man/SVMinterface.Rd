@@ -19,7 +19,7 @@
   \S4method{SVMtrainInterface}{DataFrame}(measurements, classes, ..., verbose = 3)
   \S4method{SVMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
-  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, returnType = c("class", "score", "both"), verbose = 3)
+  \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, returnType = c("both", "class", "score"), verbose = 3)
   \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -33,7 +33,7 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{returnType}{Default: \code{"class"}. Either \code{"class"}, \code{"score"} or \code{"both"}. Sets the return value
+  \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}. Sets the return value
                     from the prediction to either a vector of class labels, score for a sample belonging
                     to the second class, as determined by the factor levels, or both labels and scores
                     in a \code{data.frame}.}                 

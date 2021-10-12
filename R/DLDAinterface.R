@@ -45,7 +45,7 @@ setMethod("DLDApredictInterface", c("dlda", "matrix"),
   DLDApredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, returnType = c("class", "score", "both"), verbose = 3)
+setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, returnType = c("both", "class", "score"), verbose = 3)
 {
   isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]

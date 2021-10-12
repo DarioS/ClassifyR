@@ -59,7 +59,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
 })
 
 # Clinical data only.
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., returnType = c("class", "score", "both"), verbose = 3)
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(classes))
   {

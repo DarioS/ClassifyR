@@ -2,6 +2,11 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 2.14.0}{\itemize{
+  \item
+  Upsampling and downsampling to equalise class sizes added.
+}}
+
 \section{Version 2.6.0}{\itemize{
   \item
   Two-stage easy-hard classifier added.
