@@ -32,7 +32,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained
   
   switch(returnType, class = classPredictions, # Factor vector.
          score = classScores, # Numeric matrix.
-         both = data.frame(class = classPredictions, classScores))
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
 setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(trained, test, targets = names(test), ...)

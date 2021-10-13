@@ -47,7 +47,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other
   
   switch(returnType, class = classes,
                      score = scores,
-                     both = data.frame(class = classes, score = scores))  
+                     both = data.frame(class = classes, score = scores, check.names = FALSE))  
 })
 
 # One or more omics data sets, possibly with clinical data.

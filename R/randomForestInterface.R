@@ -54,7 +54,7 @@ function(forest, test, ..., returnType = c("both", "class", "score"), verbose = 
   classScores <- predict(forest, test, type = "vote")[, forest[["classes"]], drop = FALSE]
   switch(returnType, class = classPredictions,
          score = classScores,
-         both = data.frame(class = classPredictions, classScores))
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
 # One or more omics data sets, possibly with clinical data.

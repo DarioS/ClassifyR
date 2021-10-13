@@ -61,7 +61,7 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, 
   
   switch(returnType, class = predictions[["class"]], # Factor vector.
          score = predictions[["posterior"]][, model[["groups"]]], # Numeric matrix.
-         both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]]))
+         both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]], check.names = FALSE))
 })
 
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),

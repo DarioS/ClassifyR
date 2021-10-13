@@ -66,7 +66,7 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
   attr(classPredictions, "probabilities") <- NULL
   switch(returnType, class = classPredictions,
          score = classScores,
-         both = data.frame(class = classPredictions, classScores))
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),

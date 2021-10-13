@@ -90,7 +90,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   
   switch(returnType, class = classPredictions, # Factor vector.
          score = classScores, # Numeric matrix.
-         both = data.frame(class = classPredictions, classScores))
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
 # One or more omics data sets, possibly with clinical data.

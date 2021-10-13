@@ -204,7 +204,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
 
           data.frame(class = factor(classPredicted, levels = classesNames), t(classScores),
                      weighted = isWeighted, weight = weightNames,
-                     minDifference = difference)
+                     minDifference = difference, check.names = FALSE)
         }))
       }))
     }))
@@ -235,7 +235,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
     rownames(varietyPredictions) <- rownames(test)
     switch(returnType, class = varietyPredictions[, "class"],
            score = varietyPredictions[, colnames(varietyPredictions) %in% classesNames],
-           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% classesNames])
+           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% classesNames], check.names = FALSE)
            )
   })
   names(resultsList) <- levels(varietyFactor)

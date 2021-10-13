@@ -102,7 +102,7 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
           }
         }
           data.frame(class = factor(class, levels = levels(classes)), score = score,
-                     weighted = isWeighted, minDifference = difference)
+                     weighted = isWeighted, minDifference = difference, check.names = FALSE)
       }))
     }))
   }))
@@ -120,7 +120,7 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
     
     switch(returnType, class = varietyPredictions[, "class"],
            score = varietyPredictions[, "score"],
-           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"]))
+           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"], check.names = FALSE))
   })
   names(resultsList) <- levels(varietyFactor)
   

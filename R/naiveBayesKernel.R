@@ -148,7 +148,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
 
           data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores),
                      weighted = isWeighted, weight = weightNames,
-                     minDifference = difference)
+                     minDifference = difference, check.names = FALSE)
         }))
       }))
     }))
@@ -179,7 +179,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     rownames(varietyPredictions) <- rownames(test)
     switch(returnType, class = varietyPredictions[, "class"],
            score = varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)],
-           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)])
+           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)], check.names = FALSE)
            )
   })
   names(resultsList) <- levels(varietyFactor)

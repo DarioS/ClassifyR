@@ -407,7 +407,7 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
             # or leave untouched if balancing is none.
             training <- na.omit(match(training, commonSamples))
             testing <- na.omit(match(testing, commonSamples))
-            classes <-colData(measurements)[, "class"] 
+            classes <- MultiAssayExperiment::colData(measurements)[, "class"] 
             rebalanced <- .rebalanceTrainingClasses(hardDataset, classes, training, testing, balancing)
             hardDataset <- rebalanced[["measurements"]] # Don't use attach to avoid warnings about variable masking.
             classes <- rebalanced[["classes"]]
