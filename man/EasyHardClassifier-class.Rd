@@ -23,6 +23,17 @@
     }
   }
 }
+
+\section{Summary}{
+  A method which shows the easy and hard classifiers.
+  \code{easyHard} is a \code{EasyHardClassifier} object.
+
+  \describe{
+    \item{}{
+      \code{show(EasyHardClassifier)}: Prints a short summary of what \code{easyHard} contains.
+    }}
+}
+
 \author{Dario Strbenac}
 \examples{
   predictiveRules <- list(list(feature = "age", relation = "<", value = 18, predict = "Risk"))

@@ -1,83 +1,60 @@
 setGeneric("rankingPlot", function(results, ...)
 standardGeneric("rankingPlot"))
 
-setMethod("rankingPlot", "list", 
+setMethod("rankingPlot", "list",
           function(results, topRanked = seq(10, 100, 10),
-                   comparison = c("within", "classificationName", "validation", "datasetName", "selectionName"),
-                   referenceLevel = NULL,
-                   lineColourVariable = c("validation", "datasetName", "classificationName", "selectionName", "None"),
-                   lineColours = NULL, lineWidth = 1,
-                   pointTypeVariable = c("datasetName", "classificationName", "validation", "selectionName", "None"),
-                   pointSize = 2, legendLinesPointsSize = 1,
-                   rowVariable = c("None", "datasetName", "classificationName", "validation", "selectionName"),
-                   columnVariable = c("classificationName", "datasetName", "validation", "selectionName", "None"),
-                   yMax = 100, fontSizes = c(24, 16, 12, 12, 12, 16),
+                   comparison = "within", referenceLevel = NULL,
+                   characteristicsList = list(), orderingList = list(),
+                   sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1,
+                                    fonts = c(24, 16, 12, 12, 12, 16)),
+                   lineColours = NULL, xLabelPositions = seq(10, 100, 10), yMax = 100,
                    title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
-                   xLabelPositions = seq(10, 100, 10),
                    yLabel = if(is.null(referenceLevel)) "Average Common Features (%)" else paste("Average Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"),
                    showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
-  comparison <- match.arg(comparison)            
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(comparison == "within" && !is.null(referenceLevel))
-    stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")            
-            
-  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
-  
-  lineColourVariable <- match.arg(lineColourVariable)
-  pointTypeVariable <- match.arg(pointTypeVariable)
-  rowVariable <- match.arg(rowVariable)
-  columnVariable <- match.arg(columnVariable)
-  if(class(results[[1]]) == "ClassifyResult") resultsType <- "classification" else resultsType <- "selection"
-
-  if(resultsType == "classification")
+    stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
+  nFeatures <- results[[1]]@selectResult@totalFeatures
+  error <- character()
+  if(max(topRanked) > nFeatures)
+    error <- paste("'topRanked' is as high as", max(topRanked))
+  if(max(xLabelPositions) > nFeatures)
+    error <- paste(error, if(nchar(error) > 0) "and", "'xLabelPositions' is as high as", max(xLabelPositions))
+  if(length(error) > 0)
   {
-    analyses <- sapply(results, function(result) result@classificationName)
-    selections <- sapply(results, function(result) result@selectResult@selectionName)
-    validations <- sapply(results, function(result) .validationText(result))
-  } else { # Compare selections.
-    analyses <- rep("Not classification", length(results))
-    selections <- sapply(results, function(result) result@selectionName)
-    validations <- rep("No cross-validation", length(results))
+    error <- paste(error, "but there are only", nFeatures, "features in the data set.")
+    stop(error)
   }
-  datasets <- sapply(results, function(result) result@datasetName)
+  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
+
+  if(!is.null(characteristicsList[["lineColour"]]))
+    lineColourValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList[["lineColour"]], "value"])
+  if(!is.null(characteristicsList[["pointType"]]))
+    pointTypeValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList[["pointType"]], "value"])
+  if(!is.null(characteristicsList[["row"]]))
+    rowValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList, "value"])
+  if(!is.null(characteristicsList[["column"]]))
+    columnValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList, "value"])
+  if(comparison != "within")
+    referenceVar <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == comparison, "value"])
   
-  referenceVar <- switch(comparison, classificationName = analyses,
-                         selectionName = selections,
-                         datasetName = datasets,
-                         validation = validations)
-  if(!is.null(referenceLevel) && !(referenceLevel %in% referenceVar))
-    stop("Reference level is neither a level of the comparison factor nor is it NULL.")
+  allCharacteristics <- c(unlist(characteristicsList), comparison)
+  allCharacteristics <- setdiff(allCharacteristics, "within")
+  
+  if(!is.null(referenceLevel) && comparison != "within" && !(referenceLevel %in% referenceVar))
+    stop("Reference level ", referenceLevel, " is neither a level of the comparison factor (",
+          paste(referenceVar, collapse = ", "), ") nor is it NULL.")
   
   allRankedList <- lapply(results, function(result)
   {
-    if(resultsType == "classification") # ClassifyResult object rather than SelectResult object.
-    {
-      rankedFeatures <- result@selectResult@rankedFeatures
-    } else { # A SelectResult object.
-      rankedFeatures <- result@rankedFeatures
-    }
-    
-    if(is.data.frame(rankedFeatures[[1]])) # Data set and feature ID columns.
-      rankedFeatures <- lapply(rankedFeatures, function(features) paste(features[, 1], features[, 2]))
-    else if("Pairs" %in% class(rankedFeatures[[1]]))
-      rankedFeatures <- lapply(rankedFeatures, function(features) paste(first(features), second(features)))
-    else if(class(rankedFeatures[[1]]) == "list" && is.character(rankedFeatures[[1]][[1]])) # Two-level list, such as generated by permuting and folding.
-      rankedFeatures <- unlist(rankedFeatures, recursive = FALSE)
-    else if(class(rankedFeatures[[1]]) == "list" && is.data.frame(rankedFeatures[[1]][[1]])) # Data set and feature ID columns.
-      rankedFeatures <- unlist(lapply(rankedFeatures, function(folds) lapply(folds, function(fold) paste(fold[, 1], fold[, 2])), recursive = FALSE))
-    else if(class(rankedFeatures[[1]]) == "list" && "Pairs" %in% class(rankedFeatures[[1]]))
-      rankedFeatures <- unlist(lapply(rankedFeatures, function(folds) lapply(folds, function(fold) paste(first(fold), second(fold))), recursive = FALSE))
-    
-    rankedFeatures
+    .getFeaturesStrings(result@selectResult@rankedFeatures)
   })
   
   if(comparison == "within")
   {
-    if(resultsType == "selection")
-      stop("'comparison' should not be \"within\" for results that are not cross-validations.")
     plotData <- do.call(rbind, bpmapply(function(result, rankedList)
     {
       averageOverlap <- rowMeans(do.call(cbind, mapply(function(features, index)
@@ -91,25 +68,25 @@ setMethod("rankingPlot", "list",
           })
         })
       }, rankedList[1:(length(rankedList) - 1)], 1:(length(rankedList) - 1), SIMPLIFY = FALSE)))
-      validationText <- .validationText(result)
 
-      data.frame(dataset = rep(result@datasetName, length(topRanked)),
-                 analysis = rep(result@classificationName, length(topRanked)),
-                 selection = rep(result@selectResult@selectionName, length(topRanked)),
-                 validation = rep(validationText, length(topRanked)),
-                 top = topRanked,
-                 overlap = averageOverlap)
+      if(length(allCharacteristics) > 0)
+      {
+        characteristicsOrder <- match(allCharacteristics, result@characteristics[["characteristic"]])
+        characteristicsList <- as.list(result@characteristics[["value"]])[characteristicsOrder]
+        summaryTable <- data.frame(characteristicsList, top = topRanked, overlap = averageOverlap, check.names = FALSE)
+        colnames(summaryTable)[1:length(allCharacteristics)] <- allCharacteristics
+      } else {
+        summaryTable <- data.frame(top = topRanked, overlap = averageOverlap)
+      }
+      summaryTable
     }, results, allRankedList, BPPARAM = parallelParams, SIMPLIFY = FALSE))
   } else { # Commonality analysis.
-    groupingVariablesValues <- setdiff(c(lineColourVariable, pointTypeVariable, rowVariable, columnVariable), comparison)
-    groupingFactor <- paste(if("datasetName" %in% groupingVariablesValues) datasets,
-                            if("classificationName" %in% groupingVariablesValues) analyses,
-                            if("selectionName" %in% groupingVariablesValues) selections,
-                            if("validation" %in% groupingVariablesValues) validations,
-                            sep = " ")
+    groupingFactor <- paste(if("lineColour" %in% names(characteristicsList) && characteristicsList[["lineColour"]] != comparison) lineColourValues,
+                            if("pointType" %in% names(characteristicsList) && characteristicsList[["pointType"]] != comparison) pointTypeValues,
+                            if("row" %in% names(characteristicsList) && characteristicsList[["row"]] != comparison) rowValues,
+                            if("column" %in% names(characteristicsList) && characteristicsList[["column"]] != comparison) columnValues, sep = " ")
     if(length(groupingFactor) == 0) groupingFactor <- rep("None", length(results))
     compareIndices <- split(1:length(results), groupingFactor)
-    
     plotData <- do.call(rbind, unname(unlist(bplapply(compareIndices, function(indicesSet)
     {
       if(is.null(referenceLevel))
@@ -142,76 +119,54 @@ setMethod("rankingPlot", "list",
             })
           })))
         })))
-        
+
         if(is.null(referenceLevel))
         {
           overlapToOther <- rowMeans(overlapToOther)
-          datasetText <- rep(aDataset@datasetName, length(topRanked))
           
-          if(resultsType == "classification")
-          {
-            selectionText <- rep(aDataset@selectResult@selectionName, length(topRanked))
-            analysisText <- rep(aDataset@classificationName, length(topRanked))
-            validationText <- .validationText(aDataset)
-          } else { # For standalone feature selection, there is no classification.
-            selectionText <- rep(aDataset@selectionName, length(topRanked))
-            analysisText <- "No classification"
-            validationText <- "No cross-validation"
-          }
+          characteristicsOrder <- match(allCharacteristics, aDataset@characteristics[["characteristic"]])
+          characteristicsList <- as.list(aDataset@characteristics[["value"]])[characteristicsOrder]
+          summaryTable <- data.frame(characteristicsList, top = topRanked, overlap = overlapToOther, check.names = FALSE)
+          colnames(summaryTable)[1:length(allCharacteristics)] <- allCharacteristics
+          summaryTable
         } else { # Each other level has been compared to the reference level of the factor.
-          datasetText <- rep(sapply(otherDatasets, function(dataset) dataset@datasetName), each = nrow(overlapToOther))
-          selectionText <- rep(sapply(otherDatasets, function(dataset) if(resultsType == "classification") dataset@selectResult@selectionName else dataset@selectionName), each = nrow(overlapToOther))
+          overlapToOther <- as.numeric(overlapToOther) # Convert matrix of overlaps to a vector.
+          topRankedAll <- rep(topRanked, length.out = length(overlapToOther))
           
-          if(resultsType == "classification")
-          {
-            analysisText <- rep(sapply(otherDatasets, function(dataset) dataset@classificationName),
-                                each = nrow(overlapToOther))
-            validationText <- rep(sapply(otherDatasets, function(dataset) .validationText(dataset)),
-                                  each = nrow(overlapToOther))
-          } else { # For standalone feature selection, there is no classification.
-            analysisText <- "No classification"
-            validationText <- "No cross-validation"
+          if(length(allCharacteristics) > 0)
+            {
+            summaryTable <- do.call(rbind, lapply(otherDatasets, function(otherDataset)
+            {
+              characteristicsOrder <- match(allCharacteristics, otherDataset@characteristics[["characteristic"]])
+              characteristicsList <- as.list(otherDataset@characteristics[["value"]])[characteristicsOrder]
+            }))
+            colnames(summaryTable)[1:length(allCharacteristics)] <- allCharacteristics
+            summaryTable <- summaryTable[rep(1:nrow(summaryTable), each = length(topRanked)), , drop = FALSE]
+            data.frame(summaryTable, top = topRankedAll, overlap = overlapToOther,
+                       check.names = FALSE)
+          } else {
+            data.frame(top = topRankedAll, overlap = overlapToOther)
           }
         }
-        overlapToOther <- as.numeric(overlapToOther) # Convert matrix of overlaps to a vector. UPDATE
-        topRankedAll <- rep(topRanked, length.out = length(overlapToOther))
-        
-        data.frame(dataset = datasetText,
-                   analysis = analysisText,
-                   selection = selectionText,
-                   validation = validationText,
-                   top = topRankedAll,
-                   overlap = overlapToOther)
       }))
     }, BPPARAM = parallelParams), recursive = FALSE)))
   }
   rownames(plotData) <- NULL # Easier for viewing during maintenance.
-
-  # Order factors in which they appeared in the user's list.
-  plotData[, "dataset"] <- factor(plotData[, "dataset"], levels = unique(datasets))
-  plotData[, "analysis"] <- factor(plotData[, "analysis"], levels = unique(analyses))
-  plotData[, "selection"] <- factor(plotData[, "selection"], levels = unique(selections))
-  plotData[, "validation"] <- factor(plotData[, "validation"], levels = unique(validations))
-  
-  if(is.null(lineColours) && lineColourVariable != "None")
-    lineColours <- scales::hue_pal()(switch(lineColourVariable, validation = length(unique(plotData[, "validation"])), datasetName = length(unique(plotData[, "dataset"])), classificationName = length(unique(plotData[, "analysis"])), selectionName = length(unique(plotData[, "selection"]))))
+  if(is.null(lineColours) && "lineColour" %in% names(characteristicsList))
+    lineColours <- scales::hue_pal()(length(unique(plotData[, characteristicsList[["lineColour"]]])))
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   
-  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes_string(x = "top", y = "overlap",
-                          colour = switch(lineColourVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL),
-                          shape = switch(pointTypeVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", selectionName = "selection", None = NULL))) +
-                          ggplot2::geom_line(size = lineWidth) + ggplot2::geom_point(size = pointSize) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::coord_cartesian(ylim = c(0, yMax)) +
-                          ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) +
-                          ggplot2::ggtitle(title) + ggplot2::labs(colour = switch(lineColourVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", classificationName = "Analysis", selectionName = "Feature\nSelection"), shape = switch(pointTypeVariable, validation = "Validation", datasetName = "Dataset", classificationName = "Analysis", selectionName = "Feature\nSelection")) +
-                          ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = legendPosition, legend.title = ggplot2::element_text(size = fontSizes[4]), legend.text = ggplot2::element_text(size = fontSizes[5]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) +
-                          ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)),
-                                          shape = ggplot2::guide_legend(override.aes = list(size = legendLinesPointsSize)))
+  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
+  if(length(characteristicsList) > 0) characteristicsList <- lapply(characteristicsList, rlang::sym)
   
-  if(!is.null(lineColours))
-    overlapPlot <- overlapPlot + ggplot2::scale_colour_manual(values = lineColours)
+  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap, colour = !!characteristicsList[["lineColour"]], shape = !!characteristicsList[["pointType"]])) +
+                          ggplot2::geom_line(size = sizesList[["lineWidth"]]) + ggplot2::geom_point(size = sizesList[["pointSize"]]) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::coord_cartesian(ylim = c(0, yMax)) +
+                          ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) + ggplot2::ggtitle(title) + ggplot2::scale_colour_manual(values = lineColours) +
+                          ggplot2::theme(axis.title = ggplot2::element_text(size = sizesList[["fontSizes"]][2]), axis.text = ggplot2::element_text(colour = "black", size = sizesList[["fontSizes"]][3]), legend.position = legendPosition, legend.title = ggplot2::element_text(size = sizesList[["fontSizes"]][4]), legend.text = ggplot2::element_text(size = sizesList[["fontSizes"]][5]), plot.title = ggplot2::element_text(size = sizesList[["fontSizes"]][1], hjust = 0.5), plot.margin = margin) +
+                          ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = sizesList[["legendLinesPointsSize"]])),
+                                          shape = ggplot2::guide_legend(override.aes = list(size = sizesList[["legendLinesPointsSize"]])))
   
-  if(rowVariable != "None" || columnVariable != "None")
-    overlapPlot <- overlapPlot + ggplot2::facet_grid(reformulate(switch(columnVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = '.'), switch(rowVariable, validation = "validation", datasetName = "dataset", classificationName = "analysis", None = '.'))) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[6]))
+  overlapPlot <- overlapPlot + ggplot2::facet_grid(ggplot2::vars(!!characteristicsList[["row"]]), ggplot2::vars(!!characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = sizesList[["fontSizes"]][6]))
   
   if(plot == TRUE)
     print(overlapPlot)

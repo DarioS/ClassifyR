@@ -5,40 +5,32 @@
 \description{Draws a graphical summary of a particular performance measure for a list of classifications
        }
 \usage{
-  \S4method{performancePlot}{list}(results, aggregate = character(),
-                    xVariable = c("classificationName", "datasetName", "selectionName",
-                              "validation"),
-                performanceName = NULL,
-                    boxFillColouring = c("classificationName", "datasetName", "selectionName",
-                                     "validation", "None"),
-                boxFillColours = NULL,
-                    boxLineColouring = c("classificationName", "datasetName", "selectionName",
-                                     "validation", "None"),
-                boxLineColours = NULL,
-                    rowVariable = c("None", "validation", "datasetName", "classificationName",
-                                 "selectionName"),
-                    columnVariable = c("datasetName", "classificationName", "validation",
-                                   "selectionName", "None"),
-                 yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
-                xLabel = "Analysis", yLabel = performanceName,
-                margin = grid::unit(c(0, 0, 0, 0), "lines"), rotate90 = FALSE,
-                showLegend = TRUE, plot = TRUE)
+  \S4method{performancePlot}{list}(results, performanceName = NULL,
+                   characteristicsList = list(x = "Classifier Name"), aggregate = character(),
+                   coloursList = list(), orderingList = list(),
+                   yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
+                   margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE,
+                   plot = TRUE)
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
-  \item{aggregate}{A character vector of the levels of \code{xVariable} to aggregate to a single number
-                   by taking the mean. This is particularly meaningful when the cross-validation is leave-k-out,
-                   when k is small.}
-  \item{xVariable}{The factor to make separate boxes for.}
+  \item{aggregate}{A character vector of the levels of \code{characteristicsList['x']} to
+  aggregate to a single number by taking the mean. This is particularly meaningful when the cross-validation is leave-k-out, when k is small.}
   \item{performanceName}{The name of the performance measure to make comparisons of. This is
                          one of the names printed in the Performance Measures field when a
                          \code{\link{ClassifyResult}} object is printed.}
-  \item{boxFillColouring}{A factor to colour the boxes by.}
-  \item{boxFillColours}{A vector of colours, one for each level of \code{boxFillColouring}.}
-  \item{boxLineColouring}{A factor to colour the box lines by.}
-  \item{boxLineColours}{A vector of colours, one for each level of \code{boxLineColouring}.}
-  \item{rowVariable}{The slot name that different levels of are plotted as separate rows of boxplots.}    
-  \item{columnVariable}{The slot name that different levels of are plotted as separate columns of boxplots.}
+  \item{characteristicsList}{A named list of characteristics. Each element's name must be one of
+  \code{"x"}, \code{"row"}, \code{"column"}, \code{fillColour}, or \code{fillLine}. The value of each
+  element must be a characteristic name, as stored in the \code{"characteristic"} column of
+  the results' characteristics table. Only \code{"x"} is mandatory.}
+  \item{coloursList}{A named list of plot aspects and colours for the aspects. No elements are
+  mandatory. If specified, each list element's name must be either \code{"fillColours"} or
+  \code{"lineColours"}. If a characteristic is associated to fill or line by
+  \code{characteristicsList} but this list is empty, a palette of colours will be
+  automaticaly chosen.}
+  \item{orderingList}{An optional named list. Any of the variables specified to \code{characteristicsList} can be the name of an element of this list and the value of
+  the element is the order in which the factors should be presented in, in case
+  alphabetical sorting is undesirable.}  
   \item{yLimits}{The minimum and maximum value of the performance metric to plot.}
   \item{fontSizes}{A vector of length 4. The first number is the size of the title.
                    The second number is the size of the axes titles. The third number is
@@ -46,18 +38,13 @@
                    titles of grouped plots, if any are produced. In other words, when
                    \code{rowVariable} or \code{columnVariable} are not \code{NULL}.}
   \item{title}{An overall title for the plot.}
-  \item{xLabel}{Label to be used for the x-axis.}
-  \item{yLabel}{Label to be used for the y-axis of overlap percentages.}
   \item{margin}{The margin to have around the plot.}
   \item{rotate90}{Logical. IF \code{TRUE}, the plot is horizontal.}
   \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If FALSE, it is hidden.}
   \item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current graphics device.}
 }
 \details{
-  Possible values for slot names are \code{"datasetName"}, \code{"classificationName"}, and \code{"validation"}.
-  If \code{"None"}, then that graphic element is not used.
-  
-  If there are multiple values for a performance measure in a single result object, it is plotted as a boxplot,
+  If there are multiple values for a performance measure in a single result object, it is plotted as a violin plot,
   unless \code{aggregate} is \code{TRUE}, in which case the all predictions in a single result object are considered simultaneously, so that only one performance number is calculated, and a barchart is plotted.
 }
 \value{
@@ -75,7 +62,9 @@
                     data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
                                class = factor(rep(c("Healthy", "Cancer"), each = 10))))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
+  result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
                             LETTERS[1:10], LETTERS[10:1], 100, list(1:100, c(1:9, 11:101)),
                             list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
                             list(function(oracle){}), predicted, actual,
@@ -90,7 +79,9 @@
                                class = factor(rep(c("Healthy", "Cancer"), each = 10))),
                     data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
                                class = factor(rep(c("Healthy", "Cancer"), each = 10))))
-  result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
+  result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
                             LETTERS[1:10], LETTERS[10:1], 100, list(1:100, c(1:5, 11:105)),
                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
                             list(function(oracle){}), predicted, actual,
@@ -98,5 +89,5 @@
   result2 <- calcCVperformance(result2, "macro F1")
   
   performancePlot(list(result1, result2), performanceName = "Macro F1 Score",
-                  title = "Comparison", boxLineColouring = "None", columnVariable = "None")
+                  title = "Comparison")
 }

@@ -8,9 +8,8 @@
        }
 \usage{
   \S4method{differentMeansSelection}{matrix}(measurements, classes, ...)
-  \S4method{differentMeansSelection}{DataFrame}(measurements, classes, datasetName,
-               trainParams, predictParams, resubstituteParams,
-               selectionName = "Difference in Means", verbose = 3)
+  \S4method{differentMeansSelection}{DataFrame}(measurements, classes,
+               trainParams, predictParams, resubstituteParams, verbose = 3)
   \S4method{differentMeansSelection}{MultiAssayExperiment}(measurements, targets = NULL, ...)
 }
 \arguments{
@@ -24,15 +23,13 @@
                  used in the analysis.}                  
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name for the data set used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
                        prediction is to be done.}
   \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
                             describing the performance measure to consider and the numbers of
-                            top features to try for resubstitution classification.}                     
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
+                            top features to try for resubstitution classification.}               
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -56,8 +53,8 @@
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
     
     resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                            performanceType = "balanced error", better = "lower")
-    selected <- differentMeansSelection(genesMatrix, classes, "Example",
+                            performanceType = "balanced error")
+    selected <- differentMeansSelection(genesMatrix, classes,
                                trainParams = TrainParams(), predictParams = PredictParams(),
                                resubstituteParams = resubstituteParams)
                                

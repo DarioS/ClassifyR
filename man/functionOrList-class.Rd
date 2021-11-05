@@ -11,5 +11,5 @@
 \author{Dario Strbenac}
 \examples{
   SelectParams(limmaSelection)
-  SelectParams(list(limmaSelection, leveneSelection), "Ensemble Selection")
+  SelectParams(list(limmaSelection, leveneSelection))
 }

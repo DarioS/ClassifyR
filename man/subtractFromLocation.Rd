@@ -9,11 +9,11 @@
              }
 \usage{
   \S4method{subtractFromLocation}{matrix}(measurements, training, location = c("mean", "median"),
-                     absolute = TRUE, verbose = 3)
+                     absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
   \S4method{subtractFromLocation}{DataFrame}(measurements, training, location = c("mean", "median"),
-                     absolute = TRUE, verbose = 3)
+                     absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
   \S4method{subtractFromLocation}{MultiAssayExperiment}(measurements, training, targets = names(measurements),
-                           location = c("mean", "median"), absolute = TRUE, verbose = 3)
+                           location = c("mean", "median"), absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
 }
 \arguments{
   \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
@@ -26,7 +26,8 @@
                   are returned. Otherwise, they are signed.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
-                 numeric variables from the clinical data table will be used.}                  
+                 numeric variables from the clinical data table will be used.}                   \item{transformName}{Default: Location Subtraction. Useful for automated plot annotation by
+                       plotting functions within this package..}
   \item{verbose}{Default: 3. A progress message is shown if this value is 3.}
 }
 \details{

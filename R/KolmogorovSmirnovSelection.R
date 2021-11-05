@@ -8,9 +8,8 @@ setMethod("KolmogorovSmirnovSelection", "matrix", function(measurements, classes
 })
 
 setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName,
-                   trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Kolmogorov-Smirnov Test", verbose = 3)
+          function(measurements, classes,
+                   trainParams, predictParams, resubstituteParams, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -28,9 +27,9 @@ setMethod("KolmogorovSmirnovSelection", "DataFrame", # Clinical data or one of t
                       stats::ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
   orderedFeatures <- order(KSdistance, decreasing = TRUE)
-  .pickFeatures(measurements, classes, NULL, datasetName,
+  .pickFeatures(measurements, classes, NULL,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
+                orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

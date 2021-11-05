@@ -18,6 +18,7 @@ setClassUnion("listOrCharacterOrNULL", c("list", "character", "NULL"))
 
 setClass("TransformParams", representation(
   transform = "function",
+  characteristics = "DataFrame",
   intermediate = "character",  
   otherParams = "list")
 )
@@ -26,10 +27,32 @@ setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
 
 setMethod("TransformParams", c("function"),
-          function(transform, intermediate = character(0), ...)
+          function(transform, characteristics = DataFrame(), intermediate = character(0), ...)
           {
-            new("TransformParams", transform = transform,
+            if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
+            {
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == transform@generic, "name"]))
+            }
+            new("TransformParams", transform = transform, characteristics = characteristics,
                 intermediate = intermediate, otherParams = list(...))
+          })
+
+setMethod("show", "TransformParams",
+          function(object)
+          {
+            cat("An object of class 'TransformParams'.\n")
+            index <- na.omit(match("Transform Name", object@characteristics[, "characteristic"]))
+            transText <- object@characteristics[index, "characteristic"]
+            cat("Transform Name: ", object@characteristics[index, "value"], ".\n", sep = '')
+            
+            otherInfo <- object@characteristics[-index, ]
+            if(nrow(otherInfo) > 0)
+            {
+              for(rowIndex in 1:nrow(otherInfo))
+              {
+                cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
+              }
+            }
           })
 
 setClass("FeatureSetCollection", representation(
@@ -50,7 +73,7 @@ setMethod("length", c("FeatureSetCollection"),
     length(x@sets)
 })
 
-setMethod("show", c("FeatureSetCollection"),
+setMethod("show", "FeatureSetCollection",
           function(object)
           {
             setType <- ifelse("character" %in% class(object@sets[[1]]), "features", "interactors")
@@ -138,29 +161,27 @@ setClassUnion("FeatureSetCollectionOrNULL", c("FeatureSetCollection", "NULL"))
 setClass("ResubstituteParams", representation(
   nFeatures = "numeric",
   performanceType = "character",
-  better = "character",
   otherParams = "list")
 )
 
-setGeneric("ResubstituteParams", function(nFeatures, performanceType, better = c("lower", "higher"), ...)
+setGeneric("ResubstituteParams", function(nFeatures, performanceType, ...)
 standardGeneric("ResubstituteParams"))
 
 setMethod("ResubstituteParams", "missing", function()
 {
-  new("ResubstituteParams", nFeatures = seq(10, 100, 10), performanceType = "balanced error",
-      better = "lower")
+  new("ResubstituteParams", nFeatures = seq(10, 100, 10), performanceType = "balanced error")
 })
 
-setMethod("ResubstituteParams", c("numeric", "character", "character"),
-          function(nFeatures, performanceType, better, ...)
+setMethod("ResubstituteParams", c("numeric", "character"),
+          function(nFeatures, performanceType, ...)
           {
             new("ResubstituteParams", nFeatures = nFeatures, performanceType = performanceType,
-                better = better, otherParams = list(...))
+                otherParams = list(...))
           })
 
 setClass("SelectParams", representation(
   featureSelection = "functionOrList",
-  selectionName = "character",
+  characteristics = "DataFrame",
   minPresence = "numeric",
   intermediate = "character",
   subsetToSelections = "logical",  
@@ -172,48 +193,105 @@ standardGeneric("SelectParams"))
 setMethod("SelectParams", "missing", function()
 {
   new("SelectParams", featureSelection = differentMeansSelection,
-      selectionName = "Difference in Means", minPresence = 1,
-      intermediate = character(0), subsetToSelections = TRUE,
+      characteristics = DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
+      minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
       otherParams = list(resubstituteParams = ResubstituteParams()))
 })
 setMethod("SelectParams", c("functionOrList"),
-          function(featureSelection, selectionName, minPresence = 1, intermediate = character(0),
-                   subsetToSelections = TRUE, ...)
+          function(featureSelection, characteristics = DataFrame(), minPresence = 1, 
+                   intermediate = character(0), subsetToSelections = TRUE, ...)
           {
-            if(missing(selectionName) && !is.list(featureSelection))
-              selectionName <- .methodFormals(featureSelection)[["selectionName"]]
+            if(!is.list(featureSelection) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
+            {
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == featureSelection@generic, "name"]))
+            }
+            if(is.list(featureSelection) && (ncol(characteristics) == 0 || !"Ensemble Selection" %in% characteristics[, "characteristic"]))
+            {
+              selectMethodNames <- unlist(lapply(featureSelection, function(selectFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == selectFunction@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Ensemble Selection", value = paste(selectMethodNames, collapse = ", ")))
+            }
             others <- list(...)
             if(is.list(featureSelection))
               others <- unlist(others, recursive = FALSE)
             if(is.null(others)) others <- list()
             new("SelectParams", featureSelection = featureSelection,
-                selectionName = selectionName, minPresence = minPresence,
+                characteristics = characteristics, minPresence = minPresence,
                 intermediate = intermediate, subsetToSelections = subsetToSelections,
                 otherParams = others)
           })
 
+setMethod("show", "SelectParams",
+          function(object)
+          {
+            cat("An object of class 'SelectParams'.\n")
+            IDs <- c("Selection Name", "Ensemble Selection")
+            index <- na.omit(match(IDs, object@characteristics[, "characteristic"]))
+            selectText <- object@characteristics[index, "characteristic"]
+            cat(selectText, ": ", object@characteristics[index, "value"], ".\n", sep = '')
+            if(selectText == "Ensemble Selection")
+              cat("Minimum Functions Selected By:", object@minPresence)
+            
+            otherInfo <- object@characteristics[-index, ]
+            if(nrow(otherInfo) > 0)
+            {
+              for(rowIndex in 1:nrow(otherInfo))
+              {
+                cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
+              }
+            }
+          })
+
 setClass("TrainParams", representation(
   classifier = "function",
+  characteristics = "DataFrame",
   intermediate = "character",
   getFeatures = "functionOrNULL",
   otherParams = "list")
 )
 
-setGeneric("TrainParams", function(classifier, ...)
-standardGeneric("TrainParams"))
+setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams"))
 setMethod("TrainParams", "missing", function()
 {
-  new("TrainParams", classifier = DLDAtrainInterface, intermediate = character(0), getFeatures = NULL)
+  new("TrainParams", classifier = DLDAtrainInterface,
+      characteristics = S4Vectors::DataFrame(characteristic = "Classifier Name", value = "Diagonal LDA"),
+      intermediate = character(0), getFeatures = NULL)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, intermediate = character(0), getFeatures = NULL, ...)
+          function(classifier, characteristics = DataFrame(), intermediate = character(0), getFeatures = NULL, ...)
           {
-            new("TrainParams", classifier = classifier, intermediate = intermediate,
-                getFeatures = getFeatures, otherParams = list(...))
+            if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
+            {
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == classifier@generic, "name"]))
+            }
+            new("TrainParams", classifier = classifier, characteristics = characteristics,
+                intermediate = intermediate, getFeatures = getFeatures,
+                otherParams = list(...))
+          })
+
+setMethod("show", "TrainParams",
+          function(object)
+          {
+            cat("An object of class 'TrainParams'.\n")
+            index <- na.omit(match("Classifier Name", object@characteristics[, "characteristic"]))
+            trainText <- object@characteristics[index, "characteristic"]
+            cat("Classifier Name: ", object@characteristics[index, "value"], ".\n", sep = '')
+            
+            otherInfo <- object@characteristics[-index, ]
+            if(nrow(otherInfo) > 0)
+            {
+              for(rowIndex in 1:nrow(otherInfo))
+              {
+                cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
+              }
+            }
+
+            if(!is.null(object@getFeatures))
+              cat("Selected Features Extracted By: ", object@getFeatures@generic, ".\n", sep = '')
           })
 
 setClass("PredictParams", representation(
   predictor = "functionOrNULL",
+  characteristics = "DataFrame",  
   intermediate = "character",
   otherParams = "list")
 )
@@ -222,37 +300,62 @@ setGeneric("PredictParams", function(predictor, ...)
 standardGeneric("PredictParams"))
 setMethod("PredictParams", "missing", function()
 {
-  new("PredictParams", predictor = DLDApredictInterface, intermediate = character(0))
+  new("PredictParams", predictor = DLDApredictInterface,
+      characteristics = S4Vectors::DataFrame(characteristic = "Predictor Name", value = "Diagonal LDA"),
+      intermediate = character(0))
 })
 setMethod("PredictParams", c("functionOrNULL"),
-          function(predictor, intermediate = character(0), ...)
+          function(predictor, characteristics = DataFrame(), intermediate = character(0), ...)
           {
             if(missing(predictor))
               stop("Either a function or NULL must be specified by 'predictor'.")
-            
-            new("PredictParams", predictor = predictor, intermediate = intermediate,
-                otherParams = list(...))
+            if(!is.null(predictor) && (ncol(characteristics) == 0 || !"Predictor Name" %in% characteristics[, "characteristic"]))
+            {
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Predictor Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == predictor@generic, "name"]))
+            }
+            new("PredictParams", predictor = predictor, characteristics = characteristics,
+                intermediate = intermediate, otherParams = list(...))
           })
 
-setGeneric("SelectResult", function(dataset, selection, totalFeatures, rankedFeatures, chosenFeatures, ...)
+setMethod("show", "PredictParams",
+          function(object)
+          {
+            cat("An object of class 'PredictParams'.\n")
+            if(ncol(object@characteristics) > 0)
+            {
+              index <- na.omit(match("Predictor Name", object@characteristics[, "characteristic"]))
+              if(length(index) > 0)
+                cat("Predictor Name: ", object@characteristics[index, "value"], ".\n", sep = '')
+              
+              otherInfo <- object@characteristics[-index, ]
+              if(nrow(otherInfo) > 0)
+              {
+                for(rowIndex in 1:nrow(otherInfo))
+                {
+                  cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
+                }
+              }
+            } 
+            if(is.null(object@predictor))
+              cat("Prediction is done by function specified to TrainParams.\n")
+          })
+
+setGeneric("SelectResult", function(totalFeatures, rankedFeatures, chosenFeatures, ...)
 standardGeneric("SelectResult"))
 setClass("SelectResult", representation(
-  datasetName = "character",
-  selectionName = "character",
   totalFeatures = "numeric",
   rankedFeatures = "list",
   chosenFeatures = "list"
 ))
 
-setMethod("SelectResult", c("character", "character", "numeric", "list", "list"),
-          function(dataset, selection, totalFeatures, rankedFeatures, chosenFeatures)
+setMethod("SelectResult", c("numeric", "list", "list"),
+          function(totalFeatures, rankedFeatures, chosenFeatures)
           {
-            new("SelectResult", datasetName = dataset, selectionName = selection, 
-                totalFeatures = totalFeatures, rankedFeatures = rankedFeatures,
+            new("SelectResult", totalFeatures = totalFeatures, rankedFeatures = rankedFeatures,
                 chosenFeatures = chosenFeatures)
           })
 
-setMethod("show", c("SelectResult"),
+setMethod("show", "SelectResult",
           function(object)
           {
             if(class(object@chosenFeatures[[1]]) == "list")
@@ -273,8 +376,6 @@ setMethod("show", c("SelectResult"),
                 selectionSizes <- sapply(object@chosenFeatures, nrow) # Stored in a data frame.
             }
             cat("An object of class 'SelectResult'.\n")
-            cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
-            cat("Feature Selection Name: ", object@selectionName, ".\n", sep = '')
             cat("Features Considered: ", object@totalFeatures, ".\n", sep = '')
             selectionsText <- paste("Selections: List of length", length(object@chosenFeatures))
             if(class(object@chosenFeatures[[1]]) == "list")
@@ -286,11 +387,10 @@ setMethod("show", c("SelectResult"),
               cat("Selection Size: ", selectionSizes[[1]], " features.\n", sep = '')
           })
 
-setGeneric("ClassifyResult", function(datasetName, classificationName, selectionName, originalNames, originalFeatures, ...)
+setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
 standardGeneric("ClassifyResult"))
 setClass("ClassifyResult", representation(
-  datasetName = "character",
-  classificationName = "character",
+  characteristics = "DataFrame",
   originalNames = "character",
   originalFeatures = "characterOrDataFrame",
   selectResult = "SelectResult",
@@ -298,25 +398,23 @@ setClass("ClassifyResult", representation(
   models = "list",
   predictions = "list",
   validation = "list",  
-  performance = "list",
-  tune = "list")
+  performance = "listOrNULL",
+  tune = "listOrNULL")
 )
-setMethod("ClassifyResult", c("character", "character", "character", "character", "characterOrDataFrame"),
-          function(datasetName, classificationName, selectionName, originalNames, originalFeatures, totalFeatures,
-                   rankedFeatures, chosenFeatures, models, predictions, actualClasses, validation, tune = list(NULL))
+setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
+          function(characteristics, originalNames, originalFeatures, totalFeatures,
+                   rankedFeatures, chosenFeatures, models, predictions, actualClasses, validation, tune = NULL)
           {
-            new("ClassifyResult", datasetName = datasetName, classificationName = classificationName,
-                predictions = predictions, selectResult = SelectResult(datasetName, selectionName, totalFeatures, rankedFeatures, chosenFeatures),
+            new("ClassifyResult", characteristics = characteristics,
+                predictions = predictions, selectResult = SelectResult(totalFeatures, rankedFeatures, chosenFeatures),
                 actualClasses = actualClasses, models = models, validation = validation,
                 originalNames = originalNames, originalFeatures = originalFeatures, tune = tune)
           })
-setMethod("show", c("ClassifyResult"),
-          function(object)
+setMethod("show", "ClassifyResult", function(object)
           {
             cat("An object of class 'ClassifyResult'.\n")
-            cat("Data Set Name: ", object@datasetName, ".\n", sep = '')
-            cat("Classification Name: ", object@classificationName, ".\n", sep = '')
-            cat("Feature Selection Name: ", object@selectResult@selectionName, ".\n", sep = '')
+            cat("Characteristics:\n")
+            print(as.data.frame(object@characteristics), row.names = FALSE)
             
             if(object@validation[[1]] != "permuteFold")
             {
@@ -334,8 +432,6 @@ setMethod("show", c("ClassifyResult"),
               cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of ",
                   subListText, " of feature identifiers.\n", sep = '')
             }            
-            cat("Validation: ")
-            cat(.validationText(object), ".\n", sep = '')
             cat("Predictions: List of data frames of length ", length(object@predictions),
                 ".\n", sep = '')
             if(length(object@performance) > 0)
@@ -402,7 +498,7 @@ setMethod("actualClasses", c("ClassifyResult"),
 
 setGeneric("tunedParameters", function(object, ...)
 standardGeneric("tunedParameters"))
-setMethod("tunedParameters", c("ClassifyResult"),
+setMethod("tunedParameters", "ClassifyResult",
           function(object)
           {
             object@tune
@@ -430,7 +526,7 @@ setMethod("EasyHardClassifier", c("listOrNULL", "listOrCharacterOrNULL", "charac
                 datasetIDs = datasetIDs)
           })
 
-setMethod("show", c("EasyHardClassifier"),
+setMethod("show", "EasyHardClassifier",
           function(object)
           {
             cat("An object of class 'EasyHardClassifier'.\n")

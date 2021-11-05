@@ -7,6 +7,7 @@ standardGeneric("calcCVperformance"))
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualClasses, predictedClasses,
                    performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
+                                       "sample error", "sample accuracy",
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
                                        "macro recall", "macro F1", "matthews"))

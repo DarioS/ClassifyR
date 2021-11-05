@@ -4,9 +4,10 @@ standardGeneric("easyHardClassifierTrain"))
 setMethod("easyHardClassifierTrain", "MultiAssayExperiment",
 function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
          featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-         datasetName = NULL, classificationName = "Easy-Hard Classifier",
          easyClassifierParams = list(minCardinality = 10, minPurity = 0.9),
-         hardClassifierParams = list(SelectParams(), TrainParams(), PredictParams()), 
+         hardClassifierParams = list(SelectParams(), TrainParams(), PredictParams()),
+         characteristics = DataFrame(characteristic = c("Classifier Name", "Easy Dataset", "Hard Dataset"),
+                                     value = c("Easy-Hard Classifier", easyDatasetID, hardDatasetID)),
          verbose = 3)
 {
   if(easyDatasetID == "clinical")
@@ -164,7 +165,7 @@ function(measurements, easyDatasetID = "clinical", hardDatasetID = names(measure
 setGeneric("easyHardClassifierPredict", function(model, test, ...)
            standardGeneric("easyHardClassifierPredict"))
 
-setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperiment"), function(model, test, predictParams, verbose = 3)
+setMethod("easyHardClassifierPredict", c("EasyHardClassifier", "MultiAssayExperiment"), function(model, test, predictParams,  verbose = 3)
 {
   easyDatasetID <- model@datasetIDs["easy"]
   hardDatasetID <- model@datasetIDs["hard"]

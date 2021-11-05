@@ -10,10 +10,9 @@
 }
 \usage{
   \S4method{edgeRselection}{matrix}(counts, classes, ...)
-  \S4method{edgeRselection}{DataFrame}(counts, classes, datasetName,
+  \S4method{edgeRselection}{DataFrame}(counts, classes,
                    normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-               trainParams, predictParams, resubstituteParams,
-               selectionName = "edgeR LRT", verbose = 3)
+               trainParams, predictParams, resubstituteParams, verbose = 3)
   \S4method{edgeRselection}{MultiAssayExperiment}(counts, targets = NULL, ...)
 }
 \arguments{
@@ -26,7 +25,6 @@
                  data tables of counts to be used.}              
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{normFactorsOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{calcNormFactors}}.}
   \item{dispOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{estimateDisp}}.}
   \item{fitOptions}{A named \code{list} of any options to be passed to \code{\link[edgeR]{glmFit}}.}                
@@ -36,8 +34,7 @@
                        prediction is to be done.}
   \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
                        describing the performance measure to consider and the numbers of
-                       top features to try for resubstitution classification.}                   
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
+                       top features to try for resubstitution classification.}              
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -75,11 +72,11 @@
     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small data set.
     
-    selected <- edgeRselection(expression, classes, "DPN Treatment",
+    selected <- edgeRselection(expression, classes,
                    trainParams = TrainParams(classifyInterface),
                    predictParams = PredictParams(NULL),
                    resubstituteParams = ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                        performanceType = "balanced error", better = "lower"))
+                                        performanceType = "balanced error"))
                                         
     head(selected@rankedFeatures[[1]])
     plotFeatureClasses(expression, classes, "ENSG00000044574",

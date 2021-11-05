@@ -8,8 +8,8 @@
 \description{Restructures variables from ClassifyR framework to be compatible with \code{\link[pamr]{pamr.listgenes}} definition.}
 \usage{
   \S4method{NSCselectionInterface}{matrix}(measurements, classes, ...)
-  \S4method{NSCselectionInterface}{DataFrame}(measurements, classes, datasetName,
-                   trained, ..., selectionName = "Shrunken Centroids", verbose = 3)
+  \S4method{NSCselectionInterface}{DataFrame}(measurements, classes,
+                   trained, ..., verbose = 3)
   \S4method{NSCselectionInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -23,14 +23,12 @@
                  is a \code{MultiAssayExperiment} object.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
-                 numeric variables from the clinical data table will be used.}                 
-  \item{datasetName}{A name for the data set used. Stored in the result.}
+                 numeric variables from the clinical data table will be used.}
   \item{trained}{The output of \code{\link{NSCtrainInterface}}, which is identical to the output
                  of \code{\link[pamr]{pamr.listgenes}}.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method
              which are passed into and used by the \code{DataFrame} method or extra arguments
              passed to \code{\link[pamr]{pamr.listgenes}}.}
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -55,7 +53,7 @@
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
     trained <- NSCtrainInterface(genesMatrix, classes)
-    selected <- NSCselectionInterface(genesMatrix, classes, "Example", trained)
+    selected <- NSCselectionInterface(genesMatrix, classes, trained)
                                                           
     selected@chosenFeatures                                                         
   }

@@ -8,9 +8,7 @@ setMethod("leveneSelection", "matrix", function(measurements, classes, ...)
 })
 
 setMethod("leveneSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName,
-                   trainParams, predictParams, resubstituteParams,
-                   selectionName = "Levene Test", verbose = 3)
+          function(measurements, classes, trainParams, predictParams, resubstituteParams, verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -28,9 +26,9 @@ setMethod("leveneSelection", "DataFrame", # Clinical data or one of the other in
              car::leveneTest(featureColumn, classes)[["Pr(>F)"]][1])
   orderedFeatures <- order(pValues)
  
-  .pickFeatures(measurements, classes, NULL, datasetName,
+  .pickFeatures(measurements, classes, NULL,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
+                orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

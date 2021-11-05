@@ -9,9 +9,8 @@ setMethod("DMDselection", "matrix", # Matrix of numeric measurements.
 })
 
 setMethod("DMDselection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName, differences = c("both", "location", "scale"),
-                   trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Differences of Medians and Deviations", verbose = 3)
+          function(measurements, classes, differences = c("both", "location", "scale"),
+                   trainParams, predictParams, resubstituteParams, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -41,8 +40,8 @@ setMethod("DMDselection", "DataFrame", # Clinical data or one of the other input
     divergence <- divergence + scalesDifferences
 
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickFeatures(measurements, classes, NULL, datasetName, trainParams, predictParams,
-                resubstituteParams, orderedFeatures, selectionName, verbose)  
+  .pickFeatures(measurements, classes, NULL, trainParams, predictParams,
+                resubstituteParams, orderedFeatures, verbose)
 })
 
 # One or more omics data sets, possibly with clinical data.

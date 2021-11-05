@@ -2,7 +2,7 @@
 \docType{class}
 \alias{SelectResult}
 \alias{SelectResult-class}
-\alias{SelectResult,character,character,numeric,list,list-method}
+\alias{SelectResult,numeric,list,list-method}
 \alias{show,SelectResult-method}
 
 \title{Container for Storing Feature Selection Results}
@@ -18,11 +18,9 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{SelectResult(datasetName, selectionName, totalFeatures, rankedFeatures, chosenFeatures)}}
+      \code{SelectResult(totalFeatures, rankedFeatures, chosenFeatures)}}
     }
   \describe{
-            \item{\code{datasetName}}{A name associated with the data set used.}
-            \item{\code{selectionName}}{A name associated with the classification.}
             \item{\code{totalFeatures}}{The total number of features in the data set.}
             \item{\code{rankedFeatures}}{Identifiers of all features or meta-features if meta-features were used by the classifier, from most to least
                                          discriminative.}
@@ -31,16 +29,16 @@
 }
 
 \section{Summary}{
-  A method which summarises the results is available.
+  A method which summarises the result is available.
   \code{result} is a \code{SelectResult} object.
 
   \describe{
     \item{}{
-      \code{show(result)}{Prints a short summary of what \code{result} contains.}
+      \code{show(result)}: Prints a short summary of what \code{result} contains.
     }}
 }
 
 \author{Dario Strbenac}
 \examples{
-    SelectResult("Asthma", "Moderated t-test", 50, list(1:50), list(1:10))
+    SelectResult(50, list(1:50), list(1:10))
 }

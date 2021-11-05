@@ -9,10 +9,9 @@ setMethod("edgeRselection", "matrix", # Matrix of integer counts.
 
 # DataFrame of counts, likely created by runTests or runTest.
 setMethod("edgeRselection", "DataFrame",
-          function(counts, classes, datasetName,
-                   normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
-                   trainParams, predictParams, resubstituteParams,
-                   selectionName = "edgeR LRT", verbose = 3)
+          function(counts, classes, normFactorsOptions = NULL, dispOptions = NULL,
+                   fitOptions = NULL, trainParams, predictParams,
+                   resubstituteParams, verbose = 3)
 {
   if(verbose == 3)
     message("Doing edgeR LRT feature selection.")
@@ -40,9 +39,9 @@ setMethod("edgeRselection", "DataFrame",
   result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
   orderedFeatures <- match(rownames(result[["table"]]), colnames(counts))
   
-  .pickFeatures(counts, classes, NULL, datasetName,
+  .pickFeatures(counts, classes, NULL,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)    
+                orderedFeatures, verbose)    
 })
 
 # One or more omics data sets, possibly with clinical data.

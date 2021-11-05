@@ -3,7 +3,7 @@ setGeneric("subtractFromLocation", function(measurements, ...)
 
 setMethod("subtractFromLocation", "matrix", 
           function(measurements, training, location = c("mean", "median"),
-                   absolute = TRUE, verbose = 3)
+                   absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
 {
   location <- match.arg(location)
   measurementsTrain <- measurements[, training]
@@ -24,7 +24,7 @@ setMethod("subtractFromLocation", "matrix",
 
 setMethod("subtractFromLocation", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, training, location = c("mean", "median"),
-                   absolute = TRUE, verbose = 3)
+                   absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
           {
             isNumeric <- sapply(measurements, is.numeric)
             if(sum(isNumeric) == 0)
@@ -54,7 +54,7 @@ setMethod("subtractFromLocation", "DataFrame", # Clinical data or one of the oth
 
 setMethod("subtractFromLocation", "MultiAssayExperiment", 
           function(measurements, training, targets = names(measurements),
-                   location = c("mean", "median"), absolute = TRUE, verbose = 3)
+                   location = c("mean", "median"), absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
 {
   location <- match.arg(location)
   if(!all(targets %in% c(names(measurements), "clinical")))

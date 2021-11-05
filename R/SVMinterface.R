@@ -45,7 +45,7 @@ setMethod("SVMpredictInterface", c("svm", "matrix"),
   SVMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("both", "class", "score"), verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("both", "class", "score"), classifierName = "Support Vector Machine", verbose = 3)
 {
   returnType <- match.arg(returnType)
   if(!is.null(classes))
@@ -64,8 +64,7 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
   classPredictions <- predict(model, test, probability = TRUE)
   classScores <- attr(classPredictions, "probabilities")[, model[["levels"]], drop = FALSE]
   attr(classPredictions, "probabilities") <- NULL
-  switch(returnType, class = classPredictions,
-         score = classScores,
+  switch(returnType, class = classPredictions, score = classScores,
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 

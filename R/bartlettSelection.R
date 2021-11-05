@@ -8,8 +8,7 @@ function(measurements, classes, ...)
 })
 
 setMethod("bartlettSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName, trainParams, predictParams, resubstituteParams,
-                   selectionName = "Bartlett Test", verbose = 3)
+          function(measurements, classes, trainParams, predictParams, resubstituteParams, verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -26,8 +25,8 @@ setMethod("bartlettSelection", "DataFrame", # Clinical data or one of the other 
     stats::bartlett.test(featureColumn, classes)[["p.value"]])
   orderedFeatures <- order(pValues)
   
-  .pickFeatures(measurements, classes, NULL, datasetName, trainParams, predictParams,
-                resubstituteParams, orderedFeatures, selectionName, verbose)
+  .pickFeatures(measurements, classes, NULL, trainParams, predictParams,
+                resubstituteParams, orderedFeatures, verbose)
 })
 
 # One or more omics data sets, possibly with clinical data.

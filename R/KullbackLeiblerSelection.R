@@ -8,9 +8,7 @@ setMethod("KullbackLeiblerSelection", "matrix", function(measurements, classes, 
 })
 
 setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName,
-                   trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Kullback-Leibler Divergence", verbose = 3)
+          function(measurements, classes, trainParams, predictParams, resubstituteParams, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -33,9 +31,9 @@ setMethod("KullbackLeiblerSelection", "DataFrame", # Clinical data or one of the
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
 
   orderedFeatures <- order(divergence, decreasing = TRUE)
-  .pickFeatures(measurements, classes, NULL, datasetName,
+  .pickFeatures(measurements, classes, NULL,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
+                orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

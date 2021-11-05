@@ -44,7 +44,7 @@
   \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
-                    or both labels and scores in a \code{data.frame}.}     
+                    or both labels and scores in a \code{data.frame}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }

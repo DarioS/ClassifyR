@@ -13,9 +13,8 @@ setMethod("pairsDifferencesSelection", "matrix", # Matrix of numeric measurement
 })
 
 setMethod("pairsDifferencesSelection", "DataFrame",
-          function(measurements, classes, featurePairs = NULL, datasetName,
-                   trainParams, predictParams, resubstituteParams,
-                   selectionName = "Pairs Differences", verbose = 3)
+          function(measurements, classes, featurePairs = NULL,
+                   trainParams, predictParams, resubstituteParams, verbose = 3)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
@@ -54,8 +53,8 @@ setMethod("pairsDifferencesSelection", "DataFrame",
   pairsClassDifferences <- otherClassDifferences - oneClassDifferences
   orderedFeatures <- order(abs(pairsClassDifferences), decreasing = TRUE)
 
-  .pickFeatures(measurements, classes, featurePairs, datasetName, trainParams, predictParams,
-                resubstituteParams, orderedFeatures, selectionName, verbose)  
+  .pickFeatures(measurements, classes, featurePairs, trainParams, predictParams,
+                resubstituteParams, orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

@@ -12,7 +12,7 @@ setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
 setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, balancing = c("downsample", "upsample", "none"),
                       featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                      datasetName, classificationName,
+                      characteristics = DataFrame(),
                       validation = c("permute", "leaveOut", "fold"),
                       permutePartition = c("fold", "split"),
                       permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -22,10 +22,6 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
 {
   if(is.null(rownames(measurements)))
     stop("'measurements' DataFrame must have sample identifiers as its row names.")
-  if(missing(datasetName))          
-    stop("'datasetName' must be specified.")        
-  if(missing(classificationName))          
-    stop("'classificationName' must be specified.")            
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
@@ -209,6 +205,7 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
           measurementsUse <- clinicalTable
           paramsUse <- clinicalParams
         }
+        
         lapply(1:folds, function(foldIndex)
         {
           runTest(measurementsUse, classes, balancing, featureSets, metaFeatures, minimumOverlapPercent, training = unlist(resampleFolds[-foldIndex]),
@@ -558,29 +555,40 @@ setMethod("runTests", c("DataFrame"), # Clinical data or one of the other inputs
   } else {
     validationInfo <- list("fold", folds)
   }
+  validationText <- .validationText(validationInfo)
 
   resultsByVariety <- lapply(resultsByVariety, function(result) {if(length(unlist(result[["tune"]])) == 0) result[["tune"]] <- list(NULL); result;}) # Shorten it.
   resultsByVariety <- lapply(resultsByVariety, function(result) {if(length(unlist(result[["ranked"]])) == 0) result[["ranked"]] <- list(NULL); result;}) # Shorten it.
+  
+  autoCharacteristics <- lapply(params, function(stageParams) stageParams@characteristics)
+  autoCharacteristics <- do.call(rbind, autoCharacteristics)
+  if(multipleVarieties == TRUE)
+  {
+    varieties <- lapply(resultsByVariety, function(result) names(result[["predictions"]]))
+    varietyVariables <- lapply(strsplit(varieties, ','), function(variety) gsub("=.*", '', variety))
+    varietyVariables <- unique(unlist(varietyVariables))
+    extras <- lapply(params, function(stageParams) stageParams@otherParams)
+    extras <- extras[!names(extras) %in% varietyVariables]
+    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    characteristics <- rbind(characteristics, extrasDF)
+    if(nrow(autoCharacteristics) > 0)
+      autoCharacteristics <- autoCharacteristics[!autoCharacteristics[, "characteristic"] %in% varietyVariables]
+  }
 
+  characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
   classifyResults <- lapply(varietyNames, function(variety)
   {
-    # Might be NULL if selection is done within training.
-    if(length(selectParams) == 0)
+    if(grepl('=', variety)) # Actual varieties.
     {
-      selectionName <- "Unspecified" 
-    } else if(prevalidate == FALSE) {
-      selectionName <- selectParams[[1]]@selectionName
-    } else { # Prevalidation was used.
-      whichSelect <- which(sapply(params[["prevalidated"]], class) == "SelectParams")
-      if(any(whichSelect))
-      {
-        selectionName <- params[["prevalidated"]][whichSelect]@selectionName
-      } else {
-        selectionName <- "Unspecified"
-      }
+      characteristicsVariety <- characteristics
+      varietyInfo <- strsplit(strsplit(variety, ',')[[1]], '=')
+      varietyInfo <- do.call(rbind, varietyInfo)
+      colnames(varietyInfo) <- c("characteristic", "value")
+      characteristics <- rbind(characteristics, varietyInfo)
     }
-    
-    ClassifyResult(datasetName, classificationName, selectionName, rownames(measurements), allFeatures, consideredFeatures,
+    characteristics <- rbind(characteristics,
+                             S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
+    ClassifyResult(characteristics, rownames(measurements), allFeatures, consideredFeatures,
                    resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["models"]], resultsByVariety[[variety]][["predictions"]],
                    classes, validationInfo, resultsByVariety[[variety]][["tune"]])
   })
@@ -604,7 +612,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
           function(measurements, balancing = c("downsample", "upsample", "none"),
                    easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                   datasetName = NULL, classificationName = "Easy-Hard Classifier", 
+                   characteristics = DataFrame(characteristic = "Classifier Name", value = "Easy Hard"), 
                    validation = c("permute", "leaveOut", "fold"),
                    permutePartition = c("fold", "split"),
                    permutations = 100, percent = 25, folds = 5, leave = 2,
@@ -731,14 +739,12 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                   lapply(1:folds, function(foldIndex)
                   {
                     runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
-                                    datasetName, classificationName,
-                                    unlist(resampleFolds[-foldIndex]), resampleFolds[[foldIndex]], ..., verbose = verbose,
+                                    characteristics, unlist(resampleFolds[-foldIndex]), resampleFolds[[foldIndex]], ..., verbose = verbose,
                                     .iteration = c(sampleNumber, foldIndex))
                   })
                 } else { # Split mode.
                   runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
-                                  datasetName, classificationName,
-                                  resampleFolds[[1]], resampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
+                                  characteristics, resampleFolds[[1]], resampleFolds[[2]], ..., verbose = verbose, .iteration = sampleNumber)
                 }
               }, samplesFolds, as.list(1:permutations), MoreArgs = list(...), BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else if(validation == "leaveOut") # leave k out.
@@ -752,8 +758,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
                   message("Processing sample set ", sampleNumber, '.')
                 
                 runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
-                                datasetName, classificationName,
-                                trainingSample, testSample, ..., verbose = verbose, .iteration = sampleNumber)
+                                characteristics, trainingSample, testSample, ..., verbose = verbose, .iteration = sampleNumber)
               }, trainingSamples, testSamples, (1:length(trainingSamples)), MoreArgs = list(...),
               BPPARAM = parallelParams, SIMPLIFY = FALSE)
             } else { # Unresampled, ordinary k-fold cross-validation.
@@ -772,8 +777,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               results <- bplapply(1:folds, function(foldIndex, ...)
               {
                 runTestEasyHard(measurements, balancing, easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent,
-                                datasetName, classificationName,
-                                unlist(samplesFolds[-foldIndex]), samplesFolds[[foldIndex]], ..., verbose = verbose,
+                                characteristics, unlist(samplesFolds[-foldIndex]), samplesFolds[[foldIndex]], ..., verbose = verbose,
                         .iteration = foldIndex)
               }, measurements, ..., BPPARAM = parallelParams)
             }
@@ -1000,6 +1004,7 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
             } else {
               validationInfo <- list("fold", folds)
             }
+            validationText <- .validationText(validationInfo)
             
             resultsByVariety <- lapply(resultsByVariety, function(result) {if(length(unlist(result[["tune"]])) == 0) result[["tune"]] <- list(NULL); result;}) # Shorten it.
             resultsByVariety <- lapply(resultsByVariety, function(result) {if(length(unlist(result[["ranked"]])) == 0) result[["ranked"]] <- list(NULL); result;}) # Shorten it.
@@ -1013,12 +1018,14 @@ setMethod("runTestsEasyHard", c("MultiAssayExperiment"),
               if(length(whichSelect) > 0)
               {
                 selectParams <- selectParams[[whichSelect]]
-                selectionName <- paste(selectionName, "and", selectParams@selectionName, "for Hard Data Set")
+                whichRow <- match(selectParams@featureSelection@generic, .ClassifyRenvir[["functionsTable"]][, "character"])
+                selectionName <- paste(selectionName, "and", .ClassifyRenvir[["functionsTable"]][whichRow, "name"],
+                                       "for Hard Data Set")
               } else {
                 selectionName <- paste(selectionName, '.', sep = '')
               }
               
-              ClassifyResult(datasetName, classificationName, selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
+              ClassifyResult(characteristics, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
                              resultsByVariety[[variety]][["ranked"]], resultsByVariety[[variety]][["selected"]], resultsByVariety[[variety]][["models"]], resultsByVariety[[variety]][["predictions"]],
                              classes, validationInfo, resultsByVariety[[variety]][["tune"]])
             })

@@ -3,7 +3,7 @@ standardGeneric("samplesMetricMap"))
 
 setMethod("samplesMetricMap", "list", 
           function(results,
-                   comparison = c("classificationName", "datasetName", "selectionName", "validation"),
+                   comparison = "Classifier Name",
                    metric = c("error", "accuracy"),
                    featureValues = NULL, featureName = NULL,
                    metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
@@ -19,12 +19,17 @@ setMethod("samplesMetricMap", "list",
     stop("The package 'gridExtra' could not be found. Please install it.")       
   if(!requireNamespace("gtable", quietly = TRUE))
     stop("The package 'gtable' could not be found. Please install it.")
-            
-  comparison <- match.arg(comparison)
-  compareFactor <- switch(comparison, classificationName = sapply(results, function(result) result@classificationName),
-                          datasetName = sapply(results, function(result) result@datasetName),
-                          selectionName = sapply(results, function(result) result@selectResult@selectionName),
-                          validation = sapply(results, function(result) .validationText(result)))  
+  resultsWithComparison <- sum(sapply(results, function(result) any(result@characteristics[, "characteristic"] == comparison)))
+  if(resultsWithComparison < length(results))
+    stop("Not all results have comparison characteristic ", comparison, ' but need to.')
+  
+  if(comparison == "Cross-validation")
+    compareFactor <- sapply(results, function(result) .validationText(result))  
+  else
+    compareFactor <- sapply(results, function(result) {
+                     useRow <- result@characteristics[, "characteristic"] == comparison
+                     result@characteristics[useRow, "value"]
+                    })  
   metric <- match.arg(metric)
   metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
   metricID <- switch(metric, error = "Sample-wise Error Rate", accuracy = "Sample-wise Accuracy")

@@ -8,8 +8,7 @@ and one row for each classification result.
             }
 \usage{
   \S4method{samplesMetricMap}{list}(results,
-                     comparison = c("classificationName", "datasetName", "selectionName",
-                                "validation"),
+                     comparison = "Classifier Name",
                  metric = c("error", "accuracy"), featureValues = NULL, featureName = NULL,
                      metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
@@ -36,7 +35,10 @@ and one row for each classification result.
                  backwards compatibility.}
   \item{classes}{If \code{results} is a matrix, this is a factor vector of the same length
                  as the number of columns that \code{results} has.}                 
-  \item{comparison}{The aspect of the experimental design to compare.}
+  \item{comparison}{Default: Classifier Name. The aspect of the experimental design to compare.
+                    Can be any characteristic that all results share or special value
+                    "Cross-validation" to compare between cross-validation schemes.
+  to com.}
   \item{metric}{The sample-wise metric to plot.}
   \item{featureValues}{If not NULL, can be a named factor or named numeric vector specifying
                 some variable of interest to plot underneath the class bar.}
@@ -77,12 +79,16 @@ be discretised to.
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5), levels = c("Healthy", "Cancer"))
   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
-  result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
+  result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
                             list(function(oracle){}), list(predicted), actual,
                             list("permuteFold", 100, 5))
   predicted[, "class"] <- sample(predicted[, "class"])
-  result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
+  result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
                             LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
                             list(function(oracle){}), list(predicted), actual,
                             validation = list("leave", 2))

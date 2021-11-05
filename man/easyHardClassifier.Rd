@@ -13,9 +13,10 @@
 \usage{
   \S4method{easyHardClassifierTrain}{MultiAssayExperiment}(measurements, easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
          featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-         datasetName = NULL, classificationName = "Easy-Hard Classifier",
          easyClassifierParams = list(minCardinality = 10, minPurity = 0.9),
-         hardClassifierParams = list(SelectParams(), TrainParams(), PredictParams()), 
+         hardClassifierParams = list(SelectParams(), TrainParams(), PredictParams()),
+         characteristics = DataFrame(characteristic = c("Classifier Name", "Easy Dataset", "Hard Dataset"),
+                                    value = c("Easy-Hard Classifier", easyDatasetID, hardDatasetID)), 
          verbose = 3)
   \S4method{easyHardClassifierPredict}{EasyHardClassifier,MultiAssayExperiment}(model, test, predictParams, verbose = 3)
 }
@@ -35,13 +36,16 @@
                                in the analysis. If \code{featureSets} stores sets of network edges,
                                the minimum percentage of edges with both vertex IDs found in \code{measurements}
                                that a set has to have to be retained in the analysis.}
-  \item{datasetName}{A name associated with the data set used.}
-  \item{classificationName}{A name associated with the classification.}
   \item{easyClassifierParams}{A list of length 2 with names "minCardinality" and "minPurity". The first parameter specifies
   what the minimum number of samples after a split has to be and the second specifies the minimum proportion of samples in a partition belonging to a particular class.}
   \item{hardClassifierParams}{A list of objects defining the classification to do on the samples which were not predicted
-  by the easy classifier Objects must of of class \code{\link{TransformParams}}, \code{\link{SelectParams}},
-  \code{\link{TrainParams}} or \code{\link{PredictParams}}.}  
+  by the easy classifier. Objects must be of class \code{\link{TransformParams}}, \code{\link{SelectParams}},
+  \code{\link{TrainParams}} or \code{\link{PredictParams}}.}
+  \item{characteristics}{A \code{\link{DataFrame}} describing the characteristics
+            of classification done. First column must be named \code{"charateristic"} and second column must
+            be named \code{"value"}. If using wrapper functions for feature selection and classifiers
+            in this package, the function names will automatically be
+            generated and therefore it is not necessary to specify them.}
   \item{model}{A trained \code{\link{EasyHardClassifier}} object.}
   \item{test}{A \code{\link{MultiAssayExperiment}} object containing the test data.}
   \item{predictParams}{An object of class \code{\link{PredictParams}}. It specifies the classifier used to make

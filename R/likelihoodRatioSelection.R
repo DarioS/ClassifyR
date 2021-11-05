@@ -8,10 +8,9 @@ setMethod("likelihoodRatioSelection", "matrix", function(measurements, classes, 
 })
 
 setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName,
-                   trainParams, predictParams, resubstituteParams,
+          function(measurements, classes, trainParams, predictParams, resubstituteParams,
                    alternative = c(location = "different", scale = "different"),
-                   ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
+                   ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -40,9 +39,9 @@ setMethod("likelihoodRatioSelection", "DataFrame", # Clinical data or one of the
   }))
   
   orderedFeatures <- order(logLikelihoodRatios)
-  .pickFeatures(measurements, classes, NULL, datasetName,
+  .pickFeatures(measurements, classes, NULL,
                 trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)
+                orderedFeatures, verbose)
 })
 
 # One or more omics data sets, possibly with clinical data.

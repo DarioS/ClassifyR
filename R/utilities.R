@@ -101,14 +101,14 @@
     if(is.function(selectParams@featureSelection))
     {
       paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, verbose = verbose)
-      selectFormals <- names(.methodFormals(selectParams@featureSelection))
+      selectFormals <- names(.methodFormals(selectParams@featureSelection, "DataFrame"))
       if("trainParams" %in% selectFormals) # Needs training and prediction functions for resubstitution error rate calculation.
         paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
       if(!is.null(metaFeatures))
         paramList <- append(paramList, c(metaFeatures = metaFeatures[training, , drop = FALSE]))
       if("featureSets" %in% selectFormals) # Pass the sets on from runTest.
         paramList <- append(paramList, c(featureSets = featureSets))
-      paramList <- append(paramList, c(selectParams@otherParams, datasetName = "N/A", selectionName = "N/A"))
+      paramList <- append(paramList, c(selectParams@otherParams))
       selection <- do.call(selectParams@featureSelection, paramList)
 
       if(class(selection) == "SelectResult")
@@ -129,7 +129,7 @@
       {
         paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
-        paramList <- append(paramList, c(selParams, datasetName = "N/A", selectionName = "N/A"))
+        paramList <- append(paramList, selParams)
         do.call(selector, paramList)
       }, selectParams@featureSelection, selectParams@otherParams, SIMPLIFY = FALSE)
 
@@ -210,10 +210,13 @@
       individiualParams <- lapply(multiplierParams, '[', 2)
       names(individiualParams) <- sapply(multiplierParams, '[', 1)
       individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
-      trainFormals <- names(.methodFormals(trainParams@classifier))
+      trainFormals <- names(.methodFormals(trainParams@classifier, "DataFrame"))
       predictFormals <- character()
       if(!is.null(predictParams@predictor)) # Only check for formals if a function was specified by the user.
-        predictFormals <- names(.methodFormals(predictParams@predictor))
+      {
+        modelClass <- strsplit(showMethods(predictParams@predictor, printTo = FALSE)[2], "\\\"")[[1]][2]
+        predictFormals <- .methodFormals(predictParams@predictor, c(modelClass, "DataFrame"))
+      }
       changeTrain <- intersect(names(individiualParams), trainFormals)
       changePredict <- intersect(names(individiualParams), predictFormals)
       trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
@@ -280,17 +283,17 @@
 
             lapply(predicted, function(predictions)
             {
-              calcExternalPerformance(trainClasses, predictions, tuneOptimise[1])
+              calcExternalPerformance(trainClasses, predictions, tuneOptimise)
             })
           })
         })
-        
+        betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == tuneOptimise, "better"]
         chosenModels <- lapply(1:length(performances[[1]]), function(trainVariety)
         {
           lapply(1:length(trainVariety[[1]]), function(predictVariety)
           {
               performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[trainVariety]][[predictVariety]])
-              if(tuneOptimise[2] == "lower")
+              if(betterValues == "lower")
                 chosenTune <- which.min(performanceValues)[1]
               else # It is "higher"
                 chosenTune <- which.max(performanceValues)[1]
@@ -369,6 +372,7 @@
       } else { # Tuning Parameter selection.
         tuneOptimise <- trainParams@otherParams[["tuneOptimise"]]
         trainParams@otherParams <- trainParams@otherParams[-match("tuneOptimise", names(trainParams@otherParams))] # Don't pass the tuning optimisation parameters directly to the classifier.
+        betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == tuneOptimise, "better"]
         performances <- apply(tuneCombinations, 1, function(tuneCombination)
         {
           tuneParams <- as.list(tuneCombination)
@@ -389,15 +393,15 @@
           tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
           {
             performanceValue <- calcExternalPerformance(trainClasses, predictedFactor[[predictIndex]],
-                                                        tuneOptimise[1])
+                                                        tuneOptimise)
             list(predictedClasses[[predictIndex]], performanceValue)
           })
         })
-
+        
         chosenPredictions <- lapply(1:length(performances[[1]]), function(predictVariety)
         {
           performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[predictVariety]][[2]]) # Value is in second position.
-          if(tuneOptimise[2] == "lower")
+          if(betterValues == "lower")
             chosenTune <- which.min(performanceValues)[1]
           else # It is "higher"
             chosenTune <- which.max(performanceValues)[1]
@@ -475,8 +479,8 @@
   predicted
 }
 
-.pickFeatures <- function(measurements, classes, featureSets, datasetName, trainParams, predictParams,
-                          resubstituteParams, ordering, selectionName, verbose)
+.pickFeatures <- function(measurements, classes, featureSets, trainParams, predictParams,
+                          resubstituteParams, ordering, verbose)
 {
   maxFeatures <- max(resubstituteParams@nFeatures)
   if(maxFeatures > ncol(measurements))
@@ -539,7 +543,8 @@
 
   pickedFeatures <- apply(performances, 1, function(varietyPerformances)
                     {
-                      if(resubstituteParams@better == "lower")
+                      betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == resubstituteParams@performanceType, "better"]
+                      if(betterValues == "lower")
                         1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
                       else
                         1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
@@ -585,8 +590,8 @@
   
   selectResults <- lapply(1:length(rankedFeatures), function(variety)
   {
-    SelectResult(datasetName, selectionName, totalFeatures,
-                 list(rankedFeatures[[variety]]), list(pickedFeatures[[variety]]))
+    SelectResult(totalFeatures, list(rankedFeatures[[variety]]),
+                 list(pickedFeatures[[variety]]))
   })
   names(selectResults) <- names(pickedFeatures)
 
@@ -595,11 +600,11 @@
 
 .validationText <- function(result)
 {
-  switch(result@validation[[1]],
-  permuteFold = paste(result@validation[[2]], "Permutations,", result@validation[[3]], "Folds"),
-  fold = paste(result@validation[[2]], "-fold cross-validation", sep = ''),
-  leave = paste("Leave", result@validation[[2]], "Out"),
-  split = paste(result@validation[[2]], "Permutations,", result@validation[[3]], "% Test"),
+  switch(result[[1]],
+  permuteFold = paste(result[[2]], "Permutations,", result[[3]], "Folds"),
+  fold = paste(result[[2]], "-fold cross-validation", sep = ''),
+  leave = paste("Leave", result[[2]], "Out"),
+  split = paste(result[[2]], "Permutations,", result[[3]], "% Test"),
   independent = "Independent Set")
 }
 
@@ -615,10 +620,53 @@
   binID
 }
 
-.methodFormals <- function(f) {
+.getFeaturesStrings <- function(importantFeatures)
+{
+  if(is.data.frame(importantFeatures[[1]])) # Data set and feature ID columns.
+    importantFeatures <- lapply(importantFeatures, function(features) paste(features[, 1], features[, 2]))
+  else if("Pairs" %in% class(importantFeatures[[1]]))
+    importantFeatures <- lapply(importantFeatures, function(features) paste(first(features), second(features)))
+  else if(class(importantFeatures[[1]]) == "list" && is.character(importantFeatures[[1]][[1]])) # Two-level list, such as generated by permuting and folding.
+    importantFeatures <- unlist(importantFeatures, recursive = FALSE)
+  else if(class(importantFeatures[[1]]) == "list" && is.data.frame(importantFeatures[[1]][[1]])) # Data set and feature ID columns.
+    importantFeatures <- unlist(lapply(importantFeatures, function(folds) lapply(folds, function(fold) paste(fold[, 1], fold[, 2])), recursive = FALSE))
+  else if(class(importantFeatures[[1]]) == "list" && "Pairs" %in% class(importantFeatures[[1]]))
+    importantFeatures <- unlist(lapply(importantFeatures, function(folds) lapply(folds, function(fold) paste(first(fold), second(fold))), recursive = FALSE))  
+  importantFeatures
+}
+
+.filterCharacteristics <- function(characteristics, autoCharacteristics)
+{
+  if("Classifier Name" %in% autoCharacteristics[, "characteristic"] && "Predictor Name" %in% autoCharacteristics[, "characteristic"])
+  {
+    classRow <- which(autoCharacteristics[, "characteristic"] == "Classifier Name")
+    predRow <- which(autoCharacteristics[, "characteristic"] == "Predictor Name")
+    if(autoCharacteristics[classRow, "value"] == autoCharacteristics[predRow, "value"])
+      autoCharacteristics <- autoCharacteristics[-predRow, ]
+  }
+  if(nrow(autoCharacteristics) > 0 && nrow(characteristics) > 0)
+  {
+    overwrite <- na.omit(match(characteristics[, "characteristic"], autoCharacteristics[, "characteristic"]))
+    if(length(overwrite) > 0)
+      autoCharacteristics <- autoCharacteristics[-overwrite, ]
+  }
+  characteristics <- rbind(characteristics, autoCharacteristics)
+}
+
+.addUserLevels <- function(plotData, orderingList) # Don't just plot groups alphabetically but meaningful order.
+{
+  for(orderingIndex in 1:length(orderingList))
+  {
+    plotData[, names(orderingList)[orderingIndex]] <- factor(plotData[, names(orderingList)[orderingIndex]],
+                                                             levels = orderingList[[orderingIndex]])
+  }
+  plotData
+}
+
+.methodFormals <- function(f, signature) {
   tryCatch({
     fdef <- getGeneric(f)
-    method <- selectMethod(fdef, "DataFrame")
+    method <- selectMethod(fdef, signature)
     genFormals <- base::formals(fdef)
     b <- body(method)
     if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {

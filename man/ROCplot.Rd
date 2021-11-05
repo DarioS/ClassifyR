@@ -2,15 +2,14 @@
 \alias{ROCplot}
 \alias{ROCplot,list-method}
 \title{Plot Receiver Operating Curve Graphs for Classification Results}
-\description{Creates one ROC plot or multiple ROC plots for a list of ClassifyR objects. One plot
-             is created if the data set has two classes and multiple plots are created if the data
-             set has three or more classes.
+\description{Creates one ROC plot or multiple ROC plots for a list of ClassifyResult objects.
+             One plot is created if the data set has two classes and multiple plots are
+             created if the data set has three or more classes.
        }
 \usage{
   \S4method{ROCplot}{list}(results, nBins = sapply(results, totalPredictions),
-          comparisonVariable = c("classificationName", "datasetName", "selectionName",
-        "validation", "None"), lineColours = NULL,
-          lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
+          comparison = "Classifier Name", lineColours = NULL, lineWidth = 1,
+          fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
         plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate",
         yLabel = "True Positive Rate", plot = TRUE, showAUC = TRUE)
 }
@@ -18,20 +17,22 @@
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
   \item{nBins}{The number of intervals to group the samples' scores into. By default, there are as
                many bins as there were predictions made, for each result object.}
-  \item{comparisonVariable}{If the data set has two classes, then the slot name with factor levels
-                           to be used for colouring the lines. Possible values are \code{"datasetName"},
-                           \code{"classificationName"}, and \code{"validation"}. If \code{"None"},
-                           then all lines drawn will be black. Otherwise, it specifies the variable used
-                           for plot facetting.}
-  \item{lineColours}{A vector of colours for different levels of the line colouring parameter.
-                     If \code{NULL}, a default colour palette is used.}
+  \item{comparison}{The aspect of the experimental design to compare. Can be any
+                    characteristic that all results share. If the data set has two
+                    classes, then the slot name with factor levels to be used
+                    for colouring the lines. Otherwise, it specifies the variable
+                    used for plot facetting.}
+  \item{lineColours}{A vector of colours for different levels of the comparison
+                     parameter. If \code{NULL}, a default colour palette is
+                     automatically generated.}
   \item{lineWidth}{A single number controlling the thickness of lines drawn.}
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles and AUC text, if it
                    is not part of the legend. The third number is the size of the axes values. The
                    fourth number is the size of the legends' titles. The fifth number is
                    the font size of the legend labels.}
-  \item{labelPositions}{Locations where to put labels on the x and y axes.}
+  \item{labelPositions}{Default: 0.0, 0.2, 0.4, 0.6, 0.8, 1.0. Locations where to
+        put labels on the x and y axes.}
   \item{plotTitle}{An overall title for the plot.}
   \item{legendTitle}{A default name is used if the value is \code{NULL}. Otherwise a character name can
                    be provided.}
@@ -66,7 +67,9 @@
                                Healthy = c(0.45, 0.56, 0.33, 0.56, 0.33, 0.20, 0.60, 0.40),
                                Cancer = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60)))
   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
-  result1 <- ClassifyResult("Example", "Differential Expression", "t-test",
+  result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
                             LETTERS[1:20], LETTERS[10:1], 100,
                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
                             list(function(oracle){}), predicted, actual,
@@ -74,10 +77,11 @@
   
   predicted[[1]][c(2, 6), "Healthy"] <- c(0.40, 0.60)
   predicted[[1]][c(2, 6), "Cancer"] <- c(0.60, 0.40)
-  result2 <- ClassifyResult("Example", "Differential Variability", "Bartlett Test",
+  result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+                                                         "Cross-validation"),
+                            value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
                             LETTERS[1:20], LETTERS[10:1], 100, list(1:100, c(1:5, 11:105)),
                             list(sample(10, 10), sample(10, 10)), list(function(oracle){}),
                             predicted, actual, validation = list("permuteFold", 2, 2))
-  ROCplot(list(result1, result2), comparisonVariable = "classificationName",
-          plotTitle = "Cancer ROC")
+  ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
 }

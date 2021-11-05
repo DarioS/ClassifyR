@@ -9,9 +9,9 @@ setMethod("differentMeansSelection", "matrix", function(measurements, classes, .
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
 setMethod("differentMeansSelection", "DataFrame",
-          function(measurements, classes, datasetName,
+          function(measurements, classes,
                    trainParams, predictParams, resubstituteParams,
-                   selectionName = "Difference in Means", verbose = 3)
+                   verbose = 3)
 {
   if(!requireNamespace("genefilter", quietly = TRUE))
     stop("The package 'genefilter' could not be found. Please install it.")
@@ -25,8 +25,8 @@ setMethod("differentMeansSelection", "DataFrame",
   orderedFeatures <- order(statistics, decreasing = TRUE)
 
   .pickFeatures(measurements, classes, NULL,
-                datasetName, trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

@@ -1,7 +1,7 @@
 setGeneric("runTest", function(measurements, ...)
            standardGeneric("runTest"))
 
-setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
+setMethod("runTest", "matrix", # Matrix of numeric measurements.
   function(measurements, classes, ...)
 {
   if(is.null(colnames(measurements)))
@@ -9,10 +9,11 @@ setMethod("runTest", c("matrix"), # Matrix of numeric measurements.
   runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("runTest", c("DataFrame"), # Clinical data or one of the other inputs, transformed..
+setMethod("runTest", "DataFrame", # Clinical data or one of the other inputs, transformed..
 function(measurements, classes, balancing = c("downsample", "upsample", "none"),
          featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-         datasetName, classificationName, training, testing,
+         characteristics = DataFrame(),
+         training, testing,
          params = list(SelectParams(), TrainParams(), PredictParams()),
          verbose = 1, .iteration = NULL)
 {
@@ -327,9 +328,13 @@ function(measurements, classes, balancing = c("downsample", "upsample", "none"),
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testingSamplesIDs, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
+    autoCharacteristics <- do.call(rbind, lapply(params, function(stageParams) stageParams@characteristics))
+    characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
+    characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
+
     if(class(predictedClasses) != "list")
     {
-      return(ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures, consideredFeatures,
+      return(ClassifyResult(characteristics, rownames(measurements), allFeatures, consideredFeatures,
                             list(rankedFeatures), list(selectedFeatures), list(models), list(data.frame(sample = testingSamplesIDs, class = predictedClasses)),
                             classes, list("independent"), tuneDetails)
              )
@@ -340,13 +345,29 @@ function(measurements, classes, balancing = c("downsample", "upsample", "none"),
         selectedFeatures <- list(selectedFeatures)
         models <- list(models)
       }
-      return(mapply(function(varietyPredictions, varietyTunes, varietyRanked, varietySelected, varietyModels)
+      varieties <- names(predictedClasses)
+      varietyVariables <- lapply(strsplit(varieties, ','), function(variety) gsub("=.*", '', variety))
+      varietyVariables <- unique(unlist(varietyVariables))
+      extras <- lapply(params, function(stageParams) stageParams@otherParams)
+      extras <- extras[!names(extras) %in% varietyVariables]
+      extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+      characteristics <- rbind(characteristics, extrasDF)
+      return(mapply(function(varietyPredictions, varietyText, varietyTunes, varietyRanked, varietySelected, varietyModels)
       {
         if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-        ClassifyResult(datasetName, classificationName, selectParams@selectionName, rownames(measurements), allFeatures, consideredFeatures,
+        if(grepl('=', varietyText)) # Actual varieties.
+        {
+          characteristicsVariety <- characteristics
+          varietyInfo <- strsplit(strsplit(varietyText, ',')[[1]], '=')
+          varietyInfo <- do.call(rbind, varietyInfo)
+          colnames(varietyInfo) <- c("characteristic", "value")
+          characteristicsVariety <- rbind(characteristics, varietyInfo)
+        }
+
+        ClassifyResult(characteristicsVariety, rownames(measurements), allFeatures, consideredFeatures,
                        list(varietyRanked), list(varietySelected), list(varietyModels), list(data.frame(sample = testing, class = varietyPredictions)),
                        classes, list("independent"), varietyTunes)
-      }, predictedClasses, tuneDetails, rankedFeatures, selectedFeatures, models, SIMPLIFY = FALSE))
+      }, predictedClasses, names(predictedClasses), tuneDetails, rankedFeatures, selectedFeatures, models, SIMPLIFY = FALSE))
     }
   }  
 })
@@ -365,7 +386,8 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
           function(measurements, balancing = c("downsample", "upsample", "none"),
                    easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                   datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
+                   characteristics = DataFrame(characteristic = "Classifier Name", value = "Easy Hard"),
+                   training, testing, ..., verbose = 1, .iteration = NULL)
           {
             if(!is.character(training))
               stop("'training' is not character type but must be for easy-hard classifier to avoid ambiguities.")
@@ -462,7 +484,7 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
                 message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
             }
             easyHardClassifierTrain
-            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, NULL, classificationName, ..., verbose = verbose)
+            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, NULL, ..., verbose = verbose)
             hardParams <- list(...)[["hardClassifierParams"]]
             if(is.null(hardParams)) # They were not specified by the user. Use default value.
               predictParams <- PredictParams()
@@ -514,12 +536,16 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
               if(length(whichSelect) > 0)
               {
                 selectParams <- selectParams[[whichSelect]]
-                selectionName <- paste(selectionName, "and", selectParams@selectionName, "for Hard Data Set")
+                whichRow <- match(selectParams@featureSelection@generic, .ClassifyRenvir[["functionsTable"]][, "character"])
+                selectionName <- paste(selectionName, "and", .ClassifyRenvir[["functionsTable"]][whichRow, "name"],
+                                       "for Hard Data Set")
               }
               
+              characteristics <- rbind(characteristics,
+                                       S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
               if(class(predictedClasses) != "list")
               {
-                return(ClassifyResult(datasetName, "Easy-Hard Classifier", selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
+                return(ClassifyResult(characteristics, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
                                       list(NULL), selectedFeatures, list(trained), list(data.frame(sample = rownames(hardDataset)[testing], class = predictedClasses)),
                                       classes, list("independent"), tuneDetails)
                 )
@@ -531,7 +557,7 @@ setMethod("runTestEasyHard", c("MultiAssayExperiment"),
                 return(mapply(function(varietyPredictions, varietyTunes, varietySelected, varietyModel)
                 {
                   if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-                  ClassifyResult(datasetName, "Easy-Hard Classifier", selectionName, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
+                  ClassifyResult(rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
                                  list(NULL), list(varietySelected), list(varietyModel), list(data.frame(sample = testing, class = varietyPredictions)),
                                  classes, list("independent"), varietyTunes)
                 }, predictedClasses, tuneDetails, selectedFeatures, trained, SIMPLIFY = FALSE))

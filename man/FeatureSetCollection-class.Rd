@@ -31,7 +31,7 @@
 
   \describe{
     \item{}{
-      \code{show(featureSets)}{Prints a short summary of what \code{featureSets} contains.}
+      \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.
     }}
 }
 

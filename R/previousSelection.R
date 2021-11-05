@@ -10,8 +10,8 @@ setMethod("previousSelection", "matrix",
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection
 setMethod("previousSelection", "DataFrame", 
-          function(measurements, classes, datasetName, classifyResult, minimumOverlapPercent = 80,
-                               selectionName = "Previous Selection", .iteration, verbose = 3)
+          function(measurements, classes, classifyResult, minimumOverlapPercent = 80,
+                   .iteration, verbose = 3)
 {
   if(verbose == 3)
     message("Choosing previous features.")
@@ -41,7 +41,7 @@ setMethod("previousSelection", "DataFrame",
   if(overlapPercent < minimumOverlapPercent)
     signalCondition(simpleError(paste("Number of features in common between previous and current data set is lower than", minimumOverlapPercent, "percent.")))
   
-  SelectResult(datasetName, selectionName, ncol(measurements), list(), list(commonFeatures)) # Ranking isn't transferred across.
+  SelectResult(ncol(measurements), list(), list(commonFeatures)) # Ranking isn't transferred across.
 })
 
 setMethod("previousSelection", "MultiAssayExperiment", 

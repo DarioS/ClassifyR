@@ -29,10 +29,9 @@
     colnames(genesMatrix) <- paste("Sample", 1:50)
     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
-                        performanceType = "error", better = "lower")
-    result <- runTests(genesMatrix, classes, datasetName = "Example",
-                       classificationName = "Differential Expression",
+    resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10),
+                                       performanceType = "error")
+    result <- runTests(genesMatrix, classes,
                        permutations = 2, fold = 2,
                        params = list(SelectParams(), TrainParams(), PredictParams()))
     models(result)
@@ -46,8 +45,7 @@
     rownames(newDataset) <- rownames(genesMatrix)
     colnames(newDataset) <- colnames(genesMatrix)
                                            
-    newerResult <- runTests(newDataset, classes, datasetName = "Latest Data Set",
-                            classificationName = "Differential Expression",
+    newerResult <- runTests(newDataset, classes,
                             permutations = 2, fold = 2,
                             params = list(SelectParams(previousSelection,
                                                        intermediate = ".iteration",

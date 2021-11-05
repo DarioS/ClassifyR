@@ -9,9 +9,8 @@ setMethod("limmaSelection", "matrix", function(measurements, classes, ...)
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
 setMethod("limmaSelection", "DataFrame",
-          function(measurements, classes, datasetName,
-                   trainParams, predictParams, resubstituteParams, ...,
-                   selectionName = "Moderated t-test", verbose = 3)
+          function(measurements, classes, trainParams, predictParams,
+                   resubstituteParams, ..., verbose = 3)
 {
   if(!requireNamespace("limma", quietly = TRUE))
     stop("The package 'limma' could not be found. Please install it.")
@@ -25,8 +24,8 @@ setMethod("limmaSelection", "DataFrame",
                            colnames(measurements))
 
   .pickFeatures(measurements, classes, NULL,
-                datasetName, trainParams, predictParams, resubstituteParams,
-                orderedFeatures, selectionName, verbose)  
+                trainParams, predictParams, resubstituteParams,
+                orderedFeatures, verbose)  
 })
 
 # One or more omics data sets, possibly with clinical data.

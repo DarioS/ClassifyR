@@ -10,7 +10,8 @@ setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
 })
 
 # Clinical data or one of the other inputs, transformed.
-setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ..., returnType = c("both", "class", "score"), verbose = 3)
+setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ...,
+                                returnType = c("both", "class", "score"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]

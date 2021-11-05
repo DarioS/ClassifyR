@@ -68,7 +68,7 @@
                     Sets the return value from the prediction to either a vector of predicted classes,
                     a matrix of scores with columns corresponding to classes, as determined by the
                     factor levels of \code{classes}, or both a column of predicted classes and columns of
-                    class scores in a \code{data.frame}.}                   
+                    class scores in a \code{data.frame}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }

@@ -47,13 +47,10 @@ identifying outlier samples that are difficult to classify.
   #{
     data(asthma)
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error",
-                                         better = "lower")
+                                         performanceType = "balanced error")
     
-    result <- runTests(measurements, classes, datasetName = "Asthma",
-                       classificationName = "Different Means",
-                       permutations = 5,
-                       params = list(SelectParams(limmaSelection, "Moderated t Statistic",
+    result <- runTests(measurements, classes, permutations = 5,
+                       params = list(SelectParams(limmaSelection,
                                                   resubstituteParams = resubstituteParams),
                                      TrainParams(DLDAtrainInterface),
                                      PredictParams(DLDApredictInterface)

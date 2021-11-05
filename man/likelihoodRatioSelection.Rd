@@ -9,10 +9,10 @@
 }
 \usage{
   \S4method{likelihoodRatioSelection}{matrix}(measurements, classes, ...)
-  \S4method{likelihoodRatioSelection}{DataFrame}(measurements, classes, datasetName,
+  \S4method{likelihoodRatioSelection}{DataFrame}(measurements, classes,
                          trainParams, predictParams, resubstituteParams,
                                 alternative = c(location = "different", scale = "different"),
-                                ..., selectionName = "Likelihood Ratio Test (Normal)", verbose = 3)
+                                ..., verbose = 3)
   \S4method{likelihoodRatioSelection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -30,7 +30,6 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or options which are accepted by
              the function \code{\link{getLocationsAndScales}}.}                   
-  \item{datasetName}{A name for the data set used. Stored in the result.}                    
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
                      classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -42,7 +41,6 @@
                     The first element specifies the location of the alternate hypothesis.
                     The second element specifies the scale of the alternate hypothesis.
                     Valid values in each element are "same" or "different".}
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -77,9 +75,8 @@
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
   resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                           performanceType = "balanced error",
-                                           better = "lower")
-  selected <- likelihoodRatioSelection(genesMatrix, classes, "Example",
+                                           performanceType = "balanced error")
+  selected <- likelihoodRatioSelection(genesMatrix, classes,
                                        trainParams = TrainParams(naiveBayesKernel),
                            predictParams = PredictParams(NULL),
                            resubstituteParams = resubstituteParams)

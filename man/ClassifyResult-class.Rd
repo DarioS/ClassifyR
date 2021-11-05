@@ -2,7 +2,7 @@
 \docType{class}
 \alias{ClassifyResult}
 \alias{ClassifyResult-class}
-\alias{ClassifyResult,character,character,character,character,characterOrDataFrame-method}
+\alias{ClassifyResult,DataFrame,character,characterOrDataFrame-method}
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}
@@ -25,33 +25,39 @@
 
 \title{Container for Storing Classification Results}
 \description{
-  Contains a table of actual sample classes and predicted classes, the identifiers of
-  features selected for each fold of each permutation or each hold-out
-  classification, and error rates. This class is not intended to be created by
-  the user, but could be used in another package. It is created by \code{\link{runTests}}.
+  Contains a list of models, table of actual sample classes and predicted classes,
+  the identifiers of features selected for each fold of each permutation or
+  each hold-out classification, and performance metrics such as error rates.
+  This class is not intended to be created by the user, but could be used in
+  another package. It is created by \code{\link{runTest}} or \code{\link{runTests}}.
 }
 \section{Constructor}{
   \describe{
     \item{}{
-      \preformatted{ClassifyResult(datasetName, classificationName, selectionName, originalNames, originalFeatures,
+      \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
            rankedFeatures, chosenFeatures, predictions, actualClasses, models,
-           validation, tune = list(NULL))}
+           validation, tune = NULL)}
             }
     }
   \describe{
-            \item{\code{datasetName}}{A name associated with the dataset used.}
-            \item{\code{classificationName}}{A name associated with the classification.}
-            \item{\code{seletionName}}{A name associated with the feature selection.}
+            \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
+            of classification done. First column must be named \code{"charateristic"} and second column must
+            be named \code{"value"}. If using wrapper functions for feature selection and classifiers
+            in this package, the function names will automatically be
+            generated and therefore it is not necessary to specify them.}
             \item{\code{originalNames}}{All sample names.}
-            \item{\code{originalFeatures}}{All feature names. Character vector or DataFrame with one row
-                                           for each feature if the data set is a \code{\link{MultiAssayExperiment}}.}
+            \item{\code{originalFeatures}}{All feature names. Character vector or \code{\link{DataFrame}}
+                                           with one row for each feature if the data set is a
+                                          \code{\link{MultiAssayExperiment}}.}
             \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-                                         or DataFrame if data set is a \code{MultiAssayExperiment}.}
+                                         or \code{\link{DataFrame}} if data set is a
+                                         \code{MultiAssayExperiment}.}
             \item{\code{chosenFeatures}}{Features selected at each fold. Character vector or DataFrame if
                                          data set is a \code{MultiAssayExperiment}.}
             \item{\code{predictions}}{A \code{\link{list}} of \code{\link{data.frame}}
                                       containing information about samples, their actual class and
-                                      predicted class.}            
+                                      predicted class and/or class score and information about the
+                                      cross-validation fold in which the prediction was made.}            
             \item{\code{actualClasses}}{Factor of class of each sample.}                                      
             \item{\code{models}}{All of the models fitted to the training data.}                                    
             \item{\code{validation}}{List with first element being the name of the validation scheme,
@@ -67,11 +73,11 @@
 
   \describe{
     \item{}{
-      \code{show(result)}{Prints a short summary of what \code{result} contains.}
+      \code{show(result)}: Prints a short summary of what \code{result} contains.
     }}
   \describe{
     \item{}{
-      \code{totalPredictions(ClassifyResult)}{Calculates the sum of the number of predictions.}
+      \code{totalPredictions(ClassifyResult)}: Calculates the sum of the number of predictions.
     }}  
 }
 
@@ -112,13 +118,14 @@
     data(asthma)
     
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error",
-                                         better = "lower")
+                                         performanceType = "balanced error")
     classified <-
-    runTests(measurements, classes, datasetName = "Asthma",
-             classificationName = "Different Means", validation = "leaveOut", leave = 1,
-             params = list(SelectParams(limmaSelection, "Moderated t Statistic",
-                                        resubstituteParams = resubstituteParams),
+    runTests(measurements, classes, characteristics =
+             DataFrame(characteristic = c("dataset", "classification"),
+                      value = c("Asthma", "Different Means")),
+             validation = "leaveOut", leave = 1,
+             params = list(SelectParams(limmaSelection,
+                             resubstituteParams = resubstituteParams),
                            TrainParams(DLDAtrainInterface),
                            PredictParams(DLDApredictInterface)))
     class(classified)

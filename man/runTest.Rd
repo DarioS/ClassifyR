@@ -14,14 +14,15 @@
   \S4method{runTest}{matrix}(measurements, classes, ...)
   \S4method{runTest}{DataFrame}(measurements, classes,
             balancing = c("downsample", "upsample", "none"), featureSets = NULL, metaFeatures = NULL,
-            minimumOverlapPercent = 80, datasetName, classificationName,
+            minimumOverlapPercent = 80, characteristics = DataFrame(),
             training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
         verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
   \S4method{runTestEasyHard}{MultiAssayExperiment}(measurements, balancing = c("downsample", "upsample", "none"),
                    easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
                    featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                   datasetName = NULL, classificationName = "Easy-Hard Classifier", training, testing, ..., verbose = 1, .iteration = NULL)
+                   characteristics = DataFrame(characteristic = "Classifier Name", value = "Easy Hard"),
+                   training, testing, ..., verbose = 1, .iteration = NULL)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -50,15 +51,19 @@
                                of feature IDs with \code{measurements} for a feature set to be retained
                                in the analysis. If \code{featureSets} stores sets of network edges,
                                the minimum percentage of edges with both vertex IDs found in \code{measurements}
-                               that a set has to have to be retained in the analysis.}                      
+                               that a set has to have to be retained in the analysis.}
+                               
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
   \item{...}{For \code{runTest}, variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method. For \code{runTestEasyHard}, \code{easyClassifierParams}
              and \code{hardClassifierParams} to be passed to \code{\link{easyHardClassifierTrain}}.}
-  \item{datasetName}{A name associated with the data set used.}
-  \item{classificationName}{A name associated with the classification.}  
+  \item{characteristics}{A \code{\link{DataFrame}} describing the characteristics
+            of the classification used. First column must be named \code{"charateristic"} and second column
+            must be named \code{"value"}. Useful for automated plot annotation by plotting functions within this package.
+            Transformation, selection and prediction functions provided by this package will cause the characteristics
+            to be automatically determined and this can be left blank.}             
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    
   \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
@@ -78,12 +83,11 @@
 \details{
   This function only performs one classification and prediction. See \code{\link{runTests}}
   for a driver function that enables a number of different cross-validation schemes to be applied
-  and uses this function to perform each iteration. \code{datasetName} and \code{classificationName}
-  need to be provided.
+  and uses this function to perform each iteration.
 }
 \value{
   If called directly by the user rather than being used internally by \code{runTests}, a
-  \code{SelectResult} object.
+  \code{ClassifyResult} object.
 }
 \author{Dario Strbenac}
 
@@ -92,11 +96,9 @@
   #{
     data(asthma)
     resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error",
-                                         better = "lower")
+                                         performanceType = "balanced error")
     runTest(measurements, classes,
-            datasetName = "Asthma", classificationName = "Different Means",
-            params = list(SelectParams(limmaSelection, "Moderated t Statistic",
+            params = list(SelectParams(limmaSelection,
                                        resubstituteParams = resubstituteParams),
                           TrainParams(DLDAtrainInterface),
                           PredictParams(DLDApredictInterface)
@@ -121,9 +123,9 @@
 		        row.names = colnames(genesMatrix))
   dataset <- MultiAssayExperiment(ExperimentList(RNA = genesMatrix), clinical)
                                     
-  selParams <- SelectParams(featureSelection = differentMeansSelection, selectionName = "Difference in Means",
-                            resubstituteParams = ResubstituteParams(1:10, "balanced error", "lower"))
-  easyHardCV <- runTestEasyHard(dataset, datasetName = "Test Data", classificationName = "Easy-Hard", training = paste("Sample", 1:10), testing = paste("Sample", 1:10),
+  selParams <- SelectParams(featureSelection = differentMeansSelection,
+                            resubstituteParams = ResubstituteParams(1:10, "balanced error"))
+  easyHardCV <- runTestEasyHard(dataset, training = paste("Sample", 1:10), testing = paste("Sample", 1:10),
                                 easyClassifierParams = list(minCardinality = 2, minPurity = 0.9),
                                 hardClassifierParams = list(selParams, TrainParams(), PredictParams())
                                )

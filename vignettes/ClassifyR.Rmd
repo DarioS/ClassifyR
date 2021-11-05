@@ -42,7 +42,7 @@ htmltools::img(src = knitr::image_uri("ClassifyRprocedure.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
-Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential varibility (DV; changes in scale) and differential distribution (DD; changes in location and/or scale). See the appendix section "Common *params* Specifications for Common Classifications" for some ready-to-use parameter sets for standard use of some classifiers.
+Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential variability (DV; changes in scale) and differential distribution (DD; changes in location and/or scale). See the appendix section "Common *params* Specifications for Common Classifications" for some ready-to-use parameter sets for standard use of some classifiers.
 
 In the following sections, some of the most useful functions provided in **ClassifyR** will be demonstrated. However, a user can provide any feature selection, training, or prediction function to the classification framework, as long as it meets some simple rules about the input and return parameters. See the appendix section of this guide titled "Rules for New Functions" for a description of these.
 
@@ -93,11 +93,11 @@ htmltools::img(src = knitr::image_uri("networkFunctions.png"),
 
 Pre-validation is an approach to provide a fairer way to compare the benefit of omics data to traditional, freely-available clinical data. For each omics technology considered, training and testing is done on all of the various partitions of the data and the predictions of each sample are simply added as a column to the clinical data table. Then, cross-validation is done as usual. If an omics data set is important, it will often be included as a selected feature.
 
-Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, wihch must of of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
+Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, which must be of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
 
 ```{r, message = FALSE}
 library(ClassifyR)
-resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error", better = "lower")
+resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error")
 paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
                               TrainParams(DLDAtrainInterface),
                               PredictParams(DLDApredictInterface)),
@@ -130,8 +130,7 @@ For more complex data sets with multiple kinds of experiments (e.g. DNA methylat
 *runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature selection and DLDA for classification. The *differentMeansSelection* function also uses DLDA for estimating a resubstitution error rate for a number of top-*f* ranked features, as a heuristic for picking *f* features from the feature ranking which are used in the training and prediction stages of classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*.
 
 ```{r, tidy = FALSE}
-DMresults <- runTests(measurements, classes, datasetName = "Asthma",
-                      classificationName = "Different Means", permutations = 20, folds = 5,
+DMresults <- runTests(measurements, classes, permutations = 20, folds = 5,
                       seed = 2018, verbose = 1)
 DMresults
 ```
@@ -175,10 +174,8 @@ trainParams <- TrainParams(naiveBayesKernel)
 predictParams <- PredictParams(predictor = NULL, weighted = "weighted",
                                weight = "height difference", returnType = "both")
 paramsList <- list(selectParams, trainParams, predictParams)
-DDresults <- runTests(measurements, classes, datasetName = "Asthma",
-                      classificationName = "Differential Distribution",
-                      permutations = 20, folds = 5, seed = 2018,
-                      params = paramsList, verbose = 1)
+DDresults <- runTests(measurements, classes, permutations = 20, folds = 5,
+                      seed = 2018, params = paramsList, verbose = 1)
 DDresults
 ```
 
@@ -203,12 +200,11 @@ The features being ranked and selected in the feature selection stage can be com
 ```{r}
 rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:100,
                             xLabelPositions = c(1, seq(10, 100, 10)),
-                            lineColourVariable = "None", pointTypeVariable = "None",
-                            columnVariable = "None", plot = FALSE)
+                            plot = FALSE)
 rankOverlaps
 ```
 
-The top-ranked features are fairly similar between all pairs of the 100 cross-validations.
+The top-ranked features are fairly similar between all pairs of the 20 cross-validations.
 
 For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
@@ -218,32 +214,31 @@ Sometimes, cross-validation is unnecessary. This happens when studies have large
 
 ## Cross-validating Selected Features on a Different Data Set
 
-Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one data set are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone.
+Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one data set are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone. Of course, the features in the new dataset should have the same naming system as the ones in the old dataset.
 
 ## Generating a ROC Plot
 
-Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, rather than class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously had its *returnType* parameter set to *"both"*, so class predictions and scores were both stored in the classification result. In this case, a data.frame with two columns (named "class" and "score") is returned by the classifier to the framework. Setting *returnType* to *"score"* is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
+Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, instead of, or as well as, class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously has its *returnType* parameter set to *"both"* by default, so class predictions and scores are both stored in the classification result. In this case, a data frame with two columns (named "class" and "score") is returned by the classifier to the cross-validation framework. Setting *returnType* to *"score"* is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
 
 ```{r, fig.height = 5, fig.width = 6}
 ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
-This ROC plot shows the classifiability of the asthma data set is high. Other included functions which can output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
+This ROC plot shows the classifiability of the asthma data set is high. Examples of other included functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
 ## Parameter Tuning
 
 Some classifiers allow the setting of a tuning parameter, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more.
 
-This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. The parameter *tuneOptimise* is a character vector of length two for specifying the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
+This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. The parameter *tuneOptimise* is a length-one character vector specifying the name of the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
 selectParams <- SelectParams(differentMeansSelection, resubstituteParams = ResubstituteParams())
 trainParams <- TrainParams(SVMtrainInterface, kernel = "linear",
                            tuneParams = list(cost = c(0.01, 0.1, 1, 10)),
-                           tuneOptimise = c(metric = "balanced error", better = "lower"))
+                           tuneOptimise = "balanced error")
 predictParams <- PredictParams(SVMpredictInterface)
-SVMresults <- runTests(measurements, classes, datasetName = "Asthma",
-                       classificationName = "Tuned SVM", permutations = 20, folds = 5, seed = 2018,
+SVMresults <- runTests(measurements, classes, permutations = 20, folds = 5, seed = 2018,
                        params = list(selectParams, trainParams, predictParams)
                        )
 ```
@@ -298,17 +293,17 @@ params = list(selectParams, trainParams, predictParams)
 
 - Use the selection and classification provided by the **pamr** package implementing nearest shrunken centroid methods. Note that the training occurs before the selecting in this example.
 
-```{r}
+```{r, eval = FALSE}
 trainParams <- TrainParams(NSCtrainInterface)
 selectParams <- SelectParams(NSCselectionInterface, intermediate = "trained")
 predictParams <- PredictParams(NSCpredictInterface)
 params = list(trainParams, selectParams, predictParams)
 ```
 
-- A random forest classifer. Typically, feature selection is not done for random forests because they can find some interesting relationships between variables that feature selection methods may overlook. The features used by the trees can be added to the *ClassifyResult* object after the training has been done using the *forestFeatures* convenience method. The number of trees is changed from the default of 500 to 100.
+- A random forest classifier. Typically, feature selection is not done for random forests because they can find some interesting relationships between variables that feature selection methods may overlook. The features used by the trees can be added to the *ClassifyResult* object after the training has been done using the *forestFeatures* convenience method. The default number of variables to try at each split is the square root of the number of variables in the dataset, which is far too small for typical omics data sets, which have a large number of variables but a very small proportion which are informative. The example below shows how to consider 1000 variables at each split instead.
 
 ```{r}
-trainParams <- TrainParams(randomForestTrainInterface, ntree = 100, getFeatures = forestFeatures)
+trainParams <- TrainParams(randomForestTrainInterface, mtry = 1000, getFeatures = forestFeatures)
 predictParams <- PredictParams(randomForestPredictInterface)
 params = list(trainParams, predictParams)
 ```
@@ -326,7 +321,7 @@ params = list(selectParams, trainParams, predictParams)
 
 ```{r, eval = FALSE}
 resubstituteParams <- ResubstituteParams(nFeatures = 1:10, # The top 1 to 10 sub-networks.
-                      performanceType = "balanced error", better = "lower")
+                      performanceType = "balanced error")
 selectParams <- SelectParams(networkCorrelationsSelection, resubstituteParams = resubstituteParams)
 trainParams <- TrainParams(naiveBayesKernel)
 predictParams <- PredictParams(NULL)

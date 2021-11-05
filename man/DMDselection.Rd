@@ -9,10 +9,8 @@
        }
 \usage{
   \S4method{DMDselection}{matrix}(measurements, classes, ...)
-  \S4method{DMDselection}{DataFrame}(measurements, classes, datasetName, differences = c("both", "location", "scale"),
-             trainParams, predictParams, resubstituteParams, ...,
-             selectionName = "Differences of Medians and Deviations",
-             verbose = 3)
+  \S4method{DMDselection}{DataFrame}(measurements, classes, differences = c("both", "location", "scale"),
+             trainParams, predictParams, resubstituteParams, ..., verbose = 3)
   \S4method{DMDselection}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
 \arguments{
@@ -26,8 +24,6 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or parameters for
              \code{\link{getLocationsAndScales}}, such as \code{location}, \code{scale}.}
-  \item{datasetName}{Default: \code{"Differences of Medians and Deviations"}. A name for the
-                     data set used. Stored in the result.}
   \item{differences}{Default: \code{"both"}. Either \code{"both"}, \code{"location"}, or \code{"scale"}.
                      The type of differences to consider. If both are considered then the
                      absolute difference in location and the absolute difference in scale are summed.}
@@ -38,7 +34,6 @@
   \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
                             describing the performance measure to consider and the numbers of
                             top features to try for resubstitution classification.}                     
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }
@@ -68,9 +63,8 @@
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
   resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                           performanceType = "balanced error",
-                                           better = "lower")
-  DMDselection(genesMatrix, classes, datasetName = "Example",
+                                           performanceType = "balanced error")
+  DMDselection(genesMatrix, classes,
                trainParams = TrainParams(naiveBayesKernel),
                predictParams = PredictParams(NULL),
                resubstituteParams = resubstituteParams)

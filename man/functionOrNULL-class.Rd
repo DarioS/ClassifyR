@@ -11,5 +11,5 @@
 \author{Dario Strbenac}
 \examples{
   PredictParams(NULL)
-  PredictParams(predict)
+  PredictParams(DLDApredictInterface)
 }

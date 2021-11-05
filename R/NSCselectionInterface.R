@@ -7,8 +7,7 @@ setMethod("NSCselectionInterface", "matrix", function(measurements, classes, ...
 })
 
 setMethod("NSCselectionInterface", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, datasetName, trained, ...,
-                   selectionName = "Shrunken Centroids", verbose = 3)
+          function(measurements, classes, trained, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
@@ -34,7 +33,7 @@ setMethod("NSCselectionInterface", "DataFrame", # Clinical data or one of the ot
   if(verbose == 3)
     message("Nearest shrunken centroid feature selection completed.")
   
-  SelectResult(datasetName, selectionName, ncol(measurements), list(), list(chosen))
+  SelectResult(ncol(measurements), list(), list(chosen))
 })
 
 setMethod("NSCselectionInterface", "MultiAssayExperiment",

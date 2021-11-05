@@ -11,7 +11,8 @@
 }
 \usage{
   \S4method{kNNinterface}{matrix}(measurements, classes, test, ...)
-  \S4method{kNNinterface}{DataFrame}(measurements, classes, test, ..., verbose = 3)
+  \S4method{kNNinterface}{DataFrame}(measurements, classes, test, ...,
+                                     classifierName = "k Nearest Neighbours", verbose = 3)
   \S4method{kNNinterface}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)
 }
 \arguments{
@@ -33,6 +34,8 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or parameters that
              \code{\link[class]{knn}} can accept.}
+  \item{classifierName}{Default: k Nearest Neighbours. Useful for automated plot annotation by
+                        plotting functions within this package.}      
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}    
 }

@@ -110,11 +110,11 @@
 
   # The features are sub-networks and there are only two in this example.
   resubstituteParams <- ResubstituteParams(nFeatures = 1:2,
-                                performanceType = "balanced error", better = "lower")
+                                performanceType = "balanced error")
   
   predictParams <- PredictParams(NULL)
   networkCorrelationsSelection(measurements, classes, metaFeatures = Idifferences,
-                               featureSets = netSets, datasetName = "Example",
+                               featureSets = netSets,
                                trainParams = TrainParams(naiveBayesKernel),
                                predictParams = predictParams,
                                resubstituteParams = resubstituteParams)

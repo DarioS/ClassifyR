@@ -9,9 +9,8 @@
 }
 \usage{
   \S4method{bartlettSelection}{matrix}(measurements, classes, ...)
-  \S4method{bartlettSelection}{DataFrame}(measurements, classes, datasetName,
-                  trainParams, predictParams, resubstituteParams,
-                  selectionName = "Bartlett Test", verbose = 3)
+  \S4method{bartlettSelection}{DataFrame}(measurements, classes,
+                  trainParams, predictParams, resubstituteParams, verbose = 3)
   \S4method{bartlettSelection}{MultiAssayExperiment}(measurements, targets, ...)
 }
 \arguments{
@@ -28,7 +27,6 @@
                  numeric variables from the clinical data table will be used.}
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
-  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{trainParams}{A container of class \code{\link{TrainParams}} describing the
     classifier to use for training.}
   \item{predictParams}{A container of class \code{\link{PredictParams}} describing how
@@ -36,7 +34,6 @@
   \item{resubstituteParams}{An object of class \code{\link{ResubstituteParams}}
     describing the performance measure to consider and the numbers of
     top features to try for resubstitution classification.}                               
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
     This function only prints progress messages if the value is 3.}
 }
@@ -77,9 +74,8 @@
                                        targets = "RNA") # Exclude SNP data.
                                          
   resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                           performanceType = "balanced error",
-                                           better = "lower")
-  bartlettSelection(genesDataset, datasetName = "Example", targets = "RNA",
+                                           performanceType = "balanced error")
+  bartlettSelection(genesDataset, targets = "RNA",
                     trainParams = TrainParams(fisherDiscriminant),
                     predictParams = PredictParams(NULL),
                     resubstituteParams = resubstituteParams)

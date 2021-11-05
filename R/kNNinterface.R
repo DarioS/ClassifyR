@@ -8,7 +8,7 @@ setMethod("kNNinterface", "matrix",
                DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
+setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., classifierName = "k Nearest Neighbours", verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])

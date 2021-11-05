@@ -10,14 +10,15 @@
 \usage{
   \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
                               performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
+                                       "sample error", "sample accuracy",
                                        "micro precision", "micro recall",
                                        "micro F1", "macro precision",
                                        "macro recall", "macro F1", "matthews"))
   \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
-                                               "sample error", "sample accuracy",
-                                              "micro precision", "micro recall",
-                                             "micro F1", "macro precision",
-                                             "macro recall", "macro F1", "matthews"))
+                                       "sample error", "sample accuracy",
+                                       "micro precision", "micro recall",
+                                       "micro F1", "macro precision",
+                                       "macro recall", "macro F1", "matthews"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -81,11 +82,11 @@
   predictTable <- data.frame(sample = paste("A", 1:10, sep = ''),
                              class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
-  result <- ClassifyResult("Example", "Differential Expression", "A Selection",
+  result <- ClassifyResult(DataFrame(),
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
                            50, list(1:50, 1:50), list(1:5, 6:15), list(function(oracle){}),
                            list(predictTable), actual, list("leave", 2))
-  result <- calcCVperformance(result, "balanced error") 
+  result <- calcCVperformance(result) 
   performance(result)
 }
 \author{Dario Strbenac}

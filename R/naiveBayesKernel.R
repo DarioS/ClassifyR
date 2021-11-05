@@ -169,7 +169,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   if(weighted == "both") whichVarieties <- "weighted"
   if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
-  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
+  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Arbitrary, to make a list.
 
   varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
   varietyFactor <- factor(gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor))

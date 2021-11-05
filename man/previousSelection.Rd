@@ -8,9 +8,8 @@
 }
 \usage{
   \S4method{previousSelection}{matrix}(measurements, ...)
-  \S4method{previousSelection}{DataFrame}(measurements, classes, datasetName,
-                  classifyResult, minimumOverlapPercent = 80,
-                        selectionName = "Previous Selection", .iteration, verbose = 3)
+  \S4method{previousSelection}{DataFrame}(measurements, classes,
+                  classifyResult, minimumOverlapPercent = 80, .iteration, verbose = 3)
   \S4method{previousSelection}{MultiAssayExperiment}(measurements, ...)
 }
 \arguments{
@@ -21,11 +20,9 @@
                  parameters with other feature selection methods.}                      
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}  
-  \item{datasetName}{A name for the data set used. Stored in the result.}
   \item{classifyResult}{An existing classification result from which to take the feature selections from.}
   \item{minimumOverlapPercent}{If at least this many selected features can't be identified in the
                                current data set, then the selection stops with an error.}
-  \item{selectionName}{A name to identify this selection method by. Stored in the result.}
   \item{.iteration}{Do not specify this variable. It is set by \code{\link{runTests}} if this function
                     is being repeatedly called by \code{runTests}.}
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
@@ -47,9 +44,8 @@
     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
-                        performanceType = "error", better = "lower")
-    result <- runTests(genesMatrix, classes, datasetName = "Example",
-                       classificationName = "Differential Expression",
+                        performanceType = "error")
+    result <- runTests(genesMatrix, classes,
                        permutations = 2, fold = 2,
                        params = list(SelectParams(), TrainParams(), PredictParams()))
     features(result)
@@ -63,8 +59,7 @@
     rownames(newDataset) <- rownames(genesMatrix)
     colnames(newDataset) <- colnames(genesMatrix)
                                            
-    newerResult <- runTests(newDataset, classes, datasetName = "Latest Data Set",
-                            classificationName = "Differential Expression",
+    newerResult <- runTests(newDataset, classes,
                             permutations = 2, fold = 2,
                        params = list(SelectParams(previousSelection,
                                      intermediate = ".iteration",

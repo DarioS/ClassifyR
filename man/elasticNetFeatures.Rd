@@ -27,16 +27,13 @@
       rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
     
       resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                               performanceType = "balanced error",
-                                               better = "lower")
+                                               performanceType = "balanced error")
                                              
       # alpha is a user-specified tuning parameter.
       # lambda is automatically tuned, based on glmnet defaults, if not user-specified.                 
       trainParams <- TrainParams(elasticNetGLMtrainInterface, nlambda = 500)
       predictParams <- PredictParams(elasticNetGLMpredictInterface)                           
-      classified <- runTests(genesMatrix, classes, datasetName = "Example",
-                             classificationName = "Differential Expression",
-                             validation = "fold",
+      classified <- runTests(genesMatrix, classes, validation = "fold",
                              params = list(trainParams, predictParams))
                                         
       elasticNetFeatures(models(classified)[[1]])

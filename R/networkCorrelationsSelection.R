@@ -56,8 +56,8 @@ setMethod("networkCorrelationsSelection", "DataFrame", # Possibly mixed data typ
 
   networkRanking <- BSS/WSS
   orderedNetworks <- order(networkRanking, decreasing = TRUE)
-  .pickFeatures(metaFeatures, classes, featureSets, datasetName, trainParams, predictParams,
-                resubstituteParams, orderedNetworks, selectionName, verbose)            
+  .pickFeatures(metaFeatures, classes, featureSets, trainParams, predictParams,
+                resubstituteParams, orderedNetworks, verbose)            
 })
 
 setMethod("networkCorrelationsSelection", "MultiAssayExperiment", # Pick one numeric table from the data set.

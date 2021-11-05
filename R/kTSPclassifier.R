@@ -110,7 +110,7 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
   whichVarieties <- character()
   if(weighted == "both") whichVarieties <- "weighted"
   if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
-  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
+  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Arbitrary, to make a list.
 
   varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
   varietyFactor <- factor(varietyFactor)
