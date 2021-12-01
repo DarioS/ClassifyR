@@ -53,7 +53,7 @@ function(measurements, classes, training, testing, crossValParams = crossValPara
   {
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
-
+    
     topFeatures <- tryCatch(.doSelection(measurements, classes, training, modellingParams, verbose = verbose, crossValParams = crossValParams),
                             error = function(error) error[["message"]]) 
 

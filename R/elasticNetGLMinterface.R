@@ -26,11 +26,10 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
     bestLambda <- fitted[["lambda"]][which.min(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
     {
       classPredictions <- factor(as.character(predict(fitted, measurementsMatrix, s = lambda, type = "class")), levels = fitted[["classnames"]])
-      calcExternalPerformance(classes, classPredictions, "balanced error")
+      calcExternalPerformance(classes, classPredictions, "Balanced Error")
     }))[1]]
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
-
   fitted
 })
 

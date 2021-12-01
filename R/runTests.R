@@ -56,7 +56,7 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
             .iteration = setNumber)
   }, samplesSplits[["train"]], samplesSplits[["test"]], (1:length(samplesSplits[["train"]])),
   BPPARAM = crossValParams@parallelParams, SIMPLIFY = FALSE)
-  #,SIMPLIFY = FALSE)
+  #SIMPLIFY = FALSE)
 
   # Error checking and reporting.
   resultErrors <- sapply(results, function(result) is.character(result))

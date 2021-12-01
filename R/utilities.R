@@ -160,7 +160,8 @@
     totalSamples <- sum(foldsSamples) 
     if(crossValParams@samplesSplits == "Permute k-Fold")
       permutationIDs <- rep(1:crossValParams@permutations, each = totalSamples)
-    foldIDs <- rep(rep(1:crossValParams@folds, foldsSamples), times = crossValParams@permutations)
+    times <- ifelse(is.null(crossValParams@permutations), 1, crossValParams@permutations)
+    foldIDs <- rep(rep(1:crossValParams@folds, foldsSamples), times = times)
   } else if(crossValParams@samplesSplits == "Permute Percentage Split") {
     permutationIDs <- rep(1:crossValParams@permutations, each = length(samplesSplits[[2]][[1]]))
   } else { # Leave-k-out
