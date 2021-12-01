@@ -46,16 +46,8 @@ identifying outlier samples that are difficult to classify.
   #if(require(sparsediscrim))
   #{
     data(asthma)
-    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error")
-    
-    result <- runTests(measurements, classes, permutations = 5,
-                       params = list(SelectParams(limmaSelection,
-                                                  resubstituteParams = resubstituteParams),
-                                     TrainParams(DLDAtrainInterface),
-                                     PredictParams(DLDApredictInterface)
-                                    )
-                      )
+    CVparams <- CrossValParams(permutations = 5)
+    result <- runTests(measurements, classes, CVparams, ModellingParams())
     featureDistribution <- distribution(result, "features", summaryType = "count",
                                         plotType = "histogram",
                                         xLabel = "Number of Cross-validations", yLabel = "Count",

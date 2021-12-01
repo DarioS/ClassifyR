@@ -25,16 +25,17 @@
       classes <- factor(rep(c("Poor", "Good"), each = 25))
       colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
       rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-    
-      resubstituteParams <- ResubstituteParams(nFeatures = seq(10, 100, 10),
-                                               performanceType = "balanced error")
                                              
       # alpha is a user-specified tuning parameter.
       # lambda is automatically tuned, based on glmnet defaults, if not user-specified.                 
+      CVparams <- CrossValParams("k-Fold")
+      
       trainParams <- TrainParams(elasticNetGLMtrainInterface, nlambda = 500)
-      predictParams <- PredictParams(elasticNetGLMpredictInterface)                           
-      classified <- runTests(genesMatrix, classes, validation = "fold",
-                             params = list(trainParams, predictParams))
+      predictParams <- PredictParams(elasticNetGLMpredictInterface)
+      modParams <- ModellingParams(selectParams = NULL, trainParams = trainParams,
+                                   predictParams = predictParams)
+                                   
+      classified <- runTests(genesMatrix, classes, CVparams, modParams)
                                         
       elasticNetFeatures(models(classified)[[1]])
     }

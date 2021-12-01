@@ -9,366 +9,129 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
   runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("runTest", "DataFrame", # Clinical data or one of the other inputs, transformed..
-function(measurements, classes, balancing = c("downsample", "upsample", "none"),
-         featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-         characteristics = DataFrame(),
-         training, testing,
-         params = list(SelectParams(), TrainParams(), PredictParams()),
-         verbose = 1, .iteration = NULL)
+setMethod("runTest", "DataFrame", # Clinical data or one of the other inputs, transformed.
+function(measurements, classes, training, testing, crossValParams = crossValParams(), # crossValParams used for tuning optimisation.
+         modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
 {
-  if(is.null(rownames(measurements)))
-    stop("'measurements' DataFrame must have sample identifiers as its row names.")  
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-
-  stagesParamClasses <- sapply(params, class)
-  if(match("TrainParams", stagesParamClasses) > match("PredictParams", stagesParamClasses))
-    stop("\"PredictParams\" variable must not be before \"TrainParams\" in 'params' list.")
-
-  transformParams <- params[[match("TransformParams", stagesParamClasses)]]
-  selectParams <- params[[match("SelectParams", stagesParamClasses)]]
-  trainParams <- params[[match("TrainParams", stagesParamClasses)]]
-  predictParams <- params[[match("PredictParams", stagesParamClasses)]]
-  testingSamplesIDs <- rownames(measurements)[testing]
+  if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
+  {
+    if(is.null(rownames(measurements)))
+      stop("'measurements' DataFrame must have sample identifiers as its row names.")  
+    splitDataset <- .splitDataAndClasses(measurements, classes)
+    # Rebalance the class sizes of the training samples by either downsampling or upsampling
+    # or leave untouched if balancing is none.
+    rebalanced <- .rebalanceTrainingClasses(measurements, classes, training, testing, modellingParams@balancing)
+    measurements <- rebalanced[["measurements"]]
+    classes <- rebalanced[["classes"]]
+    training <- rebalanced[["training"]]
+    testing <- rebalanced[["testing"]]
+    # Testing and set is not rebalanced, only the indices are shifted because the number
+    # of rows of measurements changes, so the row numbers are updated, but the individual samples in testing
+    # do not change.
+  }
   
+  testingSamplesIDs <- rownames(measurements)[testing]
   # All input features.
   if(!is.null(S4Vectors::mcols(measurements)))
     allFeatures <- S4Vectors::mcols(measurements)
   else
     allFeatures <- colnames(measurements)
   
-  if(is.character(training)) training <- match(training, rownames(measurements))
-  if(is.character(testing)) testing <- match(testing, rownames(measurements))
-  if(is.logical(training)) training <- which(training)
-  if(is.logical(testing)) testing <- which(testing)
-  balancing <- match.arg(balancing)
-  
-  # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-  if(!is.null(selectParams) && !is.null(featureSets))
-    consideredFeatures <- length(featureSets@sets)
-  else
-    consideredFeatures <- ncol(measurements)
-  
-  # Rebalance the class sizes of the training samples by either downsampling or upsampling
-  # or leave untouched if balancing is none.
-  rebalanced <- .rebalanceTrainingClasses(measurements, classes, training, testing, balancing)
-  measurements <- rebalanced[["measurements"]] # Don't use attach to avoid warnings about variable masking.
-  classes <- rebalanced[["classes"]]
-  training <- rebalanced[["training"]]
-  testing <- rebalanced[["testing"]]
-  
-  if(!is.null(featureSets) && is.null(.iteration)) # Feature sets provided and runTest is being called by the user, so need to be filtered now.
+  if(!is.null(modellingParams@transformParams))
   {
-    if(!is.null(S4Vectors::mcols(measurements)))
-      featureNames <- S4Vectors::mcols(measurements)[, "feature"]
-    else
-      featureNames <- colnames(measurements)
+    if(length(modellingParams@transformParams@intermediate) != 0)
+      modellingParams@transformParams <- .addIntermediates(modellingParams@transformParams)
     
-    # Filter out the edges or the features from the sets which are not in measurements.
-    featureSetsList <- featureSets@sets
-    if(class(featureSetsList[[1]]) == "matrix")
-    {
-      setsSizes <- sapply(featureSetsList, nrow)
-      edgesAll <- do.call(rbind, featureSetsList)
-      networkNames <- rep(names(featureSetsList), setsSizes)
-      edgesKeep <- edgesAll[, 1] %in% featureNames & edgesAll[, 2] %in% featureNames
-      edgesFiltered <- edgesAll[edgesKeep, ]
-      networkNamesFiltered <- networkNames[edgesKeep]
-      setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = featureSetsList))
-      featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
-      setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
-    } else { # A set of features without edges, such as a gene set.
-      setsSizes <- sapply(setsNodes, length)
-      nodesVector <- unlist(featureSetsList)
-      setsVector <- rep(names(featureSetsList), setsSizes)
-      keepNodes <- !is.na(match(nodesVector, featureNames))
-      nodesVector <- nodesVector[keepNodes]
-      setsVector <- setsVector[keepNodes]
-      featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
-      setsSizesFiltered <- sapply(featureSetsListFiltered, length)
-    }
-    keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
-    featureSetsListFiltered <- featureSetsListFiltered[keepSets]
-    featureSets <- FeatureSetCollection(featureSetsListFiltered)
-    measurements <- measurements[, featureNames %in% unlist(featureSetsListFiltered)]
-    
-    if(verbose >= 1 && is.null(.iteration)) # Being used by the user, not called by runTests.
-      message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
-  }
-  
-  lastSize <- 1
-  for(stageIndex in 1:length(params))
-  {
-    switch(stagesParamClasses[[stageIndex]],
-           TransformParams = {
-                               if(length(transformParams@intermediate) != 0)
-                               {
-                                 intermediates <- mget(transformParams@intermediate)
-                                  if(!is.null(names(transformParams@intermediate)))
-                                    names(intermediates) <- names(transformParams@intermediate)
-                                  transformParams@otherParams <- c(transformParams@otherParams, intermediates)                                 
-                               }
-
-                               measurements <- tryCatch(.doTransform(measurements, training, transformParams, verbose), error = function(error) error[["message"]])
-                               if(is.character(measurements)) return(measurements) # An error occurred.
-                               newSize <- if(class(measurements) == "list") length(measurements) else 1
-                             },
-              SelectParams = {
-                               if(length(selectParams@intermediate) != 0)
-                               {
-                                 intermediates <- mget(selectParams@intermediate)
-                                  if(!is.null(names(selectParams@intermediate)))
-                                    names(intermediates) <- names(selectParams@intermediate)
-                                  selectParams@otherParams <- c(selectParams@otherParams, intermediates)
-                               }
-
-                               topFeatures <- tryCatch(.doSelection(measurements, classes, featureSets, metaFeatures, training, selectParams,
-                                                                trainParams, predictParams, verbose), error = function(error) error[["message"]])
-                               if(is.character(topFeatures)) return(topFeatures) # An error occurred.
-  
-                               if(class(topFeatures[[2]]) == "list") # Check the chosen features list element, because a ranking is not present for ensemble selection.
-                               {
-                                 multiSelection <- TRUE
-                               } else {
-                                 multiSelection <- FALSE
-                               }
-
-                               rankedFeatures <- topFeatures[[1]] # Extract for result object.
-                               selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
-
-                               if(selectParams@subsetToSelections == TRUE)
-                               {
-                                 if(multiSelection == FALSE)
-                                 {
-                                   if(is.null(metaFeatures))
-                                   {
-                                     if(class(measurements) != "list") # Put into list.
-                                       measurements <- list(measurements)
-                                     measurements <- lapply(measurements, function(variety)
-                                                     {
-                                                       if(is.null(S4Vectors::mcols(variety)) == TRUE)
-                                                       { # Input was ordinary matrix or DataFrame and no network features were used.
-                                                         variety[, selectedFeatures, drop = FALSE]
-                                                       } else { # Input was MultiAssayExperiment.
-                                                         selectedColumns <- apply(selectedFeatures, 1, function(selectedFeature)
-                                                         {
-                                                           intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
-                                                                     which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
-                                                         })
-                                                         variety <- variety[, selectedColumns, drop = FALSE]
-                                                         variety
-                                                       }
-                                                     })
-                                     if(length(measurements) == 1 && class(measurements) == "list")  # Restore to original container type.
-                                       measurements <- measurements[[1]]
-                                     measurements
-                                   } else {
-                                     metaFeatures <- metaFeatures[, S4Vectors::mcols(metaFeatures)[, "original"] %in% selectedFeatures]
-                                   }
-                                 } else { # Multiple varieties of selections.
-                                   if(is.null(metaFeatures))
-                                   {
-                                     if(class(measurements) != "list") # Put into list.
-                                       measurements <- list(measurements)
-                                     
-                                     measurements <- lapply(measurements, function(variety)
-                                                     {
-                                                       lapply(selectedFeatures, function(features)
-                                                       {
-                                                           if(is.null(S4Vectors::mcols(variety)) == TRUE)
-                                                           { # Input was ordinary matrix or DataFrame.
-                                                             variety[, features, drop = FALSE]
-                                                           } else { # Input was MultiAssayExperiment.
-                                                             selectedColumns <- apply(selectedFeatures, 2, function(selectedFeature)
-                                                             {
-                                                               intersect(which(selectedFeature[1] == S4Vectors::mcols(variety)[, "dataset"]),
-                                                                         which(selectedFeature[2] == S4Vectors::mcols(variety)[, "feature"]))
-                                                             })
-                                                             variety <- variety[, selectedColumns, drop = FALSE]
-                                                             variety
-                                                           }
-                                                         })
-                                                       })
-                                     if(length(measurements) == 1 && class(measurements) == "list")  # Restore to original container type.
-                                       measurements <- measurements[[1]]
-                                   } else {
-                                     metaFeatures <- lapply(selectedFeatures, function(features)
-                                                     {
-                                                       metaFeatures[, S4Vectors::mcols(metaFeatures)[, "original"] %in% features]
-                                                     })
-                                   }
-                                 }
-                               } else { # Don't subset to the selected features.
-                                 if(multiSelection == TRUE) # Multiple selection varieties. Replicate the experimental data.
-                                 {
-                                   if(is.null(metaFeatures))
-                                   {
-                                     if(class(measurements) != "list")
-                                       measurements <- lapply(selectedFeatures, function(features) measurements)
-                                     else
-                                       measurements <- lapply(measurements, function(variety)
-                                                            lapply(selectedFeatures, function(features) variety))
-                                   } else {
-                                     if(class(metaFeatures) != "list")
-                                       metaFeatures <- lapply(selectedFeatures, function(features) metaFeatures)
-                                     else
-                                       metaFeatures <- lapply(metaFeatures, function(variety)
-                                                            lapply(selectedFeatures, function(features) variety))
-                                   }
-                                 }
-                               }
-
-                               if(is.null(metaFeatures))
-                               {
-                                 if(class(measurements) == "list" && class(measurements[[1]]) == "list")
-                                 {
-                                   oldNames <- sapply(measurements, names)
-                                   newNames <- unlist(lapply(measurements, names))
-                                   measurements <- unlist(measurements, recursive = FALSE)
-                                   names(measurements) <- paste(rep(oldNames, each = length(measurements[[1]])), newNames, sep = ',')
-                                 }
-                                 
-                                 if(class(measurements) == "list") newSize <- length(measurements) else newSize <- 1
-                                 lastSize <- newSize
-                               } else {
-                                 if(class(metaFeatures) == "list" && class(metaFeatures[[1]]) == "list")
-                                 {
-                                   oldNames <- sapply(metaFeatures, names)
-                                   newNames <- unlist(lapply(metaFeatures, names))
-                                   metaFeatures <- unlist(metaFeatures, recursive = FALSE)
-                                   names(metaFeatures) <- paste(rep(oldNames, each = length(metaFeatures[[1]])), newNames, sep = ',')
-                                 }
-                                 
-                                 if(class(metaFeatures) == "list") newSize <- length(metaFeatures) else newSize <- 1
-                                 lastSize <- newSize                                 
-                               }
-                             }, 
-              TrainParams = {
-                              if(length(trainParams@intermediate) != 0)
-                              {
-                                intermediates <- mget(trainParams@intermediate)
-                                if(!is.null(names(trainParams@intermediate)))
-                                  names(intermediates) <- names(trainParams@intermediate)
-                                trainParams@otherParams <- c(trainParams@otherParams, intermediates)
-                              }
-
-                              if(is.null(metaFeatures))
-                                useData <- measurements
-                              else # Used some derived features instead.
-                                useData <- metaFeatures
-                              trained <- tryCatch(.doTrain(useData, classes, training, testing, trainParams, predictParams, verbose),
-                                                  error = function(error) error[["message"]])
-                              if(is.character(trained)) return(trained) # An error occurred.
-
-                              newSize <- if("list" %in% class(trained)) length(trained) else 1
-                              if(newSize / lastSize != 1) # More varieties were created.
-                              {
-                                if(is.null(metaFeatures))
-                                {
-                                measurements <- unlist(lapply(if(class(measurements) == "list") measurements else list(measurements), function(variety)
-                                                                                      lapply(1:(newSize / lastSize), function(replicate) variety)),
-                                                                               recursive = FALSE)
-                                names(measurements) <- names(trained)
-                                } else {
-                                  metaFeatures <- unlist(lapply(if(class(metaFeatures) == "list") metaFeatures else list(metaFeatures), function(variety)
-                                                                                      lapply(1:(newSize / lastSize), function(replicate) variety)),
-                                                                               recursive = FALSE)
-                                  names(metaFeatures) <- names(trained)
-                                }
-                              }
-
-                              lastSize <- newSize
-                              if("list" %in% class(trained))
-                              {
-                                tuneDetails <- lapply(trained, attr, "tune")
-                                if(!is.null(trainParams@getFeatures)) # Features chosen inside classifier.
-                                {
-                                  featureInfo <- lapply(trained, trainParams@getFeatures)
-                                  rankedFeatures <- lapply(featureInfo, '[[', 1)
-                                  selectedFeatures <- lapply(featureInfo, '[[', 2)
-                                }
-                              } else {
-                                tuneDetails <- attr(trained, "tune")
-                                if(!is.null(trainParams@getFeatures)) # Features chosen inside classifier.
-                                {                                
-                                  rankedFeatures <- trainParams@getFeatures(trained)[[1]]
-                                  selectedFeatures <- trainParams@getFeatures(trained)[[2]]
-                                }
-                              }
-                                if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
-                              },
-              PredictParams = {
-                                if(is.null(metaFeatures))
-                                  useData <- measurements
-                                else # Used some derived features instead.
-                                  useData <- metaFeatures
-                                
-                                if(length(predictParams@intermediate) != 0)
-                                {
-                                  intermediates <- mget(predictParams@intermediate)
-                                  if(!is.null(names(predictParams@intermediate)))
-                                    names(intermediates) <- names(predictParams@intermediate)
-                                  predictParams@otherParams <- c(predictParams@otherParams, intermediates)                                  
-                                }
-                                 
-                                predictedClasses <- tryCatch(.doTest(trained, useData, testing, predictParams, verbose),
-                                                             error = function(error) error[["message"]])
-                                if(is.character(predictedClasses)) # An error occurred.
-                                  return(predictedClasses) # Return early. Don't make a ClassifyResult below.
-                              }
-           )
-    
+    measurements <- tryCatch(.doTransform(measurements, training, modellingParams@transformParams, verbose), error = function(error) error[["message"]])
+    if(is.character(measurements)) return(measurements) # An error occurred.
   }
 
-  # Rankings and selections might not be explicitly returned, such as for random forest classifier.
-  if(!exists("rankedFeatures")) rankedFeatures <- NULL
-  if(!exists("selectedFeatures")) selectedFeatures <- NULL
-  if(is.null(predictParams@predictor)) models <- NULL else models <- trained # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
+  rankedFeatures <- NULL
+  selectedFeatures <- NULL
+  tuneDetailsSelect <- NULL
+  if(!is.null(modellingParams@selectParams))
+  {
+    if(length(modellingParams@selectParams@intermediate) != 0)
+      modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
+
+    topFeatures <- tryCatch(.doSelection(measurements, classes, training, modellingParams, verbose = verbose, crossValParams = crossValParams),
+                            error = function(error) error[["message"]]) 
+
+    if(is.character(topFeatures)) return(topFeatures) # An error occurred.
+    rankedFeatures <- topFeatures[[1]] # Extract for result object.
+    selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
+    tuneDetailsSelect <- topFeatures[[3]]
+  
+    if(modellingParams@selectParams@subsetToSelections == TRUE)
+    { # Subset the the data table to only the selected features.
+      if(is.null(S4Vectors::mcols(measurements)))
+      { # Input was ordinary matrix or DataFrame.
+          measurements <- measurements[, selectedFeatures, drop = FALSE]
+      } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
+          selectedIDs <-  do.call(paste, selectedFeatures)
+          featuresIDs <- do.call(paste, S4Vectors::mcols(measurements)[, c("dataset", "feature")])
+          selectedColumns <- match(selectedIDs, featuresIDs)
+          measurements <- measurements[, selectedColumns, drop = FALSE]
+      }
+      }
+    } 
+
+  # Training stage.
+  if(length(modellingParams@trainParams@intermediate) > 0)
+    modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
+  
+  trained <- tryCatch(.doTrain(measurements, classes, training, testing, modellingParams, verbose),
+                      error = function(error) error[["message"]])
+
+  if(is.character(trained)) return(trained) # An error occurred.
+    
+  tuneDetailsTrain <- trained[[2]] # Second element is tuning results.
+  if(!is.null(modellingParams@trainParams@getFeatures)) # Features chosen inside classifier.
+  {
+    extrasList <- list()
+    extras <- .methodFormals(modellingParams@trainParams@getFeatures)[-1]
+    if(length(extras) > 0)
+      extrasList <- mget(names(extras))
+    
+    featureInfo <- do.call(modellingParams@trainParams@getFeatures, c(trained[[1]], extrasList))
+    rankedFeatures <- featureInfo[[1]]
+    selectedFeatures <- featureInfo[[2]]
+  }
+  
+  if(!is.null(modellingParams@predictParams))
+  {
+    if(length(modellingParams@predictParams@intermediate) != 0)
+      modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
+                             
+    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurements, testing, modellingParams@predictParams, verbose),
+                                error = function(error) error[["message"]]
+                                )
+    if(is.character(predictedClasses)) # An error occurred.
+      return(predictedClasses) # Return early.
+    
+  } else {
+    predictedClasses <- trained[[1]]
+  }
+  
+  if(is.null(modellingParams@predictParams)) models <- NULL else models <- trained[[1]] # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
+  if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
   if(!is.null(.iteration)) # This function was called by runTests.
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testingSamplesIDs, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
+    # Only one training, so only one tuning choice, which can be summarised in characteristics.
+    if(!is.null(tuneDetails)) characteristics <- rbind(characteristics, data.frame(characteristic = colnames(tuneDetails),
+                                                                                   value = unlist(tuneDetails)))
     autoCharacteristics <- do.call(rbind, lapply(params, function(stageParams) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
 
-    if(class(predictedClasses) != "list")
-    {
-      return(ClassifyResult(characteristics, rownames(measurements), allFeatures, consideredFeatures,
-                            list(rankedFeatures), list(selectedFeatures), list(models), list(data.frame(sample = testingSamplesIDs, class = predictedClasses)),
-                            classes, list("independent"), tuneDetails)
-             )
-    } else { # A variety of predictions were made.
-      if(!"list" %in% class(selectedFeatures))
-      {
-        rankedFeatures <- list(rankedFeatures)
-        selectedFeatures <- list(selectedFeatures)
-        models <- list(models)
-      }
-      varieties <- names(predictedClasses)
-      varietyVariables <- lapply(strsplit(varieties, ','), function(variety) gsub("=.*", '', variety))
-      varietyVariables <- unique(unlist(varietyVariables))
-      extras <- lapply(params, function(stageParams) stageParams@otherParams)
-      extras <- extras[!names(extras) %in% varietyVariables]
-      extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-      characteristics <- rbind(characteristics, extrasDF)
-      return(mapply(function(varietyPredictions, varietyText, varietyTunes, varietyRanked, varietySelected, varietyModels)
-      {
-        if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-        if(grepl('=', varietyText)) # Actual varieties.
-        {
-          characteristicsVariety <- characteristics
-          varietyInfo <- strsplit(strsplit(varietyText, ',')[[1]], '=')
-          varietyInfo <- do.call(rbind, varietyInfo)
-          colnames(varietyInfo) <- c("characteristic", "value")
-          characteristicsVariety <- rbind(characteristics, varietyInfo)
-        }
-
-        ClassifyResult(characteristicsVariety, rownames(measurements), allFeatures, consideredFeatures,
-                       list(varietyRanked), list(varietySelected), list(varietyModels), list(data.frame(sample = testing, class = varietyPredictions)),
-                       classes, list("independent"), varietyTunes)
-      }, predictedClasses, names(predictedClasses), tuneDetails, rankedFeatures, selectedFeatures, models, SIMPLIFY = FALSE))
-    }
+    extras <- lapply(params, function(stageParams) stageParams@otherParams)
+    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    characteristics <- rbind(characteristics, extrasDF)
+    
+    ClassifyResult(characteristics, rownames(measurements), allFeatures, rankedFeatures, selectedFeatures,
+                   models, tuneDetails, data.frame(sample = testing, class = predictions), classes)
   }  
 })
 
@@ -378,189 +141,3 @@ setMethod("runTest", c("MultiAssayExperiment"),
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
   runTest(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
 })
-
-setGeneric("runTestEasyHard", function(measurements, ...)
-standardGeneric("runTestEasyHard"))
-
-setMethod("runTestEasyHard", c("MultiAssayExperiment"),
-          function(measurements, balancing = c("downsample", "upsample", "none"),
-                   easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
-                   featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                   characteristics = DataFrame(characteristic = "Classifier Name", value = "Easy Hard"),
-                   training, testing, ..., verbose = 1, .iteration = NULL)
-          {
-            if(!is.character(training))
-              stop("'training' is not character type but must be for easy-hard classifier to avoid ambiguities.")
-            if(!is.character(testing))
-              stop("'testing' is not character type but must be for easy-hard classifier to avoid ambiguities.")
-            balancing <- match.arg(balancing)
-            
-            if(easyDatasetID == "clinical")
-            {
-              easyDataset <- MultiAssayExperiment::colData(measurements) # Will be DataFrame
-              easyDataset <- easyDataset[!is.na(easyDataset[, "class"]), ]
-              easyDataset <- easyDataset[, -match("class", colnames(easyDataset))] # Don't let the class variable go into the classifier training!
-            } else if(easyDatasetID %in% names(measurements))
-            {
-              easyDataset <- measurements[, , easyDatasetID][[1]] # Get the underlying data container e.g. matrix.
-              if(is.matrix(easyDataset))
-                easyDataset <- t(easyDataset) # Make the variables be in columns.
-            } else {
-              stop("'easyDatasetID' is not \"clinical\" nor the name of any assay in 'measurements'.")
-            }
-            if(hardDatasetID %in% names(measurements))
-            {
-              hardDataset <- measurements[, , hardDatasetID][[1]] # Get the underlying data container e.g. matrix.
-              hardDataset <- S4Vectors::DataFrame(t(hardDataset), check.names = FALSE) # Variables as columns.
-            } else {
-              stop("'hardDatasetID' is not the name of any assay in 'measurements'.")
-            }
-
-            # Avoid samples in one dataset but absent from the other.
-            commonSamples <- intersect(rownames(easyDataset), rownames(hardDataset))
-            measurements <- measurements[ , commonSamples, ]
-            easyDataset <- easyDataset[commonSamples, ]
-            hardDataset <- hardDataset[commonSamples, ]
-            training <- intersect(training, commonSamples)
-            testing <- intersect(testing, commonSamples)
-            # If function used directly, need to be character vectors, not numbers or logical as omics order could be different to clinical order.
-            
-            # Rebalance the class sizes of the training samples by either downsampling or upsampling
-            # or leave untouched if balancing is none.
-            training <- na.omit(match(training, commonSamples))
-            testing <- na.omit(match(testing, commonSamples))
-            classes <- MultiAssayExperiment::colData(measurements)[, "class"] 
-            rebalanced <- .rebalanceTrainingClasses(hardDataset, classes, training, testing, balancing)
-            hardDataset <- rebalanced[["measurements"]] # Don't use attach to avoid warnings about variable masking.
-            classes <- rebalanced[["classes"]]
-            training <- rebalanced[["training"]]
-            testing <- rebalanced[["testing"]]
-            easyDataset <- easyDataset[rownames(hardDataset), ]
-            
-            allFeatures <- S4Vectors::DataFrame(dataset = easyDatasetID, feature = colnames(easyDataset))
-            allFeatures <- rbind(allFeatures, S4Vectors::DataFrame(dataset = hardDatasetID, feature = colnames(hardDataset)))
-            classes <- MultiAssayExperiment::colData(measurements)[, "class"]
-            
-            # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-            easyFeaturesNumber <- sum(allFeatures[, "dataset"] == easyDatasetID)
-            if(!is.null(featureSets))
-              consideredFeatures <- length(featureSets@sets) + easyFeaturesNumber
-            else
-              consideredFeatures <- ncol(hardDataset) + easyFeaturesNumber
-            
-            if(!is.null(featureSets) && is.null(.iteration)) # Feature sets provided and runTestEasyHard is being called by the user, so need to be filtered now.
-            {
-              hardFeatureNames <- rownames(hardDataset)
-              
-              # Filter out the edges or the features from the sets which are not in measurements.
-              featureSetsList <- featureSets@sets
-              if(class(featureSetsList[[1]]) == "matrix")
-              {
-                setsSizes <- sapply(featureSetsList, nrow)
-                edgesAll <- do.call(rbind, featureSetsList)
-                networkNames <- rep(names(featureSetsList), setsSizes)
-                edgesKeep <- edgesAll[, 1] %in% hardFeatureNames & edgesAll[, 2] %in% hardFeatureNames
-                edgesFiltered <- edgesAll[edgesKeep, ]
-                networkNamesFiltered <- networkNames[edgesKeep]
-                setsRows <- split(1:nrow(edgesFiltered), factor(networkNamesFiltered, levels = featureSetsList))
-                featureSetsListFiltered <- lapply(setsRows, function(setRows) edgesFiltered[setRows, , drop = FALSE])
-                setsSizesFiltered <- sapply(featureSetsListFiltered, nrow)
-              } else { # A set of features without edges, such as a gene set.
-                setsSizes <- sapply(setsNodes, length)
-                nodesVector <- unlist(featureSetsList)
-                setsVector <- rep(names(featureSetsList), setsSizes)
-                keepNodes <- !is.na(match(nodesVector, hardFeatureNames))
-                nodesVector <- nodesVector[keepNodes]
-                setsVector <- setsVector[keepNodes]
-                featureSetsListFiltered <- split(nodesVector, factor(setsVector, levels = names(featureSetsList)))
-                setsSizesFiltered <- sapply(featureSetsListFiltered, length)
-              }
-              keepSets <- setsSizesFiltered / setsSizes * 100 >= minimumOverlapPercent
-              featureSetsListFiltered <- featureSetsListFiltered[keepSets]
-              featureSets <- FeatureSetCollection(featureSetsListFiltered)
-              hardDataset <- hardDataset[, hardFeatureNames %in% unlist(featureSetsListFiltered)]
-              
-              if(verbose >= 1 && is.null(.iteration)) # Being used by the user, not called by runTests.
-                message("After filtering features, ", length(featureSetsListFiltered), " out of ", length(featureSetsList), " sets remain.")
-            }
-            easyHardClassifierTrain
-            trained <- easyHardClassifierTrain(measurements[ , training, ], easyDatasetID, hardDatasetID, featureSets, metaFeatures, minimumOverlapPercent, NULL, ..., verbose = verbose)
-            hardParams <- list(...)[["hardClassifierParams"]]
-            if(is.null(hardParams)) # They were not specified by the user. Use default value.
-              predictParams <- PredictParams()
-            else
-              predictParams <- hardParams[[which(sapply(hardParams, class) == "PredictParams")]]
-            test <- measurements[ , rownames(hardDataset)[testing], ]
-            trainClass <- class(trained)
-            if(trainClass == "EasyHardClassifier")
-            {
-              trained <- list(trained)
-              predictedClasses <- lapply(trained, function(model) easyHardClassifierPredict(model, test, predictParams, verbose))
-            } else { # Modify the predictParams' otherParams.
-              trainedVarietyParams <- strsplit(names(trained), "=|,")
-              predictParams <- lapply(trainedVarietyParams, function(varietyParams)
-                               {
-                                 combinationParams <- predictParams
-                                 for(paramIndex in seq(1, length(varietyParams), 2))
-                                 {
-                                   if(varietyParams[paramIndex] %in% names(combinationParams@otherParams))
-                                   {
-                                     combinationParams@otherParams[[varietyParams[paramIndex]]] <- varietyParams[paramIndex + 1]
-                                   }
-                                 }
-                                 combinationParams
-                               })
-              predictedClasses <- mapply(function(varietyModel, varietyParams) easyHardClassifierPredict(varietyModel, test, varietyParams, verbose), trained, predictParams, SIMPLIFY = FALSE)
-            }
-
-            tuneDetails <- lapply(trained, attr, "tune")
-            if(trainClass == "EasyHardClassifier")
-            {
-              trained <- trained[[1]]
-              selectedFeatures <- easyHardFeatures(trained)[[2]]
-              predictedClasses <- unlist(predictedClasses, recursive = FALSE)
-              tuneDetails <- unlist(tuneDetails, recursive = FALSE)
-            } else {
-              selectedFeatures <- lapply(lapply(trained, easyHardFeatures), "[[", 2)
-            }
-            if(is.null(tuneDetails)) tuneDetails <- list(tuneDetails)
-
-            if(!is.null(.iteration)) # This function was called by runTestsEasyHard.
-            {
-              list(selected = selectedFeatures, models = trained, testSet = rownames(hardDataset)[testing], predictions = predictedClasses, tuneDetails = tuneDetails)
-            } else { # runTestEasyHard is being used directly, rather than from runTestsEasyHard. Create a ClassifyResult object.
-              selectionName <- "Sample Grouping Purity for Easy Data Set"
-              selectParams <- list(...)[["hardClassifierParams"]]
-              whichSelect <- which(sapply(selectParams, class) == "SelectParams")
-              
-              if(length(whichSelect) > 0)
-              {
-                selectParams <- selectParams[[whichSelect]]
-                whichRow <- match(selectParams@featureSelection@generic, .ClassifyRenvir[["functionsTable"]][, "character"])
-                selectionName <- paste(selectionName, "and", .ClassifyRenvir[["functionsTable"]][whichRow, "name"],
-                                       "for Hard Data Set")
-              }
-              
-              characteristics <- rbind(characteristics,
-                                       S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
-              if(class(predictedClasses) != "list")
-              {
-                return(ClassifyResult(characteristics, rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
-                                      list(NULL), selectedFeatures, list(trained), list(data.frame(sample = rownames(hardDataset)[testing], class = predictedClasses)),
-                                      classes, list("independent"), tuneDetails)
-                )
-              } else { # A variety of predictions were made.
-                if(!"list" %in% class(selectedFeatures))
-                {
-                  selectedFeatures <- list(selectedFeatures)
-                }
-                return(mapply(function(varietyPredictions, varietyTunes, varietySelected, varietyModel)
-                {
-                  if(is.null(varietyTunes)) varietyTunes <- list(varietyTunes)
-                  ClassifyResult(rownames(MultiAssayExperiment::colData(measurements)), allFeatures, consideredFeatures,
-                                 list(NULL), list(varietySelected), list(varietyModel), list(data.frame(sample = testing, class = varietyPredictions)),
-                                 classes, list("independent"), varietyTunes)
-                }, predictedClasses, tuneDetails, selectedFeatures, trained, SIMPLIFY = FALSE))
-              }
-            }
-          })

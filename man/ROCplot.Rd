@@ -60,28 +60,29 @@
 \author{Dario Strbenac}
 
 \examples{
-  predicted <- list(data.frame(sample = LETTERS[c(1, 8, 15, 3, 11, 20, 19, 18)],
+  predicted <- do.call(rbind, list(data.frame(data.frame(sample = LETTERS[c(1, 8, 15, 3, 11, 20, 19, 18)],
                                Healthy = c(0.89, 0.68, 0.53, 0.76, 0.13, 0.20, 0.60, 0.25),
-                               Cancer = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75)),
+                               Cancer = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75),
+                               fold = 1)),
                     data.frame(sample = LETTERS[c(11, 18, 15, 4, 6, 10, 11, 12)],
                                Healthy = c(0.45, 0.56, 0.33, 0.56, 0.33, 0.20, 0.60, 0.40),
-                               Cancer = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60)))
+                               Cancer = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60),
+                               fold = 2)))
   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
-                            LETTERS[1:20], LETTERS[10:1], 100,
+                            LETTERS[1:20], LETTERS[10:1],
                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
-                            list(function(oracle){}), predicted, actual,
-                            list("permuteFold", 2, 2))
+                            list(function(oracle){}), NULL, predicted, actual)
   
-  predicted[[1]][c(2, 6), "Healthy"] <- c(0.40, 0.60)
-  predicted[[1]][c(2, 6), "Cancer"] <- c(0.60, 0.40)
+  predicted[c(2, 6), "Healthy"] <- c(0.40, 0.60)
+  predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-                            LETTERS[1:20], LETTERS[10:1], 100, list(1:100, c(1:5, 11:105)),
+                            LETTERS[1:20], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
                             list(sample(10, 10), sample(10, 10)), list(function(oracle){}),
-                            predicted, actual, validation = list("permuteFold", 2, 2))
+                            NULL, predicted, actual)
   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
 }

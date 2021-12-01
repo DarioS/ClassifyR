@@ -66,8 +66,8 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models,
 })
 
 setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical data only.
-          function(models, test, weighted = c("unweighted", "weighted", "both"),
-                   weight = c("height difference", "crossover distance", "both"),
+          function(models, test, difference = c("unweighted", "weighted"),
+                   weighting = c("height difference", "crossover distance"),
                    densityXvalues = 1024, minDifference = 0,
                    returnType = c("both", "class", "score"), verbose = 3)
 {
@@ -77,8 +77,8 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
   
-  weighted <- match.arg(weighted)
-  weight <- match.arg(weight)
+  difference <- match.arg(difference)
+  weighting <- match.arg(weighting)
   returnType <- match.arg(returnType)
   classesNames <- names(models[["classSizes"]])
   classesSizes <- models[["classSizes"]]
@@ -136,7 +136,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
     })
   }) # Matrix, rows are test samples, columns are features. 
   
-  if(weight %in% c("crossover distance", "both")) # Calculate the crossover distance, even if unweighted voting to pick the class.
+  if(difference == "crossover distance")
   {   
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
@@ -162,88 +162,38 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Clinical da
     )
   }
   
-  if(weight == "both")
-    weightExpanded <-  c("height difference", "crossover distance")
-  else weightExpanded <- weight
-
-  allDistances <- lapply(weightExpanded, function(type)
-  {
-    switch(type, `height difference` = distancesVertical,
-                 `crossover distance` = distancesHorizontal)
-  })
+  allDistances <- switch(weighting, `height difference` = distancesVertical,
+                         `crossover distance` = distancesHorizontal)
   
-  weightingText <- weighted
-  if(weightingText == "both") weightingText <- c("unweighted", "weighted")
-  testPredictions <- do.call(rbind, mapply(function(weightNames, distances)
+  predictions <- do.call(rbind, lapply(1:nrow(allDistances), function(sampleRow)
   {
-    do.call(rbind, lapply(weightingText, function(isWeighted)
-    {
-      do.call(rbind, lapply(minDifference, function(difference)
+    useFeatures <- abs(allDistances[sampleRow, ]) > minDifference
+    if(all(useFeatures == FALSE)) # No features have a large enough density difference.
+    {                          # Simply vote for the larger class.
+      classPredicted <- largestClass
+      classScores <- classesSizes / length(classes)
+    } else { # One or more features are available to vote with.
+      distancesUsed <- allDistances[sampleRow, useFeatures]
+      classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classes))
+      if(difference == "unweighted")
       {
-        do.call(rbind, lapply(1:nrow(distances), function(sampleRow)
-        {
-          useFeatures <- abs(distances[sampleRow, ]) > difference
-          if(all(useFeatures == FALSE)) # No features have a large enough density difference.
-          {                          # Simply vote for the larger class.
-            classPredicted <- largestClass
-            classScores <- classesSizes / sum(classesSizes)
-          } else { # One or more features are available to vote with.
-            distancesUsed <- distances[sampleRow, useFeatures]
-            classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], classesNames)
-            if(isWeighted == "unweighted")
-            {
-              classScores <- table(classPredictionsUsed)
-              classScores <- setNames(as.vector(classScores), classesNames)
-            } else { # Weighted voting.
-              classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
-              classScores[is.na(classScores)] <- 0
-            }
-            classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
-            classPredicted <- names(classScores)[which.max(classScores)]
-          }
-
-          data.frame(class = factor(classPredicted, levels = classesNames), t(classScores),
-                     weighted = isWeighted, weight = weightNames,
-                     minDifference = difference, check.names = FALSE)
-        }))
-      }))
-    }))
-  }, weightExpanded, allDistances, SIMPLIFY = FALSE))
-  
-  # Remove combinations of unweighted voting and weightings.
-  testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
-  {
-    if(weightVariety[1, "weighted"] == "unweighted")
-    {
-      do.call(rbind, by(weightVariety, weightVariety[, "minDifference"], function(differenceVariety) differenceVariety[differenceVariety[, "weight"] == "height difference", ]))
-    } else {
-      weightVariety
+        classScores <- table(classPredictionsUsed)
+        classScores <- setNames(as.vector(classScores), levels(classes))
+      } else { # Weighted voting.
+        classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
+        classScores[is.na(classScores)] <- 0
+      }
+      classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
+      classPredicted <- names(classScores)[which.max(classScores)]
     }
+    
+    data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores), check.names = FALSE)
   }))
   
-  whichVarieties <- character()
-  if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
-  if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
-  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Aribtrary, to make a list.
-  
-  varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
-  varietyFactor <- factor(gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor))
-  resultsList <- lapply(levels(varietyFactor), function(variety)
-  {
-    varietyPredictions <- subset(testPredictions, varietyFactor == variety)
-    rownames(varietyPredictions) <- rownames(test)
-    switch(returnType, class = varietyPredictions[, "class"],
-           score = varietyPredictions[, colnames(varietyPredictions) %in% classesNames],
-           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% classesNames], check.names = FALSE)
-           )
-  })
-  names(resultsList) <- levels(varietyFactor)
-  
-  if(length(resultsList) == 1) # No varieties.
-    resultsList[[1]]
-  else
-    resultsList  
+  switch(returnType, class = predictions[, "class"],
+         score = predictions[, colnames(predictions) %in% levels(classes)],
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classes)], check.names = FALSE)
+  ) 
 })
 
 # One or more omics data sets, possibly with clinical data.

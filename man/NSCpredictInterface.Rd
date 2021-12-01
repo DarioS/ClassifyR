@@ -9,8 +9,7 @@
 \usage{
   \S4method{NSCpredictInterface}{pamrtrained,matrix}(trained, test, ...)
   \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(trained, test, classes = NULL, ...,
-                                 returnType = c("both", "class", "score"),
-                                 classifierName = "Nearest Shrunken Centroids", verbose = 3)  
+                                 returnType = c("both", "class", "score"), verbose = 3)  
   \S4method{NSCpredictInterface}{pamrtrained,MultiAssayExperiment}(trained, test, targets = names(test), ...)
 }
 \arguments{
@@ -29,8 +28,6 @@
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the
                     factor levels, or both labels and scores in a \code{data.frame}.}
-  \item{classifierName}{Default: Nearest Shrunken Centroids. Useful for automated plot annotation by
-                        plotting functions within this package.}                    
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}
 }

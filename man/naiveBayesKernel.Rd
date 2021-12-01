@@ -15,8 +15,8 @@
                  densityParameters = list(bw = "nrd0", n = 1024,
                                                  from = expression(min(featureValues)),
                                               to = expression(max(featureValues))),
-                   weighted = c("unweighted", "weighted", "both"),
-                   weight = c("height difference", "crossover distance", "both"),
+                   difference = c("unweighted", "weighted"),
+                   weighting = c("height difference", "crossover distance"),
                    minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
   \S4method{naiveBayesKernel}{MultiAssayExperiment}(measurements, test, targets = names(measurements), ...)  
 }
@@ -42,11 +42,10 @@
                           Default: \code{list(bw = "nrd0", n = 1024,
                                               from = expression(min(featureValues)),
                                               to = expression(max(featureValues))}.}                       
-  \item{weighted}{Default: \code{"unweighted"}. Either \code{"unweighted"}, \code{"weighted"} or \code{"both"}. 
+  \item{difference}{Default: \code{"unweighted"}. Either \code{"unweighted"}, \code{"weighted"}. 
                   In weighted mode, the difference in densities is summed over all features.
-                  If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
-  \item{weight}{Default: \code{"both"}. Either \code{"both"}, \code{"height difference"},
-                or \code{"crossover distance"}. The type of weight to calculate.
+                  If unweighted mode, each feature's vote is worth the same.}
+  \item{weighting}{Default: \code{"both"}. Either \code{"height difference"} or \code{"height difference"}. The type of weight to calculate.
                 For \code{"height difference"}, the weight of each prediction is equal to the
                 vertical distance between the highest density and the second-highest, for a particular value of x. For
                 \code{"crossover distance"}, the x positions where two densities cross is firstly calculated.
@@ -65,9 +64,9 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  If \code{weighted} is \code{TRUE}, then a sample's predicted class is the class with
+  If \code{difference} is \code{"weighted"}, then a sample's predicted class is the class with
   the largest sum of weights, each scaled for the number of samples in
-  the training data of each class. Otherwise, when \code{weighted} is \code{FALSE},
+  the training data of each class. Otherwise, when \code{difference} is \code{"unweighted"},
   each feature has an equal vote, and votes for the class with the largest weight,
   scaled for class sizes in the training set.
   
@@ -81,19 +80,20 @@
   crosses any other class' density are used as the crossover points for that class.
 }
 \value{
-  A vector or list of class prediction information (i.e. classes and/or scores), as long as
-  the number of samples in the test data, or lists of such information, if both
-  weighted and unweighted voting was used or a range of \code{minDifference} values was provided.
+  A vector or data frame of class prediction information (i.e. classes and/or scores), as long as
+  the number of samples in the test data.
 }
 \author{Dario Strbenac, John Ormerod}
 \examples{
   trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
   classes <- factor(rep(c("Poor", "Good"), each = 5))
+  colnames(trainMatrix) <- paste("Sample", 1:10)
   
   # Make first 30 genes increased in value for poor samples.
   trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
   
   testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+  colnames(testMatrix) <- paste("Sample", 11:20)
   
   # Make first 30 genes increased in value for sixth to tenth samples.
   testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5

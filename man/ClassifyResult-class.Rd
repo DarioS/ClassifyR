@@ -28,8 +28,7 @@
   Contains a list of models, table of actual sample classes and predicted classes,
   the identifiers of features selected for each fold of each permutation or
   each hold-out classification, and performance metrics such as error rates.
-  This class is not intended to be created by the user, but could be used in
-  another package. It is created by \code{\link{runTest}} or \code{\link{runTests}}.
+  This class is not intended to be created by the user. It is created by \code{\link{runTest}} or \code{\link{runTests}}.
 }
 \section{Constructor}{
   \describe{
@@ -117,17 +116,13 @@
   #{
     data(asthma)
     
-    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error")
+    LOOCVparams <- CrossValParams("Leave-k-Out", leave = 1)
+    modellingParams <- ModellingParams()
     classified <-
-    runTests(measurements, classes, characteristics =
+    runTests(measurements, classes, LOOCVparams, modellingParams,
              DataFrame(characteristic = c("dataset", "classification"),
-                      value = c("Asthma", "Different Means")),
-             validation = "leaveOut", leave = 1,
-             params = list(SelectParams(limmaSelection,
-                             resubstituteParams = resubstituteParams),
-                           TrainParams(DLDAtrainInterface),
-                           PredictParams(DLDApredictInterface)))
+                      value = c("Asthma", "Different Means"))
+             )
     class(classified)
   #}
 }

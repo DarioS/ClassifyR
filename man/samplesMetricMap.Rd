@@ -9,7 +9,7 @@ and one row for each classification result.
 \usage{
   \S4method{samplesMetricMap}{list}(results,
                      comparison = "Classifier Name",
-                 metric = c("error", "accuracy"), featureValues = NULL, featureName = NULL,
+                 metric = c("Sample Error", "Sample Accuracy"), featureValues = NULL, featureName = NULL,
                      metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
                      classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
@@ -19,7 +19,7 @@ and one row for each classification result.
                  yAxisLabel = "Analysis", showYtickLabels = TRUE,
                  legendSize = grid::unit(1, "lines"), plot = TRUE)
   \S4method{samplesMetricMap}{matrix}(results, classes,
-                     metric = c("error", "accuracy"),
+                     metric = c("Sample Error", "Sample Accuracy"),
                      featureValues = NULL, featureName = NULL,
                      metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
@@ -31,7 +31,7 @@ and one row for each classification result.
                  legendSize = grid::unit(1, "lines"), plot = TRUE)                 
 }
 \arguments{
-  \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be a matrix, for
+  \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be a matrix of pre-calculated metrics, for
                  backwards compatibility.}
   \item{classes}{If \code{results} is a matrix, this is a factor vector of the same length
                  as the number of columns that \code{results} has.}                 

@@ -87,524 +87,318 @@
     stop("Training data set and testing data set contain differing numbers of features.")  
 }
 
-.doSelection <- function(measurements, classes, featureSets, metaFeatures, training, selectParams, trainParams,
-                         predictParams, verbose)
+# Creates two lists of lists. First has training samples, second has test samples for a range
+# of different cross-validation schemes.
+.samplesSplits <- function(crossValParams, classes)
 {
-  initialClass <- class(measurements)
-  if(!"list" %in% initialClass)
-    measurements <- list(data = measurements)  
-
-  names(classes) <- rownames(measurements[[1]]) # In case training specified by sample IDs rather than numeric indices.
-  trainClasses <- droplevels(classes[training])
-  rankedSelected <- lapply(measurements, function(measurementsVariety)
+  if(crossValParams@samplesSplits %in% c("k-Fold", "Permute k-Fold"))
   {
-    if(is.function(selectParams@featureSelection))
+    nPermutations <- ifelse(crossValParams@samplesSplits == "k-Fold", 1, crossValParams@permutations)
+    nFolds <- crossValParams@folds
+    samplesFolds <- lapply(1:nPermutations, function(permutation)
     {
-      paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, verbose = verbose)
-      selectFormals <- names(.methodFormals(selectParams@featureSelection, "DataFrame"))
-      if("trainParams" %in% selectFormals) # Needs training and prediction functions for resubstitution error rate calculation.
-        paramList <- append(paramList, c(trainParams = trainParams, predictParams = predictParams))
-      if(!is.null(metaFeatures))
-        paramList <- append(paramList, c(metaFeatures = metaFeatures[training, , drop = FALSE]))
-      if("featureSets" %in% selectFormals) # Pass the sets on from runTest.
-        paramList <- append(paramList, c(featureSets = featureSets))
-      paramList <- append(paramList, c(selectParams@otherParams))
-      selection <- do.call(selectParams@featureSelection, paramList)
-
-      if(class(selection) == "SelectResult")
+      # Create maximally-balanced folds, so class balance is about the same in all.
+      allFolds <- vector(mode = "list", length = nFolds)
+      foldsIndexes <- rep(1:nFolds, length.out = length(classes))
+      
+      foldsIndex = 1
+      for(className in levels(classes))
       {
-        if(length(selection@rankedFeatures) == 0) ranked <- numeric() else ranked <- selection@rankedFeatures[[1]]
-        list(ranked, selection@chosenFeatures[[1]])
-      } else { # List of such results for varieties.
-        list(lapply(selection, function(variety) {
-                               if(length(variety@rankedFeatures) == 0)
-                                 numeric()
-                               else
-                                 variety@rankedFeatures[[1]]
-                               }),
-             lapply(selection, function(variety) variety@chosenFeatures[[1]]))
+        # Permute the indexes of samples in the class.
+        whichSamples <- sample(which(classes == className))
+        whichFolds <- foldsIndexes[foldsIndex:(foldsIndex + length(whichSamples) - 1)]
+        
+        # Put each sample into its fold.
+        for(sampleIndex in 1:length(whichSamples))
+        {
+          allFolds[[whichFolds[sampleIndex]]] <- c(allFolds[[whichFolds[sampleIndex]]], whichSamples[sampleIndex])
+        }
+        # Move the beginning index to the first new index.
+        foldsIndex <- foldsIndex + length(whichSamples)
       }
-    } else { # It is a list of functions for ensemble selection.
+      
+      list(train = lapply(1:nFolds, function(index) unlist(allFolds[setdiff(1:nFolds, index)])),
+           test = allFolds
+           )
+    })
+    # Reorganise into three separate lists, no more nesting.
+    list(train = unlist(lapply(samplesFolds, '[[', 1), recursive = FALSE),
+         test = unlist(lapply(samplesFolds, '[[', 2), recursive = FALSE))
+  } else if(crossValParams@samplesSplits == "Permute Percentage Split") {
+    # Take the same percentage of samples from each class to be in training set.
+    percent <- crossValParams@percentTest
+    samplesTrain <- round((100 - percent) / 100 * table(classes))
+    samplesTest <- round(percent / 100 * table(classes))
+    samplesLists <- lapply(1:crossValParams@permutations, function(permutation)
+    {
+      trainSet <- unlist(mapply(function(className, number)
+      {
+        sample(which(classes == className), number)
+      }, levels(classes), samplesTrain))
+      testSet <- setdiff(1:length(classes), trainSet)
+      list(trainSet, testSet)
+    })
+    # Reorganise into two lists: training, testing.
+    list(train = lapply(samplesLists, "[[", 1), test = lapply(samplesLists, "[[", 2))
+  } else if(crossValParams@samplesSplits == "Leave-k-Out") { # leave k out. 
+    testSamples <- as.data.frame(utils::combn(length(classes), crossValParams@leave))
+    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:length(classes), sample))
+    list(train = as.list(trainingSamples), test = as.list(testSamples))
+  }
+}
+
+# Creates a two-column table for tracking the permutation, fold number, or subset of each set
+# of test samples.
+.splitsTestInfo <- function(crossValParams, samplesSplits)
+{
+  permutationIDs <- NULL
+  foldIDs <- NULL
+  subsetIDs <- NULL
+  if(crossValParams@samplesSplits %in% c("k-Fold", "Permute k-Fold"))
+  {
+    foldsSamples <- lengths(samplesSplits[[2]][1:crossValParams@folds])
+    totalSamples <- sum(foldsSamples) 
+    if(crossValParams@samplesSplits == "Permute k-Fold")
+      permutationIDs <- rep(1:crossValParams@permutations, each = totalSamples)
+    foldIDs <- rep(rep(1:crossValParams@folds, foldsSamples), times = crossValParams@permutations)
+  } else if(crossValParams@samplesSplits == "Permute Percentage Split") {
+    permutationIDs <- rep(1:crossValParams@permutations, each = length(samplesSplits[[2]][[1]]))
+  } else { # Leave-k-out
+    totalSamples <- length(unique(unlist(samplesSplits[[2]])))
+    subsetIDs <- rep(1:choose(totalSamples, crossValParams@leave), each = crossValParams@leave)
+  } 
+  
+  summaryTable <- cbind(permutation = permutationIDs, fold = foldIDs, subset = subsetIDs)
+}
+
+# Add extra variables from within runTest functions to function specified by params.
+.addIntermediates <- function(params)
+{
+  intermediateName <- params@intermediate
+  intermediates <- dynGet(intermediateName, inherits = TRUE)
+  names(intermediates) <- intermediateName
+  params@otherParams <- c(params@otherParams, intermediates)
+  params
+}
+
+.doSelection <- function(measurements, classes, training, crossValParams, modellingParams, verbose)
+{
+  names(classes) <- rownames(measurements) # In case training specified by sample IDs rather than numeric indices.
+  trainClasses <- droplevels(classes[training])
+  tuneParams <- modellingParams@selectParams@tuneParams
+  performanceType <- tuneParams[["performanceType"]]
+  topNfeatures <- tuneParams[["nFeatures"]]
+  tuneParams <- tuneParams[-match(c("performanceType", "nFeatures"), names(tuneParams))] # Only used as evaluation metric.
+  featureRanking <- modellingParams@selectParams@featureRanking
+  otherParams <- modellingParams@selectParams@otherParams
+  modellingParams@selectParams <- NULL
+  betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
+  if(is.function(featureRanking)) # Not a list for ensemble selection.
+  {
+    paramList <- list(measurements[training, , drop = FALSE], trainClasses, verbose = verbose)
+    # Needs training and prediction functions for resubstitution or nested CV performance calculation.
+    paramList <- append(paramList, otherParams) # Used directly by a feature selection function for rankings of features.
+    if(length(tuneParams) == 0) tuneParams <- list(None = "none")
+    tuneCombosSelect <- expand.grid(tuneParams, stringsAsFactors = FALSE)
+    
+    rankings <- lapply(1:nrow(tuneCombosSelect), function(rowIndex)
+    {
+      tuneCombo <- tuneCombosSelect[rowIndex, , drop = FALSE]
+      if(tuneCombo != "none") # Add real parameters before function call.
+        paramList <- append(paramList, tuneCombo)
+      do.call(featureRanking, paramList)
+    })
+    
+    if(featureRanking@generic == "previousSelection") # Actually selection not ranking.
+      return(list(NULL, rankings[[1]], NULL))
+    
+    tuneParamsTrain <- list(topN = topNfeatures)
+    tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
+    tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
+    modellingParams@trainParams@tuneParams <- NULL
+    bestPerformers <- sapply(rankings, function(rankingsVariety)
+    {
+      # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
+      performances <- sapply(1:nrow(tuneCombosTrain), function(rowIndex)
+      {
+        topIndices <- rankingsVariety[1:tuneCombosTrain[rowIndex, "topN"]]
+        measurementsSelected <- measurements[training, topIndices, drop = FALSE] # Features in columns
+        if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
+          modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
+        
+        if(crossValParams@tuneMode == "Resubstitution")
+        {
+          result <- runTest(measurementsSelected, trainClasses,
+                            training = 1:nrow(measurementsSelected), testing = 1:nrow(measurementsSelected),
+                            crossValParams = NULL, modellingParams,
+                            verbose = verbose, .iteration = "internal")
+          
+          predictions <- result[["predictions"]]
+          if(class(predictions) == "data.frame")
+           predictedClasses <- predictions[, "class"]
+          else
+           predictedClasses <- predictions
+          calcExternalPerformance(classes[training], predictedClasses, performanceType)
+        } else {
+           result <- runTests(measurementsSubset, classes[training], crossValParams, modellingParams, verbose = verbose)
+           result <- calcCVperformance(result, performanceType)
+           median(performance(aResult)[[performanceType]])
+         }
+       })
+      
+        bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
+        c(bestOne, performances[bestOne])
+      })
+
+      tunePick <- ifelse(betterValues == "lower", which.min(bestPerformers[2, ])[1], which.max(bestPerformers[2, ])[1])
+        
+      if(verbose == 3)
+         message("Features selected.")
+      
+      tuneRow <- tuneCombosTrain[bestPerformers[1, tunePick], , drop  = FALSE]
+      if(ncol(tuneRow) > 1) tuneDetails <- tuneRow else tuneDetails <- NULL
+      
+      list(ranked = rankings[[tunePick]],
+           selected = rankings[[tunePick]][1:tuneRow[, "topN"]], tune = tuneDetails)
+    } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsVariety[training, , drop = FALSE], trainClasses, trainParams = trainParams,
+        paramList <- list(measurements[training, , drop = FALSE], trainClasses, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
         do.call(selector, paramList)
-      }, selectParams@featureSelection, selectParams@otherParams, SIMPLIFY = FALSE)
+      }, modellingParams@selectParams@featureRanking, modellingParams@selectParams@featureRanking, SIMPLIFY = FALSE)
 
-      if(class(featuresLists[[1]]) == "SelectResult") # No varieties were returned by the classifier used for resubstitution.
+      performances <- sapply(topNfeatures, function(topN)
       {
-        if(is.vector(featuresLists[[1]]@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
+        topIndices <- unlist(lapply(featuresLists, function(features) features[1:topN]))
+        topIndicesCounts <- table(topIndices)
+        keep <- names(topIndicesCounts)[topIndicesCounts >= modellingParams@selectParams@minPresence]
+        measurementsSelected <- measurements[training, keep, drop = FALSE] # Features in columns
+        
+        if(crossValParams@tuneMode == "Resubstitution")
         {
-          featuresCounts <- table(unlist(lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]])))
-          selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
-          selectedFeatures
-        } else { # Selected feature information is stored in a data frame.
-          chosenFeaturesEnsemble <- do.call(rbind, lapply(featuresLists, function(featureSet) featureSet@chosenFeatures[[1]]))
-          selectedFeatures <- chosenFeaturesEnsemble[plyr::count(chosenFeaturesEnsemble)[, "freq"] >= selectParams@minPresence, c("dataset", "feature")]
-          selectedFeatures
+          result <- runTest(measurementsSelected, trainClasses,
+                            training = 1:nrow(measurementsSelected), testing = 1:nrow(measurementsSelected),
+                            crossValParams = NULL, modellingParams,
+                            verbose = verbose, .iteration = "internal")
+          predictions <- result[["predictions"]]
+          if(class(predictions) == "data.frame")
+            predictedClasses <- predictions[, "class"]
+          else
+            predictedClasses <- predictions
+          calcExternalPerformance(classes[training], predictedClasses, performanceType)
+        } else {
+          result <- runTests(measurementsSubset, classes[training], crossValParams, modellingParams, verbose = verbose)
+          result <- calcCVperformance(result, performanceType)
+          median(performance(aResult)[[performanceType]])
         }
-      } else { # The prediction function used for resubstitution returned a variety of lists.
-        selectedFeatures <- lapply(1:length(featuresLists[[1]]), function(variety)
-        {
-          varietyFeatures <- lapply(featuresLists, function(selectList) selectList[[variety]]@chosenFeatures[[1]])
-          if(is.vector(featuresLists[[1]]@chosenFeatures[[1]])) # Data set is not MultiAssayExperiment, only variable ID tracked.
-          {
-            featuresCounts <- table(unlist(varietyFeatures))
-            selectedFeatures <- names(featuresCounts)[featuresCounts >= selectParams@minPresence]
-            selectedFeatures
-          } else { # Selected feature information is stored in a data frame.
-            chosenFeaturesEnsemble <- do.call(rbind, varietyFeatures)
-            selectedFeatures <- chosenFeaturesEnsemble[plyr::count(chosenFeaturesEnsemble)[, "freq"] >= selectParams@minPresence, c("dataset", "feature")]
-            selectedFeatures
-          }
-        })
-        names(selectedFeatures) <- names(featuresLists[[1]]) # Add variety names to selected list.
-      }
-      list(NULL, selectedFeatures)
+      })
+      bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
+      
+      selectedFeatures <- unlist(lapply(featuresLists, function(featuresList) featuresList[1:topNfeatures[bestOne]]))
+      names(table(selectedFeatures))[table(selectedFeatures) >= modellingParams@selectParams@minPresence]
+      
+      list(NULL, selectedFeatures, NULL)
+    } else { # Previous selection
+      selectedFeatures <- 
+      list(NULL, selectedFeatures, NULL)
     }
-  })
-
-  if(!"list" %in% initialClass) rankedSelected <- rankedSelected[[1]]
-  rankedSelected
 }
 
 .doTransform <- function(measurements, training, transformParams, verbose)
 {
-  initialClass <- class(measurements)
-  if(!"list" %in% class(measurements))
-    measurements <- list(data = measurements)
-  
-  transformed <- lapply(measurements, function(measurementsVariety)
-  {
-    paramList <- list(measurementsVariety, training = training) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
-    if(length(transformParams@otherParams) > 0)
-      paramList <- c(paramList, transformParams@otherParams)
-    paramList <- c(paramList, verbose = verbose)
-    do.call(transformParams@transform, paramList)
-  })
-  
-  if(!"list" %in% initialClass) transformed <- transformed[[1]]
-  if("list" %in% class(transformed[[1]])) transformed <- unlist(transformed, recursive = FALSE)
-  transformed
+  paramList <- list(measurements, training = training) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
+  if(length(transformParams@otherParams) > 0)
+    paramList <- c(paramList, transformParams@otherParams)
+  paramList <- c(paramList, verbose = verbose)
+  do.call(transformParams@transform, paramList)
 }
 
-.doTrain <- function(measurements, classes, training, testing, trainParams,
-                            predictParams, verbose)
-  # Re-use inside feature selection.
+.doTrain <- function(measurements, classes, training, testing, modellingParams, verbose)
 {
-  initialClass <- class(measurements)
-  if(!"list" %in% class(measurements)) # Will be a DataFrame.
-    measurements <- list(data = measurements)
-
-  names(classes) <- rownames(measurements[[1]]) # In case training or testing specified by sample IDs rather than numeric indices.
+  names(classes) <- rownames(measurements) # In case training or testing specified by sample IDs rather than numeric indices.
   trainClasses <- droplevels(classes[training])
-  trained <- mapply(function(measurementsVariety, variety)
-  {
-    measurementsTrain <- measurementsVariety[training, , drop = FALSE]
-    measurementsTest <- measurementsVariety[testing, , drop = FALSE]
-    if(variety != "data") # Single measurements table is in a list with name 'data'.
-    {
-      multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
-      individiualParams <- lapply(multiplierParams, '[', 2)
-      names(individiualParams) <- sapply(multiplierParams, '[', 1)
-      individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
-      trainFormals <- names(.methodFormals(trainParams@classifier, "DataFrame"))
-      predictFormals <- character()
-      if(!is.null(predictParams@predictor)) # Only check for formals if a function was specified by the user.
-      {
-        modelClass <- strsplit(showMethods(predictParams@predictor, printTo = FALSE)[2], "\\\"")[[1]][2]
-        predictFormals <- .methodFormals(predictParams@predictor, c(modelClass, "DataFrame"))
-      }
-      changeTrain <- intersect(names(individiualParams), trainFormals)
-      changePredict <- intersect(names(individiualParams), predictFormals)
-      trainParams@otherParams[changeTrain] <- individiualParams[changeTrain]
-      predictParams@otherParams[changePredict] <- individiualParams[changePredict]
-    }
-    
-    tuneIndex <- which(names(trainParams@otherParams) == "tuneParams")
-    if(length(tuneIndex) > 0)
-    {
-      tuneCombinations <- expand.grid(trainParams@otherParams[[tuneIndex]])
-      trainParams@otherParams <- trainParams@otherParams[-tuneIndex]
-    } else tuneCombinations <- NULL
-
-    if(trainParams@classifier@generic != "previousTrained")
-      paramList <- list(measurementsTrain, trainClasses)
-    else # Don't pass the measurements and classes, because a pre-existing classifier is used.
-      paramList <- list()
-    if(!is.null(predictParams@predictor)) # Training and prediction are separate.
-    {
-      if(is.null(tuneCombinations))
-      {
-        if(length(trainParams@otherParams) > 0)
-          paramList <- c(paramList, trainParams@otherParams)
-        paramList <- c(paramList, verbose = verbose)
-        trained <- do.call(trainParams@classifier, paramList)
-        if(verbose >= 2)
-          message("Training completed.")  
-        returnResult <- trained
-      } else {# Tuning Parameter selection.
-        trainedList <- list()
-        tuneOptimise <- trainParams@otherParams[["tuneOptimise"]]
-        trainParams@otherParams <- trainParams@otherParams[-match("tuneOptimise", names(trainParams@otherParams))] # Don't pass the tuning optimisation parameters directly to the classifier.
-        performances <- apply(tuneCombinations, 1, function(tuneCombination)
-        {
-          tuneParams <- as.list(tuneCombination)
-          if(length(trainParams@otherParams) > 0)
-            paramList <- c(paramList, trainParams@otherParams)
-          paramList <- c(paramList, tuneParams, verbose = verbose)
-          trained <- do.call(trainParams@classifier, paramList)
-          initialTrainClass <- class(trained)
-          if(! "list" %in% initialTrainClass) trained <- list(trained)
-
-          if("tune" %in% names(attributes(trained[[1]])))
-              tuneParams <- c(tuneParams, attr(trained[[1]], "tune"))
-          if(variety != "data")
-            names(trained) <- paste(variety, names(trained), sep = ',')
-          trainedList <<- c(trainedList, trained)
-    
-          lapply(trained, function(model)
-          {        
-            paramList <- list(model, measurementsTrain) # Model and test set same as training set.
-            if(length(predictParams@otherParams) > 0)
-              paramList <- c(paramList, predictParams@otherParams)
-            paramList <- c(paramList, verbose = verbose)
-            predicted <- do.call(predictParams@predictor, paramList)
-            
-            if(class(predicted) != "list" || sum(grepl('=', names(predicted))) == 0)
-              predicted <- list(predicted)
-            
-            if(class(predicted[[1]]) == "data.frame") # Predictor returned both scores and classes; just use classes.
-              predicted <- lapply(predicted, function(variety) variety[, sapply(variety, class) == "factor"])
-            if(is.numeric(class(predicted[[1]]))) # Can't automatically decide on a threshold. Stop processing.
-               stop("Only numeric predictions are available. Predicted classes must be provided.")
-
-            lapply(predicted, function(predictions)
-            {
-              calcExternalPerformance(trainClasses, predictions, tuneOptimise)
-            })
-          })
-        })
-        betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == tuneOptimise, "better"]
-        chosenModels <- lapply(1:length(performances[[1]]), function(trainVariety)
-        {
-          lapply(1:length(trainVariety[[1]]), function(predictVariety)
-          {
-              performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[trainVariety]][[predictVariety]])
-              if(betterValues == "lower")
-                chosenTune <- which.min(performanceValues)[1]
-              else # It is "higher"
-                chosenTune <- which.max(performanceValues)[1]
-
-              chosenModel <- trainedList[[chosenTune]]
-              tuneParameters <- as.list(tuneCombinations[chosenTune, , drop = FALSE])
-              # Concatenate in case the classifier interally did other parameter tuning and recorded it in the tune attribute.
-              attr(chosenModel, "tune") <- c(attr(chosenModel, "tune"), tuneParameters)
-              chosenModel
-          })
-        })
-        
-        chosenNames <- paste(rep(names(performances[[1]]), each = length(performances[[1]][[1]])), rep(names(performances[[1]][[1]]), length(performances[[1]])), sep = ',')
-        chosenNames <- gsub("^,|,$", '', chosenNames)
-        if(variety != "data")
-          chosenNames <- paste(variety, chosenNames, sep = ',')
-        if(length(chosenNames) == 0)
-        {
-          chosenModels <- chosenModels[[1]]
-          if(length(chosenModels) == 1)
-            chosenModels <- chosenModels[[1]]
-        } else {
-          chosenModels <- unlist(chosenModels, recursive = FALSE)
-          names(chosenModels) <- chosenNames
-        }
-        if(verbose >= 2)
-          message("Parameter tuning and training completed.")
+  measurementsTrain <- measurements[training, , drop = FALSE]
+  measurementsTest <- measurements[testing, , drop = FALSE]
   
-        returnResult <- chosenModels
-      }
-    } else { # Some classifiers do training and testing with a single function.
-      paramList <- append(paramList, list(measurementsTest))
-      if(length(trainParams@otherParams) > 0)
-      {
-        whichList <- which(sapply(trainParams@otherParams, is.list))
-        extras <- trainParams@otherParams
-        if(length(whichList) > 0) # Used when selected features is passed as an intermediate and there are multiple varieties.
-        {
-          extras[whichList] <- lapply(whichList, function(paramIndex)
-                               {
-                                 varietyIndex <- match(variety, names(extras[[paramIndex]]))
-                                 if(!is.na(varietyIndex))
-                                   extras[[paramIndex]][[varietyIndex]]
-                                 else
-                                   extras[[whichList]]
-                               })
-        }
-        paramList <- c(paramList, extras)
-      }
-      if(length(predictParams@otherParams) > 0)
-      {
-        whichList <- which(sapply(predictParams@otherParams, is.list))
-        extras <- predictParams@otherParams
-        extras <- extras[setdiff(names(extras), names(paramList))] # Don't add same params twice.
-        if(length(whichList) > 0) # Used when selected features is passed as an intermediate and there are multiple varieties.
-        {
-          extras[whichList] <- lapply(whichList, function(paramIndex)
-                               {
-                                 varietyIndex <- match(variety, names(extras[[paramIndex]]))
-                                 if(!is.na(varietyIndex))
-                                   extras[[paramIndex]][[varietyIndex]]
-                                 else
-                                   extras[[whichList]]
-                               })
-        }
-        paramList <- c(paramList, extras)
-      }
-      paramList <- c(paramList, verbose = verbose)
-            
-      if(is.null(tuneCombinations))
-      {
-        predictions <- do.call(trainParams@classifier, paramList)
-        if(verbose >= 2)
-          message("Training and prediction completed.")    
-        returnResult <- predictions
-      } else { # Tuning Parameter selection.
-        tuneOptimise <- trainParams@otherParams[["tuneOptimise"]]
-        trainParams@otherParams <- trainParams@otherParams[-match("tuneOptimise", names(trainParams@otherParams))] # Don't pass the tuning optimisation parameters directly to the classifier.
-        betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == tuneOptimise, "better"]
-        performances <- apply(tuneCombinations, 1, function(tuneCombination)
-        {
-          tuneParams <- as.list(tuneCombination)
-          names(tuneParams) <- colnames(tuneCombinations)
-          paramList <- c(paramList, tuneParams)
-          trained <- do.call(trainParams@classifier, paramList)
-          if(class(trained) != "list" || sum(grepl('=', names(trained))) == 0)
-            predictedClasses <- list(trained)
-          else
-            predictedClasses <- trained
-          if(class(trained[[1]]) == "data.frame") # Predictor returned both scores and classes. Just use classes.
-            predictedFactor <- lapply(trained, function(variety) variety[, sapply(variety, class) == "factor"])
-          else if(class(trained[[1]]) == "factor")
-            predictedFactor <- trained
-          else if(is.numeric(class(trained[[1]]))) # Can't automatically decide on a threshold. Stop processing.
-            stop("Only numeric predictions are available. Predicted classes must be provided.")
-  
-          tunePredictions <- lapply(1:length(predictedFactor), function(predictIndex)
-          {
-            performanceValue <- calcExternalPerformance(trainClasses, predictedFactor[[predictIndex]],
-                                                        tuneOptimise)
-            list(predictedClasses[[predictIndex]], performanceValue)
-          })
-        })
-        
-        chosenPredictions <- lapply(1:length(performances[[1]]), function(predictVariety)
-        {
-          performanceValues <- sapply(performances, function(tuneLevel) tuneLevel[[predictVariety]][[2]]) # Value is in second position.
-          if(betterValues == "lower")
-            chosenTune <- which.min(performanceValues)[1]
-          else # It is "higher"
-            chosenTune <- which.max(performanceValues)[1]
-            
-          chosenPredict <- performances[[chosenTune]][[predictVariety]][[1]] # Prediction object is in position 1.
-          attr(chosenPredict, "tune") <- as.list(tuneCombinations[chosenTune, , drop = FALSE])
-        })
-        names(chosenPredictions) <- names(trained)
-        if(variety != "data")
-          names(chosenPredictions) <- paste(variety, names(trained), sep = '')
-        if(length(chosenPredictions) == 1) chosenPredictions <- chosenPredictions[[1]]
-        
-        if(verbose >= 2)
-          message("Parameter tuning and classification completed.")
-        returnResult <- chosenPredictions
-      }
-    }
-    returnResult
-  }, measurements, names(measurements), SIMPLIFY = FALSE)
-
-  if(!"list" %in% initialClass) trained <- trained[[1]]
-  if(!isS4(trained) && "list" %in% class(trained[[1]])) 
+  tuneChosen <- NULL
+  if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
   {
-    trainNames <- sapply(trained, names)
-    varietyNames <- sapply(trained[[1]], names)
-    trained <- unlist(trained, recursive = FALSE)
-    names(trained) <- paste(rep(trainNames, each = length(varietyNames), rep(varietyNames, length(trainNames))), sep = ',')
+    tuneCombos <- expand.grid(modellingParams@trainParams@tuneParams, stringsAsFactors = FALSE)
+    modellingParams@trainParams@tuneParams <- NULL
+    
+    performances <- sapply(1:nrow(tuneCombos), function(rowIndex)
+    {
+      if(crossValParams@tuneMode == "Resubstitution")
+      {
+        result <- runTest(measurements, classes,
+                          training = training, testing = testing,
+                          crossValParams = NULL, modellingParams,
+                          verbose = verbose, .iteration = "internal")
+        
+        predictions <- result[["predictions"]]
+        if(class(predictions[[1]]) == "data.frame")
+          predictedClasses <- lapply(predictions, function(set) set[, "class"])
+        else
+          predictedClasses <- predictions
+        sapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, performanceName))
+      } else {
+        result <- runTests(measurementsSubset, classes,
+                           crossValParams, modellingParams,
+                           verbose = verbose, .iteration = "internal")
+        result <- calcCVperformance(result, performanceName)
+        median(predictions(result)["performanceType"])
+      }
+    })
+    betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
+    bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
+    tuneChosen <- tuneCombos[bestOne, , drop = FALSE]
+    modellingParams@trainParams@otherParams <- tuneChosen
   }
+
+  if(modellingParams@trainParams@classifier@generic != "previousTrained")
+    paramList <- list(measurementsTrain, trainClasses)
+  else # Don't pass the measurements and classes, because a pre-existing classifier is used.
+    paramList <- list()
+  if(is.null(modellingParams@predictParams)) # One function does both training and testing.
+      paramList <- c(paramList, measurementsTest)
+    
+  if(length(modellingParams@trainParams@otherParams) > 0)
+    paramList <- c(paramList, modellingParams@trainParams@otherParams)
+  paramList <- c(paramList, verbose = verbose)
+
+  trained <- do.call(modellingParams@trainParams@classifier, paramList)
+  if(verbose >= 2)
+    message("Training completed.")  
   
-  trained
+  list(model = trained, tune = tuneChosen)
 }
 
 .doTest <- function(trained, measurements, testing, predictParams, verbose)
-  # Re-use inside feature selection.
 {
-  initialClass <- class(measurements)
-  if(!"list" %in% initialClass)
+  if(!is.null(predictParams@predictor))
   {
-    trained <- list(model = trained)
-    measurements <- list(data = measurements)
-  }
-
-  predicted <- mapply(function(model, data, variety)
-  {
-    if(!is.null(predictParams@predictor))
-    {
-      testMeasurements <- data[testing, , drop = FALSE]
-      if(variety != "data") # Single measurements table is in a list with name 'data'.
-      {
-        multiplierParams <- sapply(strsplit(variety, ",")[[1]], strsplit, split = '=')
-        individiualParams <- lapply(multiplierParams, '[', 2)
-        names(individiualParams) <- sapply(multiplierParams, '[', 1)
-        individiualParams <- lapply(individiualParams, function(param) tryCatch(as.numeric(param), warning = function(warn){param}))
-        change <- intersect(names(individiualParams), names(predictParams@otherParams))
-        predictParams@otherParams[change] <- individiualParams[change]
-      }      
-    
-      paramList <- list(model, testMeasurements)
-      if(length(predictParams@otherParams) > 0)
-        paramList <- c(paramList, predictParams@otherParams)
+    testMeasurements <- measurements[testing, , drop = FALSE]
+  
+    paramList <- list(trained, testMeasurements)
+    if(length(predictParams@otherParams) > 0) paramList <- c(paramList, predictParams@otherParams)
       paramList <- c(paramList, verbose = verbose)
       prediction <- do.call(predictParams@predictor, paramList)
-    } else
-    {
-      prediction <- model
-    }
+    } else { prediction <- trained } # Trained is actually the predictions because only one function, not two.
     
     if(verbose >= 2)
       message("Prediction completed.")    
     prediction
-  }, trained, measurements, names(measurements), SIMPLIFY = FALSE)
-  
-  if(!"list" %in% initialClass) predicted <- predicted[[1]]
-  if("list" %in% class(predicted[[1]])) predicted <- unlist(predicted, recursive = FALSE)
-  predicted
 }
 
-.pickFeatures <- function(measurements, classes, featureSets, trainParams, predictParams,
-                          resubstituteParams, ordering, verbose)
+.validationText <- function(crossValParams)
 {
-  maxFeatures <- max(resubstituteParams@nFeatures)
-  if(maxFeatures > ncol(measurements))
-    stop("Feature selection specified to consider as many as ", maxFeatures, " features, but data set has only ", ncol(measurements), " features.")
-
-  if(is.null(featureSets))
-  {
-    orderedList <- as.list(ordering[1:maxFeatures])
-  } else { # Group by sets.
-    if(!"Pairs" %in% class(featureSets))
-      orderedList <- split(1:ncol(measurements), S4Vectors::mcols(measurements)[["original"]])[ordering[1:maxFeatures]]
-    else # Is a Pairs object.
-      orderedList <- featureSets[ordering[1:maxFeatures]]
-  }
-
-  performances <- sapply(resubstituteParams@nFeatures, function(topFeatures)
-  {
-    if(!"Pairs" %in% class(featureSets))
-    {
-      measurementsSubset <- measurements[, unlist(orderedList[1:topFeatures]), drop = FALSE]
-      trained <- .doTrain(measurementsSubset, classes, 1:nrow(measurementsSubset), 1:nrow(measurementsSubset),
-                          trainParams, predictParams, verbose)
-    } else { # Pairs; don't subset.
-      trainParams@otherParams <- c(trainParams@otherParams, featurePairs = featureSets[1:topFeatures])
-      trained <- .doTrain(measurements, classes, 1:nrow(measurements), 1:nrow(measurements),
-                          trainParams, predictParams, verbose)
-    }
-
-    if(!is.null(predictParams@predictor))
-    {
-        predictions <- .doTest(trained, measurementsSubset, 1:nrow(measurementsSubset),
-                               predictParams, verbose)
-    } else {
-      predictions <- trained
-    }
-    
-    if("list" %in% class(predictions)) # Multiple varieties of predictions.
-    {
-      if(class(predictions[[1]]) == "data.frame")
-        predictedClasses <- lapply(predictions, function(set) set[, sapply(set, class) == "factor"])
-      else
-        predictedClasses <- predictions
-    } else { # A single variety of prediction.
-      if(class(predictions) == "data.frame")
-        predictedClasses <- predictions[, sapply(predictions, class) == "factor"]
-      else
-        predictedClasses <- predictions
-    }
-
-    if("list" %in% class(predictedClasses))
-    {
-      lapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, resubstituteParams@performanceType))
-    } else {
-      calcExternalPerformance(classes, predictedClasses, resubstituteParams@performanceType)
-    }
-  })
-  
-  if("numeric" %in% class(performances))
-    performances <- matrix(performances, ncol = length(performances), byrow = TRUE)
-
-  pickedFeatures <- apply(performances, 1, function(varietyPerformances)
-                    {
-                      betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == resubstituteParams@performanceType, "better"]
-                      if(betterValues == "lower")
-                        1:(resubstituteParams@nFeatures[which.min(varietyPerformances)[1]])     
-                      else
-                        1:(resubstituteParams@nFeatures[which.max(varietyPerformances)[1]])
-                    })
-
-  if(is.matrix(pickedFeatures)) # Same number of features picked for each variety. Coerce to list.
-    pickedFeatures <- as.list(as.data.frame(pickedFeatures))
-  
-  if(verbose == 3)
-    message("Features selected.")
-
-  rankedFeatures <- lapply(1:length(pickedFeatures), function(variety) ordering)
-  pickedFeatures <- lapply(pickedFeatures, function(pickedSet) ordering[pickedSet])
-  
-  if(!is.null(S4Vectors::mcols(measurements)) && "dataset" %in% colnames(S4Vectors::mcols(measurements))) # Table describing source table and variable name is present.
-  {
-    varInfo <- S4Vectors::mcols(measurements)
-    rankedFeatures <- lapply(rankedFeatures, function(features) varInfo[features, ])
-    pickedFeatures <- lapply(pickedFeatures, function(features) varInfo[features, ])
-  } else { # Vectors of feature names.
-    if(is.null(featureSets))
-    {
-      rankedFeatures <- lapply(rankedFeatures, function(features) colnames(measurements)[features])
-      pickedFeatures <- lapply(pickedFeatures, function(features) colnames(measurements)[features])
-    } else {
-      if(!"Pairs" %in% class(featureSets))
-      {
-        rankedFeatures <- lapply(rankedFeatures, function(features) names(featureSets@sets)[features])
-        pickedFeatures <- lapply(pickedFeatures, function(features) names(featureSets@sets)[features])
-      } else {
-        rankedFeatures <- lapply(rankedFeatures, function(features) featureSets[features])
-        pickedFeatures <- lapply(pickedFeatures, function(features) featureSets[features])
-      }
-    }
-  }
-
-  if(is.null(featureSets))
-    totalFeatures <- ncol(measurements)
-  else if(!"Pairs" %in% class(featureSets))
-    totalFeatures <- length(featureSets@sets)
-  else
-    totalFeatures <- length(featureSets)
-  
-  selectResults <- lapply(1:length(rankedFeatures), function(variety)
-  {
-    SelectResult(totalFeatures, list(rankedFeatures[[variety]]),
-                 list(pickedFeatures[[variety]]))
-  })
-  names(selectResults) <- names(pickedFeatures)
-
-  if(length(selectResults) == 1) selectResults <- selectResults[[1]] else selectResults
-}
-
-.validationText <- function(result)
-{
-  switch(result[[1]],
-  permuteFold = paste(result[[2]], "Permutations,", result[[3]], "Folds"),
-  fold = paste(result[[2]], "-fold cross-validation", sep = ''),
-  leave = paste("Leave", result[[2]], "Out"),
-  split = paste(result[[2]], "Permutations,", result[[3]], "% Test"),
+  switch(crossValParams@samplesSplits,
+  `Permute k-Fold` = paste(crossValParams@permutations, "Permutations,", crossValParams@folds, "Folds"),
+  `k-Fold` = paste(crossValParams@folds, "-fold cross-validation", sep = ''),
+  `Leave-k-Out` = paste("Leave", crossValParams@leave, "Out"),
+  `Permute Percentage Split` = paste(crossValParams@permutations, "Permutations,", crossValParams@percentTest, "% Test"),
   independent = "Independent Set")
 }
 
@@ -661,6 +455,29 @@
                                                              levels = orderingList[[orderingIndex]])
   }
   plotData
+}
+
+.summaryFeatures <- function(measurements, prevalidate)
+{
+  # MultiAssayExperiment has feature details in mcols.
+  if(!is.null(S4Vectors::mcols(measurements)))
+  {
+    allFeatures <- S4Vectors::mcols(measurements)
+    featureNames <- S4Vectors::mcols(measurements)[, "feature"]
+  } else {
+    allFeatures <- colnames(measurements)
+    featureNames <- colnames(measurements)
+  }
+  
+  # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
+  if(prevalidate == FALSE)
+  {
+    consideredFeatures <- ncol(measurements)
+  } else {
+    consideredFeatures <- nrow(subset(mcols(measurements), dataset == "clinical")) +
+      length(unique(subset(mcols(measurements), dataset != "clinical")[, "dataset"]))
+  }
+  list(allFeatures, featureNames, consideredFeatures)
 }
 
 .methodFormals <- function(f, signature) {

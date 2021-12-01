@@ -8,7 +8,7 @@ setMethod("previousSelection", "matrix",
 })
 
 # Classes is passed around because most other selection functions need it, so it is sent from
-# .doSelection
+# .doSelection but of course not used here.
 setMethod("previousSelection", "DataFrame", 
           function(measurements, classes, classifyResult, minimumOverlapPercent = 80,
                    .iteration, verbose = 3)
@@ -16,11 +16,7 @@ setMethod("previousSelection", "DataFrame",
   if(verbose == 3)
     message("Choosing previous features.")
   
-  if(length(.iteration) == 1)
-    previousIDs <- features(classifyResult)[[.iteration]]
-  else # Resample index and fold index.
-    previousIDs <- features(classifyResult)[[.iteration[[1]]]][[.iteration[[2]]]]
-
+  previousIDs <- features(classifyResult)[[.iteration]]
   if(is.character(previousIDs))
   {
     commonFeatures <- intersect(previousIDs, colnames(measurements))
@@ -41,7 +37,7 @@ setMethod("previousSelection", "DataFrame",
   if(overlapPercent < minimumOverlapPercent)
     signalCondition(simpleError(paste("Number of features in common between previous and current data set is lower than", minimumOverlapPercent, "percent.")))
   
-  SelectResult(ncol(measurements), list(), list(commonFeatures)) # Ranking isn't transferred across.
+  commonFeatures # Ranking isn't transferred across.
 })
 
 setMethod("previousSelection", "MultiAssayExperiment", 

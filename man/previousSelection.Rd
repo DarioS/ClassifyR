@@ -29,7 +29,7 @@
     This function only prints progress messages if the value is 3.}
 }
 \value{
-  An object of class \code{\link{SelectResult}}.
+  A vector of feature indices, from the most promising features in the first position to the least promising feature in the last position.
 }
 \author{Dario Strbenac}
 
@@ -43,11 +43,9 @@
     colnames(genesMatrix) <- paste("Sample", 1:50)
     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    resubstitute <- ResubstituteParams(nFeatures = seq(10, 100, 10), 
-                        performanceType = "error")
-    result <- runTests(genesMatrix, classes,
-                       permutations = 2, fold = 2,
-                       params = list(SelectParams(), TrainParams(), PredictParams()))
+
+    CVparams <- CrossValParams(permutations = 2, folds = 2)
+    result <- runTests(genesMatrix, classes, CVparams, ModellingParams())
     features(result)
                        
     # Genes 50 to 74 have differential expression in new data set.
@@ -58,13 +56,10 @@
                                           
     rownames(newDataset) <- rownames(genesMatrix)
     colnames(newDataset) <- colnames(genesMatrix)
-                                           
-    newerResult <- runTests(newDataset, classes,
-                            permutations = 2, fold = 2,
-                       params = list(SelectParams(previousSelection,
-                                     intermediate = ".iteration",
-                                     classifyResult = result),
-                       TrainParams(), PredictParams()))
+    
+    selPars <- SelectParams(previousSelection, intermediate = ".iteration", classifyResult = result)
+    previousParams <- ModellingParams(selectParams = selPars)                                       
+    newerResult <- runTests(newDataset, classes, CVparams, previousParams)
                                      
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.

@@ -1,5 +1,5 @@
 ---
-title: "Example: Creating a Wrapper Function for *k* Nearest Neighbours Classification"
+title: "Creating a Wrapper Function"
 author: Dario Strbenac<br>
         The University of Sydney, Australia.
 output: 
@@ -25,14 +25,19 @@ options(width = 130)
 
 ## Introduction
 
-**ClassifyR** is a *framework* for cross-validated classification, with the rules for functions to be used with it explained in Section 0.11 of the introductory vignette. A fully worked example is shown how to incorporate an existing classifier from 
+**ClassifyR** is a *framework* for cross-validated classification and the rules for functions to be used with are shown by the table below. A fully worked example is shown how to incorporate an existing classifier into the framework. The functions can have any number of other arguments after the set of arguments which are mandatory.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("functionRules.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
 
 ## *k* Nearest Neighbours
 
 There is an implementation of the *k* Nearest Neighbours algorithm in the package **class**. Its function has the form `knn(train, test, cl, k = 1, l = 0, prob = FALSE, use.all = TRUE)`.  It accepts a `matrix` or a `data.frame` variable as input, but **ClassifyR** calls transformation, feature selection and classifier functions with a `DataFrame`, a core Bioconductor data container from [S4Vectors](https://bioconductor.org/packages/release/bioc/html/S4Vectors.html). It also expects training data to be the first parameter, the classes of it to be the second parameter and the test data to be the third. Therefore, a wrapper for `DataFrame` reordering the parameters is created.
 
 ```{r, eval = FALSE}
-setGeneric("kNNinterface", function(measurements, ...) {standardGeneric("kNNinterface")})
+setGeneric("kNNinterface", function(measurements, ...) standardGeneric("kNNinterface"))
 
 setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
 {
@@ -93,12 +98,19 @@ colnames(measurements) <- paste("Sample", 1:10)
 rownames(measurements) <- paste("mRNA", 1:10)
 
 library(ClassifyR)
-trainParams <- TrainParams(kNNinterface)
-predictParams <- PredictParams(NULL)
-classified <- runTests(measurements, classes, validation = "leaveOut", leave = 1,
-                       params = list(trainParams, predictParams))
+knnParams <- ModellingParams(selectParams = NULL,
+                             trainParams = TrainParams(kNNinterface),
+                             predictParams = PredictParams(NULL))
+CVparams <- CrossValParams("Leave-k-Out", leave = 1)
+classified <- runTests(measurements, classes, CVparams, knnParams)
 classified
-cbind(predictions(classified)[[1]], known = actualClasses(classified))
+cbind(predictions(classified), known = actualClasses(classified))
 ```
 
 `NULL` is specified instead of a function to `PredictParams` because one function does training and prediction. As expected for this easy task, the classifier predicts all samples correctly.
+
+## Appendix: Rules Regarding Input Variables of New Functions
+
+The argument *verbose* is sent from *runTest* to these functions so they must handle it, even if not explicitly using it. In the **ClassifyR** framework, *verbose* is a number which indicates the amount of progress messages to be printed. If verbose is 0, no progress messages are printed. If it is 1, only one message is printed for every 10 cross-validations completed. If it is 2, in addition to the messages printed when it is 1, a message is printed each time one of the stages of classification (transformation, feature selection, training, prediction) is done. If it is 3, in addition to the messages printed for values 1 and 2, progress messages are printed from within the classification functions themselves.
+
+A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classes either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide flexibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.

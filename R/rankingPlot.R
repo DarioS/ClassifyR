@@ -17,7 +17,7 @@ setMethod("rankingPlot", "list",
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
-  nFeatures <- results[[1]]@selectResult@totalFeatures
+  nFeatures <- length(results[[1]]@originalFeatures)
   error <- character()
   if(max(topRanked) > nFeatures)
     error <- paste("'topRanked' is as high as", max(topRanked))
@@ -50,7 +50,7 @@ setMethod("rankingPlot", "list",
   
   allRankedList <- lapply(results, function(result)
   {
-    .getFeaturesStrings(result@selectResult@rankedFeatures)
+    .getFeaturesStrings(result@rankedFeatures)
   })
   
   if(comparison == "within")

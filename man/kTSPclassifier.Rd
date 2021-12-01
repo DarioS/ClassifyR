@@ -11,8 +11,8 @@
 \usage{
   \S4method{kTSPclassifier}{matrix}(measurements, classes, test, featurePairs = NULL, ...)
   \S4method{kTSPclassifier}{DataFrame}(measurements, classes, test, featurePairs = NULL,
-                   weighted = c("unweighted", "weighted", "both"),
-                   minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
+                   difference = c("unweighted", "weighted"), minDifference = 0,
+                   returnType = c("both", "class", "score"), verbose = 3)
   \S4method{kTSPclassifier}{MultiAssayExperiment}(measurements, test, target = names(measurements)[1],
                    featurePairs = NULL, ...)
 }
@@ -29,18 +29,18 @@
               \code{measurements} and the same number of features as it.}
   \item{featurePairs}{An object of class as \code{\link{Pairs}} containing the pairs of features to determine
                       whether the inequality of the first feature being less than the second feature holds, 
-                      indiciating evidence for the second level of the \code{classes} factor.}              
+                      indiciating evidence for the second level of the \code{classes} factor.}    
+  \item{difference}{Default: \code{"unweighted"}. Either \code{"unweighted"} or \code{"weighted"}. 
+                  In weighted mode, the difference in densities is summed over all features.
+                  If unweighted mode, each feature's vote is worth the same.}
+  \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
+                       to vote. Can be a vector of cutoffs. If no features for a particular sample
+                       have a difference large enough, the class predicted is simply the largest class.}
   \item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the name of the
                  data table to be used. \code{"clinical"} is also a valid value and specifies that
                  integer variables from the clinical data table will be used.}              
   \item{...}{Unused variables by the methods for a \code{matrix} or a \code{MultiAssayExperiment} passed to the
              \code{DataFrame} method which does the classification.}
-  \item{weighted}{Default: \code{"both"}. Either \code{"both"}, \code{"unweighted"} or \code{"weighted"}. 
-                  In weighted mode, the difference in densities is summed over all features.
-                  If unweighted mode, each feature's vote is worth the same. Both can be calculated simultaneously.}
-  \item{minDifference}{Default: 0. The minimum difference in densities for a feature to be allowed
-                       to vote. Can be a vector of cutoffs. If no features for a particular sample
-                       have a difference large enough, the class predicted is simply the largest class.}
   \item{returnType}{Default: \code{"both"}. Either \code{"class"}, \code{"score"} or \code{"both"}.
                     Sets the return value from the prediction to either a vector of class labels,
                     score for a sample belonging to the second class, as determined by the factor levels,
@@ -49,23 +49,19 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  If \code{weighted} is \code{TRUE}, then a sample's predicted class is based on the sum of differences of 
-  measurements for each feature pair. Otherwise, when \code{weighted} is \code{FALSE}, each pair of features
-  has an equal vote, the predicted class is the one with the most votes. If the voting is tied, the the class
-  with the most samples in the training set is voted for.
+  If the voting is tied, the the class with the most samples in the training set is voted for.
   
   Because this method compares different features, they need to have comparable measurements. For example,
-  RNA-seq counts would be unsuitable since these depend on the length of a feature, whereas
-  F.P.K.M. values would be suitable.
+  RNA-seq counts would be unsuitable since these depend on the length of a feature, whereas F.P.K.M. values
+  would be suitable.
   
-  The \code{featurePairs} to use is recommended to be determined in conjunction with \code{pairsDifferencesSelection}.
+  The \code{featurePairs} to use is recommended to be determined in conjunction with \code{pairsDifferencesRanking}.
 }
 \value{
-  A vector or list of class prediction information, as long as the number of samples in the test data,
-  or lists of such information, if a variety of predictions is generated.
+  A vector or data frame of class prediction information, as long as the number of samples in the test data.
 }
 \author{Dario Strbenac}
-\seealso{\code{\link{pairsDifferencesSelection}} for a function which could be used to do feature selection before
+\seealso{\code{\link{pairsDifferencesRanking}} for a function which could be used to do feature ranking before
   the k-TSP classifier is run.}
 \examples{
   # Difference in differences for features A and C between classes.                                           
@@ -83,6 +79,7 @@
   trainMatrix <- measurements[, trainIndex]
   testMatrix <- measurements[, c(5, 10)]
   
-  featurePairs <- Pairs('A', 'C') # Could be selected by pairsDifferencesSelection function.
+  featurePairs <- Pairs('A', 'C') # Could be ranked by pairsDifferencesRanking function and
+                                  # selected internally by tuning of features selected.
   kTSPclassifier(trainMatrix, classes[trainIndex], testMatrix, featurePairs)
 }

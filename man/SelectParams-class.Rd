@@ -19,7 +19,7 @@
       (depending on the number of classes) and tries the top 10 to top 100 features in
       increments of 10, and picks the number of features with the best resubstitution
       balanced error rate. Users should create an appropriate \code{SelectParams}
-      object for the characteristics of their data, once they are familiar with this software.
+      object for the characteristics of their data.
   }
     \item{}{
       \preformatted{SelectParams(featureSelection, characteristics = DataFrame(),
@@ -27,10 +27,10 @@
       Creates a \code{SelectParams} object which stores the function which will do the
       selection and parameters that the function will use.
 	\describe{
-            \item{\code{featureSelection}}{Either a function which will do the selection
-            or a list of such functions. For a particular function, the first argument must
-            be an \code{\link{DataFrame}} object. The function's return value must be
-            a \code{\link{SelectResult}} object.}
+            \item{\code{featureRanking}}{Either a function which will rank the features from most
+            promising to least promising or a list of such functions. For a particular function,
+            the first argument must be an \code{\link{DataFrame}} object. The function's return value
+            must be a vector of indices.}
             \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
             of feature selection to be done. First column must be named \code{"charateristic"} and
             second column must be named \code{"value"}. If using wrapper functions for feature selection
@@ -56,13 +56,9 @@
 \examples{
   #if(require(sparsediscrim))
   #{
-    SelectParams(differentMeansSelection,
-                 trainParams = TrainParams(), predictParams = PredictParams(),
-                 resubstituteParams = ResubstituteParams())
+    SelectParams(differentMeansRanking)
     
     # Ensemble feature selection.
-    SelectParams(list(differentMeansSelection, pairsDifferencesSelection),
-                 trainParams = TrainParams(), predictParams = PredictParams(),
-                 resubstituteParams = ResubstituteParams())
+    SelectParams(list(differentMeansRanking, pairsDifferencesRanking))
   #}
 }

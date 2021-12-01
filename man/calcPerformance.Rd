@@ -9,46 +9,46 @@
 }
 \usage{
   \S4method{calcExternalPerformance}{factor,factor}(actualClasses, predictedClasses,
-                              performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
-                                       "sample error", "sample accuracy",
-                                       "micro precision", "micro recall",
-                                       "micro F1", "macro precision",
-                                       "macro recall", "macro F1", "matthews"))
-  \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("error", "accuracy", "balanced error", "balanced accuracy",
-                                       "sample error", "sample accuracy",
-                                       "micro precision", "micro recall",
-                                       "micro F1", "macro precision",
-                                       "macro recall", "macro F1", "matthews"))
+                              performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+                                       "Sample Error", "Sample Accuracy",
+                                       "Micro Precision", "Micro Recall",
+                                       "Micro F1", "Macro Precision",
+                                       "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
+  \S4method{calcCVperformance}{ClassifyResult}(result, performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+                                       "Sample Error", "Sample Accuracy",
+                                       "Micro Precision", "Micro Recall",
+                                       "Micro F1", "Macro Precision",
+                                       "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
 }
 \arguments{
   \item{result}{An object of class \code{\link{ClassifyResult}}.}
-  \item{performanceType}{A character vector of length 1. Default: \code{"balanced error"}.\cr
+  \item{performanceType}{A character vector of length 1. Default: \code{"Balanced Error"}.\cr
                          Must be one of the following options:\cr
                          \itemize{
-                         \item{\code{"error"}: Ordinary error rate.}
-                         \item{\code{"accuracy"}: Ordinary accuracy.}
-                         \item{\code{"balanced error"}: Balanced error rate.}
-                         \item{\code{"balanced accuracy"}: Balanced accuracy.}
-                         \item{\code{"sample error"}: Error rate for each sample in the data set.}
-                         \item{\code{"sample accuracy"}: Accuracy for each sample in the data set.}
+                         \item{\code{"Error"}: Ordinary error rate.}
+                         \item{\code{"Accuracy"}: Ordinary accuracy.}
+                         \item{\code{"Balanced Error"}: Balanced error rate.}
+                         \item{\code{"Balanced Accuracy"}: Balanced accuracy.}
+                         \item{\code{"Sample Error"}: Error rate for each sample in the data set.}
+                         \item{\code{"Sample Accuracy"}: Accuracy for each sample in the data set.}
 
-                         \item{\code{"micro precision"}: Sum of the number of correct predictions in each class,
+                         \item{\code{"Micro Precision"}: Sum of the number of correct predictions in each class,
                                                    divided by the sum of number of samples
                                                    in each class.}
-                         \item{\code{"micro recall"}: Sum of the number of correct predictions in each class,
+                         \item{\code{"Micro Recall"}: Sum of the number of correct predictions in each class,
                                                 divided by the sum of number of samples predicted
                                                 as belonging to each class.}
-                         \item{\code{"micro F1"}: F1 score obtained by calculating the harmonic mean of
+                         \item{\code{"Micro F1"}: F1 score obtained by calculating the harmonic mean of
                                             micro precision and micro recall.}
-                         \item{\code{"macro precision"}: Sum of the ratios of the number of correct predictions
+                         \item{\code{"Macro Precision"}: Sum of the ratios of the number of correct predictions
                                                    in each class to the number of samples in each class,
                                                    divided by the number of classes.}
-                         \item{\code{"macro recall"}: Sum of the ratios of the number of correct predictions
+                         \item{\code{"Macro Recall"}: Sum of the ratios of the number of correct predictions
                                                 in each class to the number of samples predicted to be
                                                 in each class, divided by the number of classes.}
-                         \item{\code{"macro F1"}: F1 score obtained by calculating the harmonic mean of
+                         \item{\code{"Macro F1"}: F1 score obtained by calculating the harmonic mean of
                                             macro precision and macro recall.}
-                         \item{\code{"matthews"}: Matthews Correlation Coefficient (MCC). A score between -1 and
+                         \item{\code{"Matthews Correlation Coefficient"}: Matthews Correlation Coefficient (MCC). A score between -1 and
                                                   1 indicating how concordant the predicted classes are to the
                                                   actual classes. Only defined if there are two classes.}                                            
                         }
@@ -66,8 +66,8 @@
   for every resampling. If the leave-k-out mode was used, then the predictions are
   concatenated, and one performance measure is calculated for all classifications.
   
-  \code{"balanced error"} calculates the balanced error rate and is better suited to class-imbalanced data sets
-  than the ordinary error rate specified by {\code{"error"}}. \code{"sample error"} calculates the error rate
+  \code{"Balanced Error"} calculates the balanced error rate and is better suited to class-imbalanced data sets
+  than the ordinary error rate specified by {\code{"Error"}}. \code{"Sample Error"} calculates the error rate
   of each sample individually. This may help to identify which samples are contributing the most to the
   overall error rate and check them for confounding factors. Precision, recall and F1 score have micro and macro
   summary versions. The macro versions are preferable because the metric will not have a good score if there is
@@ -84,8 +84,8 @@
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
   result <- ClassifyResult(DataFrame(),
                            paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
-                           50, list(1:50, 1:50), list(1:5, 6:15), list(function(oracle){}),
-                           list(predictTable), actual, list("leave", 2))
+                           list(1:50, 1:50), list(1:5, 6:15), list(function(oracle){}), NULL,
+                           predictTable, actual)
   result <- calcCVperformance(result) 
   performance(result)
 }

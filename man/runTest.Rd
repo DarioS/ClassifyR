@@ -1,10 +1,8 @@
 \name{runTest}
 \alias{runTest}
-\alias{runTestEasyHard}
 \alias{runTest,matrix-method}
 \alias{runTest,DataFrame-method}
 \alias{runTest,MultiAssayExperiment-method}
-\alias{runTestEasyHard,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
 \description{For a data set of features and samples, the classification process is run.
              It consists of data transformation, feature selection, classifier training
@@ -12,17 +10,9 @@
        }
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
-  \S4method{runTest}{DataFrame}(measurements, classes,
-            balancing = c("downsample", "upsample", "none"), featureSets = NULL, metaFeatures = NULL,
-            minimumOverlapPercent = 80, characteristics = DataFrame(),
-            training, testing, params = list(SelectParams(), TrainParams(), PredictParams()),
-        verbose = 1, .iteration = NULL)
+  \S4method{runTest}{DataFrame}(measurements, classes, training, testing, crossValParams = crossValParams(),
+         modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-  \S4method{runTestEasyHard}{MultiAssayExperiment}(measurements, balancing = c("downsample", "upsample", "none"),
-                   easyDatasetID = "clinical", hardDatasetID = names(measurements)[1],
-                   featureSets = NULL, metaFeatures = NULL, minimumOverlapPercent = 80,
-                   characteristics = DataFrame(characteristic = "Classifier Name", value = "Easy Hard"),
-                   training, testing, ..., verbose = 1, .iteration = NULL)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -35,30 +25,16 @@
                  of class \code{DataFrame} a character vector of length 1 containing the
                  column name in \code{measurement} is also permitted. Not used if \code{measurements}
                  is a \code{MultiAssayExperiment} object.}
-  \item{balancing}{A character vector of length 1 specifying how to balance samples in the training set
-                   so that each class ends up with an equal number of samples. \code{"downsample"}
-                   samples from each class with more samples than the smallest class so that each of
-                   those classes ends up with the same number of samples as the smallest class.
-                   \code{"upsample"} causes sampling with replacement to be done for every class that
-                   has less samples than the largest class to make all classes have equal size. Lastly,
-                   \code{"none"} means that no downsampling or upsampling is done and the
-                   class imbalance is preserved.}                 
-  \item{featureSets}{An object of type \code{\link{FeatureSetCollection}} which defines sets of
-                     features or sets of edges.}                 
-  \item{metaFeatures}{Either \code{NULL} or a \code{DataFrame} which has meta-features
-                      of the numeric data of interest.}
-  \item{minimumOverlapPercent}{If \code{featureSets} stores sets of features, the minimum overlap
-                               of feature IDs with \code{measurements} for a feature set to be retained
-                               in the analysis. If \code{featureSets} stores sets of network edges,
-                               the minimum percentage of edges with both vertex IDs found in \code{measurements}
-                               that a set has to have to be retained in the analysis.}
+  \item{crossValParams}{An object of class \code{\link{CrossValParams}}, specifying the kind of
+  cross-validation to be done, if nested cross-validation is used to tune any parameters.}
+  \item{modellingParams}{An object of class \code{\link{ModellingParams}}, specifying the class rebalancing, transformation (if any),
+  feature selection (if any), training and prediction to be done on the data set.}               
                                
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
-  \item{...}{For \code{runTest}, variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
-             are passed into and used by the \code{DataFrame} method. For \code{runTestEasyHard}, \code{easyClassifierParams}
-             and \code{hardClassifierParams} to be passed to \code{\link{easyHardClassifierTrain}}.}
+  \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+             are passed into and used by the \code{DataFrame} method.}
   \item{characteristics}{A \code{\link{DataFrame}} describing the characteristics
             of the classification used. First column must be named \code{"charateristic"} and second column
             must be named \code{"value"}. Useful for automated plot annotation by plotting functions within this package.
@@ -66,14 +42,6 @@
             to be automatically determined and this can be left blank.}             
   \item{training}{A vector which specifies the training samples.}
   \item{testing}{A vector which specifies the test samples.}    
-  \item{params}{A \code{\link{list}} of objects of class of \code{\link{TransformParams}},
-               \code{\link{SelectParams}}, \code{\link{TrainParams}}, or \code{\link{PredictParams}}.
-               The order they are in the list determines the order in which the stages
-               of classification are done in.}
-  \item{easyDatasetID}{The name of a data set in \code{measurements} or "clinical" to
-  indicate the patient information in the column data be used.}
-  \item{hardDatasetID}{The name of a data set in \code{measurements} different to the
-  value of \code{easyDatasetID} to be used for classifying the samples not classified by the easy classifier.}
   \item{verbose}{Default: 1. A number between 0 and 3 for the amount of progress messages to give.
                  A higher number will produce more messages as more lower-level functions
                  print messages.}
@@ -86,8 +54,9 @@
   and uses this function to perform each iteration.
 }
 \value{
-  If called directly by the user rather than being used internally by \code{runTests}, a
-  \code{ClassifyResult} object.
+  If called directly by the user rather than being used internally by \code{\link{runTests}}, a
+  \code{\link{ClassifyResult}} object. Otherwise a list of different aspects of the result which is
+  passed back to \code{\link{runTests}}.
 }
 \author{Dario Strbenac}
 
@@ -95,38 +64,14 @@
   #if(require(sparsediscrim))
   #{
     data(asthma)
-    resubstituteParams <- ResubstituteParams(nFeatures = seq(5, 25, 5),
-                                         performanceType = "balanced error")
+    selectParams <- SelectParams(limmaRanking, tuneParams = list(nFeatures = seq(5, 25, 5)))
+    modellingParams <- ModellingParams(selectParams = selectParams)
     runTest(measurements, classes,
             params = list(SelectParams(limmaSelection,
                                        resubstituteParams = resubstituteParams),
                           TrainParams(DLDAtrainInterface),
                           PredictParams(DLDApredictInterface)
                           ),
-            training = (1:ncol(measurements)) \%\% 2 == 0,
-            testing = (1:ncol(measurements)) \%\% 2 != 0)
+            training = seq(1, ncol(measurements), 2), testing = seq(2, ncol(measurements), 2))
   #}
-  
-  genesMatrix <- matrix(c(rnorm(90, 9, 1),
-                        9.5, 9.4, 5.2, 5.3, 5.4, 9.4, 9.6, 9.9, 9.1, 9.8),
-		      ncol = 10, byrow = TRUE)
-
-  colnames(genesMatrix) <- paste("Sample", 1:10)
-  rownames(genesMatrix) <- paste("Gene", 1:10)
-  genders <- factor(c("Male", "Male", "Female", "Female", "Female",
-                    "Female", "Female", "Female", "Female", "Female"))
-
-  # Scenario: Male gender can predict the hard-to-classify Sample 1 and Sample 2.
-  clinical <- DataFrame(age = c(31, 34, 32, 39, 33, 38, 34, 37, 35, 36),
-                        gender = genders,
-                        class = factor(rep(c("Poor", "Good"), each = 5)),
-		        row.names = colnames(genesMatrix))
-  dataset <- MultiAssayExperiment(ExperimentList(RNA = genesMatrix), clinical)
-                                    
-  selParams <- SelectParams(featureSelection = differentMeansSelection,
-                            resubstituteParams = ResubstituteParams(1:10, "balanced error"))
-  easyHardCV <- runTestEasyHard(dataset, training = paste("Sample", 1:10), testing = paste("Sample", 1:10),
-                                easyClassifierParams = list(minCardinality = 2, minPurity = 0.9),
-                                hardClassifierParams = list(selParams, TrainParams(), PredictParams())
-                               )
 }

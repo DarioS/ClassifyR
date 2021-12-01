@@ -6,7 +6,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(trained, t
   NSCpredictInterface(trained, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, classes = NULL, ..., returnType = c("both", "class", "score"), classifierName = "Nearest Shrunken Centroids", verbose = 3)
+setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(trained, test, classes = NULL, ..., returnType = c("both", "class", "score"), verbose = 3)
 {
   if(!requireNamespace("pamr", quietly = TRUE))
     stop("The package 'pamr' could not be found. Please install it.")

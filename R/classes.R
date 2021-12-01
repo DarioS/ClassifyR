@@ -11,17 +11,94 @@ setOldClass("randomForest")
 
 setClassUnion("functionOrNULL", c("function", "NULL"))
 setClassUnion("functionOrList", c("function", "list"))
-setClassUnion("integerOrNumeric", c("integer", "numeric"))
+setClassUnion("numericOrNULL", c("numeric", "NULL"))
+setClassUnion("characterOrMissing", c("character", "missing"))
+setClassUnion("numericOrMissing", c("numeric", "missing"))
+setClassUnion("BiocParallelParamOrMissing", c("BiocParallelParam", "missing"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 setClassUnion("listOrNULL", c("list", "NULL"))
-setClassUnion("listOrCharacterOrNULL", c("list", "character", "NULL"))
+
+setClass("CrossValParams", representation(
+  samplesSplits = "character",
+  permutations = "numericOrNULL",
+  percentTest = "numericOrNULL",  
+  folds = "numericOrNULL",
+  leave = "numericOrNULL",
+  tuneMode = "character",
+  parallelParams = "BiocParallelParam",
+  seed = "numeric"
+  )
+)
+
+setGeneric("CrossValParams", function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
+                                      permutations, percentTest, folds, leave, tuneMode = c("Resubstitution", "Nested CV"),
+                                      parallelParams, seed)
+  standardGeneric("CrossValParams"))
+
+setMethod("CrossValParams", c("missing", "missing", "missing", "missing",
+                              "missing", "missing", "missing", "missing"),
+          function()
+{
+  new("CrossValParams", samplesSplits = "Permute k-Fold", permutations = 100,
+      folds = 5L, tuneMode = "Resubstitution", parallelParams = bpparam(),
+      seed = 987654321)
+})
+
+setMethod("CrossValParams", c("characterOrMissing", "numericOrMissing", "numericOrMissing",
+                              "numericOrMissing", "numericOrMissing", "characterOrMissing", "BiocParallelParamOrMissing", "numericOrMissing"),
+          function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
+                   permutations = 100, percentTest = 25, folds = 5, leave = 2,
+                   tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam(), seed = 987654321)
+          {
+            samplesSplits <- match.arg(samplesSplits)
+            tuneMode <- match.arg(tuneMode)
+            if(samplesSplits %in% c("Permute k-Fold", "Permute Percentage Split"))
+            {
+              if(missing(permutations))
+                permutations <- 100
+              if(samplesSplits == "Permute k-Fold")
+              {
+                percentTest <- NULL
+                if(missing(folds))
+                  folds <- 5
+              } else if(samplesSplits == "Permute Percentage Split"){
+                folds <- NULL
+                if(missing(percentTest))
+                  percentTest <- 25
+              }
+              leave <- NULL
+            } else if(samplesSplits == "k-Fold") {
+              if(missing(folds))
+                folds <- 5
+              permutations <- NULL
+              leave <- NULL
+              percentTest <- NULL
+            } else if(samplesSplits == "Leave-k-Out") {
+              if(missing(leave))
+                 leave <- 2L
+              permutations <- NULL
+              percentTest <- NULL
+              folds <- NULL
+            }
+            if(missing(parallelParams)) parallelParams <- bpparam()
+            if(missing(seed)) seed <- 987654321
+            new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
+                percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
+                parallelParams = parallelParams, seed = seed)
+          })
+
+setClass("StageParams", representation("VIRTUAL"))
+setClassUnion("StageParamsOrMissing", c("StageParams", "missing"))
+setClassUnion("StageParamsOrMissingOrNULL", c("StageParams", "missing", "NULL"))
 
 setClass("TransformParams", representation(
   transform = "function",
   characteristics = "DataFrame",
   intermediate = "character",  
-  otherParams = "list")
+  otherParams = "list"), contains = "StageParams"
 )
+
+setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 
 setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
@@ -144,7 +221,7 @@ setMethod("show", "FeatureSetCollection",
           }
 )
 
-setMethod("[", c("FeatureSetCollection", "integerOrNumeric", "missing", "ANY"),
+setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {
     new("FeatureSetCollection", sets = x@sets[i])
@@ -158,66 +235,46 @@ setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
 
 setClassUnion("FeatureSetCollectionOrNULL", c("FeatureSetCollection", "NULL"))
 
-setClass("ResubstituteParams", representation(
-  nFeatures = "numeric",
-  performanceType = "character",
-  otherParams = "list")
-)
-
-setGeneric("ResubstituteParams", function(nFeatures, performanceType, ...)
-standardGeneric("ResubstituteParams"))
-
-setMethod("ResubstituteParams", "missing", function()
-{
-  new("ResubstituteParams", nFeatures = seq(10, 100, 10), performanceType = "balanced error")
-})
-
-setMethod("ResubstituteParams", c("numeric", "character"),
-          function(nFeatures, performanceType, ...)
-          {
-            new("ResubstituteParams", nFeatures = nFeatures, performanceType = performanceType,
-                otherParams = list(...))
-          })
-
 setClass("SelectParams", representation(
-  featureSelection = "functionOrList",
+  featureRanking = "functionOrList",
   characteristics = "DataFrame",
   minPresence = "numeric",
   intermediate = "character",
-  subsetToSelections = "logical",  
-  otherParams = "list")
+  subsetToSelections = "logical",
+  tuneParams = "listOrNULL",
+  otherParams = "listOrNULL"), contains = "StageParams"
 )
 
-setGeneric("SelectParams", function(featureSelection, ...)
+setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
+
+setGeneric("SelectParams", function(featureRanking, ...)
 standardGeneric("SelectParams"))
 setMethod("SelectParams", "missing", function()
 {
-  new("SelectParams", featureSelection = differentMeansSelection,
+  new("SelectParams", featureRanking = differentMeansRanking,
       characteristics = DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
       minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
-      otherParams = list(resubstituteParams = ResubstituteParams()))
+      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
 })
 setMethod("SelectParams", c("functionOrList"),
-          function(featureSelection, characteristics = DataFrame(), minPresence = 1, 
-                   intermediate = character(0), subsetToSelections = TRUE, ...)
+          function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
+                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
           {
-            if(!is.list(featureSelection) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
+            if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == featureSelection@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == featureRanking@generic, "name"]))
             }
-            if(is.list(featureSelection) && (ncol(characteristics) == 0 || !"Ensemble Selection" %in% characteristics[, "characteristic"]))
+            if(is.list(featureRanking) && (ncol(characteristics) == 0 || !"Ensemble Selection" %in% characteristics[, "characteristic"]))
             {
-              selectMethodNames <- unlist(lapply(featureSelection, function(selectFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == selectFunction@generic, "name"]))
+              selectMethodNames <- unlist(lapply(featureRanking, function(rankingFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == rankingFunction@generic, "name"]))
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Ensemble Selection", value = paste(selectMethodNames, collapse = ", ")))
             }
             others <- list(...)
-            if(is.list(featureSelection))
-              others <- unlist(others, recursive = FALSE)
-            if(is.null(others)) others <- list()
-            new("SelectParams", featureSelection = featureSelection,
+            if(length(others) == 0) others <- NULL
+            new("SelectParams", featureRanking = featureRanking,
                 characteristics = characteristics, minPresence = minPresence,
                 intermediate = intermediate, subsetToSelections = subsetToSelections,
-                otherParams = others)
+                tuneParams = tuneParams, otherParams = others)
           })
 
 setMethod("show", "SelectParams",
@@ -245,8 +302,10 @@ setClass("TrainParams", representation(
   classifier = "function",
   characteristics = "DataFrame",
   intermediate = "character",
-  getFeatures = "functionOrNULL",
-  otherParams = "list")
+  tuneParams = "listOrNULL",
+  otherParams = "listOrNULL",
+  getFeatures = "functionOrNULL"
+), contains = "StageParams"
 )
 
 setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams"))
@@ -257,14 +316,14 @@ setMethod("TrainParams", "missing", function()
       intermediate = character(0), getFeatures = NULL)
 })
 setMethod("TrainParams", c("function"),
-          function(classifier, characteristics = DataFrame(), intermediate = character(0), getFeatures = NULL, ...)
+          function(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(), intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)
           {
             if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == classifier@generic, "name"]))
             }
             new("TrainParams", classifier = classifier, characteristics = characteristics,
-                intermediate = intermediate, getFeatures = getFeatures,
+                intermediate = intermediate, getFeatures = getFeatures, tuneParams = tuneParams,
                 otherParams = list(...))
           })
 
@@ -293,7 +352,7 @@ setClass("PredictParams", representation(
   predictor = "functionOrNULL",
   characteristics = "DataFrame",  
   intermediate = "character",
-  otherParams = "list")
+  otherParams = "listOrNULL"), contains = "StageParams"
 )
 
 setGeneric("PredictParams", function(predictor, ...)
@@ -302,7 +361,7 @@ setMethod("PredictParams", "missing", function()
 {
   new("PredictParams", predictor = DLDApredictInterface,
       characteristics = S4Vectors::DataFrame(characteristic = "Predictor Name", value = "Diagonal LDA"),
-      intermediate = character(0))
+      intermediate = character(0), otherParams = NULL)
 })
 setMethod("PredictParams", c("functionOrNULL"),
           function(predictor, characteristics = DataFrame(), intermediate = character(0), ...)
@@ -313,8 +372,10 @@ setMethod("PredictParams", c("functionOrNULL"),
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Predictor Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == predictor@generic, "name"]))
             }
+            others <- list(...)
+            if(length(others) == 0) others <- NULL
             new("PredictParams", predictor = predictor, characteristics = characteristics,
-                intermediate = intermediate, otherParams = list(...))
+                intermediate = intermediate, otherParams = others)
           })
 
 setMethod("show", "PredictParams",
@@ -340,51 +401,36 @@ setMethod("show", "PredictParams",
               cat("Prediction is done by function specified to TrainParams.\n")
           })
 
-setGeneric("SelectResult", function(totalFeatures, rankedFeatures, chosenFeatures, ...)
-standardGeneric("SelectResult"))
-setClass("SelectResult", representation(
-  totalFeatures = "numeric",
-  rankedFeatures = "list",
-  chosenFeatures = "list"
+setClassUnion("PredictParamsOrNULL", c("PredictParams", "NULL"))
+
+setGeneric("ModellingParams", function(balancing, transformParams, selectParams, trainParams, predictParams)
+  standardGeneric("ModellingParams"))
+setClass("ModellingParams", representation(
+  balancing = "character",
+  transformParams = "TransformParamsOrNULL",
+  selectParams = "SelectParamsOrNULL",
+  trainParams = "TrainParams",
+  predictParams = "PredictParamsOrNULL"
 ))
-
-setMethod("SelectResult", c("numeric", "list", "list"),
-          function(totalFeatures, rankedFeatures, chosenFeatures)
+setMethod("ModellingParams", c("missing", "missing", "missing", "missing", "missing"), function()
+{
+  new("ModellingParams", balancing = "downsample", transformParams = NULL, selectParams = SelectParams(),
+      trainParams = TrainParams(), predictParams = PredictParams())
+})
+setMethod("ModellingParams", c("characterOrMissing", "StageParamsOrMissingOrNULL", "StageParamsOrMissingOrNULL", "StageParamsOrMissing", "StageParamsOrMissingOrNULL"),
+          function(balancing = c("downsample", "upsample", "none"),
+                   transformParams = NULL, selectParams = SelectParams(),
+                   trainParams = TrainParams(), predictParams = PredictParams())
           {
-            new("SelectResult", totalFeatures = totalFeatures, rankedFeatures = rankedFeatures,
-                chosenFeatures = chosenFeatures)
-          })
-
-setMethod("show", "SelectResult",
-          function(object)
-          {
-            if(class(object@chosenFeatures[[1]]) == "list")
-            {
-              selectionSizes <- unlist(lapply(object@chosenFeatures, function(resampling)
-                                       {
-                                         lapply(resampling, function(fold)
-                                         {
-                                               if(is.vector(fold)) length(fold)
-                                               else nrow(fold) # Stored in a data frame.
-                                         })
-                                       })
-                                       )
-            } else {
-              if(is.vector(object@chosenFeatures[[1]]) || "Pairs" %in% class(object@chosenFeatures[[1]]))
-                selectionSizes <- sapply(object@chosenFeatures, length)
-              else
-                selectionSizes <- sapply(object@chosenFeatures, nrow) # Stored in a data frame.
-            }
-            cat("An object of class 'SelectResult'.\n")
-            cat("Features Considered: ", object@totalFeatures, ".\n", sep = '')
-            selectionsText <- paste("Selections: List of length", length(object@chosenFeatures))
-            if(class(object@chosenFeatures[[1]]) == "list")
-              selectionsText <- paste(selectionsText, "of lists of length", length(object@chosenFeatures[[1]]))
-            cat(selectionsText, ".\n", sep = '')
-            if(length(selectionSizes) > 1)
-              cat("Selection Size Range: Between ", min(selectionSizes), " and ", max(selectionSizes), " features.\n", sep = '')
-            else
-              cat("Selection Size: ", selectionSizes[[1]], " features.\n", sep = '')
+            if(missing(balancing)) balancing <- "downsample"
+            balancing <- match.arg(balancing)
+            if(missing(transformParams)) transformParams <- NULL
+            if(missing(selectParams)) selectParams <- SelectParams()
+            if(missing(trainParams)) trainParams <- TrainParams()
+            if(missing(predictParams)) predictParams <- PredictParams()
+            
+            new("ModellingParams", balancing = balancing, transformParams = transformParams,
+                selectParams = selectParams, trainParams = trainParams, predictParams = predictParams)
           })
 
 setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
@@ -393,22 +439,23 @@ setClass("ClassifyResult", representation(
   characteristics = "DataFrame",
   originalNames = "character",
   originalFeatures = "characterOrDataFrame",
-  selectResult = "SelectResult",
+  rankedFeatures = "listOrNULL",
+  chosenFeatures = "listOrNULL",
   actualClasses = "factor",
   models = "list",
-  predictions = "list",
-  validation = "list",  
-  performance = "listOrNULL",
-  tune = "listOrNULL")
+  tune = "listOrNULL",
+  predictions = "data.frame",
+  performance = "listOrNULL")
 )
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
-          function(characteristics, originalNames, originalFeatures, totalFeatures,
-                   rankedFeatures, chosenFeatures, models, predictions, actualClasses, validation, tune = NULL)
+          function(characteristics, originalNames, originalFeatures,
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualClasses)
           {
             new("ClassifyResult", characteristics = characteristics,
-                predictions = predictions, selectResult = SelectResult(totalFeatures, rankedFeatures, chosenFeatures),
-                actualClasses = actualClasses, models = models, validation = validation,
-                originalNames = originalNames, originalFeatures = originalFeatures, tune = tune)
+                originalNames = originalNames, originalFeatures = originalFeatures,
+                rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
+                models = models, tune = tunedParameters,
+                predictions = predictions, actualClasses = actualClasses)
           })
 setMethod("show", "ClassifyResult", function(object)
           {
@@ -416,24 +463,8 @@ setMethod("show", "ClassifyResult", function(object)
             cat("Characteristics:\n")
             print(as.data.frame(object@characteristics), row.names = FALSE)
             
-            if(object@validation[[1]] != "permuteFold")
-            {
-              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of feature identifiers.\n", sep = '')
-            } else # Resample and fold. Nested lists.
-            {
-              elementsLengths <- sapply(object@selectResult@chosenFeatures, length)
-              if(diff(range(elementsLengths)) == 0)
-              {
-                subListText <- paste("length", unique(elementsLengths))
-              } else
-              {
-                subListText <- paste("lengths between", min(elementsLengths), "and", max(elementsLengths))
-              }
-              cat("Features: List of length ", length(object@selectResult@chosenFeatures), " of lists of ",
-                  subListText, " of feature identifiers.\n", sep = '')
-            }            
-            cat("Predictions: List of data frames of length ", length(object@predictions),
-                ".\n", sep = '')
+            cat("Features: List of length ", length(object@chosenFeatures), " of feature identifiers.\n", sep = '')
+            cat("Predictions: A data frame of ", nrow(object@predictions), " rows.\n", sep = '')
             if(length(object@performance) > 0)
               cat("Performance Measures: ", paste(names(object@performance), collapse = ', '), ".\n", sep = '')
             else
@@ -461,7 +492,7 @@ standardGeneric("features"))
 setMethod("features", c("ClassifyResult"),
           function(object)
           {
-            object@selectResult@chosenFeatures
+            object@chosenFeatures
           })
 
 setGeneric("models", function(object, ...)
@@ -509,34 +540,7 @@ standardGeneric("totalPredictions"))
 setMethod("totalPredictions", c("ClassifyResult"),
           function(result)
           {
-              nrow(do.call(rbind, predictions(result)))
-          })
-
-setClass("EasyHardClassifier", representation(
-  easyClassifier = "listOrNULL",
-  hardClassifier = "listOrCharacterOrNULL",
-  datasetIDs = "character"
-))
-setGeneric("EasyHardClassifier", function(easyClassifier, hardClassifier, datasetIDs)
-standardGeneric("EasyHardClassifier"))
-setMethod("EasyHardClassifier", c("listOrNULL", "listOrCharacterOrNULL", "character"),
-          function(easyClassifier, hardClassifier, datasetIDs)
-          {
-            new("EasyHardClassifier", easyClassifier = easyClassifier, hardClassifier = hardClassifier,
-                datasetIDs = datasetIDs)
-          })
-
-setMethod("show", "EasyHardClassifier",
-          function(object)
-          {
-            cat("An object of class 'EasyHardClassifier'.\n")
-            if(!is.null(object@easyClassifier)) easyText <- paste("A set of", length(object@easyClassifier), "rules trained on", object@datasetIDs["easy"], "data")
-            else easyText <- "None"
-            cat("Easy Classifier: ", easyText, ".\n", sep = '')
-            if(!is.null(object@hardClassifier))
-              hardText <- paste("An object of class '", class(object@hardClassifier[["model"]]), "' trained on ", object@datasetIDs["hard"], " data", sep = '')
-            else hardText <- "None"
-            cat("Hard Classifier: ", hardText, ".\n", sep = '')
+              nrow(predictions(result))
           })
 
 setClass("MixModelsListsSet", representation(
@@ -550,3 +554,4 @@ setMethod("MixModelsListsSet", c("list"),
           {
             new("MixModelsListsSet", set = set)
           })
+

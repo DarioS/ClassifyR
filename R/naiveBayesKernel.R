@@ -12,8 +12,8 @@ setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
 setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, test,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
-                   weighted = c("unweighted", "weighted", "both"),
-                   weight = c("height difference", "crossover distance", "both"),
+                   difference = c("unweighted", "weighted"),
+                   weighting = c("height difference", "crossover distance"),
                    minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
@@ -26,8 +26,8 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
-  weighted <- match.arg(weighted)
-  weight <- match.arg(weight)
+  difference <- match.arg(difference)
+  weighting <- match.arg(weighting)
   returnType <- match.arg(returnType)
   
   classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
@@ -35,7 +35,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   
   if(verbose == 3)
     message("Fitting densities.")
-
+  
   featuresDensities <- lapply(measurements, function(featureValues)
   {
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
@@ -81,7 +81,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     })
   }) # Matrix, rows are test samples, columns are features.
   
-  if(weight %in% c("crossover distance", "both")) # Calculate the crossover distance, even if unweighted voting to pick the class.
+  if(difference == "weighted" && weight == "crossover distance")
   {
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
@@ -105,89 +105,39 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
                        both = message("Calculating class scores and determining class labels."),
                        score = message("Calculating class scores."))
   }
-
-  if(weight == "both")
-    weightExpanded <-  c("height difference", "crossover distance")
-  else weightExpanded <- weight
   
-  allDistances <- lapply(weightExpanded, function(type)
-  {
-    switch(type, `height difference` = distancesVertical,
-                 `crossover distance` = distancesHorizontal)
-  })
+  allDistances <- switch(weighting, `height difference` = distancesVertical,
+                                    `crossover distance` = distancesHorizontal)
 
-  weightingText <- weighted
-  if(weightingText == "both") weightingText <- c("unweighted", "weighted")
-  testPredictions <- do.call(rbind, mapply(function(weightNames, distances)
+  predictions <- do.call(rbind, lapply(1:nrow(allDistances), function(sampleRow)
   {
-    do.call(rbind, lapply(weightingText, function(isWeighted)
-    {
-      do.call(rbind, lapply(minDifference, function(difference)
+    useFeatures <- abs(allDistances[sampleRow, ]) > minDifference
+    if(all(useFeatures == FALSE)) # No features have a large enough density difference.
+    {                          # Simply vote for the larger class.
+      classPredicted <- largestClass
+      classScores <- classesSizes / length(classes)
+    } else { # One or more features are available to vote with.
+      distancesUsed <- allDistances[sampleRow, useFeatures]
+      classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classes))
+      if(difference == "unweighted")
       {
-        do.call(rbind, lapply(1:nrow(distances), function(sampleRow)
-        {
-          useFeatures <- abs(distances[sampleRow, ]) > difference
-          if(all(useFeatures == FALSE)) # No features have a large enough density difference.
-          {                          # Simply vote for the larger class.
-            classPredicted <- largestClass
-            classScores <- classesSizes / length(classes)
-          } else { # One or more features are available to vote with.
-            distancesUsed <- distances[sampleRow, useFeatures]
-            classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classes))
-            if(isWeighted == "unweighted")
-            {
-              classScores <- table(classPredictionsUsed)
-              classScores <- setNames(as.vector(classScores), levels(classes))
-            } else { # Weighted voting.
-              classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
-              classScores[is.na(classScores)] <- 0
-            }
-            classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
-            classPredicted <- names(classScores)[which.max(classScores)]
-          }
-
-          data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores),
-                     weighted = isWeighted, weight = weightNames,
-                     minDifference = difference, check.names = FALSE)
-        }))
-      }))
-    }))
-  }, weightExpanded, allDistances, SIMPLIFY = FALSE))
-
-  # Remove combinations of unweighted voting and weightings.
-  testPredictions <- do.call(rbind, by(testPredictions, testPredictions[, "weighted"], function(weightVariety)
-  {
-    if(weightVariety[1, "weighted"] == "unweighted")
-    {
-      do.call(rbind, by(weightVariety, weightVariety[, "minDifference"], function(differenceVariety) differenceVariety[differenceVariety[, "weight"] == "height difference", ]))
-    } else {
-      weightVariety
+        classScores <- table(classPredictionsUsed)
+        classScores <- setNames(as.vector(classScores), levels(classes))
+      } else { # Weighted voting.
+        classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
+        classScores[is.na(classScores)] <- 0
+      }
+      classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
+      classPredicted <- names(classScores)[which.max(classScores)]
     }
+
+    data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores), check.names = FALSE)
   }))
 
-  whichVarieties <- character()
-  if(weighted == "both") whichVarieties <- "weighted"
-  if(weight == "both") whichVarieties <- c(whichVarieties, "weight")
-  if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
-  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Arbitrary, to make a list.
-
-  varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
-  varietyFactor <- factor(gsub("(weighted=unweighted),weight=height difference", "\\1", varietyFactor))
-  resultsList <- lapply(levels(varietyFactor), function(variety)
-  {
-    varietyPredictions <- subset(testPredictions, varietyFactor == variety)
-    rownames(varietyPredictions) <- rownames(test)
-    switch(returnType, class = varietyPredictions[, "class"],
-           score = varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)],
-           both = data.frame(class = varietyPredictions[, "class"], varietyPredictions[, colnames(varietyPredictions) %in% levels(classes)], check.names = FALSE)
-           )
-  })
-  names(resultsList) <- levels(varietyFactor)
-
-  if(length(resultsList) == 1) # No varieties.
-    resultsList[[1]]
-  else
-    resultsList    
+  switch(returnType, class = predictions[, "class"],
+         score = predictions[, colnames(predictions) %in% levels(classes)],
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classes)], check.names = FALSE)
+        )
 })
 
 setMethod("naiveBayesKernel", "MultiAssayExperiment", 

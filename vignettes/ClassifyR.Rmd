@@ -42,11 +42,35 @@ htmltools::img(src = knitr::image_uri("ClassifyRprocedure.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
-Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential variability (DV; changes in scale) and differential distribution (DD; changes in location and/or scale). See the appendix section "Common *params* Specifications for Common Classifications" for some ready-to-use parameter sets for standard use of some classifiers.
+Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential variability (DV; changes in scale) and differential distribution (DD; changes in location and/or scale).
+
+Load the package.
+
+```{r}
+library(ClassifyR)
+```
+
+## Quick Start
+
+If the intention is to quickly apply a few different algorithms and compare their results without going into too much of the details, a convenience function is provided for the most common cross-validation setting and classifiers by the function *quickClassify*. For example, the code below will carry out a standard cross-validation for differences in means using 100 permutations and five folds.
+
+```{r, eval = FALSE}
+result <- quickClassify(measurements, classes, "100 permutations, 5 folds", "DLDA", cores = 16)
+```
+
+Similarly, leave-one-out cross-validation with the naive Bayes classifier for a differential distriution style of classification could be done by the example below.
+
+```{r, eval = FALSE}
+result <- quickClassify(measurements, classes, "Leave-one-out", "naive Bayes", cores = 16)
+```
+
+For a full list of shortcuts, please view *?quickClassify*.
+
+## A Closer Look
 
 In the following sections, some of the most useful functions provided in **ClassifyR** will be demonstrated. However, a user can provide any feature selection, training, or prediction function to the classification framework, as long as it meets some simple rules about the input and return parameters. See the appendix section of this guide titled "Rules for New Functions" for a description of these.
 
-## Comparison to Existing Classification Frameworks
+### Comparison to Existing Classification Frameworks
 
 There are a few other frameworks for classification in R. The table below provides a comparison of which features they offer.
 
@@ -58,11 +82,11 @@ MLInterfaces | Yes | No  | No  | No  | No  | No  | No  | No
 MCRestimate  | Yes | No  | Yes | No  | No  | No  | No  | No
 CMA          | No  | No  | Yes | No  | No  | No  | No  | No
 
-## Provided Functionality
+### Provided Functionality
 
 Although being a cross-validation framework, a number of popular feature selection and classification functions are provided by the package which meet the requirements of functions to be used by it (see the last section).
 
-### Provided Feature Selection and Classification Methods
+#### Provided Methods for Feature Selection and Classification
 
 Functions with names ending in "interface" indicate wrappers for existing methods implemented in other packages. Different methods select different types of changes (i.e. location and/or scale) between classes.
 
@@ -78,45 +102,50 @@ htmltools::img(src = knitr::image_uri("providedClassifiers.png"),
                style = 'margin-left: auto;margin-right: auto')
 ```
 
-If a desired selection or classification method is not already implemented, rules for writing functions to work with **ClassifyR** are outlined in the next section.
+If a desired selection or classification method is not already implemented, rules for writing functions to work with **ClassifyR** are outlined in the wrapper vignette. Please visit it for more information.
 
-### Provided Network-based Methods
+#### Provided Meta-feature Methods
 
-A number of methods are provided for users to enable classification in a network-centric way. The sub-network and meta-feature creation functions should be used before cross-validation is done.
+A number of methods are provided for users to enable classification in a feature-set-centric way. The meta-feature creation functions should be used before cross-validation is done.
 
 ```{r, echo = FALSE}
 htmltools::img(src = knitr::image_uri("networkFunctions.png"), 
                style = 'margin-left: auto;margin-right: auto')
 ```
 
+### Cross-validation and Modelling
+
+For cross-validation, all of the parameters are specified by a CrossValParams object. The default setting are for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that work on all operating systems, but intended for Windows is:
+
+```{r, eval = FALSE}
+CVparams <- CrossValParams(parallelParams = SnowParam(16, RNGseed = 123))
+CVparams
+```
+
+For the actual operations to do to the data to build a model of it, each of the stages should be specified by an object of class *ModellingParams*. This controls how class imbalance is handled (default is to downsample to the smallest class), any transformation that needs to be done inside of cross-validation, any feature selection and the training and prediction functions to be used. The default is to do an ordinary t-test (two groups) or ANOVA (three or more group) and classification using diagonal LDA.
+
+```{r}
+ModellingParams()
+```
+
 ### Pre-validation
 
 Pre-validation is an approach to provide a fairer way to compare the benefit of omics data to traditional, freely-available clinical data. For each omics technology considered, training and testing is done on all of the various partitions of the data and the predictions of each sample are simply added as a column to the clinical data table. Then, cross-validation is done as usual. If an omics data set is important, it will often be included as a selected feature.
 
-Pre-validation is activated by specifying *params* to be a named list, with one of the elements being named *"prevaliated"*, which specifies the kind of classification to do on the resultant clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, which must be of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *params* for the function *runTests* would be:
+Pre-validation is activated by specifying a list of *ModellingParams* objects with one of them named *"prevaliated"*, which specifies the kind of classification to do on the resultant augmented clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, which must be of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *modellingParams* for the function *runTests* would be:
 
-```{r, message = FALSE}
-library(ClassifyR)
-resubParams <- ResubstituteParams(nFeatures = 1:10, performanceType = "balanced error")
-paramsList <- list(RNA = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
-                              TrainParams(DLDAtrainInterface),
-                              PredictParams(DLDApredictInterface)),
-                   protein = list(SelectParams(limmaSelection, resubstituteParams = resubParams),
-                              TrainParams(DLDAtrainInterface),
-                              PredictParams(DLDApredictInterface)),
-                   prevalidated = list(TrainParams(elasticNetGLMtrainInterface, getFeatures = elasticNetFeatures),
-                                       PredictParams(elasticNetGLMpredictInterface))
-                   )
+```{r, message = FALSE, eval = FALSE}
+# Coming soon.
 ```
 
 *elasticNetFeatures* is a function that enables selected features to be extracted from the trained models, which are simply the variables with a beta coefficient that is not zero. Unlike most classifiers, for elastic net GLM, the feature selection happens during model training - not independently before it.
 
-## Case Study : Diagnosing Asthma
+### Case Study : Diagnosing Asthma
 
 To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).
 
 ```{r, message = FALSE}
-data(asthma)
+data(asthma) # Contains measurements and classes variables.
 measurements[1:5, 1:5]
 head(classes)
 ```
@@ -127,15 +156,15 @@ For more complex data sets with multiple kinds of experiments (e.g. DNA methylat
 
 ### runTests Driver Function of Cross-validated Classification
 
-*runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature selection and DLDA for classification. The *differentMeansSelection* function also uses DLDA for estimating a resubstitution error rate for a number of top-*f* ranked features, as a heuristic for picking *f* features from the feature ranking which are used in the training and prediction stages of classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*.
+*runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature ranking and DLDA for classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*. By default, the number of features is tuned by resubstitution on the training set.
 
 ```{r, tidy = FALSE}
-DMresults <- runTests(measurements, classes, permutations = 20, folds = 5,
-                      seed = 2018, verbose = 1)
+crossValParams <- CrossValParams(permutations = 20)
+DMresults <- runTests(measurements, classes, crossValParams, verbose = 1)
 DMresults
 ```
 
-Here, 20 permutations and 5 folds cross-validation is specified by the values of *permutations* and *folds*. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
+Here, 20 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing paralle processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
 ### Evalulation of a Classification
 
@@ -157,7 +186,7 @@ Classification error rates, as well as many other prediction performance measure
 See the documentation of *calcCVperformance* for a list of performance metrics which may be calculated.
 
 ```{r}
-DMresults <- calcCVperformance(DMresults, "balanced error")
+DMresults <- calcCVperformance(DMresults, "Balanced Error")
 DMresults
 performance(DMresults)
 ```
@@ -169,26 +198,23 @@ The error rate is about 20%. If only a vector of predictions and a vector of act
 The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heuristic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
-selectParams <- SelectParams(KullbackLeiblerSelection, resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(predictor = NULL, weighted = "weighted",
-                               weight = "height difference", returnType = "both")
-paramsList <- list(selectParams, trainParams, predictParams)
-DDresults <- runTests(measurements, classes, permutations = 20, folds = 5,
-                      seed = 2018, params = paramsList, verbose = 1)
+modellingParamsDD <- ModellingParams(selectParams = SelectParams(KullbackLeiblerRanking),
+                                     trainParams = TrainParams(naiveBayesKernel),
+                                     predictParams = NULL)
+DDresults <- runTests(measurements, classes, crossValParams, modellingParamsDD, verbose = 1)
 DDresults
 ```
 
-The naive Bayes kernel classifier has options specifying how the distances between class densities are used. For more information, consult the documentation of the *naiveBayesKernel* function.
+The naive Bayes kernel classifier by default uses the vertical distance between class densities but it can instead use the horizontal distance to the nearest non-zero density cross-over point to confidently classify samples in the tails of the densities.
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
 ```{r, fig.width = 10, fig.height = 7}
 library(grid)
-DMresults <- calcCVperformance(DMresults, "sample error")
-DDresults <- calcCVperformance(DDresults, "sample error")
+DMresults <- calcCVperformance(DMresults, "Sample Error")
+DDresults <- calcCVperformance(DDresults, "Sample Error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
-errorPlot <- samplesMetricMap(resultsList, metric = "error", xAxisLabel = "Sample",
+errorPlot <- samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
                               showXtickLabels = FALSE, plot = FALSE)
 grid.draw(errorPlot)
 ```
@@ -208,11 +234,11 @@ The top-ranked features are fairly similar between all pairs of the 20 cross-val
 
 For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
-## Using an Independent Test Set
+### Using an Independent Test Set
 
-Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are well-designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
+Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
 
-## Cross-validating Selected Features on a Different Data Set
+### Cross-validating Selected Features on a Different Data Set
 
 Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one data set are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone. Of course, the features in the new dataset should have the same naming system as the ones in the old dataset.
 
@@ -228,120 +254,29 @@ This ROC plot shows the classifiability of the asthma data set is high. Examples
 
 ## Parameter Tuning
 
-Some classifiers allow the setting of a tuning parameter, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more.
+Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by *"nFeatures"*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
 
-This is achieved in ClassifyR by providing a variable called *tuneParams* to the TrainParams container constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, and the contents being vectors of values to try. The parameter *tuneOptimise* is a length-one character vector specifying the name of the criterion for choosing the best tuning parameter(s). Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
+Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
 ```{r}
-selectParams <- SelectParams(differentMeansSelection, resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(SVMtrainInterface, kernel = "linear",
-                           tuneParams = list(cost = c(0.01, 0.1, 1, 10)),
-                           tuneOptimise = "balanced error")
-predictParams <- PredictParams(SVMpredictInterface)
-SVMresults <- runTests(measurements, classes, permutations = 20, folds = 5, seed = 2018,
-                       params = list(selectParams, trainParams, predictParams)
-                       )
+tuneList <- list(cost = c(0.01, 0.1, 1, 10))
+SVMparams <- ModellingParams(trainParams = TrainParams(SVMtrainInterface, kernel = "linear", tuneParams = tuneList),
+                             predictParams = PredictParams(SVMpredictInterface))
+SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
 ```
 
 The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
 
 ```{r}
 length(tunedParameters(SVMresults))
-tunedParameters(SVMresults)[[1]]
+tunedParameters(SVMresults)[1:5]
 ```
 
-The cost value of 10 is chosen in all of the folds of the first sample permutation.
+The cost value of 1 is chosen in all of the folds of the first sample permutation.
 
 ## Summary
 
 **ClassifyR** is a framework for cross-validated classification that provides a variety of unique functions for performance evaluation. It provides wrappers for many popular classifiers but is designed to be extensible if other classifiers are desired.
-
-## Appendix: Common *params* Specifications for Common Classifications
-
-These sets of parameters can simply be specified as the *params* parameter to *runTest* or *runTests*.
-
-- Likelihood ratio (negative binomial) feature selection and Poisson LDA for count data.
-
-```{r}
-selectParams <- SelectParams(edgeRselection, resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(classifyInterface)
-predictParams <- PredictParams(NULL)
-params = list(selectParams, trainParams, predictParams)
-```
-
-- Transform values into distances from the median (mean is default), select based on different variability using Bartlett's test and classify using Fisher's LDA.
-
-```{r}
-transformParams <- TransformParams(subtractFromLocation, intermediate = "training",
-                                   location = "median")
-selectParams <- SelectParams(bartlettSelection,
-                             resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(fisherDiscriminant)
-predictParams <- PredictParams(NULL)
-params = list(transformParams, selectParams, trainParams, predictParams)
-```
-
-- Use a differential distribution feature selection based on Kullback-Leibler divergence and a naive Bayes classifier.
-
-```{r}
-selectParams <- SelectParams(KullbackLeiblerSelection,
-                             resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(NULL)
-params = list(selectParams, trainParams, predictParams)
-```
-
-- Use the selection and classification provided by the **pamr** package implementing nearest shrunken centroid methods. Note that the training occurs before the selecting in this example.
-
-```{r, eval = FALSE}
-trainParams <- TrainParams(NSCtrainInterface)
-selectParams <- SelectParams(NSCselectionInterface, intermediate = "trained")
-predictParams <- PredictParams(NSCpredictInterface)
-params = list(trainParams, selectParams, predictParams)
-```
-
-- A random forest classifier. Typically, feature selection is not done for random forests because they can find some interesting relationships between variables that feature selection methods may overlook. The features used by the trees can be added to the *ClassifyResult* object after the training has been done using the *forestFeatures* convenience method. The default number of variables to try at each split is the square root of the number of variables in the dataset, which is far too small for typical omics data sets, which have a large number of variables but a very small proportion which are informative. The example below shows how to consider 1000 variables at each split instead.
-
-```{r}
-trainParams <- TrainParams(randomForestTrainInterface, mtry = 1000, getFeatures = forestFeatures)
-predictParams <- PredictParams(randomForestPredictInterface)
-params = list(trainParams, predictParams)
-```
-
-- A SVM classifier with feature selection done by an ordinary t-test. A linear kernel is specified for the SVM.
-
-```{r}
-selectParams <- SelectParams(differentMeansSelection, resubstituteParams = ResubstituteParams())
-trainParams <- TrainParams(SVMtrainInterface, kernel = "linear")
-predictParams <- PredictParams(SVMpredictInterface)
-params = list(selectParams, trainParams, predictParams)
-```
-
-- Network-based classification. The features are sub-networks, such as communities of features which may be identified by a community detection algorithm, such as ones provided by **igraph**. The sub-networks are ranked based on the difference of median of edge correlations within each class, scaled by the correlation variability within each class. The classifier training and testing is done with metafeatures, such as the difference in value between the edges in a chosen sub-network. The information about which pairs of interactors belong to which sub-network is specified by *featureSets* to *runTests*. Filtering of sub-networks that do not have many features in common with the experimentally measured features is automatically done by *runTests*. The metafeatures are a transformation of the feature-wise measurements determined independently of cross-validation and they are specified via *metaFeatures* to *runTests*. The *interactorDifferences* function may be utilised to create the metafeatures, for example.
-
-```{r, eval = FALSE}
-resubstituteParams <- ResubstituteParams(nFeatures = 1:10, # The top 1 to 10 sub-networks.
-                      performanceType = "balanced error")
-selectParams <- SelectParams(networkCorrelationsSelection, resubstituteParams = resubstituteParams)
-trainParams <- TrainParams(naiveBayesKernel)
-predictParams <- PredictParams(NULL)
-params <- list(selectParams, trainParams, predictParams)
-metaFeatures <- interactorDiffsTable # Creation by interactorDifferences function is suggested.
-featureSets <- networkSets # An object of class FeatureSetCollection.
-```
-
-## Appendix: Rules Regarding Input Variables of New Functions
-
-The required inputs and type of output that each stage of classifiation has is summarised by the table below. The functions can have any number of other arguments after the set of arguments which are mandatory.
-
-```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("functionRules.png"), 
-               style = 'margin-left: auto;margin-right: auto')
-```
-
-The argument *verbose* is sent from *runTest* to these functions so they must handle it, even if not explicitly using it. In the **ClassifyR** framework, *verbose* is a number which indicates the amount of progress messages to be printed. If verbose is 0, no progress messages are printed. If it is 1, only one message is printed for every 10 cross-validations completed. If it is 2, in addition to the messages printed when it is 1, a message is printed each time one of the stages of classification (transformation, feature selection, training, prediction) is done. If it is 3, in addition to the messages printed for values 1 and 2, progress messages are printed from within the classification functions themselves.
-
-A version of each included transformation, selection, training and prediction function is typically implemented for (1) a numeric matrix for which the rows are for features and columns are for samples (a data storage convention in bioinformatics) and a factor vector of the same length as the number of columns of the matrix, (2) a *DataFrame* where the columns are naturally for the features, possibly of different data types (i.e. categorical and numeric), and rows are for samples, and a class specification and (3) a *MultiAssayExperiment* which stores sample class information in the *colData* slot's *DataFrame* with column name "class". For the inputs (1 and 3) which are not *DataFrame*, they are converted to one, because the other data types can be stored as a *DataFrame* without loss of information and the transformation, selection and classification functions which accept a *DataFrame* contain the code to do the actual computations. At a minimum, a new function must have a method taking a *DataFrame* as input with the sample classes either stored in a column named "class" or provided as a factor vector. Although not required, providing a version of a function that accepts a numeric matrix with an accompanying factor vector and another version that accepts a MultiAssayExperiment is desirable to provide flexibility regarding input data. See the code of existing functions in the package for examples of this, if intending to implement novel classification-related functions to be used with **ClassifyR**.
 
 ## References
 Strbenac D., Yang, J., Mann, G.J. and Ormerod, J. T. (2015) [ClassifyR: an R package for performance assessment of classification with applications to transcriptomics](http://bioinformatics.oxfordjournals.org/content/31/11/1851), *Bioinformatics*, 31(11):1851-1853 <br>

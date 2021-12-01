@@ -5,7 +5,7 @@
 \alias{FeatureSetCollection,list-method}
 \alias{length,FeatureSetCollection-method}
 \alias{show,FeatureSetCollection-method}
-\alias{[,FeatureSetCollection,integerOrNumeric,missing,ANY-method}
+\alias{[,FeatureSetCollection,numeric,missing,ANY-method}
 \alias{[[,FeatureSetCollection,ANY,missing-method}
 
 \title{Container for Storing A Collection of Sets}

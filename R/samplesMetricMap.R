@@ -4,7 +4,7 @@ standardGeneric("samplesMetricMap"))
 setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = "Classifier Name",
-                   metric = c("error", "accuracy"),
+                   metric = c("Sample Error", "Sample Accuracy"),
                    featureValues = NULL, featureName = NULL,
                    metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
@@ -31,9 +31,9 @@ setMethod("samplesMetricMap", "list",
                      result@characteristics[useRow, "value"]
                     })  
   metric <- match.arg(metric)
-  metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
-  metricID <- switch(metric, error = "Sample-wise Error Rate", accuracy = "Sample-wise Accuracy")
-  allCalculated <- all(sapply(results, function(result) metricID %in% names(performance(result))))
+  metricText <- switch(metric, `Sample Error` = "Error", `Sample Accuracy` = "Accuracy")
+  
+  allCalculated <- all(sapply(results, function(result) metric %in% names(performance(result))))
   if(!allCalculated)
     stop("One or more classification results lack the calculated sample-specific metric.")
   if(!is.null(featureValues) && is.null(featureName))
@@ -50,7 +50,7 @@ setMethod("samplesMetricMap", "list",
 
   metricValues <- lapply(results, function(result)
   {
-    sampleMetricValues <- result@performance[[metricID]]
+    sampleMetricValues <- result@performance[[metric]]
     cut(sampleMetricValues, metricBinEnds, include.lowest = TRUE)
   })
   classedMetricValues <- lapply(metricValues, function(metricSet)
@@ -333,7 +333,7 @@ setMethod("samplesMetricMap", "list",
 
 setMethod("samplesMetricMap", "matrix", 
           function(results, classes,
-                   metric = c("error", "accuracy"),
+                   metric = c("Sample Error", "Sample Accuracy"),
                    featureValues = NULL, featureName = NULL,
                    metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
@@ -350,8 +350,7 @@ setMethod("samplesMetricMap", "matrix",
     stop("The package 'gtable' could not be found. Please install it.")
        
   metric <- match.arg(metric)
-  metricText <- switch(metric, error = "Error", accuracy = "Accuracy")
-  metricID <- switch(metric, error = "Sample-wise Error Rate", accuracy = "Sample-wise Accuracy")
+  metricText <- switch(metric, `Sample Error` = "Error", `Sample Accuracy` = "Accuracy")
 
   if(!is.null(featureValues) && is.null(featureName))
     stop("featureValues is specified by featureNames isn't. Specify both.")
@@ -376,7 +375,7 @@ setMethod("samplesMetricMap", "matrix",
   })
 
   meanMetricCategory <- colMeans(do.call(rbind, metricValues))
-  if(metric == "error")
+  if(metric == "Sample Error")
     meanMetricCategory <- meanMetricCategory * -1 # For sorting purposes.
   if(is.null(featureValues))
   {    

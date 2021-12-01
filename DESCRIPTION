@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 2.15.1
-Date: 2021-11-06
+Version: 2.15.2
+Date: 2021-12-01
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -23,16 +23,16 @@ Description: The software formalises a framework for classification in R.
              Functions for differential expression, differential variability,
              and differential distribution are included. Additional functions
              may be developed by the user, by creating an interface to the framework.
-Collate: constants.R classes.R utilities.R bartlettSelection.R calcPerformance.R classifyInterface.R
-         DLDAinterface.R DMDselection.R differentMeansSelection.R distribution.R
-         easyHardClassifier.R easyHardFeatures.R edgeRselection.R edgesToHubNetworks.R
+Collate: constants.R classes.R utilities.R bartlettRanking.R calcPerformance.R classifyInterface.R
+         DLDAinterface.R DMDranking.R differentMeansRanking.R distribution.R
+         edgeRranking.R edgesToHubNetworks.R
          elasticNetGLMinterface.R elasticNetFeatures.R featureSetSummary.R fisherDiscriminant.R forestFeatures.R
          getLocationsAndScales.R interactorDifferences.R kNNinterface.R
-         KolmogorovSmirnovSelection.R KullbackLeiblerSelection.R kTSPclassifier.R
-         leveneSelection.R likelihoodRatioSelection.R limmaSelection.R mixmodels.R naiveBayesKernel.R
-         networkCorrelationsSelection.R NSCselectionInterface.R NSCtrainInterface.R
-         NSCpredictInterface.R pairsDifferencesSelection.R performancePlot.R plotFeatureClasses.R
-         previousSelection.R previousTrained.R randomForestInterface.R rankingPlot.R ROCplot.R
-         runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R SVMinterface.R
+         KolmogorovSmirnovRanking.R KullbackLeiblerRanking.R kTSPclassifier.R
+         leveneRanking.R likelihoodRatioRanking.R limmaRanking.R mixmodels.R naiveBayesKernel.R
+         NSCfeatures.R NSCtrainInterface.R NSCpredictInterface.R pairsDifferencesRanking.R
+         performancePlot.R plotFeatureClasses.R previousSelection.R previousTrained.R randomForestInterface.R
+         rankingPlot.R ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R
+         SVMinterface.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

@@ -16,7 +16,7 @@ setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
 
 setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inputs, transformed.
           function(measurements, classes, test, featurePairs = NULL,
-                   weighted = c("unweighted", "weighted", "both"), minDifference = 0,
+                   difference = c("unweighted", "weighted"), minDifference = 0,
                    returnType = c("both", "class", "score"), verbose = 3)
 {
   if(is.null(featurePairs))
@@ -33,7 +33,7 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
-  weighted <- match.arg(weighted)
+  difference <- match.arg(difference)
   returnType <- match.arg(returnType)
   
   classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
@@ -54,80 +54,54 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
     else
       pair
   }))
-  
-  weightingText <- weighted
-  if(weightingText == "both") weightingText <- c("unweighted", "weighted")
+
   testDataFrame <- data.frame(t(testingMatrix), check.names = FALSE)
   
   if(verbose == 3)
     message("Predicting sample classes using feature pair inequalities.")
   
-  testPredictions <- do.call(rbind, lapply(testDataFrame, function(sampleValues)
+  predictions <- do.call(rbind, lapply(testDataFrame, function(sampleValues)
   {
     names(sampleValues) <- rownames(testDataFrame)
-    do.call(rbind, lapply(weightingText, function(isWeighted)
-    {
-      do.call(rbind, lapply(minDifference, function(difference)
+    measureDifferences <- sampleValues[S4Vectors::second(featurePairs)] - sampleValues[S4Vectors::first(featurePairs)]
+    useFeatures <- which(abs(measureDifferences) > minDifference)
+    if(length(useFeatures) == 0) # No features have a large enough distance difference.
+    {                            # Simply vote for the larger class.
+      if(largerClass == levels(classes)[1])
       {
-        measureDifferences <- sampleValues[S4Vectors::second(featurePairs)] - sampleValues[S4Vectors::first(featurePairs)]
-        useFeatures <- which(abs(measureDifferences) > difference)
-        if(length(useFeatures) == 0) # No features have a large enough distance difference.
-        {                            # Simply vote for the larger class.
-          if(largerClass == levels(classes)[1])
-          {
-            class <- levels(classes)[1]
-            score <- -1
-          } else {
-            class <- levels(classes)[2]
-            score <- 1
-          }
-        } else { # One or more features are available to vote with.
-          measureDifferences <- measureDifferences[useFeatures]
-          if(isWeighted == "unweighted")
-          {
-            # For being in second class.
-            score <- sum(measureDifferences > 0)
+        class <- levels(classes)[1]
+        score <- -1
+      } else {
+        class <- levels(classes)[2]
+        score <- 1
+      }
+    } else { # One or more features are available to vote with.
+      measureDifferences <- measureDifferences[useFeatures]
+      if(difference == "unweighted")
+      {
+        # For being in second class.
+        score <- sum(measureDifferences > 0)
             
-            if(score > length(measureDifferences) / 2)
-              class <- levels(classes)[2]
-            else
-              class <- levels(classes)[1]
+        if(score > length(measureDifferences) / 2)
+          class <- levels(classes)[2]
+        else
+          class <- levels(classes)[1]
             
-          } else { # Each pair contributes a score for class prediction.
-            # For being in second class.
-            score <- sum(measureDifferences)
+      } else { # Each pair contributes a score for class prediction.
+               # For being in second class.
+        score <- sum(measureDifferences)
 
-            # Sum of scores is tested for being positive or negative.
-            class <- levels(classes)[(sum(measureDifferences) > 0) + 1]
-          }
-        }
-          data.frame(class = factor(class, levels = levels(classes)), score = score,
-                     weighted = isWeighted, minDifference = difference, check.names = FALSE)
-      }))
-    }))
+        # Sum of scores is tested for being positive or negative.
+        class <- levels(classes)[(sum(measureDifferences) > 0) + 1]
+      }
+    }
+    data.frame(class = factor(class, levels = levels(classes)), score = score, check.names = FALSE)
   }))
-  
-  whichVarieties <- character()
-  if(weighted == "both") whichVarieties <- "weighted"
-  if(length(minDifference) > 1) whichVarieties <- c(whichVarieties, "minDifference")
-  if(length(whichVarieties) == 0) whichVarieties <- "minDifference" # Arbitrary, to make a list.
 
-  varietyFactor <- do.call(paste, c(lapply(whichVarieties, function(variety) paste(variety, testPredictions[, variety], sep = '=')), sep = ','))
-  varietyFactor <- factor(varietyFactor)
-  resultsList <- lapply(levels(varietyFactor), function(variety)
-  {
-    varietyPredictions <- subset(testPredictions, varietyFactor == variety)
-    
-    switch(returnType, class = varietyPredictions[, "class"],
-           score = varietyPredictions[, "score"],
-           both = data.frame(class = varietyPredictions[, "class"], score = varietyPredictions[, "score"], check.names = FALSE))
-  })
-  names(resultsList) <- levels(varietyFactor)
-  
-  if(length(resultsList) == 1) # No varieties.
-    resultsList[[1]]
-  else
-    resultsList  
+  switch(returnType, class = predictions[, "class"],
+         score = predictions[, colnames(predictions) %in% levels(classes)],
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classes)], check.names = FALSE)
+  )
 })
 
 setMethod("kTSPclassifier", "MultiAssayExperiment", 
