@@ -3,7 +3,7 @@
   if(class(classes) == "character" && length(classes) > 1)
     stop("'classes' is a character variable but has more than one element. Either provide a\n",
          "       single column name or a factor of the same length as the number of samples.")
-  
+
   if(class(classes) == "character")
   {
     classColumn <- match(classes, colnames(measurements))

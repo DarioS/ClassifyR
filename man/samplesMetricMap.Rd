@@ -82,18 +82,16 @@ be discretised to.
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
-                            list(function(oracle){}), list(predicted), actual,
-                            list("permuteFold", 100, 5))
+                            LETTERS[1:10], features, list(1:100), list(sample(10, 10)),
+                            list(function(oracle){}), NULL, predicted, actual)
   predicted[, "class"] <- sample(predicted[, "class"])
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], features, 100, list(1:100), list(sample(10, 10)),
-                            list(function(oracle){}), list(predicted), actual,
-                            validation = list("leave", 2))
-  result1 <- calcCVperformance(result1, "sample error")
-  result2 <- calcCVperformance(result2, "sample error")
+                            LETTERS[1:10], features, list(1:100), list(sample(10, 10)),
+                            list(function(oracle){}), NULL, predicted, actual)
+  result1 <- calcCVperformance(result1, "Sample Error")
+  result2 <- calcCVperformance(result2, "Sample Error")
   groups <- factor(rep(c("Male", "Female"), length.out = 10))
   names(groups) <- LETTERS[1:10]
   cholesterol <- c(4.0, 5.5, 3.9, 4.9, 5.7, 7.1, 7.9, 8.0, 8.5, 7.2)

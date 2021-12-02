@@ -76,31 +76,32 @@ reference level. The overlaps are converted to percentages and plotted as linepl
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+                          premutation = rep(1:2, each= 50),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
-  features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
-  rankList <- list(list(features[1:100], features[c(15:6, 1:5, 16:100)]),
-                   list(features[c(1:9, 11, 10, 12:100)], features[c(1:50, 61:100, 60:51)]))
+  allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
+  rankList <- list(allFeatures[1:100], allFeatures[c(15:6, 1:5, 16:100)],
+                   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 61:100, 60:51)])
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Melanoma", "t-test", "Diagonal LDA", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], features, 100, rankList,
-                            list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
-                                 list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(function(oracle){}),
-                            list(predicted), actual, list("permuteFold", 2, 2))
+                            LETTERS[1:10], allFeatures, rankList,
+                            list(rankList[[1]][1:15], rankList[[2]][1:15],
+                                 rankList[[3]][1:10], rankList[[4]][1:10]),
+                            list(function(oracle){}), NULL,
+                            predicted, actual)
   
   predicted[, "class"] <- sample(predicted[, "class"])
-  rankList <- list(list(features[1:100], features[c(sample(20), 21:100)]),
-                   list(features[c(1:9, 11, 10, 12:100)], features[c(1:50, 60:51, 61:100)]))
+  rankList <- list(allFeatures[1:100], allFeatures[c(sample(20), 21:100)],
+                   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validations"),
                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], features, 100, rankList,
-                            list(list(rankList[[1]][[1]][1:15], rankList[[1]][[2]][1:15]),
-                                 list(rankList[[2]][[1]][1:10], rankList[[2]][[2]][1:10])),
-                            list(function(oracle){}),
-                            list(predicted), actual, validation = list("permuteFold", 2, 2))
+                            LETTERS[1:10], allFeatures, rankList,
+                            list(rankList[[1]][1:15], rankList[[2]][1:15],
+                                 rankList[[3]][1:10], rankList[[4]][1:10]),
+                            list(function(oracle){}), NULL,
+                            predicted, actual)
                             
   rankingPlot(list(result1, result2), characteristicsList = list(pointType = "Classifier Name"))
 }

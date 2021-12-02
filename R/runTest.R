@@ -10,7 +10,7 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
 })
 
 setMethod("runTest", "DataFrame", # Clinical data or one of the other inputs, transformed.
-function(measurements, classes, training, testing, crossValParams = crossValParams(), # crossValParams used for tuning optimisation.
+function(measurements, classes, training, testing, crossValParams = CrossValParams(), # crossValParams used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
 {
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
@@ -120,18 +120,19 @@ function(measurements, classes, training, testing, crossValParams = crossValPara
     list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testingSamplesIDs, predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
+    modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
     if(!is.null(tuneDetails)) characteristics <- rbind(characteristics, data.frame(characteristic = colnames(tuneDetails),
                                                                                    value = unlist(tuneDetails)))
-    autoCharacteristics <- do.call(rbind, lapply(params, function(stageParams) stageParams@characteristics))
+    autoCharacteristics <- do.call(rbind, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
 
-    extras <- lapply(params, function(stageParams) stageParams@otherParams)
+    extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams)
     extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
     characteristics <- rbind(characteristics, extrasDF)
     
-    ClassifyResult(characteristics, rownames(measurements), allFeatures, rankedFeatures, selectedFeatures,
-                   models, tuneDetails, data.frame(sample = testing, class = predictions), classes)
+    ClassifyResult(characteristics, rownames(measurements), allFeatures, list(rankedFeatures), list(selectedFeatures),
+                   list(models), tuneDetails, data.frame(sample = testing, class = predictedClasses), classes)
   }  
 })
 

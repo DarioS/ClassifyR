@@ -56,7 +56,7 @@
     measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), ncol = 10)
     colnames(measurements) <- paste("Sample", 1:10)
     rownames(measurements) <- paste("mRNA", 1:10)
+    
+    kNNinterface(measurements[, 1:9], classes[1:9], measurements[, 10, drop = FALSE])
   }
-  
-  kNNinterface(measurements[, 1:9], classes[1:9], measurements[, 10, drop = FALSE])
 }

@@ -10,7 +10,7 @@
        }
 \usage{
   \S4method{runTest}{matrix}(measurements, classes, ...)
-  \S4method{runTest}{DataFrame}(measurements, classes, training, testing, crossValParams = crossValParams(),
+  \S4method{runTest}{DataFrame}(measurements, classes, training, testing, crossValParams = CrossValParams(),
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
   \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
 }
@@ -64,14 +64,10 @@
   #if(require(sparsediscrim))
   #{
     data(asthma)
-    selectParams <- SelectParams(limmaRanking, tuneParams = list(nFeatures = seq(5, 25, 5)))
+    tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
+    selectParams <- SelectParams(limmaRanking, tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
-    runTest(measurements, classes,
-            params = list(SelectParams(limmaSelection,
-                                       resubstituteParams = resubstituteParams),
-                          TrainParams(DLDAtrainInterface),
-                          PredictParams(DLDApredictInterface)
-                          ),
+    runTest(measurements, classes, modellingParams = modellingParams,
             training = seq(1, ncol(measurements), 2), testing = seq(2, ncol(measurements), 2))
   #}
 }

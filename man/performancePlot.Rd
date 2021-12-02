@@ -53,41 +53,30 @@
 \author{Dario Strbenac}
 
 \examples{
-  predicted <- list(data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))))
+  predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+                          permutation = rep(1:2, each = 40),
+                          class = factor(rep(c("Healthy", "Cancer"), 40)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], LETTERS[10:1], 100, list(1:100, c(1:9, 11:101)),
-                            list(c(1:3), c(2, 5, 6), c(1:4), c(5:8), 1:5),
-                            list(function(oracle){}), predicted, actual,
-                            validation = list("permuteFold", 2, 2))
-  result1 <- calcCVperformance(result1, "macro F1")
+                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
+                            list(c(1:3), c(2, 5, 6), 1:4, 5:8),
+                            list(function(oracle){}), NULL, predicted, actual)
+  result1 <- calcCVperformance(result1, "Macro F1")
 
-  predicted <- list(data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))),
-                    data.frame(sample = sample(LETTERS[1:10], 20, replace = TRUE),
-                               class = factor(rep(c("Healthy", "Cancer"), each = 10))))
+  predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+                          permutation = rep(1:2, each = 40),
+                          class = factor(rep(c("Healthy", "Cancer"), 40)))
+                               
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], LETTERS[10:1], 100, list(1:100, c(1:5, 11:105)),
-                            list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8), c(1, 5, 10)),
-                            list(function(oracle){}), predicted, actual,
-                            validation = list("permuteFold", 2, 2))
-  result2 <- calcCVperformance(result2, "macro F1")
+                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+                            list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8)),
+                            list(function(oracle){}), NULL, predicted, actual)
+  result2 <- calcCVperformance(result2, "Macro F1")
   
-  performancePlot(list(result1, result2), performanceName = "Macro F1 Score",
+  performancePlot(list(result1, result2), performanceName = "Macro F1",
                   title = "Comparison")
 }

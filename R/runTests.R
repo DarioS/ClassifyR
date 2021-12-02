@@ -74,12 +74,12 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   
   validationText <- .validationText(crossValParams)
   
-  CVparamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
-  autoCharacteristics <- lapply(CVparamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics)
+  modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
+  autoCharacteristics <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics)
   autoCharacteristics <- do.call(rbind, autoCharacteristics)
 
   # Add extra settings which don't create varieties.
-  extras <- do.call(c, lapply(CVparamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
+  extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
   extras <- extras[!sapply(extras, class) == "ClassifyResult"] # Previous methods use an S4 object as an extra. Can't be text or a number.
   extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
   characteristics <- rbind(characteristics, extrasDF)

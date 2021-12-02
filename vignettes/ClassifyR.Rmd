@@ -88,10 +88,10 @@ Although being a cross-validation framework, a number of popular feature selecti
 
 #### Provided Methods for Feature Selection and Classification
 
-Functions with names ending in "interface" indicate wrappers for existing methods implemented in other packages. Different methods select different types of changes (i.e. location and/or scale) between classes.
+The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features.
 
 ```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("providedSelection.png"), 
+htmltools::img(src = knitr::image_uri("providedForSelectionUse.png"), 
                style = 'margin-left: auto;margin-right: auto')
 ```
 
@@ -254,7 +254,7 @@ This ROC plot shows the classifiability of the asthma data set is high. Examples
 
 ## Parameter Tuning
 
-Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by *"nFeatures"*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
+Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by a list element named *nFeatures* and the performance type (e.g. Balanced Error) specified by a list elment named *performanceType*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
 
 Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
