@@ -56,7 +56,8 @@
     data(asthma)
     
     CVparams <- CrossValParams(permutations = 5)
-    selectParams <- SelectParams(differentMeansRanking, tuneParams = list(nFeatures = seq(5, 25, 5)))
+    tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
+    selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
     runTests(measurements, classes, CVparams, modellingParams,
              DataFrame(characteristic = c("Dataset Name", "Classifier Name"),
