@@ -100,7 +100,7 @@ rownames(measurements) <- paste("mRNA", 1:10)
 library(ClassifyR)
 knnParams <- ModellingParams(selectParams = NULL,
                              trainParams = TrainParams(kNNinterface),
-                             predictParams = PredictParams(NULL))
+                             predictParams = NULL)
 CVparams <- CrossValParams("Leave-k-Out", leave = 1)
 classified <- runTests(measurements, classes, CVparams, knnParams)
 classified

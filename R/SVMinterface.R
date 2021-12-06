@@ -45,7 +45,7 @@ setMethod("SVMpredictInterface", c("svm", "matrix"),
   SVMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("both", "class", "score"), classifierName = "Support Vector Machine", verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
   if(!is.null(classes))

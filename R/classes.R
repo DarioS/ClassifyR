@@ -12,9 +12,6 @@ setOldClass("randomForest")
 setClassUnion("functionOrNULL", c("function", "NULL"))
 setClassUnion("functionOrList", c("function", "list"))
 setClassUnion("numericOrNULL", c("numeric", "NULL"))
-setClassUnion("characterOrMissing", c("character", "missing"))
-setClassUnion("numericOrMissing", c("numeric", "missing"))
-setClassUnion("BiocParallelParamOrMissing", c("BiocParallelParam", "missing"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 setClassUnion("listOrNULL", c("list", "NULL"))
 
@@ -30,62 +27,33 @@ setClass("CrossValParams", representation(
   )
 )
 
-setGeneric("CrossValParams", function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
-                                      permutations, percentTest, folds, leave, tuneMode = c("Resubstitution", "Nested CV"),
-                                      parallelParams, seed)
-  standardGeneric("CrossValParams"))
-
-setMethod("CrossValParams", c("missing", "missing", "missing", "missing",
-                              "missing", "missing", "missing", "missing"),
-          function()
+CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
+                           permutations = 100, percentTest = 25, folds = 5, leave = 2,
+                          tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam(), seed = 12345)
 {
-  new("CrossValParams", samplesSplits = "Permute k-Fold", permutations = 100,
-      folds = 5L, tuneMode = "Resubstitution", parallelParams = bpparam(),
-      seed = 987654321)
-})
+  samplesSplits <- match.arg(samplesSplits)
+  tuneMode <- match.arg(tuneMode)
+  if(samplesSplits == "Permute k-Fold")
+  {
+    percentTest <- NULL
+    leave <- NULL
+  } else if(samplesSplits == "Permute Percentage Split"){
+    folds <- NULL
+    leave <- NULL
+  } else if(samplesSplits == "k-Fold") {
+    permutations <- NULL
+    leave <- NULL
+    percentTest <- NULL
+  } else if(samplesSplits == "Leave-k-Out") {
+    permutations <- NULL
+    percentTest <- NULL
+    folds <- NULL
+  }
 
-setMethod("CrossValParams", c("characterOrMissing", "numericOrMissing", "numericOrMissing",
-                              "numericOrMissing", "numericOrMissing", "characterOrMissing", "BiocParallelParamOrMissing", "numericOrMissing"),
-          function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
-                   permutations = 100, percentTest = 25, folds = 5, leave = 2,
-                   tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam(), seed = 987654321)
-          {
-            samplesSplits <- match.arg(samplesSplits)
-            tuneMode <- match.arg(tuneMode)
-            if(samplesSplits %in% c("Permute k-Fold", "Permute Percentage Split"))
-            {
-              if(missing(permutations))
-                permutations <- 100
-              if(samplesSplits == "Permute k-Fold")
-              {
-                percentTest <- NULL
-                if(missing(folds))
-                  folds <- 5
-              } else if(samplesSplits == "Permute Percentage Split"){
-                folds <- NULL
-                if(missing(percentTest))
-                  percentTest <- 25
-              }
-              leave <- NULL
-            } else if(samplesSplits == "k-Fold") {
-              if(missing(folds))
-                folds <- 5
-              permutations <- NULL
-              leave <- NULL
-              percentTest <- NULL
-            } else if(samplesSplits == "Leave-k-Out") {
-              if(missing(leave))
-                 leave <- 2L
-              permutations <- NULL
-              percentTest <- NULL
-              folds <- NULL
-            }
-            if(missing(parallelParams)) parallelParams <- bpparam()
-            if(missing(seed)) seed <- 987654321
-            new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
-                percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
-                parallelParams = parallelParams, seed = seed)
-          })
+  new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
+      percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
+      parallelParams = parallelParams, seed = seed)
+}
 
 setClass("StageParams", representation("VIRTUAL"))
 setClassUnion("StageParamsOrMissing", c("StageParams", "missing"))
@@ -403,8 +371,6 @@ setMethod("show", "PredictParams",
 
 setClassUnion("PredictParamsOrNULL", c("PredictParams", "NULL"))
 
-setGeneric("ModellingParams", function(balancing, transformParams, selectParams, trainParams, predictParams)
-  standardGeneric("ModellingParams"))
 setClass("ModellingParams", representation(
   balancing = "character",
   transformParams = "TransformParamsOrNULL",
@@ -412,26 +378,16 @@ setClass("ModellingParams", representation(
   trainParams = "TrainParams",
   predictParams = "PredictParamsOrNULL"
 ))
-setMethod("ModellingParams", c("missing", "missing", "missing", "missing", "missing"), function()
+
+
+ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
+                            transformParams = NULL, selectParams = SelectParams(),
+                            trainParams = TrainParams(), predictParams = PredictParams())
 {
-  new("ModellingParams", balancing = "downsample", transformParams = NULL, selectParams = SelectParams(),
-      trainParams = TrainParams(), predictParams = PredictParams())
-})
-setMethod("ModellingParams", c("characterOrMissing", "StageParamsOrMissingOrNULL", "StageParamsOrMissingOrNULL", "StageParamsOrMissing", "StageParamsOrMissingOrNULL"),
-          function(balancing = c("downsample", "upsample", "none"),
-                   transformParams = NULL, selectParams = SelectParams(),
-                   trainParams = TrainParams(), predictParams = PredictParams())
-          {
-            if(missing(balancing)) balancing <- "downsample"
-            balancing <- match.arg(balancing)
-            if(missing(transformParams)) transformParams <- NULL
-            if(missing(selectParams)) selectParams <- SelectParams()
-            if(missing(trainParams)) trainParams <- TrainParams()
-            if(missing(predictParams)) predictParams <- PredictParams()
-            
-            new("ModellingParams", balancing = balancing, transformParams = transformParams,
-                selectParams = selectParams, trainParams = trainParams, predictParams = predictParams)
-          })
+  balancing <- match.arg(balancing)
+  new("ModellingParams", balancing = balancing, transformParams = transformParams,
+      selectParams = selectParams, trainParams = trainParams, predictParams = predictParams)
+}
 
 setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
 standardGeneric("ClassifyResult"))

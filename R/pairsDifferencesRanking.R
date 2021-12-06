@@ -27,13 +27,14 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   if(sum(isNumeric) == 0)
     stop("No features are numeric but at least one must be.")
   
-  if(!all(S4Vectors::first(featurePairs) %in% colnames(measurements)) && !all(S4Vectors::second(featurePairs) %in% colnames(measurements)))
-    stop("Some interactors are not found in 'measurements'. Ensure that 'featurePairs' does not have
-         any features not in 'measurements'.")  
+  suppliedPairs <- length(featurePairs)
+  keepPairs <- S4Vectors::first(featurePairs) %in% colnames(measurements) & S4Vectors::second(featurePairs) %in% colnames(measurements)
+  featurePairs <- featurePairs[keepPairs]
+  if(verbose == 3)
+    message(suppliedPairs, " pairs input and ", length(featurePairs), " pairs remain after filtering based on data set row names.")
   
   if(verbose == 3)
     message("Selecting pairs of features with consistent differences.")
-
 
   oneClassTraining <- which(classes == levels(classes)[1])
   otherClassTraining <- which(classes == levels(classes)[2])

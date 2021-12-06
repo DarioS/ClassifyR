@@ -21,7 +21,7 @@
   \S4method{SVMpredictInterface}{svm,matrix}(model, test, ...)
   \S4method{SVMpredictInterface}{svm,DataFrame}(model, test, classes = NULL, 
                                  returnType = c("both", "class", "score"),
-                                 classifierName = "Support Vector Machine", verbose = 3)
+                                 verbose = 3)
   \S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(model, test, targets = names(test), ...)  
 }
 \arguments{
@@ -49,8 +49,6 @@
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method (e.g. \code{verbose}) or options
              that are used by the \code{\link[e1071]{svm}} function.}
-  \item{classifierName}{Default: Support Vector Machine. Useful for automated plot annotation by
-                        plotting functions within this package.}             
   \item{verbose}{Default: 3. A number between 0 and 3 for the amount of progress messages to give.
                  This function only prints progress messages if the value is 3.}  
 }

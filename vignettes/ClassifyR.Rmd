@@ -52,23 +52,23 @@ library(ClassifyR)
 
 ## Quick Start
 
-If the intention is to quickly apply a few different algorithms and compare their results without going into too much of the details, a convenience function is provided for the most common cross-validation setting and classifiers by the function *quickClassify*. For example, the code below will carry out a standard cross-validation for differences in means using 100 permutations and five folds.
+If the intention is to quickly apply a few different algorithms and compare their results without going into much of the detail, a convenience function is provided for the most common cross-validation setting and classifiers by the function *quickClassify*. For example, the code below will carry out a standard cross-validation for differences in means using 100 permutations and five folds.
 
 ```{r, eval = FALSE}
-result <- quickClassify(measurements, classes, "100 permutations, 5 folds", "DLDA", cores = 16)
+result <- quickClassify(measurements, classes, "100 permutations, 5 folds", classifier = "DLDA", cores = 16)
 ```
 
-Similarly, leave-one-out cross-validation with the naive Bayes classifier for a differential distriution style of classification could be done by the example below.
+Similarly, leave-one-out cross-validation with the naive Bayes classifier for a differential distribution style of classification could be done by the example below.
 
 ```{r, eval = FALSE}
-result <- quickClassify(measurements, classes, "Leave-one-out", "naive Bayes", cores = 16)
+result <- quickClassify(measurements, classes, "leave-1-out", classifier = "naiveBayes", cores = 16)
 ```
 
-For a full list of shortcuts, please view *?quickClassify*.
+For a full list of available shortcuts, please view *?quickClassify*.
 
-## A Closer Look
+## A More Detailed Look at ClassifyR
 
-In the following sections, some of the most useful functions provided in **ClassifyR** will be demonstrated. However, a user can provide any feature selection, training, or prediction function to the classification framework, as long as it meets some simple rules about the input and return parameters. See the appendix section of this guide titled "Rules for New Functions" for a description of these.
+In the following sections, some of the most useful functions provided in **ClassifyR** will be demonstrated. However, a user could wrap any feature selection, training, or prediction function to the classification framework, as long as it meets some simple rules about the input and return parameters. See the appendix section of this guide titled "Rules for New Functions" for a description of these.
 
 ### Comparison to Existing Classification Frameworks
 
@@ -166,7 +166,7 @@ DMresults
 
 Here, 20 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing paralle processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
-### Evalulation of a Classification
+## Evalulation of a Classification
 
 The most frequently selected gene can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
 
@@ -234,15 +234,7 @@ The top-ranked features are fairly similar between all pairs of the 20 cross-val
 
 For a large cross-validation scheme, such as leave-2-out cross-validation, or when *results* contains many classifications, there are many feature set comparisons to make. Note that *rankingPlot* and *selectionPlot* have a *parallelParams* options which allows for the calculation of feature set overlaps to be done on multiple processors.
 
-### Using an Independent Test Set
-
-Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
-
-### Cross-validating Selected Features on a Different Data Set
-
-Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one data set are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone. Of course, the features in the new dataset should have the same naming system as the ones in the old dataset.
-
-## Generating a ROC Plot
+### Generating a ROC Plot
 
 Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, instead of, or as well as, class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously has its *returnType* parameter set to *"both"* by default, so class predictions and scores are both stored in the classification result. In this case, a data frame with two columns (named "class" and "score") is returned by the classifier to the cross-validation framework. Setting *returnType* to *"score"* is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
 
@@ -252,7 +244,19 @@ ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
 
 This ROC plot shows the classifiability of the asthma data set is high. Examples of other included functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
-## Parameter Tuning
+## Other Use Cases
+
+Apart from cross-validation of one data set, ClassifyR can be used in a couple of other ways.
+
+### Using an Independent Test Set
+
+Sometimes, cross-validation is unnecessary. This happens when studies have large sample sizes and are designed such that a large number of samples is prespecified to form a test set. The classifier is only trained on the training sample set, and makes predictions only on the test sample set. This can be achieved by using the function *runTest* directly. See its documentation for required inputs.
+
+### Cross-validating Selected Features on a Different Data Set
+
+Once a cross-validated classification is complete, the usefulness of the features selected may be explored in another dataset. *previousSelection* is a function which takes an existing *ClassifyResult* object and returns the features selected at the equivalent iteration which is currently being processed. This is necessary, because the models trained on one data set are not directly transferrable to a new dataset; the classifier training (e.g. choosing thresholds, fitting model coefficients) is redone. Of course, the features in the new dataset should have the same naming system as the ones in the old dataset.
+
+### Parameter Tuning
 
 Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by a list element named *nFeatures* and the performance type (e.g. Balanced Error) specified by a list elment named *performanceType*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
 

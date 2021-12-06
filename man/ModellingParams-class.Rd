@@ -2,12 +2,11 @@
 \docType{class}
 \alias{ModellingParams}
 \alias{ModellingParams-class}
-\alias{ModellingParams,missing,missing,missing,missing,missing-method}
-\alias{ModellingParams,characterOrMissing,StageParamsOrMissingOrNULL,StageParamsOrMissingOrNULL,StageParamsOrMissing,StageParamsOrMissingOrNULL-method}
 
 \title{Parameters for Data Modelling Specification}
 \description{
-  Collects and checks necessary parameters required for data modelling. Apart from data transfomation that needs to be done within cross-validation (e.g. \code{\link{subtractFromLocation}}), feature selection,
+  Collects and checks necessary parameters required for data modelling. Apart from data transfomation that needs to be
+  done within cross-validation (e.g. \code{\link{subtractFromLocation}}), feature selection,
   model training and prediction, this container also stores a setting for class imbalance rebalancing.
 
 }
@@ -27,8 +26,7 @@
       Creates a \code{ModellingParams} object based on user-specified settings with default values of
       different classification stages geared at homoscedastic numeric data.
 	\describe{
-            \item{\code{balancing}}{Default: "downsample". A character value specifying what kind of class balancing
-            to do, if any.}
+            \item{\code{balancing}}{Default: "downsample". A character value specifying what kind of class balancing to do, if any.}
             \item{\code{transformParams}}{Parameters used for feature transformation specified by a \code{\link{TransformParams}} instance.
             Optional, can be \code{NULL}}.
             \item{\code{selectParams}}{Parameters used during feature selection specified by a \code{\link{SelectParams}} instance.
