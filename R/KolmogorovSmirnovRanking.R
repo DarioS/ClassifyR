@@ -25,7 +25,10 @@ setMethod("KolmogorovSmirnovRanking", "DataFrame", # Clinical data or one of the
   KSdistance <- apply(measurements, 2, function(featureColumn)
                       stats::ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
-  order(KSdistance, decreasing = TRUE)
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(KSdistance, decreasing = TRUE), ]
+  else
+    colnames(measurements)[order(KSdistance, decreasing = TRUE)]
 })
 
 # One or more omics data sets, possibly with clinical data.

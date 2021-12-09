@@ -19,7 +19,7 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Clinical data or one of the o
     stop("No features are numeric but at least one must be.")
 
   if(verbose == 3)
-    message("Selecting features by likelihood ratio ranking.")
+    message("Ranking features by likelihood ratio test statistic.")
 
   allDistribution <- getLocationsAndScales(measurements, ...)
   logLikelihoodRatios <- unlist(mapply(function(featureMeasurements, scale, location)
@@ -37,7 +37,10 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Clinical data or one of the o
     switch(alternative[["scale"]], same = allDistribution[[2]], different = classDistribution[[2]])))    
   }))
   
-  order(logLikelihoodRatios)
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(logLikelihoodRatios), ]
+  else
+    colnames(measurements)[order(logLikelihoodRatios)]
 })
 
 # One or more omics data sets, possibly with clinical data.

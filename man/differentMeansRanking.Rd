@@ -29,7 +29,7 @@
   This ranking method looks for changes in means and uses \code{\link[genefilter]{rowttests}} to rank the features if there are two classes or \code{\link[genefilter]{rowFtests}} if there are three or more classes.
 }
 \value{
-  A vector of feature indices, from the most promising features in the first position to the least promising feature in the last position.
+  A vector or data frame (if \code{MultiAssayExperiment} input) of features, from the most promising features in the first position to the least promising feature in the last position.
 }
 \author{Dario Strbenac}
 \examples{

@@ -12,7 +12,7 @@ by a couple of pre-defined keywords and all parameter setting is automatically t
   \S4method{quickClassify}{DataFrame}(measurements, classes,
 crossVal = c("100 permutations, 5 folds", "100 permutations, 25\% test", "5-fold", "leave-1-out", "leave-2-out"),
                    seed = 12345, cores = 8,
-classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "randomForest", "k-TSP"),
+classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "randomForest", "kTSP"),
                   ...)
   \S4method{quickClassify}{MultiAssayExperiment}(measurements, targets, ...)
 }
@@ -29,8 +29,8 @@ classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
   \item{crossVal}{Default: "100 permutations, 5 folds". A short name describing the kind of cross-validation to do. Self-explanatory.}
-  \item{seed}{Random number seed to use. Sample splitting and classification on parallel threads will be reproducible.}
-  \item{cores}{Number of CPU cores to use. Each cross-validation iteration is done on one core.}
+  \item{seed}{Default: 12345. Random number seed to use. Sample splitting and classification on parallel threads will be reproducible.}
+  \item{cores}{Default: 8. Number of CPU cores to use. Each cross-validation iteration is done on one core.}
   \item{classifier}{Default: "DLDA". A short name describing the kind of classification to do. The options represent:
   \itemize{\item \code{"DLDA"}: Feature selection based on differences in means ranking and diagonal LDA classifier.
   \item \code{"FishersLDA"}: Transformation by subtraction of values from the mean value of all samples in the training set followed by selection by Levene's test statistic ranking based on differential variability and classification by Fisher's LDA.

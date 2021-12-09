@@ -23,7 +23,11 @@ setMethod("bartlettRanking", "DataFrame", # Clinical data or one of the other in
   
   pValues <- apply(measurements, 2, function(featureColumn)
     stats::bartlett.test(featureColumn, classes)[["p.value"]])
-  order(pValues)
+  
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(pValues), ]
+  else
+    colnames(measurements)[order(pValues)]
 })
 
 # One or more omics data sets, possibly with clinical data.

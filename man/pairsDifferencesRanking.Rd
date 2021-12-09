@@ -36,7 +36,7 @@
   within a class, to prevent ties in the ranking of pairs of features.
 }
 \value{
-  A vector of feature indices, from the most promising features in the first position to the least promising feature in the last position.
+  A \code{\link{Pairs}} object, from the most promising feature pair in the first position to the least promising feature pair in the last position.
 }
 \author{Dario Strbenac}
 \seealso{

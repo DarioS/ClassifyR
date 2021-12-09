@@ -16,6 +16,10 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   # Get out the classes if inside of data table.           
   if(is.null(rownames(measurements)))
     stop("'measurements' DataFrame must have sample identifiers as its row names.")
+  
+  if(any(is.na(measurements)))
+    stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
+            
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
@@ -80,7 +84,8 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
 
   # Add extra settings which don't create varieties.
   extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
-  extras <- extras[!sapply(extras, class) == "ClassifyResult"] # Previous methods use an S4 object as an extra. Can't be text or a number.
+  if(length(extras) > 0)
+    extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
   extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
   characteristics <- rbind(characteristics, extrasDF)
   characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)

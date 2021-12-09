@@ -16,7 +16,10 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurements)))
-      stop("'measurements' DataFrame must have sample identifiers as its row names.")  
+      stop("'measurements' DataFrame must have sample identifiers as its row names.")
+    if(any(is.na(measurements)))
+      stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")                
+    
     splitDataset <- .splitDataAndClasses(measurements, classes)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
@@ -73,9 +76,9 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
           selectedColumns <- match(selectedIDs, featuresIDs)
           measurements <- measurements[, selectedColumns, drop = FALSE]
       }
-      }
-    } 
-
+    }
+  } 
+  
   # Training stage.
   if(length(modellingParams@trainParams@intermediate) > 0)
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)

@@ -30,6 +30,7 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   suppliedPairs <- length(featurePairs)
   keepPairs <- S4Vectors::first(featurePairs) %in% colnames(measurements) & S4Vectors::second(featurePairs) %in% colnames(measurements)
   featurePairs <- featurePairs[keepPairs]
+  
   if(verbose == 3)
     message(suppliedPairs, " pairs input and ", length(featurePairs), " pairs remain after filtering based on data set row names.")
   
@@ -40,18 +41,18 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   otherClassTraining <- which(classes == levels(classes)[2])
   oneClassMeasurements <- measurements[oneClassTraining, ]
   otherClassMeasurements <- measurements[otherClassTraining, ]
+
+  numerator <- as.matrix(oneClassMeasurements[, S4Vectors::first(featurePairs)])
+  denominator <- as.matrix(oneClassMeasurements[, S4Vectors::second(featurePairs)])
+  oneClassDifferences <- colMeans(numerator - denominator)
   
-  oneClassDifferences <- sapply(1:length(featurePairs), function(pairIndex)
-                         {
-                           sum(oneClassMeasurements[, S4Vectors::first(featurePairs[pairIndex])] - oneClassMeasurements[, S4Vectors::second(featurePairs[pairIndex])])
-                         })
+  numerator <- as.matrix(otherClassMeasurements[, S4Vectors::first(featurePairs)])
+  denominator <- as.matrix(otherClassMeasurements[, S4Vectors::second(featurePairs)])
+  otherClassDifferences <- colMeans(numerator - denominator)
   
-  otherClassDifferences <- sapply(1:length(featurePairs), function(pairIndex)
-                           {
-                             sum(otherClassMeasurements[, S4Vectors::first(featurePairs[pairIndex])] - otherClassMeasurements[, S4Vectors::second(featurePairs[pairIndex])])
-                           })
   pairsClassDifferences <- otherClassDifferences - oneClassDifferences
-  order(abs(pairsClassDifferences), decreasing = TRUE)
+  
+  featurePairs[order(abs(pairsClassDifferences), decreasing = TRUE)]
 })
 
 # One or more omics data sets, possibly with clinical data.

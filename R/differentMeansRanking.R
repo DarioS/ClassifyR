@@ -17,14 +17,14 @@ setMethod("differentMeansRanking", "DataFrame",
   measurementsMatrix <- t(as.matrix(measurements))
   
   if(length(levels(classes)) == 2)
-    statistics <- genefilter::rowttests(measurementsMatrix, classes)[, "statistic"]
+    pValues <- genefilter::rowttests(measurementsMatrix, classes)[, "p.value"]
   else
-    statistics <- genefilter::rowFtests(measurementsMatrix, classes)[, "statistic"]
+    pValues <- genefilter::rowFtests(measurementsMatrix, classes)[, "p.value"]
   
   if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(statistics, decreasing = TRUE)]
+    S4Vectors::mcols(measurements)[order(pValues), ]
   else
-    colnames(measurements)[order(statistics, decreasing = TRUE)]
+    colnames(measurements)[order(pValues)]
 })
 
 # One or more omics data sets, possibly with clinical data.

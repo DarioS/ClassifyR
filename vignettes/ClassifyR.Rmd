@@ -46,7 +46,7 @@ Importantly, ClassifyR implements a number of methods for classification using d
 
 Load the package.
 
-```{r}
+```{r, results = "hide"}
 library(ClassifyR)
 ```
 
@@ -276,7 +276,7 @@ length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[1:5]
 ```
 
-The cost value of 1 is chosen in all of the folds of the first sample permutation.
+The cost value of 1 or 10 is often chosen.
 
 ## Summary
 

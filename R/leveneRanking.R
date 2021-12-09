@@ -24,7 +24,11 @@ setMethod("leveneRanking", "DataFrame", # Clinical data or one of the other inpu
 
   pValues <- apply(measurements, 2, function(featureColumn)
              car::leveneTest(featureColumn, classes)[["Pr(>F)"]][1])
-  order(pValues)
+  
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(pValues), ]
+  else
+    colnames(measurements)[order(pValues)]
 })
 
 # One or more omics data sets, possibly with clinical data.

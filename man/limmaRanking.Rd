@@ -4,8 +4,9 @@
 \alias{limmaRanking,DataFrame-method}
 \alias{limmaRanking,MultiAssayExperiment-method}
 \title{Ranking of Differentially Abundant Features}
-\description{Uses a moderated t-test with empirical Bayes shrinkage to rank
+\description{Uses a moderated F-test with empirical Bayes shrinkage to rank
              differentially expressed features based on differences of means.
+             This means it works when there are three or more classes.
        }
 \usage{
   \S4method{limmaRanking}{matrix}(measurements, classes, ...)
@@ -28,10 +29,10 @@
                  This function only prints progress messages if the value is 3.}
 }
 \details{
-  This ranking method looks for changes in means and uses a moderated t-test to do so.
+  This ranking method looks for changes in means and uses a moderated F-test to do so.
 }
 \value{
-  A vector of feature indices, from the most promising features in the first position to the least promising feature in the last position.
+  A vector or data frame (if \code{MultiAssayExperiment} input) of features, from the most promising features in the first position to the least promising feature in the last position.
 }
 
 \author{Dario Strbenac}

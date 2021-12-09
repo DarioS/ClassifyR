@@ -176,8 +176,8 @@
 .addIntermediates <- function(params)
 {
   intermediateName <- params@intermediate
-  intermediates <- dynGet(intermediateName, inherits = TRUE)
-  names(intermediates) <- intermediateName
+  intermediates <- list(dynGet(intermediateName, inherits = TRUE))
+  if(is.null(names(params@intermediate))) names(intermediates) <- intermediateName else names(intermediates) <- names(params@intermediate)
   params@otherParams <- c(params@otherParams, intermediates)
   params
 }
@@ -192,6 +192,7 @@
   tuneParams <- tuneParams[-match(c("performanceType", "nFeatures"), names(tuneParams))] # Only used as evaluation metric.
   featureRanking <- modellingParams@selectParams@featureRanking
   otherParams <- modellingParams@selectParams@otherParams
+  doSubset <- modellingParams@selectParams@subsetToSelections 
   modellingParams@selectParams <- NULL
   betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
   if(is.function(featureRanking)) # Not a list for ensemble selection.
@@ -201,7 +202,7 @@
     paramList <- append(paramList, otherParams) # Used directly by a feature selection function for rankings of features.
     if(length(tuneParams) == 0) tuneParams <- list(None = "none")
     tuneCombosSelect <- expand.grid(tuneParams, stringsAsFactors = FALSE)
-    
+
     rankings <- lapply(1:nrow(tuneCombosSelect), function(rowIndex)
     {
       tuneCombo <- tuneCombosSelect[rowIndex, , drop = FALSE]
@@ -222,15 +223,31 @@
       # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
       performances <- sapply(1:nrow(tuneCombosTrain), function(rowIndex)
       {
-        topIndices <- rankingsVariety[1:tuneCombosTrain[rowIndex, "topN"]]
-        measurementsSelected <- measurements[training, topIndices, drop = FALSE] # Features in columns
+        whichTry <- 1:tuneCombosTrain[rowIndex, "topN"]
+        if(doSubset)
+        {
+          if(is.null(mcols(measurements))) # There are no different data sets.
+          {
+            topFeatures <- rankingsVariety[whichTry]
+            measurements <- measurements[, topFeatures, drop = FALSE] # Features in columns
+          } else { # Match to relevant variables, considering data set of them.
+            topFeatures <- rankingsVariety[whichTry, ]
+            topIDs <-  do.call(paste, topFeatures)
+            featuresIDs <- do.call(paste, S4Vectors::mcols(measurements)[, c("dataset", "feature")])
+            topColumns <- match(topIDs, featuresIDs)
+            measurements <- measurements[, topColumns, drop = FALSE]
+          }
+        } else { # Pass along features to use.
+          modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, setNames(list(rankingsVariety[whichTry]), names(modellingParams@trainParams@intermediate)))
+        }
+        measurements <- measurements[training, , drop = FALSE]
         if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
-        
+        modellingParams@trainParams@intermediate <- character(0)
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurementsSelected, trainClasses,
-                            training = 1:nrow(measurementsSelected), testing = 1:nrow(measurementsSelected),
+          result <- runTest(measurements, trainClasses,
+                            training = 1:nrow(measurements), testing = 1:nrow(measurements),
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
           
@@ -241,7 +258,7 @@
            predictedClasses <- predictions
           calcExternalPerformance(classes[training], predictedClasses, performanceType)
         } else {
-           result <- runTests(measurementsSubset, classes[training], crossValParams, modellingParams, verbose = verbose)
+           result <- runTests(measurements, classes[training], crossValParams, modellingParams, verbose = verbose)
            result <- calcCVperformance(result, performanceType)
            median(performance(aResult)[[performanceType]])
          }
@@ -250,17 +267,22 @@
         bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
         c(bestOne, performances[bestOne])
       })
-
+    
       tunePick <- ifelse(betterValues == "lower", which.min(bestPerformers[2, ])[1], which.max(bestPerformers[2, ])[1])
-        
+      
       if(verbose == 3)
          message("Features selected.")
       
       tuneRow <- tuneCombosTrain[bestPerformers[1, tunePick], , drop  = FALSE]
-      if(ncol(tuneRow) > 1) tuneDetails <- tuneRow else tuneDetails <- NULL
+      if(ncol(tuneRow) > 1) tuneDetails <- tuneRow[, -1, drop = FALSE] else tuneDetails <- NULL
       
-      list(ranked = rankings[[tunePick]],
-           selected = rankings[[tunePick]][1:tuneRow[, "topN"]], tune = tuneDetails)
+      rankingUse <- rankings[[tunePick]]
+      if(is.null(mcols(measurements)))
+        selection <- rankingUse[1:tuneRow[, "topN"]]
+      else # A data frame. Subset the rows.
+        selection <- rankingUse[1:tuneRow[, "topN"], ]
+      
+      list(ranked = rankingUse, selected = selection, tune = tuneDetails)
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
@@ -334,7 +356,7 @@
       if(crossValParams@tuneMode == "Resubstitution")
       {
         result <- runTest(measurements, classes,
-                          training = training, testing = testing,
+                          training = training, testing = training,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
         
@@ -345,7 +367,7 @@
           predictedClasses <- predictions
         sapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, performanceName))
       } else {
-        result <- runTests(measurementsSubset, classes,
+        result <- runTests(measurementsTrain, trainClasses,
                            crossValParams, modellingParams,
                            verbose = verbose, .iteration = "internal")
         result <- calcCVperformance(result, performanceName)
@@ -368,7 +390,7 @@
   if(length(modellingParams@trainParams@otherParams) > 0)
     paramList <- c(paramList, modellingParams@trainParams@otherParams)
   paramList <- c(paramList, verbose = verbose)
-
+  
   trained <- do.call(modellingParams@trainParams@classifier, paramList)
   if(verbose >= 2)
     message("Training completed.")  

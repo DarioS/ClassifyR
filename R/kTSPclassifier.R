@@ -23,7 +23,7 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
-            
+          
   splitDataset <- .splitDataAndClasses(measurements, classes)
   trainingMatrix <- splitDataset[["measurements"]]
   isNumeric <- sapply(trainingMatrix, is.numeric)

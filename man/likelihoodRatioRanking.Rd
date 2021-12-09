@@ -4,8 +4,7 @@
 \alias{likelihoodRatioRanking,DataFrame-method}
 \alias{likelihoodRatioRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Distributions with Likelihood Ratio Statistic}
-\description{Ranks features by largest ratio and chooses the features which have
-             the best resubstitution performance.
+\description{Ranks features from largest difference of log likelihoods (null hypothesis - alternate hypothesis) to smallest.
 }
 \usage{
   \S4method{likelihoodRatioRanking}{matrix}(measurements, classes, ...)
@@ -43,7 +42,7 @@
   is the normal distribution.
 }
 \value{
-  A vector of feature indices, from the most promising features in the first position to the least promising feature in the last position.
+  A vector or data frame (if \code{MultiAssayExperiment} input) of features, from the most promising features in the first position to the least promising feature in the last position.
 }
 \author{Dario Strbenac}
 

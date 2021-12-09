@@ -34,8 +34,12 @@ setMethod("edgeRranking", "DataFrame",
   if(verbose == 3)
     message("Fitting linear model.")
   fit <- do.call(edgeR::glmFit, paramList)
-  result <- edgeR::topTags(edgeR::glmLRT(fit, coef = 2), n = Inf, adjust.method = "none")
-  match(rownames(result[["table"]]), colnames(counts))
+  test <- edgeR::glmLRT(fit, coef = 2:length(levels(classes)))[["table"]]
+  
+  if(!is.null(S4Vectors::mcols(counts)))
+    S4Vectors::mcols(counts)[order(test[, "PValue"]), ]
+  else
+    colnames(counts)[order(test[, "PValue"])]
 })
 
 # One or more omics data sets, possibly with clinical data.

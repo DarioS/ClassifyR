@@ -19,7 +19,12 @@ setMethod("limmaRanking", "DataFrame",
     fitParams <- append(fitParams, ...)
   linearModel <- do.call(limma::lmFit, fitParams)
   linearModel <- limma::eBayes(linearModel)
-  match(rownames(limma::topTable(linearModel, 2, number = Inf, sort.by = "p")), colnames(measurements))
+  linearModel <- linearModel[, -1] # Get rid of intercept.
+  
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(linearModel[["F.p.value"]]), ]
+  else
+    colnames(measurements)[order(linearModel[["F.p.value"]])]
 })
 
 # One or more omics data sets, possibly with clinical data.

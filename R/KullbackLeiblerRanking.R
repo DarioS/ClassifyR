@@ -30,7 +30,11 @@ setMethod("KullbackLeiblerRanking", "DataFrame", # Clinical data or one of the o
                          ((oneClassDistribution[[2]])^2) / ((otherClassDistribution[[2]])^2) +
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
 
-  order(divergence, decreasing = TRUE)
+  if(!is.null(S4Vectors::mcols(measurements)))
+    S4Vectors::mcols(measurements)[order(divergence, decreasing = TRUE), ]
+  else
+    colnames(measurements)[order(divergence, decreasing = TRUE)]
+  
 })
 
 # One or more omics data sets, possibly with clinical data.
