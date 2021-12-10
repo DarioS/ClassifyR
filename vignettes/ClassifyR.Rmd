@@ -236,10 +236,12 @@ For a large cross-validation scheme, such as leave-2-out cross-validation, or wh
 
 ### Generating a ROC Plot
 
-Some classifiers can be set to output scores or probabilities representing how likely a sample is to be from one of the classes, instead of, or as well as, class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously has its *returnType* parameter set to *"both"* by default, so class predictions and scores are both stored in the classification result. In this case, a data frame with two columns (named "class" and "score") is returned by the classifier to the cross-validation framework. Setting *returnType* to *"score"* is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
+Some classifiers can output scores or probabilities representing how likely a sample is to be from one of the classes, instead of, or as well as, class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously by default has its *returnType* parameter set to *"both"*, so class predictions and scores are both stored in the classification result. So does diagonal LDA. In this case, a data frame with class predictions and scores for each class is returned by the classifier to the cross-validation framework. Setting *returnType* to *"score"* for a classifier which has such an option is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
+
+By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is 95% interval.
 
 ```{r, fig.height = 5, fig.width = 6}
-ROCcurves <- ROCplot(list(DDresults), fontSizes = c(24, 12, 12, 12, 12))
+ROCcurves <- ROCplot(list(DMresults, DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
 This ROC plot shows the classifiability of the asthma data set is high. Examples of other included functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.

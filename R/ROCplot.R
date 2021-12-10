@@ -2,7 +2,7 @@ setGeneric("ROCplot", function(results, ...)
 standardGeneric("ROCplot"))
 
 setMethod("ROCplot", "list", 
-          function(results, nBins = sapply(results, totalPredictions),
+          function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "Classifier Name", lineColours = NULL,
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
                    plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate",
@@ -11,63 +11,106 @@ setMethod("ROCplot", "list",
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
   if(!requireNamespace("scales", quietly = TRUE))
-    stop("The package 'scales' could not be found. Please install it.")   
+    stop("The package 'scales' could not be found. Please install it.")
+  mode <- match.arg(mode)
                       
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   distinctClasses <- levels(actualClasses(results[[1]]))
   numberDistinctClasses <- length(distinctClasses)
   comparisonName <- comparison
   comparisonValues <- sapply(results, function(result) result@characteristics[match(comparisonName, result@characteristics[, "characteristic"]), "value"])
-
-  plotData <- mapply(function(result, comparisonValue, resultBins)
+  
+  plotDataList <- mapply(function(result, comparisonValue)
   {
     predictions <- result@predictions
-    if(class(predictions) == "list") # A list of data.frames. Concatenate them.
-      predictions <- do.call(rbind, predictions)
-
-    actualClasses <- actualClasses(result)[match(predictions[, "sample"], sampleNames(result))]
-    do.call(rbind, lapply(levels(actualClasses), function(class)
+    if(mode == "average")
     {
-      samplesBins <- .binValues(predictions[, class], resultBins)
-      boundaries <- sapply(split(predictions[, class], samplesBins), min)
-      totalPositives <- sum(actualClasses == class)
-      totalNegatives <- nrow(predictions) - totalPositives
-      
-      rates <- do.call(rbind, lapply(resultBins:1, function(lowerBin)
+      if("fold" %in% colnames(predictions))
       {
-        consideredSamples <- samplesBins %in% lowerBin:resultBins
-        truePositives <- sum(predictions[consideredSamples, class] >= boundaries[lowerBin] & actualClasses[consideredSamples] == class)
-        falsePositives <- sum(predictions[consideredSamples, class] >= boundaries[lowerBin] & actualClasses[consideredSamples] != class)
-        TPR <- truePositives / totalPositives
-        FPR <- falsePositives / totalNegatives
-        data.frame(FPR = FPR, TPR = TPR, class = class)
-      }))
-      
-      rates <- rbind(data.frame(FPR = 0, TPR = 0, class = class), rates)
-      
-      areaSum = 0
-      for(index in 2:nrow(rates))
+        if("permutation" %in% colnames(predictions))
+          predictionsList <- split(predictions, paste(predictions[, "permutation"], predictions[, "fold"]))
+        else # Just k folds.
+          predictionsList <- split(predictions, predictions[, "fold"])
+      } else if("permutation" %in% colnames(predictions))
       {
-        areaSum <- areaSum + (rates[index, "FPR"] - rates[index - 1, "FPR"]) * mean(rates[(index - 1) : index, "TPR"])
+        predictionsList <- split(predictions, predictions[, "permutation"])
       }
-       
-      summaryTable <- data.frame(rep(comparisonValue, resultBins + 1),
-                                 rates,
-                                 AUC = rep(round(areaSum, 2), resultBins + 1))
-      colnames(summaryTable)[1] <- comparisonName
-      summaryTable
-    }))
-  }, results, comparisonValues, nBins, SIMPLIFY = FALSE)
+    } else {
+      predictionsList <- list(predictions)
+    }
+
+    allPRlist <- lapply(predictionsList, function(predictions)
+    {
+      actualClasses <- actualClasses(result)[match(predictions[, "sample"], sampleNames(result))]
+      do.call(rbind, lapply(levels(actualClasses), function(class)
+      {
+        totalPositives <- sum(actualClasses == class)
+        totalNegatives <- sum(actualClasses != class)
+        classOrder <- order(predictions[, class], decreasing = TRUE)
+        predictions <- predictions[classOrder, ]
+        actualClasses <- actualClasses[classOrder]
+        rates <- do.call(rbind, lapply(1:nrow(predictions), function(lowerRow)
+        {
+          consideredSamples <- 1:lowerRow
+          truePositives <- sum(actualClasses[consideredSamples] == class)
+          falsePositives <- sum(actualClasses[consideredSamples] != class)
+          TPR <- truePositives / totalPositives
+          FPR <- falsePositives / totalNegatives
+          data.frame(FPR = FPR, TPR = TPR, class = class)
+        }))
+        
+        rates <- rbind(data.frame(FPR = 0, TPR = 0, class = class), rates)
+         
+        summaryTable <- data.frame(rep(comparisonValue, nrow(predictions) + 1),
+                                   rates)
+        colnames(summaryTable)[1] <- comparisonName
+        summaryTable
+      }))
+    })
+  }, results, comparisonValues, SIMPLIFY = FALSE)
   
-  plotData <- do.call(rbind, plotData)
+  if(mode == "merge") {
+    plotDataList <- lapply(plotDataList, function(resultTable)
+    {
+      .calcArea(resultTable[[1]], distinctClasses)
+    })
+    plotData <- do.call(rbind, plotDataList)
+  } else { # ROC curve averaging.
+    # Make mean and intervals of ROC curves of each set of predictions.
+    quantiles <- c((100 - interval)/100/2, 1 - (100 - interval)/100/2)
+    plotData <- do.call(rbind, mapply(function(allPRtables, comparisonValue) # Process all tables for one ClassifyResult.
+    {
+      combinedTable <- do.call(rbind, allPRtables) # To calculate change points.
+      averagedTable <- do.call(rbind, lapply(distinctClasses, function(aClass)
+      {
+        classTable <- subset(combinedTable, class = aClass)
+        changePoints <- sort(unique(classTable[, "FPR"]))
+        summaryTable <- do.call(rbind, lapply(changePoints, function(changePoint)
+        {
+          TPRs <- sapply(allPRtables, function(PRtable)
+          {
+            PRtable <- subset(PRtable, class = aClass)
+            PRtable[max(which(PRtable[, "FPR"] <= changePoint)), "TPR"]
+          })
+          data.frame(FPR = changePoint, TPR = mean(TPRs), lower = unname(quantile(TPRs, quantiles[1])), upper = unname(quantile(TPRs, quantiles[2])), class = aClass)
+        }))
+        summaryTable <- rbind(data.frame(FPR = 0, TPR = 0, lower = 0, upper = 0, class = aClass), summaryTable)
+        summaryTable <- data.frame(comparisonValue, summaryTable)
+        colnames(summaryTable)[1] <- comparisonName
+        summaryTable
+      }))
+      .calcArea(averagedTable, distinctClasses)
+    }, plotDataList, comparisonValues, SIMPLIFY = FALSE))
+    
+  }
   
   if(numberDistinctClasses > 2)
     lineColour <- "class"
   else
     lineColour <- comparison
-
+  
   if(is.null(lineColours))
-      lineColours <- scales::hue_pal()(ifelse(lineColour == "class", numberDistinctClasses, length(unique(plotData[, comparisonName]))))
+      lineColours <- scales::hue_pal()(ifelse(lineColour == "class", numberDistinctClasses, length(unique(comparisonValues))))
   if(is.null(legendTitle))
     legendTitle <- ifelse(lineColour == "class", "Class", comparisonName)
   
@@ -95,6 +138,9 @@ setMethod("ROCplot", "list",
                 ROCplot <- ggplot2::ggplot(plotData, ggplot2::aes(x = FPR, y = TPR, colour = !!lineColour)) +
                            ggplot2::geom_line(size = lineWidth) + ggplot2::xlab(NULL) + ggplot2::ylab(NULL) + ggplot2::labs(colour = legendTitle) + ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, size = lineWidth, colour = "black") + ggplot2::scale_x_continuous(breaks = labelPositions, limits = c(0, 1)) +  ggplot2::scale_y_continuous(breaks = labelPositions, limits = c(0, 1)) +
                            ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = c(1, 0), legend.justification = c(1, 0), legend.background = ggplot2::element_rect(fill = "transparent"), legend.title = ggplot2::element_text(size = fontSizes[4], hjust = 0), legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::guides(colour = ggplot2::guide_legend(title.hjust = 0.5)) + ggplot2::scale_colour_manual(values = lineColours)
+                
+                if(mode == "average") # Add some confidence bands.
+                  ROCplot <- ROCplot + ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, fill = !!lineColour), alpha = 0.3)
                 
                 if(numberDistinctClasses == 2)
                   ROCplot <- ROCplot + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) + ggplot2::ggtitle(plotTitle) + ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5))

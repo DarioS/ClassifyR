@@ -7,7 +7,7 @@
              created if the data set has three or more classes.
        }
 \usage{
-  \S4method{ROCplot}{list}(results, nBins = sapply(results, totalPredictions),
+  \S4method{ROCplot}{list}(results, mode = c("merge", "average"), interval = 95,
           comparison = "Classifier Name", lineColours = NULL, lineWidth = 1,
           fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
         plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate",
@@ -15,16 +15,20 @@
 }
 \arguments{
   \item{results}{A list of \code{\link{ClassifyResult}} objects.}
-  \item{nBins}{The number of intervals to group the samples' scores into. By default, there are as
-               many bins as there were predictions made, for each result object.}
+  \item{mode}{Default: "merge". Whether to merge all predictions of all iterations of
+  cross-validation into one set or keep them separate. Keeping them separate will cause
+  separate ROC curves to be computed for each iteration and  confidence intervals to be drawn
+  with the solid line being the averaged ROC curve.}
+  \item{interval}{Default: 95 (percent). The percent confidence interval to draw around the
+  averaged ROC curve, if mode is \code{"each"}.}
   \item{comparison}{The aspect of the experimental design to compare. Can be any
                     characteristic that all results share. If the data set has two
                     classes, then the slot name with factor levels to be used
                     for colouring the lines. Otherwise, it specifies the variable
                     used for plot facetting.}
   \item{lineColours}{A vector of colours for different levels of the comparison
-                     parameter. If \code{NULL}, a default colour palette is
-                     automatically generated.}
+                     parameter, or if there are three or more classes, the classes.
+                     If \code{NULL}, a default colour palette is automatically generated.}
   \item{lineWidth}{A single number controlling the thickness of lines drawn.}
   \item{fontSizes}{A vector of length 5. The first number is the size of the title.
                    The second number is the size of the axes titles and AUC text, if it
@@ -48,11 +52,6 @@
   
   For cross-validated classification, all predictions from all iterations are considered simultaneously,
   to calculate one curve per classification.
-  
-  The number of bins determines how many pairs of TPR and FPR points will be used to draw the plot.
-  A higher number will result in a smoother ROC curve.
-  
-  The AUC is calculated using the trapezoidal rule.
 }
 \value{
   An object of class \code{ggplot} and a plot on the current graphics device, if \code{plot} is \code{TRUE}.
