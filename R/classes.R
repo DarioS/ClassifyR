@@ -14,6 +14,7 @@ setClassUnion("functionOrList", c("function", "list"))
 setClassUnion("numericOrNULL", c("numeric", "NULL"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 setClassUnion("listOrNULL", c("list", "NULL"))
+setClassUnion("DataFrameOrDataFrameList", c("DataFrame", "DataFrameList"))
 
 setClass("CrossValParams", representation(
   samplesSplits = "character",
@@ -22,14 +23,13 @@ setClass("CrossValParams", representation(
   folds = "numericOrNULL",
   leave = "numericOrNULL",
   tuneMode = "character",
-  parallelParams = "BiocParallelParam",
-  seed = "numeric"
+  parallelParams = "BiocParallelParam"
   )
 )
 
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
-                          tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam(), seed = 12345)
+                           tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam())
 {
   samplesSplits <- match.arg(samplesSplits)
   tuneMode <- match.arg(tuneMode)
@@ -52,7 +52,7 @@ CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percenta
 
   new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
       percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
-      parallelParams = parallelParams, seed = seed)
+      parallelParams = parallelParams)
 }
 
 setClass("StageParams", representation("VIRTUAL"))

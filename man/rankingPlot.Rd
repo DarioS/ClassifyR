@@ -76,7 +76,7 @@ reference level. The overlaps are converted to percentages and plotted as linepl
 
 \examples{
   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
-                          premutation = rep(1:2, each= 50),
+                          permutation = rep(1:2, each = 50),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))

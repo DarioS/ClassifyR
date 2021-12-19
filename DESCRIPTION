@@ -10,7 +10,7 @@ Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
 biocViews: Classification, Survival
 Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 1.6.0), BiocParallel
-Imports: locfit, grid, utils, plyr
+Imports: locfit, grid, utils, dplyr, tidyr, rlang
 Suggests: limma, genefilter, edgeR, car, Rmixmod, ggplot2 (>= 3.0.0), gridExtra (>= 2.0.0), cowplot,
         BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
         scales, e1071, rmarkdown, IRanges, randomForest, robustbase, glmnet, class

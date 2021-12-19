@@ -19,7 +19,7 @@
   \S4method{elasticNetGLMtrainInterface}{matrix}(measurements, classes, ...)
   \S4method{elasticNetGLMtrainInterface}{DataFrame}(measurements, classes, lambda = NULL,
                              ..., verbose = 3)
-  \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(measurements, targets = names(measurements), classes, ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, test, ...)
   \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(model, test, classes = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
   \S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(model, test, targets = names(test), ...)                                   
@@ -30,11 +30,10 @@
                      For a \code{matrix}, the rows are features, and the columns are samples.
                      If of type \code{\link{DataFrame}}, the data set is subset to only those
                      features of type \code{integer}.}
-  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements} or if the measurements are
-                 of class \code{DataFrame} a character vector of length 1 containing the
-                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{lambda}{The lambda value passed directly to \code{\link[glmnet]{glmnet}} if the training
   function is used or passed as \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction
   function is used.}

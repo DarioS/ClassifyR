@@ -33,9 +33,9 @@ setMethod("leveneRanking", "DataFrame", # Clinical data or one of the other inpu
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("leveneRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), ...)
+          function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   dataTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
 

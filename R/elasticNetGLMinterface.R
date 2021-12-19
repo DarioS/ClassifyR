@@ -35,9 +35,9 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
 
 # One or more omics datasets, possibly with clinical data.
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), ...)
+function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   

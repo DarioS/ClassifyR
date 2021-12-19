@@ -10,13 +10,16 @@
   \S4method{DMDranking}{matrix}(measurements, classes, ...)
   \S4method{DMDranking}{DataFrame}(measurements, classes, differences = c("both", "location", "scale"),
              ..., verbose = 3)
-  \S4method{DMDranking}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{DMDranking}{MultiAssayExperiment}(measurements, targets = names(measurements), classes, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.}
-  \item{classes}{A vector of class labels or a column name of a column containing the classes.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}

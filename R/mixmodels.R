@@ -49,9 +49,9 @@ setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("mixModelsTrain", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), ...)
+          function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   dataTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]            
   mixModelsTrain(dataTable, classes, ...)

@@ -11,7 +11,7 @@
     \item{}{
       \preformatted{CrossValParams(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
       permutations = 100, percentTest = 25, folds = 5, leave = 2,
-      tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam(), seed = 12345)}
+      tuneMode = c("Resubstitution", "Nested CV"), parallelParams = SerialParam())}
       Creates a \code{CrossValParams} object based on user-specified settings with default values of
       different classification stages geared at homoscedastic numeric data.
 	\describe{
@@ -28,14 +28,9 @@
             cross-validation, sometimes written as LOOCV.}
             \item{\code{tuneMode}}{Default: Resubstitution. The scheme to use for selecting any tuning parameters.}
             \item{\code{parallelParams}}{An instance of \code{\link{BiocParallelParam}} specifying the kind of parallelisation
-            to use. Default is to use one core on Windows operating system computers or two cores
-            less than the total number of cores the computer has, if it has four or more cores and
-            is an operating system other than Windows, as is the default of \code{\link{bpparam}}. To make
-            results fully reproducible, please choose a specific back-end depending on your operating system
-            and also set \code{RNGseed} to a number.}
-            \item{\code{seed}}{Default: 12345. Random number generator seed. Affects how samples
-            are permuted for schemes which use a permutation of samples.}
-
+            to use. Default is to use two cores less than the total number of cores the computer has, if it has four or more cores,
+            otherwise one core, as is the default of \code{\link{bpparam}}. To make results fully reproducible, please choose a
+            specific back-end depending on your operating system and also set \code{RNGseed} to a number.}
 	         }
     }
   }
@@ -44,6 +39,8 @@
 \author{Dario Strbenac}
 \examples{
   CrossValParams() # Default is 100 permutations and 5 folds of each.
-  CrossValParams("Leave-k-Out", leave = 2, parallelParams = SnowParam(workers = 4, RNGseed = 999))
-  # Fully reproducible Leave-2-out cross-validation on 4 CPUs.
+  snow <- SnowParam(workers = 4, RNGseed = 999)
+  CrossValParams("Leave-k-Out", leave = 2, parallelParams = snow)
+  # Fully reproducible Leave-2-out cross-validation on 4 cores,
+  # even if feature selection or classifier use random sampling.
 }

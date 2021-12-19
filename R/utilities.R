@@ -17,7 +17,7 @@
   list(measurements = measurements, classes = classes)
 }
 
-.MAEtoWideTable <- function(measurements, targets, restrict = "numeric")
+.MAEtoWideTable <- function(measurements, targets, classes, restrict = "numeric")
 {
   if(is.null(targets))
     stop("'targets' is not specified but must be.")  
@@ -28,17 +28,13 @@
   {
     clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))
     targets <- targets[-match("clinical", targets)]
-  } else if("class" %in% colnames(MultiAssayExperiment::colData(measurements))) {
-    clinicalColumns <- "class"
-  } else {
-    clinicalColumns <- NULL
   }
-
+  
   if(length(targets) > 0)
   {
     measurements <- measurements[, , targets]
   
-    dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
+    dataTable <- wideFormat(measurements, colDataCols = classes, check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
     S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
@@ -47,13 +43,13 @@
     missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
     S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
     S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
-    if("class" %in% colnames(dataTable))
-      classes <- dataTable[, "class"]
+    if(classes %in% colnames(dataTable))
+      classesFactor <- dataTable[, classes]
     else
-      classes <- NULL
+      classesFactor <- NULL
   } else { # Must have only been clinical data.
     dataTable <- MultiAssayExperiment::colData(measurements)
-    classes <- dataTable[, "class"]
+    classesFactor <- dataTable[, classes]
   }
   
   if(!is.null(restrict))
@@ -70,11 +66,11 @@
   }
 
   # Only return independent variables in the table.
-  dropColumns <- na.omit(match(c("primary", "class"), colnames(dataTable)))
+  dropColumns <- na.omit(match(c("primary", classes), colnames(dataTable)))
   if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
   
   if(!is.null(classes))
-    list(dataTable = dataTable, classes = classes)
+    list(dataTable = dataTable, classes = classesFactor)
   else
     dataTable
 }
@@ -226,7 +222,7 @@
         whichTry <- 1:tuneCombosTrain[rowIndex, "topN"]
         if(doSubset)
         {
-          if(is.null(mcols(measurements))) # There are no different data sets.
+          if(is.null(S4Vectors::mcols(measurements))) # There are no different data sets.
           {
             topFeatures <- rankingsVariety[whichTry]
             measurements <- measurements[, topFeatures, drop = FALSE] # Features in columns
@@ -277,7 +273,7 @@
       if(ncol(tuneRow) > 1) tuneDetails <- tuneRow[, -1, drop = FALSE] else tuneDetails <- NULL
       
       rankingUse <- rankings[[tunePick]]
-      if(is.null(mcols(measurements)))
+      if(is.null(S4Vectors::mcols(measurements)))
         selection <- rankingUse[1:tuneRow[, "topN"]]
       else # A data frame. Subset the rows.
         selection <- rankingUse[1:tuneRow[, "topN"], ]
@@ -493,8 +489,8 @@
   {
     consideredFeatures <- ncol(measurements)
   } else {
-    consideredFeatures <- nrow(subset(mcols(measurements), dataset == "clinical")) +
-      length(unique(subset(mcols(measurements), dataset != "clinical")[, "dataset"]))
+    consideredFeatures <- nrow(subset(S4Vectors::mcols(measurements), dataset == "clinical")) +
+      length(unique(subset(S4Vectors::mcols(measurements), dataset != "clinical")[, "dataset"]))
   }
   list(allFeatures, featureNames, consideredFeatures)
 }

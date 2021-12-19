@@ -9,16 +9,14 @@
 }
 \usage{
   \S4method{interactorDifferences}{matrix}(measurements, ...)
-  \S4method{interactorDifferences}{DataFrame}(measurements, networkSets = NULL, absolute = FALSE, verbose = 3)
+  \S4method{interactorDifferences}{DataFrame}(measurements, featurePairs = NULL, absolute = FALSE, verbose = 3)
   \S4method{interactorDifferences}{MultiAssayExperiment}(measurements, target = NULL, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.}
-  \item{networkSets}{A object of type \code{\link{FeatureSetCollection}}. The \code{sets} slot must contain
-                     a list of two-column matrices with each row corresponding to a binary interaction. Such
-                     sub-networks may be determined by a community detection algorithm.}
+  \item{featurePairs}{A object of type \code{\link{Pairs}}.}
   \item{absolute}{If TRUE, then the absolute values of the differences are returned.}
   \item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the name of the
                  data table to be used.}
@@ -43,11 +41,9 @@
   \emph{Nature Biotechnology}, Volume 27 Issue 2, \url{https://www.nature.com/articles/nbt.1522}.
 }
 \examples{
-  networksList <- list(`A Hub` = matrix(c('A', 'A', 'A', 'B', 'C', 'D'), ncol = 2),
-                       `G Hub` = matrix(c('G', 'G', 'G', 'H', 'I', 'J'), ncol = 2))
-  netSets <- FeatureSetCollection(networksList)
+  pairs <- Pairs(rep(c('A', 'G'), each = 3), c('B', 'C', 'D', 'H', 'I', 'J'))
                            
-  # Differential correlation for sub-network with hub A.                                           
+  # Class differences for interactors of A.                                           
   measurements <- matrix(c(5.7, 10.1, 6.9, 7.7, 8.8, 9.1, 11.2, 6.4, 7.0, 5.5,
                            5.6, 9.6, 7.0, 8.4, 10.8, 12.2, 8.1, 5.7, 5.4, 12.1,
                            4.5, 9.0, 6.9, 7.0, 7.3, 6.9, 7.8, 7.9, 5.7, 8.7,
@@ -57,5 +53,5 @@
   rownames(measurements) <- LETTERS[1:10]
   colnames(measurements) <- paste("Patient", 1:10)
   
-  interactorDifferences(measurements, netSets)
+  interactorDifferences(measurements, pairs)
 }

@@ -40,9 +40,9 @@ setMethod("classifyInterface", "DataFrame", function(measurements, classes, test
 })
 
 setMethod("classifyInterface", "MultiAssayExperiment",
-function(measurements, test, targets = names(measurements), ...)
+function(measurements, test, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, "integer")
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, "integer")
   trainingMatrix <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets, "integer")

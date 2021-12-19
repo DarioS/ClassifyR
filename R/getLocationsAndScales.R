@@ -37,7 +37,7 @@ setMethod("getLocationsAndScales", "MultiAssayExperiment",
   if(!all(targets %in% c(names(measurements), "clinical")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
             
-  combinedData <- .MAEtoWideTable(measurements, targets)
+  combinedData <- .MAEtoWideTable(measurements, targets, NULL)
   if(class(combinedData) == "list")
     combinedData <- combinedData[["dataTable"]]
   getLocationsAndScales(combinedData, ...)            

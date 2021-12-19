@@ -13,14 +13,15 @@
   \S4method{edgeRranking}{DataFrame}(counts, classes,
                    normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL,
                verbose = 3)
-  \S4method{edgeRranking}{MultiAssayExperiment}(counts, targets = NULL, ...)
+  \S4method{edgeRranking}{MultiAssayExperiment}(counts, targets = NULL, classes, ...)
 }
 \arguments{
   \item{counts}{Either a \code{\link{matrix}} or \code{\link{MultiAssayExperiment}} containing the
                 unnormalised counts.}
   \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements}. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables of counts to be used.}              
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which

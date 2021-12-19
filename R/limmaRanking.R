@@ -29,14 +29,14 @@ setMethod("limmaRanking", "DataFrame",
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("limmaRanking", "MultiAssayExperiment", 
-          function(measurements, targets = NULL, ...)
+          function(measurements, targets = NULL, classes, ...)
 {
   if(is.null(targets))
     stop("'targets' must be specified but was not.")
   if(length(setdiff(targets, names(measurements))))
     stop("Some values of 'targets' are not names of 'measurements' but all must be.")                            
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   limmaRanking(measurements, classes, ...)

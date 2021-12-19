@@ -24,9 +24,9 @@ setMethod("SVMtrainInterface", "DataFrame", function(measurements, classes, ...,
 })
 
 setMethod("SVMtrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), ...)
+function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   

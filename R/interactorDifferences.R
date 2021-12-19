@@ -8,32 +8,29 @@ setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
 })
 
 setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
-          function(measurements, networkSets = NULL, absolute = FALSE, verbose = 3)
+          function(measurements, featurePairs = NULL, absolute = FALSE, verbose = 3)
 {
-  if(is.null(networkSets))
-    stop("'networkSets' is NULL but must be provided.")
+  if(is.null(featurePairs))
+    stop("'featurePairs' is NULL but must be provided.")
 
   if(verbose == 3)
     message("Calculating differences between the specified interactors.")
             
-  networkIDs <- names(networkSets@sets)
-  allInteractions <- data.frame(do.call(rbind, networkSets@sets), networkID = rep(networkIDs, sapply(networkSets@sets, nrow)))
-  keep <- allInteractions[, 1] %in% colnames(measurements) & allInteractions[, 2] %in% colnames(measurements)
-  allInteractions <- allInteractions[keep, ]
-  interactorTable <- as(measurements[, allInteractions[, 1]], "matrix") # Coerce to basic matrix for calculation speed.
-  otherInteractorTable <- as(measurements[, allInteractions[, 2]], "matrix")
+  keep <- S4Vectors::first(featurePairs) %in% colnames(measurements) & S4Vectors::second(featurePairs) %in% colnames(measurements)
+  featurePairs <- featurePairs[keep]
+  interactorTable <- as(measurements[, S4Vectors::first(featurePairs)], "matrix") # Coerce to basic matrix for calculation speed.
+  otherInteractorTable <- as(measurements[, S4Vectors::second(featurePairs)], "matrix")
   differences <- otherInteractorTable - interactorTable
   if(absolute == TRUE)
     differences <- abs(differences)
   differences <- DataFrame(differences)
-  colnames(differences) <- paste(allInteractions[, 2], '-', allInteractions[, 1])
-  S4Vectors::mcols(differences) <- DataFrame(original = factor(allInteractions[, "networkID"], levels = unique(as.character(allInteractions[, "networkID"]))))
+  colnames(differences) <- paste(S4Vectors::second(featurePairs), '-', S4Vectors::first(featurePairs))
   differences
 })
 
 setMethod("interactorDifferences", "MultiAssayExperiment", # Pick one numeric table from the data set.
-          function(measurements, target = NULL, ...)
+          function(measurements, target = NULL, classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, target)
+  tablesAndClasses <- .MAEtoWideTable(measurements, target, classes)
   interactorDifferences(tablesAndClasses[["dataTable"]], ...)
 })

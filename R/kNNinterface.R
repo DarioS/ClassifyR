@@ -26,9 +26,9 @@ setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ...
 })
 
 setMethod("kNNinterface", "MultiAssayExperiment",
-function(measurements, test, targets = names(measurements), ...)
+function(measurements, test, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   trainingTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   testingTable <- .MAEtoWideTable(test, targets)

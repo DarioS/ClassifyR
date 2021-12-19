@@ -12,7 +12,7 @@
   \S4method{runTests}{matrix}(measurements, classes, ...)
   \S4method{runTests}{DataFrame}(measurements, classes, crossValParams = CrossValParams(),
                    modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1)
-  \S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomeColumn, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -22,11 +22,10 @@
                       or the row names of the \code{DataFrame}. If pre-validation is activated by naming
                       one of the lists in \code{params} \code{"prevalidated"}, this variable must be of type
                       \code{\link{MultiAssayExperiment}}.}
-  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements} or if the measurements are
-                 of class \code{DataFrame} a character vector of length 1 containing the
-                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{crossValParams}{An object of class \code{\link{CrossValParams}}, specifying the kind of
   cross-validation to be done.}
   \item{modellingParams}{An object of class \code{\link{ModellingParams}}, specifying the class rebalancing, transformation (if any),
@@ -38,7 +37,9 @@
             to be automatically determined and this can be left blank.}                               
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
-                 numeric variables from the clinical data table will be used.}
+                 the clinical data table will be used.}
+  \item{outcomeColumn}{The column name of the clinical data table containing the outcome to be predicted. Will automatically
+  be removed from the clinical data table during model training. Must be specified if data is a \code{MultiAssayExperiment}.}     
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
   \item{verbose}{Default: 1. A number between 0 and 3 for the amount of progress messages to give.

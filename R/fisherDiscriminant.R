@@ -52,9 +52,9 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("fisherDiscriminant", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), ...)
+          function(measurements, test, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets)

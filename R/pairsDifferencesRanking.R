@@ -57,14 +57,14 @@ setMethod("pairsDifferencesRanking", "DataFrame",
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("pairsDifferencesRanking", "MultiAssayExperiment",
-          function(measurements, target = names(measurements)[1], featurePairs = NULL, ...)
+          function(measurements, target = names(measurements)[1], classes, featurePairs = NULL, ...)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")         
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, target)
+  tablesAndClasses <- .MAEtoWideTable(measurements, target, classes)
   dataTable <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]            
   pairsDifferencesRanking(dataTable, classes, featurePairs, ...)

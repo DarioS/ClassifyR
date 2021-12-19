@@ -32,9 +32,9 @@ setMethod("bartlettRanking", "DataFrame", # Clinical data or one of the other in
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("bartlettRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), ...)
+          function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   measurements <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   

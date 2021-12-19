@@ -12,7 +12,7 @@
   \S4method{runTest}{matrix}(measurements, classes, ...)
   \S4method{runTest}{DataFrame}(measurements, classes, training, testing, crossValParams = CrossValParams(),
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
-  \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
+  \S4method{runTest}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomeColumn, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -20,11 +20,10 @@
                       For a \code{matrix}, the rows are features, and the columns are samples.
                       The sample identifiers must be present as column names of the \code{matrix}
                       or the row names of the \code{DataFrame}.}
-  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements} or if the measurements are
-                 of class \code{DataFrame} a character vector of length 1 containing the
-                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{crossValParams}{An object of class \code{\link{CrossValParams}}, specifying the kind of
   cross-validation to be done, if nested cross-validation is used to tune any parameters.}
   \item{modellingParams}{An object of class \code{\link{ModellingParams}}, specifying the class rebalancing, transformation (if any),
@@ -33,6 +32,8 @@
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
                  numeric variables from the clinical data table will be used.}
+  \item{outcomeColumn}{The column name of the clinical data table containing the outcome to be predicted. Will automatically
+  be removed from the clinical data table during model training. Must be specified if data is a \code{MultiAssayExperiment}.}                  
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method.}
   \item{characteristics}{A \code{\link{DataFrame}} describing the characteristics

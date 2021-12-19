@@ -9,15 +9,16 @@
 \usage{
   \S4method{differentMeansRanking}{matrix}(measurements, classes, ...)
   \S4method{differentMeansRanking}{DataFrame}(measurements, classes, verbose = 3)
-  \S4method{differentMeansRanking}{MultiAssayExperiment}(measurements, targets = NULL, ...)
+  \S4method{differentMeansRanking}{MultiAssayExperiment}(measurements, targets = NULL, classes, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.}
   \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements}. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{targets}{Names of data tables to be combined into a single table and
                  used in the analysis.}                  
   \item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which

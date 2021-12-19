@@ -1,7 +1,7 @@
 \name{quickClassify}
 \alias{quickClassify}
 \alias{quickClassify,matrix-method}
-\alias{quickClassify,DataFrame-method}
+\alias{quickClassify,DataFrameOrDataFrameList-method}
 \alias{quickClassify,MultiAssayExperiment-method}
 \title{Quick and Easy Cross-validated Classification}
 \description{This convenience function allows specification of cross-validation and classification
@@ -9,29 +9,28 @@ by a couple of pre-defined keywords and all parameter setting is automatically t
 }
 \usage{
   \S4method{quickClassify}{matrix}(measurements, classes, ...)
-  \S4method{quickClassify}{DataFrame}(measurements, classes,
-crossVal = c("100 permutations, 5 folds", "100 permutations, 25\% test", "5-fold", "leave-1-out", "leave-2-out"),
-                   seed = 12345, cores = 8,
+  \S4method{quickClassify}{DataFrame}(measurements, classes, permutations = 100, folds = 5, cores = 1,
 classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "randomForest", "kTSP"),
-                  ...)
+                  datasetMode = c("each", "combine", "allPairs"), ...)
   \S4method{quickClassify}{MultiAssayExperiment}(measurements, targets, ...)
 }
 \arguments{
   \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
                       \code{\link{MultiAssayExperiment}} containing the training data.
                       For a \code{matrix}, the rows are features, and the columns are samples.}
-  \item{classes}{Either a vector of class labels of class \code{\link{factor}} of the same length
-                 as the number of samples in \code{measurements} or if the measurements are
-                 of class \code{DataFrame} a character vector of length 1 containing the
-                 column name in \code{measurement} is also permitted. Not used if \code{measurements}
-                 is a \code{MultiAssayExperiment} object.}
+  \item{classes}{A vector of class labels of class \code{\link{factor}} of the same length
+                 as the number of samples in \code{measurements} if it is a \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}} (i.e. number of rows) or a character vector
+                 of length 1 containing the column name in \code{measurements} if it is a \code{\link{DataFrame}} or the column name in \code{colData(measurements)} if \code{measurements} is
+a \code{\link{MultiAssayExperiment}}. If a column name, that column will be removed before training.}
   \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the names of the
                  data tables to be used. \code{"clinical"} is also a valid value and specifies that
-                 numeric variables from the clinical data table will be used.}
-  \item{crossVal}{Default: "100 permutations, 5 folds". A short name describing the kind of cross-validation to do. Self-explanatory.}
-  \item{seed}{Default: 12345. Random number seed to use. Sample splitting and classification on parallel threads will be reproducible.}
-  \item{cores}{Default: 8. Number of CPU cores to use. Each cross-validation iteration is done on one core.}
-  \item{classifier}{Default: "DLDA". A short name describing the kind of classification to do. The options represent:
+                 the clinical data table will be used.}
+  \item{permutations}{Default: 100. Number of times to permute the samples before folding them. Set to \code{NULL} for a singlee
+  k-fold cross-validation.}
+  \item{folds}{Default: 5. The number of disjoint sets to partition the samples into. Set this value to the number of features
+  in \code{measurements} (if it is not a list of data sets of unequal sample numbers) to effectively perform a traditional leave-one-out cross-validation. This variable must be some integer.}
+  \item{cores}{Default: 1. Number of CPU cores to use. Each cross-validation iteration is done on one core.}
+  \item{classifier}{A short name describing the kind of classification to do. A vector means that each classification will be applied to the data in turn. Specify one name if only one classifier desired. The options represent:
   \itemize{\item \code{"DLDA"}: Feature selection based on differences in means ranking and diagonal LDA classifier.
   \item \code{"FishersLDA"}: Transformation by subtraction of values from the mean value of all samples in the training set followed by selection by Levene's test statistic ranking based on differential variability and classification by Fisher's LDA.
   \item \code{"NSC"}: Nearest shrunken centroid classifier. No explicit feature selection before classifier.
@@ -41,7 +40,9 @@ classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "
     \item \code{"randomForest"}: Random forest with the number of variables tried at each split eing 40\% of the total number of variables in the data set.
     \item \code{"kTSP"}: Feature selection based on pairs differences ranking and classification based on weighted voting of the selected feature pairs.
   }
-  }
+  \item{datasetMode}{Default: "each". Whether to classify each input data set individually or concatenate different ones into a single table by specifying \code{"combine"} or
+  do classification on all possible pairs of data sets, using the first data set of the pair for training
+  and the second of the pair for making predictions with by specifying \code{"allPairs"}. Only relevant if \code{measurements} is a \code{DataFrame} created by the \code{MultiAssayExperiment} method, possibly containing variables from multiple assays or a \code{DataFrameList}.}
   \item{...}{Either variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
              are passed into and used by the \code{DataFrame} method or variables not used by \code{quickClassify}
              but used by runTests (i.e. \code{characteristics} and \code{verbose}.}
@@ -49,10 +50,10 @@ classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "
 \details{
   The relevant cross-validation and modelling parameters are created and \code{\link{runTests} is executed}. Parallel processing is reproducible because the seed is used for splitting samples into training and test sets, but also for the parallel loop which runs each iteration of cross-validation.
   
-  For shortcuts which do feature selection, the top 10, 20, ..., 100 ranked features are evaluated for resubstitution error rate unless the data set has less than 100 features, in which case, all possible top sets of \emph{p} features are evaluated (i.e. 1, 2, 3, ..., p - 1, p) before one of them is chosen.
+  \code{classes} and \code{nFeatures} can be a vector or a list of vectors, positionally corresponding to measurements, if it is a \code{DataFrameList}.
 }
 \value{
-  An object of class \code{\link{ClassifyResult}}.
+  An object of class \code{\link{ClassifyResult}} or a list of such objects, if .
 }
 \author{Dario Strbenac}
 
@@ -60,6 +61,6 @@ classifier = c("DLDA", "FishersLDA", "NSC", "naiveBayes", "elasticNet", "SVM", "
   data(asthma) # Restrict to 20 samples for speed.
   measurements <- measurements[, 1:20]
   classes <- classes[1:20]
-  result <- quickClassify(measurements, classes, crossVal = "leave-1-out",
-                          classifier = "randomForest", seed = 99)
+  result <- quickClassify(measurements, classes, folds = 190, # Leave-one-out.
+                          classifier = "randomForest")
 }

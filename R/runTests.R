@@ -23,8 +23,6 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["classes"]]
-
-  set.seed(crossValParams@seed)
   
   # Elements of list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
@@ -32,7 +30,7 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   if("prevalidated" %in% names(modellingParams@trainParams))
   { # Check that all assays have a specification of how to classify them.
     prevalidate <- TRUE
-    assaysWithoutParams <- setdiff(mcols(measurements)[, "dataset"], c(names(modellingParams@trainParams), "clinical"))
+    assaysWithoutParams <- setdiff(S4Vectors::mcols(measurements)[, "dataset"], c(names(modellingParams@trainParams), "clinical"))
     if(length(assaysWithoutParams) > 0)
       stop(paste("'trainParams' lacks a list for", paste(assaysWithoutParams, collapse = ", "), "assay."))
     return("To do.")
@@ -107,8 +105,8 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
 })
 
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), ...)
+          function(measurements, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, restrict = NULL)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
   runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
 })

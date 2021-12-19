@@ -141,9 +141,9 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
 })
 
 setMethod("naiveBayesKernel", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), ...)
+          function(measurements, test, targets = names(measurements), classes, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
   classes <- tablesAndClasses[["classes"]]
   testingMatrix <- .MAEtoWideTable(test, targets)
