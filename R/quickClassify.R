@@ -64,6 +64,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
                 BPparam <- MulticoreParam(cores, RNGseed = seed) # Multicore is faster than SNOW, but it doesn't work on Windows.
               } else { # Something weird.
                 BPparam <- bpparam() # BiocParallel will figure it out.
+              }
             }
             crossValParams <- CrossValParams(permutations = permutations, folds = folds, parallelParams = BPparam)
             
