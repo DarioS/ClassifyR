@@ -97,7 +97,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
             { # Test each fitted model on a single data set on all other data sets using the same model.
               extras <- rlang::dots_list(...)
               if("characteristics" %i% names(extras)) characteristicsTable <- extras[["characteristics"]] else characteristicsTable <- DataFrame()
-              crossClassifyResults <- mapply(fuction(trainDatasetID, predictDatasetID, classifier)
+              crossClassifyResults <- mapply(function(trainDatasetID, predictDatasetID, classifier)
               {
                 if(predictDatasetID == "dataset")
                 {
