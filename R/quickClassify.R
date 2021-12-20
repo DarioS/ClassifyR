@@ -58,7 +58,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
             } else { # Parallel processing is desired.
               # Also set the BPparam RNGseed if the user ran set.seed(someNumber) themselves.
               if(missing(.Random.seed)) seed <- NULL else seed <- .Random.seed[1]
-              if(Sys.info()["sysname"] == "Windows") # Only SnowParam suits Windows.
+              if(Sys.info()["sysname"] == "Windows") {# Only SnowParam suits Windows.
                 BPparam <- SnowParam(cores, RNGseed = seed)
               } else if (Sys.info()["sysname"] %in% c("MacOS", "Linux")) {
                 BPparam <- MulticoreParam(cores, RNGseed = seed) # Multicore is faster than SNOW, but it doesn't work on Windows.
