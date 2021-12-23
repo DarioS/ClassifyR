@@ -13,11 +13,13 @@ Boxplot = function(result, metric = "Balanced Accuracy", x = "`Classifier Name`"
     matrix_df = lapply(result, ClassifyR::calcCVperformance,metric) |> 
         lapply(ClassifyR::performance) |>
         purrr::flatten() |> 
-        rlist::list.rbind() 
+        lapply(t) |>
+        rlist::list.rbind() |>
+        as.vector()
     
     
-    colnames(matrix_df) = "perfMetric"
-    matrix_df <- cbind(ch, matrix_df)
+
+    matrix_df <- suppressWarnings(cbind(perfMetric = matrix_df, ch))
     
         ggplot2::ggplot(matrix_df, ggplot2::aes_string(x = x  , y = "perfMetric", fill = fill)) + 
         ggplot2::geom_boxplot() + 
