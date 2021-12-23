@@ -17,6 +17,17 @@ vignette: >
     p {
       padding: 20px;
     }
+    .table {
+      border: 2px solid #e64626;
+    }
+    .table>thead>tr>th
+    {
+     border-bottom: 2px solid #e64626;
+     border-right: 1px solid black;
+    }
+    .table>tbody>tr>td {
+     border-right: 1px solid black;
+    }    
 </style>
 
 ```{r, echo = FALSE, results = "asis"}
@@ -46,7 +57,7 @@ Importantly, ClassifyR implements a number of methods for classification using d
 
 Load the package.
 
-```{r, results = "hide"}
+```{r, message = FALSE}
 library(ClassifyR)
 ```
 
@@ -88,34 +99,54 @@ Although being a cross-validation framework, a number of popular feature selecti
 
 #### Provided Methods for Feature Selection and Classification
 
-The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features.
+In the following tables, a function that is used when no function is explicity specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
 
-```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("providedForSelectionUse.png"), 
-               style = 'margin-left: auto;margin-right: auto')
-```
+The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features, based on a criterion such as balanced error rate, for example.
 
+Function | Description | DM | DV | DD
+----|---------------------------|----|----|----
+<span style="padding:4px; border:2px dashed #e64626; font-family: 'Courier New', monospace;">differentMeansRanking</span>    | t-test ranking if two classes, F-test ranking if three or more | ✔ | | 
+<span style="font-family: 'Courier New', monospace;">limmaRanking</span> | Moderated t-test ranking using variance shrinkage | ✔ | |
+<span style="font-family: 'Courier New', monospace;">edgeRranking</span> | Likelihood ratio test for count data ranking | ✔ | | 
+<span style="font-family: 'Courier New', monospace;">bartlettRanking</span> | Bartlett's test non-robust ranking | | ✔ |
+<span style="font-family: 'Courier New', monospace;">leveneRanking</span> | Levene's test robust ranking | | ✔ |
+<span style="font-family: 'Courier New', monospace;">DMDranking</span> | <span style = "white-space: nowrap">Difference in location (mean/median) and/or scale (SD, MAD, $Q_n$)</span> | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">likelihoodRatioRanking</span>   | Likelihood ratio (normal distribution) ranking | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">KolmogorovSmirnovRanking</span>| Kolmogorov-Smirnov distance between distributions ranking | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">KullbackLeiblerRanking</span>| Kullback-Leibler distance between distributions ranking | ✔ | ✔ | ✔ 
 Likewise, a variety of classifiers is also provided.
 
-```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("providedClassifiers.png"), 
-               style = 'margin-left: auto;margin-right: auto')
-```
+Function(s) | Description | DM | DV | DD
+----|--------------------------|----|----|----
+<span style="padding:1px; border:2px dashed #e64626; display:inline-block; margin-bottom: 3px; font-family: 'Courier New', monospace;">DLDAtrainInterface</span>,<br><span style="padding:1px; border:2px dashed #e64626; display:inline-block; font-family: 'Courier New', monospace;">DLDApredictInterface</span>    | Wrappers for sparsediscrim's functions <span style="font-family: 'Courier New', monospace;">dlda</span> and <span style="font-family: 'Courier New', monospace;">predict.dlda</span> functions | ✔ | | 
+<span style="font-family: 'Courier New', monospace;">classifyInterface</span> | Wrapper for PoiClaClu's Poisson LDA function <span style="font-family: 'Courier New', monospace;">classify</span> | ✔ | | 
+<span style="font-family: 'Courier New', monospace;">elasticNetGLMtrainInterface</span>, <span style="font-family: 'Courier New', monospace;">elasticNetGLMpredictInterface</span> | Wrappers for glmnet's elastic net GLM functions <span style="font-family: 'Courier New', monospace;">glmnet</span> and <span style="font-family: 'Courier New', monospace;">predict.glmnet</span> | ✔ | | 
+<span style="font-family: 'Courier New', monospace;">NSCtrainInterface</span>, <span style="font-family: 'Courier New', monospace;">NSCpredictInterface</span>  | Wrappers for pamr's Nearest Shrunken Centroid functions <span style="font-family: 'Courier New', monospace;">pamr.train</span> and <span style="font-family: 'Courier New', monospace;">pamr.predict</span> | ✔ | |
+<span style="font-family: 'Courier New', monospace;">fisherDiscriminant</span> | Implementation of Fisher's LDA for departures from normality | ✔ | ✔* |
+<span style="font-family: 'Courier New', monospace;">mixModelsTrain</span>, <span style="font-family: 'Courier New', monospace;">mixModelsPredict</span> | Feature-wise mixtures of normals and voting | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">naiveBayesKernel</span> | Feature-wise kernel density estimation and voting | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">randomForestTrainInterface</span>, <span style="font-family: 'Courier New', monospace;">randomForestPredictInterface</span> | Wrapper for randomForest's functions <span style="font-family: 'Courier New', monospace;">randomForest</span> and <span style="font-family: 'Courier New', monospace;">predict</span> | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">SVMtrainInterface</span>, <span style="font-family: 'Courier New', monospace;">SVMpredictInterface</span> | Wrapper for e1071's functions <span style="font-family: 'Courier New', monospace;">svm</span> and <span style="font-family: 'Courier New', monospace;">predict.svm</span> | ✔ | ✔ †| ✔ †
+
+\* If ordinary numeric measurements have been transformed to absolute deviations using <span style="font-family: 'Courier New', monospace;">subtractFromLocation</span>.<br>
+† If the value of <span style="font-family: 'Courier New', monospace;">kernel</span> is not <span style="font-family: 'Courier New', monospace;">"linear"</span>.
 
 If a desired selection or classification method is not already implemented, rules for writing functions to work with **ClassifyR** are outlined in the wrapper vignette. Please visit it for more information.
 
 #### Provided Meta-feature Methods
 
-A number of methods are provided for users to enable classification in a feature-set-centric way. The meta-feature creation functions should be used before cross-validation is done.
+A number of methods are provided for users to enable classification in a feature-set-centric or interactor-centric way. The meta-feature creation functions should be used before cross-validation is done.
 
-```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("networkFunctions.png"), 
-               style = 'margin-left: auto;margin-right: auto')
-```
-
+Function | Description | Before&nbsp;CV | During&nbsp;CV 
+----|--------------------------|:----:|:----:
+<span style="font-family: 'Courier New', monospace;">edgesToHubNetworks</span> | Takes a two-column <span style="font-family: 'Courier New', monospace;">matrix</span> or <span style="font-family: 'Courier New', monospace;">DataFrame</span> and finds all nodes with at least a minimum number of interactions | ✔ | 
+<span style="font-family: 'Courier New', monospace;">featureSetSummary</span> | <span style = "white-space: nowrap">Considers sets of features and calculates their mean or median</span> | ✔ |  
+<span style="font-family: 'Courier New', monospace;">pairsDifferencesSelection</span> | Finds a set of pairs of features whose measurement inequalities can be used for predicting with | | ✔    
+<span style="font-family: 'Courier New', monospace;">kTSPclassifier</span> | Voting classifier that uses inequalities between pairs of features to vote for one of two classes | | ✔   
+ 
 ### Cross-validation and Modelling
 
-For cross-validation, all of the parameters are specified by a CrossValParams object. The default setting are for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that work on all operating systems, but intended for Windows is:
+For cross-validation, all of the parameters are specified by a *CrossValParams* object. The default setting are for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that work on all operating systems, but intended for Windows is:
 
 ```{r, eval = FALSE}
 CVparams <- CrossValParams(parallelParams = SnowParam(16, RNGseed = 123))
