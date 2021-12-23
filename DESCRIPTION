@@ -33,6 +33,6 @@ Collate: constants.R classes.R utilities.R bartlettRanking.R calcPerformance.R c
          NSCfeatures.R NSCtrainInterface.R NSCpredictInterface.R pairsDifferencesRanking.R
          performancePlot.R plotFeatureClasses.R previousSelection.R previousTrained.R randomForestInterface.R
          rankingPlot.R ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R
-         SVMinterface.R quickClassify.R
+         SVMinterface.R quickClassify.R crossValidate.R interfacePrevalidation.R interfaceMerge.R simpleParams.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
