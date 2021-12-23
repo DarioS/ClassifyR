@@ -287,7 +287,7 @@ CV <- function(measurements,
   )
   
   
-  characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod"), value = c(paste(datasetIDs, collapse = ", "), classifier,  selectionMethod, multiViewMethod)) 
+  characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), classifier,  selectionMethod, multiViewMethod, characteristicsLabel)) 
   
   classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
   classifyResults
