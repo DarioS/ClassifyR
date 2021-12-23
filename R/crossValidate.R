@@ -29,11 +29,14 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
             # Which data-types or data-views are present?
             datasetIDs <- unique(mcols(measurements)[, "dataset"])
            
+            # Initiate seed so that comparisons are comparable.
+            x <- runif(1)
+            seed <- .Random.seed[1]
+            
+            
             ################################
             #### No multiview
             ################################
-            
-            seed <- sample(1:10000,1)
             
             if(multiViewMethod == "none"){
             
@@ -117,14 +120,13 @@ if(nCores == 1)
     BPparam <- SerialParam()
 } else { # Parallel processing is desired.
     # Also set the BPparam RNGseed if the user ran set.seed(someNumber) themselves.
-    seed <- NULL
-    if(".Random.seed" %in% ls())seed <- .Random.seed[1]
+    seed <- .Random.seed[1]
     if(Sys.info()["sysname"] == "Windows") {# Only SnowParam suits Windows.
-        BPparam <- SnowParam(nCores, RNGseed = seed)
+        BPparam <- BiocParallel::SnowParam(min(nCores, BiocParallel::snowWorkers("SOCK")), RNGseed = seed)
     } else if (Sys.info()["sysname"] %in% c("MacOS", "Linux")) {
-        BPparam <- MulticoreParam(nCores, RNGseed = seed) # Multicore is faster than SNOW, but it doesn't work on Windows.
+        BPparam <- BiocParallel::MulticoreParam(min(nCores, BiocParallel::multicoreWorkers()), RNGseed = seed) # Multicore is faster than SNOW, but it doesn't work on Windows.
     } else { # Something weird.
-        BPparam <- bpparam() # BiocParallel will figure it out.
+        BPparam <- BiocParallel::bpparam() # BiocParallel will figure it out.
     }
 }
     tuneMode <- selectionOptimisation

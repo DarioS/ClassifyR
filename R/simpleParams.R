@@ -2,9 +2,7 @@
 #' @importFrom ClassifyR TrainParams PredictParams randomForestTrainInterface randomForestPredictInterface forestFeatures
 rfParams <- function() {
     trainParams = ClassifyR::TrainParams(
-        ClassifyR::randomForestTrainInterface,
-        ntree = 100,
-        getFeatures = ClassifyR::forestFeatures
+        ClassifyR::randomForestTrainInterface
     )
     
     predictParams = ClassifyR::PredictParams(predictor = ClassifyR::randomForestPredictInterface,
