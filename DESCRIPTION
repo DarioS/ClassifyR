@@ -3,7 +3,7 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 2.15.6
+Version: 2.15.7
 Date: 2021-12-22
 Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
@@ -34,5 +34,6 @@ Collate: constants.R classes.R utilities.R bartlettRanking.R calcPerformance.R c
          performancePlot.R plotFeatureClasses.R previousSelection.R previousTrained.R randomForestInterface.R
          rankingPlot.R ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R
          SVMinterface.R quickClassify.R crossValidate.R interfacePrevalidation.R interfaceMerge.R simpleParams.R
+         extraPlots.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
