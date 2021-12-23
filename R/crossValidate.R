@@ -115,12 +115,14 @@ setMethod("crossValidate", "MultiAssayExperiment",
 ######################################
 ######################################
 generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisation){
-if(nCores == 1)
+  
+  seed <- .Random.seed[1]
+  
+  if(nCores == 1)
 {
-    BPparam <- SerialParam()
+    BPparam <- SerialParam(RNGseed = seed)
 } else { # Parallel processing is desired.
     # Also set the BPparam RNGseed if the user ran set.seed(someNumber) themselves.
-    seed <- .Random.seed[1]
     if(Sys.info()["sysname"] == "Windows") {# Only SnowParam suits Windows.
         BPparam <- BiocParallel::SnowParam(min(nCores, BiocParallel::snowWorkers("SOCK")), RNGseed = seed)
     } else if (Sys.info()["sysname"] %in% c("MacOS", "Linux")) {
