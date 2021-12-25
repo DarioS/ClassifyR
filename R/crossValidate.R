@@ -268,6 +268,7 @@ CV <- function(measurements,
   # Which data-types or data-views are present?
   datasetIDs <- unique(mcols(measurements)[, "dataset"])
   if(is.null(multiViewCombinations)) multiViewCombinations <- datasetIDs
+  if(is.null(characteristicsLabel)) characteristicsLabel <- "bla"
   
   # Setup cross-validation parameters including 
   crossValParams <- generateCrossValParams(nRepeats = nRepeats, 
