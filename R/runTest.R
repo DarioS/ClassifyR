@@ -129,11 +129,10 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     autoCharacteristics <- do.call(rbind, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
-
-    # This isn't working so commenting out....
-    # extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
-    # extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-    # characteristics <- rbind(characteristics, extrasDF)
+.
+    extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
+    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    characteristics <- rbind(characteristics, extrasDF)
     
     ClassifyResult(characteristics, rownames(measurements), allFeatures, list(rankedFeatures), list(selectedFeatures),
                    list(models), tuneDetails, data.frame(sample = testing, class = predictedClasses), classes)

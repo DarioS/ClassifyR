@@ -1,4 +1,4 @@
-setGeneric("mergeTrainInterface", function(measurements, classes, ...)
+setGeneric("mergeTrainInterface", function(measurements, classes, params, ...)
 {
     standardGeneric("mergeTrainInterface")
 })
@@ -40,19 +40,13 @@ setMethod("mergeTrainInterface", "DFrame",
               
               
               # if ("clinical" %in% names(measurements)) {
-                  
-              features <- DataFrame(dataset = rep(names(selectedFeatures[2,]), unlist(lapply(selectedFeatures[2,], length))), feature = unlist(selectedFeatures[2,]))
-              fullTrain <- measurements[, mcols(measurements) %in% features]
-              
-
-              selectParams = ClassifyR::SelectParams(
-                  ClassifyR::differentMeansRanking,
-                  tuneParams = list(nFeatures = ncol(fullTrain), 
-                                    performanceType = "Balanced Error")
-              )
+              mc <-   do.call(paste,mcols(measurements)[,c("dataset","feature")])
+              features <- do.call(paste, data.frame(dataset = rep(names(selectedFeatures[2,]), unlist(lapply(selectedFeatures[2,], length))), feature = unlist(selectedFeatures[2,])))
+              useColumns <- which(mc%in%features)#apply(features,1,function(x)which(mc$dataset==x[1] & mc$feature == x[2]))
+              fullTrain <- measurements[, useColumns]
               
               params2 <- params
-              params2@selectParams <- selectParams
+              params2@selectParams <- NULL
               
               
               runTestOutput = ClassifyR::runTest(

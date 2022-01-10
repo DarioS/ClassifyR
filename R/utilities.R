@@ -244,7 +244,7 @@
         {
           result <- runTest(measurements, trainClasses,
                             training = 1:nrow(measurements), testing = 1:nrow(measurements),
-                            crossValParams = NULL, modellingParams,
+                            crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
           
           predictions <- result[["predictions"]]
@@ -377,7 +377,7 @@
   }
 
   if(modellingParams@trainParams@classifier@generic != "previousTrained")
-    paramList <- list(measurementsTrain, trainClasses)
+    paramList <- list(measurements = measurementsTrain, classes = trainClasses)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
     paramList <- list()
   if(is.null(modellingParams@predictParams)) # One function does both training and testing.

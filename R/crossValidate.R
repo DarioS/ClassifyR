@@ -243,7 +243,8 @@ generateModellingParams <- function(datasetIDs,
         #if(multiViewMethod != "none") stop("I haven't implemented multiview yet.")
         if(multiViewMethod == "merge"){
             params@trainParams <- TrainParams(mergeTrainInterface, params = params, characteristics = DataFrame(characteristic = "Classifier Name", value = classifierName))
-        }
+            params@selectParams <- NULL
+            }
         # 
         # if(multiViewMethod == "prevalidation"){
         #     params$trainParams <- function(measurements, classes) prevalTrainInterface(measurements, classes, params)
