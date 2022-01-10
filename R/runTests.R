@@ -81,14 +81,15 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   autoCharacteristics <- do.call(rbind, autoCharacteristics)
 
   # Add extra settings which don't create varieties.
-  extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
-  if(length(extras) > 0)
-    extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
-  extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-  characteristics <- rbind(characteristics, extrasDF)
-  characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
-  characteristics <- rbind(characteristics,
-                             S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
+  ## !!!!!!! commenting out
+  # extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
+  # if(length(extras) > 0)
+  #   extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
+  # extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+  # characteristics <- rbind(characteristics, extrasDF)
+  # characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
+  # characteristics <- rbind(characteristics,
+  #                            S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
 
   if(is.factor(results[[1]][["predictions"]]))
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, class = unlist(lapply(results, "[[", "predictions")), check.names = FALSE)

@@ -1,4 +1,4 @@
-Boxplot = function(result, metric = "Balanced Accuracy", x = "`Classifier Name`", fill = "dataset"){
+Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`", fill = "dataset"){
     
     ch <- lapply(result, function(w){
         v <- w@characteristics$value

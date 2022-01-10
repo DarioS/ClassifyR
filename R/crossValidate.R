@@ -79,10 +79,22 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
             ################################
             
             if(multiViewMethod != "none"){
-            if(is.null(multiViewCombinations)) multiViewCombinations <- datasetIDs
+            if(is.null(multiViewCombinations)) multiViewCombinations <- list(datasetIDs)
             
-            stop("I haven't done multiview yet")
-            ## Do stuff
+            dataIndex <- multiViewCombinations[[1]]
+            
+            result <- CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex], 
+                         classes = classes,
+                         nFeatures = nFeatures,
+                         selectionMethod = selectionMethod,
+                         selectionOptimisation = selectionOptimisation,
+                         classifier = classifier,
+                         multiViewMethod = multiViewMethod,
+                         multiViewCombinations = dataIndex,
+                         nFolds = nFolds,
+                         nRepeats = nRepeats, 
+                         nCores = nCores, 
+                         characteristicsLabel = characteristicsLabel)
             
             }
             
@@ -180,7 +192,7 @@ generateModellingParams <- function(datasetIDs,
             nFeatures <- pmin(nFeatures, obsFeatures)
         }
         
-
+        classifierName = classifier
 
         classifier = switch(
             classifier,
@@ -221,21 +233,24 @@ generateModellingParams <- function(datasetIDs,
                               performanceType = "Balanced Error")
             )
         
-        if(multiViewMethod != "none") stop("I haven't implemented multiview yet.")
+        params = ModellingParams(
+            balancing = "none",
+            selectParams = selectParams,
+            trainParams = classifier$trainParams,
+            predictParams = classifier$predictParams
+        )
+        
+        #if(multiViewMethod != "none") stop("I haven't implemented multiview yet.")
         if(multiViewMethod == "merge"){
-            classifier$trainParams <- function(measurements, classes) mergeTrainInterface(measurements, classes, classifier) 
+            params@trainParams <- TrainParams(mergeTrainInterface, params = params, characteristics = DataFrame(characteristic = "Classifier Name", value = classifierName))
         }
-        
-        if(multiViewMethod == "prevalidation"){
-            classifier$trainParams <- function(measurements, classes) prevalTrainInterface(measurements, classes, classifier) 
-        }
-        
-            params = ModellingParams(
-                balancing = "none",
-                selectParams = selectParams,
-                trainParams = classifier$trainParams,
-                predictParams = classifier$predictParams
-            )
+        # 
+        # if(multiViewMethod == "prevalidation"){
+        #     params$trainParams <- function(measurements, classes) prevalTrainInterface(measurements, classes, params)
+        #     params$trainParams <- function(measurements, classes) prevalTrainInterface(measurements, classes, params)
+        # }
+        # 
+    
             
             params
             

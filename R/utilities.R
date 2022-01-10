@@ -663,7 +663,7 @@
   samplesPerClassTrain <- table(classes[training])
   downsampleTo <- min(samplesPerClassTrain)
   upsampleTo <- max(samplesPerClassTrain)
-  trainBalanced <- as.vector(mapply(function(classSize, className)
+  trainBalanced <- unlist(mapply(function(classSize, className)
   {
     if(balancing == "downsample" && classSize > downsampleTo)
       sample(which(classes[training] == className), downsampleTo)

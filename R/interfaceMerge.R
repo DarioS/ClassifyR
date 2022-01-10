@@ -10,8 +10,9 @@ setMethod("mergeTrainInterface", "DFrame",
                    params,
                    ...)
           {
-              measurements = split(as.data.frame(t(as.data.frame(measurements))), mcols(measurements)[["dataset"]])
-              assayTrain = measurements #%>% lapply(as.matrix)
+              assayTrain = split(data.frame(t(as.data.frame(measurements))), mcols(measurements)[["dataset"]])
+              assayTrain = lapply(assayTrain, t)
+              assayTrain = lapply(assayTrain, DataFrame)
               
               # if(length(classifierParams)>1){
               #     
@@ -27,14 +28,11 @@ setMethod("mergeTrainInterface", "DFrame",
               #                                                verbose = 0))
               # }else{
                   selectedFeatures <- mapply(ClassifyR:::.doSelection, 
-                                             measurements = measurement,
+                                             measurements = assayTrain,
                                              MoreArgs = list(classes = classes, 
-                                                             selectParams = params$selectParams, 
-                                                             trainParams = params$trainParams, 
-                                                             predictParams = params$predictParams, 
-                                                             training = seq_len(nrow(measurements[[1]])),
-                                                             featureSets = NULL, 
-                                                             metaFeatures = NULL, 
+                                                             training = seq_len(nrow(assayTrain[[1]])),
+                                                             crossValParams = generateCrossValParams(nRepeats = 1, nFolds = 5, nCores = 1, selectionOptimisation= "Resubstitution"),
+                                                             modellingParams = params,
                                                              verbose = 0)
                                              )
               # }
@@ -42,28 +40,27 @@ setMethod("mergeTrainInterface", "DFrame",
               
               
               # if ("clinical" %in% names(measurements)) {
+                  
+              features <- DataFrame(dataset = rep(names(selectedFeatures[2,]), unlist(lapply(selectedFeatures[2,], length))), feature = unlist(selectedFeatures[2,]))
+              fullTrain <- measurements[, mcols(measurements) %in% features]
               
-              fullTrain <- mapply(function(x,y){x[,y]}, measurements, selectedFeatures[2,], SIMPLIFY = FALSE) %>%
-                  do.call("cbind",.) %>%
-                  DataFrame()
-              
-              
+
               selectParams = ClassifyR::SelectParams(
                   ClassifyR::differentMeansRanking,
-                  "Combine",
                   tuneParams = list(nFeatures = ncol(fullTrain), 
                                     performanceType = "Balanced Error")
               )
+              
+              params2 <- params
+              params2@selectParams <- selectParams
               
               
               runTestOutput = ClassifyR::runTest(
                   fullTrain,
                   classes,
-                  training = rownames(fullTrain),
-                  testing = rownames(fullTrain),
-                  params = list(selectParams, params$trainParams, params$predictParams),
-                  datasetName = "merge",
-                  classificationName = "merge"
+                  training = seq_len(nrow(fullTrain)),
+                  testing = seq_len(nrow(fullTrain)),
+                  modellingParams = params2
               )
               
               
