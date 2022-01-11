@@ -210,6 +210,9 @@
     if(featureRanking@generic == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
+    if(crossValParams@tuneMode == "none") # Actually selection not ranking.
+        return(list(NULL, rankings[[1]], NULL))
+    
     tuneParamsTrain <- list(topN = topNfeatures)
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  

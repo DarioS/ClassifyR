@@ -29,7 +29,7 @@ setClass("CrossValParams", representation(
 
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
-                           tuneMode = c("Resubstitution", "Nested CV"), parallelParams = bpparam())
+                           tuneMode = c("Resubstitution", "Nested CV", "none"), parallelParams = bpparam())
 {
   samplesSplits <- match.arg(samplesSplits)
   tuneMode <- match.arg(tuneMode)

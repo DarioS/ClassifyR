@@ -34,6 +34,6 @@ Collate: constants.R classes.R utilities.R bartlettRanking.R calcPerformance.R c
          performancePlot.R plotFeatureClasses.R previousSelection.R previousTrained.R randomForestInterface.R
          rankingPlot.R ROCplot.R runTest.R runTests.R samplesMetricMap.R selectionPlot.R subtractFromLocation.R
          SVMinterface.R quickClassify.R crossValidate.R interfacePrevalidation.R interfaceMerge.R simpleParams.R
-         extraPlots.R
+         extraPlots.R selectMulti.R
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario

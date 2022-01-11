@@ -1,5 +1,9 @@
 Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`", fill = "dataset"){
     
+    #! Add checks
+    
+    if(!is.list(result)) result = list(result)
+    
     ch <- lapply(result, function(w){
         v <- w@characteristics$value
         names(v) <- w@characteristics$characteristic
@@ -9,6 +13,8 @@ Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`
     
     ch <- do.call("rbind", ch) |>
         as.data.frame()
+    
+    ch$dataset[ch$multiViewMethod != "none"] <- paste(ch$multiViewMethod, ch$dataset, sep = " - ")[ch$multiViewMethod != "none"]
     
     matrix_df = lapply(result, ClassifyR::calcCVperformance,metric) |> 
         lapply(ClassifyR::performance) |>

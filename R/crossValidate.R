@@ -81,6 +81,8 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
             if(multiViewMethod != "none"){
             if(is.null(multiViewCombinations)) multiViewCombinations <- list(datasetIDs)
             
+        if(multiViewMethod == "merge") selectionOptimisation = "none"
+            
             dataIndex <- multiViewCombinations[[1]]
             
             result <- CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex], 
@@ -145,7 +147,7 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
 }
     tuneMode <- selectionOptimisation
     if(tuneMode == "CV") tuneMode <- "Nested CV"
-    if(!any(tuneMode %in% c("Resubstitution", "Nested CV"))) stop("selectionOptimisation must be CV or Resubstitution")
+    if(!any(tuneMode %in% c("Resubstitution", "Nested CV", "none"))) stop("selectionOptimisation must be CV or Resubstitution or none")
     CrossValParams(permutations = nRepeats, folds = nFolds, parallelParams = BPparam, tuneMode = tuneMode)    
 }
 ######################################
@@ -190,6 +192,20 @@ generateModellingParams <- function(datasetIDs,
             warning("nFeatures greater than the max number or features in data. 
                                                  Setting to max")
             nFeatures <- pmin(nFeatures, obsFeatures)
+        }
+        
+        if(multiViewMethod == "merge"){
+            
+            params <- generateModellingParams(datasetIDs = datasetIDs,
+                                                       measurements = measurements,
+                                                       nFeatures = nFeatures,
+                                                       selectionMethod = selectionMethod,
+                                                       selectionOptimisation = "none",
+                                                       classifier = classifier,
+                                                       multiViewMethod = "none")
+            
+            params@selectParams <- SelectParams(selectMulti, params = params, characteristics = DataFrame(characteristic = "Selection Name", value = "merge"))
+            return(params)
         }
         
         classifierName = classifier
@@ -241,10 +257,7 @@ generateModellingParams <- function(datasetIDs,
         )
         
         #if(multiViewMethod != "none") stop("I haven't implemented multiview yet.")
-        if(multiViewMethod == "merge"){
-            params@trainParams <- TrainParams(mergeTrainInterface, params = params, characteristics = DataFrame(characteristic = "Classifier Name", value = classifierName))
-            params@selectParams <- NULL
-            }
+
         # 
         # if(multiViewMethod == "prevalidation"){
         #     params$trainParams <- function(measurements, classes) prevalTrainInterface(measurements, classes, params)
