@@ -33,7 +33,7 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
             x <- runif(1)
             seed <- .Random.seed[1]
             
-            
+
             ################################
             #### No multiview
             ################################
@@ -78,25 +78,40 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
             #### Yes multiview
             ################################
             
-            if(multiViewMethod != "none"){
-            if(is.null(multiViewCombinations)) multiViewCombinations <- list(datasetIDs)
+            if(multiViewMethod == "merge"){
+            if(is.null(multiViewCombinations)) multiViewCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
             
-        if(multiViewMethod == "merge") selectionOptimisation = "none"
             
-            dataIndex <- multiViewCombinations[[1]]
             
-            result <- CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex], 
+            #### Clean up 
+            obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+            if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- pmin(obsFeatures, nFeatures)
+            if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
+            if(!all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
+            if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
+            if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "list")) nFeatures <- mapply(pmin, nFeatures[names(obsFeatures)], obsFeatures)
+            
+            
+            if(is.null(names(selectionMethod)) & length(selectionMethod) == 1) selectionMethod <- sapply(names(obsFeatures), function(x)selectionMethod)
+            if(is.null(names(selectionMethod)) & length(selectionMethod) > 1) stop("selectionMethod needs to be a named character vector or list with the same names as the datasets.")
+            if(!all(names(obsFeatures) %in% names(selectionMethod))) stop("selectionMethod needs to be a named character vector or list with the same names as the datasets.")
+            if(all(names(obsFeatures) %in% names(selectionMethod)) & is(selectionMethod, "character")) selectionMethod <- selectionMethod[names(obsFeatures)]
+            
+        
+            result <- sapply(multiViewCombinations, function(dataIndex){
+                CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex], 
                          classes = classes,
-                         nFeatures = nFeatures,
-                         selectionMethod = selectionMethod,
+                         nFeatures = nFeatures[dataIndex],
+                         selectionMethod = selectionMethod[dataIndex],
                          selectionOptimisation = selectionOptimisation,
                          classifier = classifier,
-                         multiViewMethod = multiViewMethod,
+                         multiViewMethod = ifelse(length(dataIndex)==1, "none", multiViewMethod),
                          multiViewCombinations = dataIndex,
                          nFolds = nFolds,
                          nRepeats = nRepeats, 
                          nCores = nCores, 
                          characteristicsLabel = characteristicsLabel)
+            }, simplify = FALSE)
             
             }
             
@@ -182,31 +197,59 @@ generateModellingParams <- function(datasetIDs,
 
     
         
-        obsFeatures <- sum(mcols(measurements)[, "dataset"] %in% datasetIDs)
-        
-        
-        if(is.null(nFeatures)) nFeatures <- obsFeatures
-        
-        if(max(nFeatures) > obsFeatures) {
-        
-            warning("nFeatures greater than the max number or features in data. 
-                                                 Setting to max")
-            nFeatures <- pmin(nFeatures, obsFeatures)
-        }
         
         if(multiViewMethod == "merge"){
             
-            params <- generateModellingParams(datasetIDs = datasetIDs,
-                                                       measurements = measurements,
-                                                       nFeatures = nFeatures,
-                                                       selectionMethod = selectionMethod,
-                                                       selectionOptimisation = "none",
-                                                       classifier = classifier,
-                                                       multiViewMethod = "none")
+       
+            # Split measurements up by dataset.
+            assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+            # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+            paramsDatasets <- mapply(generateModellingParams,
+                                     nFeatures = nFeatures[datasetIDs], 
+                                     selectionMethod = selectionMethod[datasetIDs],
+                                     datasetIDs = datasetIDs,
+                                     measurements = assayTrain[datasetIDs],
+                                     MoreArgs = list(
+                                        selectionOptimisation = selectionOptimisation,
+                                        classifier = classifier,
+                                        multiViewMethod = "none"),
+                                     SIMPLIFY = FALSE)
             
-            params@selectParams <- SelectParams(selectMulti, params = params, characteristics = DataFrame(characteristic = "Selection Name", value = "merge"))
+            # Generate some params for merged model.
+            params <- generateModellingParams(datasetIDs = datasetIDs,
+                                              measurements = measurements,
+                                              nFeatures = nFeatures,
+                                              selectionMethod = selectionMethod,
+                                              selectionOptimisation = "none",
+                                              classifier = classifier,
+                                              multiViewMethod = "none")
+            
+            # Update selectParams to use 
+            params@selectParams <- SelectParams(selectMulti, 
+                                                params = paramsDatasets, 
+                                                characteristics = DataFrame(characteristic = "Selection Name", value = "merge"),
+                                                tuneParams = list(nFeatures = nFeatures, 
+                                                                  performanceType = "Balanced Error",
+                                                                  tuneMode = "none")
+                                                )
             return(params)
         }
+    
+    
+    
+    obsFeatures <- sum(mcols(measurements)[, "dataset"] %in% datasetIDs)
+    
+    
+    if(is.null(nFeatures)) nFeatures <- obsFeatures
+    
+    if(max(nFeatures) > obsFeatures) {
+        
+        warning("nFeatures greater than the max number of features in data. 
+                                                 Setting to max")
+        nFeatures <- pmin(nFeatures, obsFeatures)
+    }
+    
         
         classifierName = classifier
 
@@ -317,7 +360,7 @@ CV <- function(measurements,
   )
   
   
-  characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), classifier,  selectionMethod, multiViewMethod, characteristicsLabel)) 
+  characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel)) 
   
   classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
   classifyResults

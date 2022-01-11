@@ -185,6 +185,7 @@
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
   topNfeatures <- tuneParams[["nFeatures"]]
+  tuneMode <- ifelse("tuneMode" %in% names(tuneParams), tuneParams[["tuneMode"]], crossValParams@tuneMode)
   tuneParams <- tuneParams[-match(c("performanceType", "nFeatures"), names(tuneParams))] # Only used as evaluation metric.
   featureRanking <- modellingParams@selectParams@featureRanking
   otherParams <- modellingParams@selectParams@otherParams
@@ -210,7 +211,7 @@
     if(featureRanking@generic == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
-    if(crossValParams@tuneMode == "none") # Actually selection not ranking.
+    if(tuneMode == "none") # Actually selection not ranking.
         return(list(NULL, rankings[[1]], NULL))
     
     tuneParamsTrain <- list(topN = topNfeatures)
