@@ -28,16 +28,14 @@ setGeneric("prevalTrainInterface", function(measurements, classes, ...)
 setMethod("prevalTrainInterface", "DFrame",
           function(measurements,
                    classes,
-                   classifierParams,
-                   featureSelectionParams,
-                   nFeatureParams,
+                   params,
                    foldParams,
                    performanceType,
                    seed,
                    ...)
           {
-              measurements = split(as.data.frame(t(as.data.frame(measurements))), mcols(measurements)[["dataset"]])
-              assayTrain = measurements[names(measurements) != "clinical"] %>% lapply(as.matrix)
+       
+              assayTrain <- sapply(unique(mcols(measurements)[["dataset"]]), function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
               
               
               assayParams = mapply(
