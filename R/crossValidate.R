@@ -185,7 +185,7 @@ cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up 
     obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
     if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
-    if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, pmin(obsFeatures, nFeatures), simplify = FALSE)
+    if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(obsFeatures, nFeatures), simplify = FALSE)
     #if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
     if(!all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
     if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
