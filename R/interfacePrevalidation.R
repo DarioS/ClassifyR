@@ -74,36 +74,26 @@ setMethod("prevalTrainInterface", "DFrame",
               
               prevalidationTrain <- extractPrevalidation(assayTests)
               
-              selectedFeaturesClinical <- runTest(assayTrain[["clinical"]],
-                                                 classes = classes,
-                                                 training = seq_len(nrow(assayTrain[["clinical"]])),
-                                                 testing = seq_len(nrow(assayTrain[["clinical"]])),
-                                                 modellingParams = params[["clinical"]],
-                                                 crossValParams = CVparams,
-                                                 .iteration = 1,
-                                                 verbose = 0
-              )$selected[, "feature"]
+              # selectedFeaturesClinical <- runTest(assayTrain[["clinical"]],
+              #                                    classes = classes,
+              #                                    training = seq_len(nrow(assayTrain[["clinical"]])),
+              #                                    testing = seq_len(nrow(assayTrain[["clinical"]])),
+              #                                    modellingParams = params[["clinical"]],
+              #                                    crossValParams = CVparams,
+              #                                    .iteration = 1,
+              #                                    verbose = 0
+              # )$selected[, "feature"]
+             
+              #fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
-              # if ("clinical" %in% names(measurements)) {
-              
-              fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
-              
-              # } else{
-              #     fullTrain = cbind(prevalidationTrain)
-              # }
+              fullTrain = cbind(assayTrain[["clinical"]], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
               
-              # XYZ - should the feature selection be here
-              # paramsFull = paramGenerator(
-              #     t(fullTrain),
-              #     classifier = classifierParams$clinical,
-              #     featureSelectionMethod = featureSelectionParams$clinical,
-              #     nFeatures = nFeatureParams$clinical,
-              #     performanceType = performanceType
-              # )
+              
+
               
               finalModParam <- params[["clinical"]]
-              finalModParam@selectParams <- NULL
+              #finalModParam@selectParams <- NULL
               
               runTestOutput = ClassifyR::runTest(
                   fullTrain,
