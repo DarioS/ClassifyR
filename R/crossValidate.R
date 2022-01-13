@@ -145,7 +145,7 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
                          nFeatures = nFeatures[dataIndex],
                          selectionMethod = selectionMethod[dataIndex],
                          selectionOptimisation = selectionOptimisation,
-                         classifier = classifier,
+                         classifier = classifier[dataIndex],
                          multiViewMethod = ifelse(length(dataIndex)==1, "none", multiViewMethod),
                          multiViewCombinations = dataIndex,
                          nFolds = nFolds,
@@ -317,6 +317,34 @@ generateModellingParams <- function(datasetIDs,
                                                               performanceType = "Balanced Error",
                                                               tuneMode = "none")
         )
+        return(params)
+    }
+    
+    if(multiViewMethod == "prevalidation"){
+        
+        # Split measurements up by dataset.
+        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+        paramsDatasets <- mapply(generateModellingParams,
+                                 nFeatures = nFeatures[datasetIDs], 
+                                 selectionMethod = selectionMethod[datasetIDs],
+                                 datasetIDs = datasetIDs,
+                                 measurements = assayTrain[datasetIDs],
+                                 classifier = classifier[datasetIDs],
+                                 MoreArgs = list(
+                                     selectionOptimisation = selectionOptimisation,
+                                     multiViewMethod = "none"),
+                                 SIMPLIFY = FALSE)
+        
+
+        params <- ModellingParams(
+            balancing = "none",
+            selectParams = NULL,
+            trainParams = TrainParams(prevalTrainInterface, params = paramsDatasets, characteristics = paramsDatasets$clinical@trainParams@characteristics),
+            predictParams = PredictParams(prevalPredictInterface, characteristics = paramsDatasets$clinical@predictParams@characteristics)
+        )
+        
         return(params)
     }
     

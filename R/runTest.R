@@ -89,6 +89,8 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
   if(is.character(trained)) return(trained) # An error occurred.
     
   tuneDetailsTrain <- trained[[2]] # Second element is tuning results.
+  
+  
   if(!is.null(modellingParams@trainParams@getFeatures)) # Features chosen inside classifier.
   {
     extrasList <- list()
@@ -130,9 +132,9 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
 .
-    extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
-    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-    characteristics <- rbind(characteristics, extrasDF)
+    # extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
+    # extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    # characteristics <- rbind(characteristics, extrasDF)
     
     ClassifyResult(characteristics, rownames(measurements), allFeatures, list(rankedFeatures), list(selectedFeatures),
                    list(models), tuneDetails, data.frame(sample = testing, class = predictedClasses), classes)

@@ -11,7 +11,7 @@ Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`
     }
     )
     
-    ch <- do.call("rbind", ch) |>
+    ch <- dplyr::bind_rows(ch) |>
         as.data.frame()
     
     ch$dataset[ch$multiViewMethod != "none"] <- paste(ch$multiViewMethod, ch$dataset, sep = " - ")[ch$multiViewMethod != "none"]

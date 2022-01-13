@@ -260,7 +260,7 @@
         } else {
            result <- runTests(measurements, classes[training], crossValParams, modellingParams, verbose = verbose)
            result <- calcCVperformance(result, performanceType)
-           median(performance(aResult)[[performanceType]])
+           median(performance(result)[[performanceType]])
          }
        })
       
