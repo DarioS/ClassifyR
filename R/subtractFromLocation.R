@@ -1,3 +1,39 @@
+#' Subtract Numeric Feature Measurements from a Location
+#' 
+#' For each numeric feature, calculates the location, and subtracts all
+#' measurements from that location.
+#' 
+#' Only the samples specified by \code{training} are used in the calculation of
+#' the location.  To use all samples for calculation of the location, simply
+#' provide indices of all the samples.
+#' 
+#' @aliases subtractFromLocation subtractFromLocation,matrix-method
+#' subtractFromLocation,DataFrame-method
+#' subtractFromLocation,MultiAssayExperiment-method
+#' @param measurements A \code{\link{matrix}}, \code{\link{DataFrame}} or a
+#' \code{\link{MultiAssayExperiment}} object containing the data.  For a
+#' matrix, the rows are for features and the columns are for samples.
+#' @param training A vector specifying which samples are in the training set.
+#' @param location Character. Either "mean" or "median".
+#' @param absolute Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute
+#' values of the differences are returned. Otherwise, they are signed.
+#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"clinical"} is also a valid value
+#' and specifies that numeric variables from the clinical data table will be
+#' used.
+#' @param transformName Default: Location Subtraction. Useful for automated
+#' plot annotation by plotting functions within this package..
+#' @param verbose Default: 3. A progress message is shown if this value is 3.
+#' @return The same class of variable as the input variable \code{measurements}
+#' is, with the numeric features subtracted from the calculated location.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   aMatrix <- matrix(1:100, ncol = 10)
+#'   subtractFromLocation(aMatrix, training = 1:5, "median")
+#' 
+#' @importFrom MultiAssayExperiment ExperimentList colData experiments MultiAssayExperiment
+#' @export
 setGeneric("subtractFromLocation", function(measurements, ...)
            standardGeneric("subtractFromLocation"))
 
@@ -88,7 +124,7 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
   if(absolute == TRUE)
     transformedTables <- lapply(transformedTables, abs)
   
-  MultiAssayExperiment::experiments(transformed)[targets] <- ExperimentList(transformedTables)
+  MultiAssayExperiment::experiments(transformed)[targets] <- MultiAssayExperiment::ExperimentList(transformedTables)
 
   if(verbose == 3)
     message("Subtraction from ", location,

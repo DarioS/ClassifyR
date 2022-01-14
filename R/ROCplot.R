@@ -1,6 +1,85 @@
 setGeneric("ROCplot", function(results, ...)
 standardGeneric("ROCplot"))
 
+#' Plot Receiver Operating Curve Graphs for Classification Results
+#' 
+#' Creates one ROC plot or multiple ROC plots for a list of ClassifyResult
+#' objects.  One plot is created if the data set has two classes and multiple
+#' plots are created if the data set has three or more classes.
+#' 
+#' The scores stored in the results should be higher if the sample is more
+#' likely to be from the class which the score is associated with. The score
+#' for each class must be in a column which has a column name equal to the
+#' class name.
+#' 
+#' For cross-validated classification, all predictions from all iterations are
+#' considered simultaneously, to calculate one curve per classification.
+#' 
+#' @aliases ROCplot ROCplot,list-method
+#' @param results A list of \code{\link{ClassifyResult}} objects.
+#' @param mode Default: "merge". Whether to merge all predictions of all
+#' iterations of cross-validation into one set or keep them separate. Keeping
+#' them separate will cause separate ROC curves to be computed for each
+#' iteration and confidence intervals to be drawn with the solid line being the
+#' averaged ROC curve.
+#' @param interval Default: 95 (percent). The percent confidence interval to
+#' draw around the averaged ROC curve, if mode is \code{"each"}.
+#' @param comparison The aspect of the experimental design to compare. Can be
+#' any characteristic that all results share. If the data set has two classes,
+#' then the slot name with factor levels to be used for colouring the lines.
+#' Otherwise, it specifies the variable used for plot facetting.
+#' @param lineColours A vector of colours for different levels of the
+#' comparison parameter, or if there are three or more classes, the classes.
+#' If \code{NULL}, a default colour palette is automatically generated.
+#' @param lineWidth A single number controlling the thickness of lines drawn.
+#' @param fontSizes A vector of length 5. The first number is the size of the
+#' title.  The second number is the size of the axes titles and AUC text, if it
+#' is not part of the legend. The third number is the size of the axes values.
+#' The fourth number is the size of the legends' titles. The fifth number is
+#' the font size of the legend labels.
+#' @param labelPositions Default: 0.0, 0.2, 0.4, 0.6, 0.8, 1.0. Locations where
+#' to put labels on the x and y axes.
+#' @param plotTitle An overall title for the plot.
+#' @param legendTitle A default name is used if the value is \code{NULL}.
+#' Otherwise a character name can be provided.
+#' @param xLabel Label to be used for the x-axis of false positive rate.
+#' @param yLabel Label to be used for the y-axis of true positive rate.
+#' @param plot Logical. If \code{TRUE}, a plot is produced on the current
+#' graphics device.
+#' @param showAUC Logical. If \code{TRUE}, the AUC value of each result is
+#' added to its legend text.
+#' @return An object of class \code{ggplot} and a plot on the current graphics
+#' device, if \code{plot} is \code{TRUE}.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   predicted <- do.call(rbind, list(data.frame(data.frame(sample = LETTERS[c(1, 8, 15, 3, 11, 20, 19, 18)],
+#'                                Healthy = c(0.89, 0.68, 0.53, 0.76, 0.13, 0.20, 0.60, 0.25),
+#'                                Cancer = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75),
+#'                                fold = 1)),
+#'                     data.frame(sample = LETTERS[c(11, 18, 15, 4, 6, 10, 11, 12)],
+#'                                Healthy = c(0.45, 0.56, 0.33, 0.56, 0.33, 0.20, 0.60, 0.40),
+#'                                Cancer = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60),
+#'                                fold = 2)))
+#'   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
+#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+#'                                                          "Cross-validation"),
+#'                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
+#'                             LETTERS[1:20], LETTERS[10:1],
+#'                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
+#'                             list(function(oracle){}), NULL, predicted, actual)
+#'   
+#'   predicted[c(2, 6), "Healthy"] <- c(0.40, 0.60)
+#'   predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
+#'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+#'                                                          "Cross-validation"),
+#'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
+#'                             LETTERS[1:20], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+#'                             list(sample(10, 10), sample(10, 10)), list(function(oracle){}),
+#'                             NULL, predicted, actual)
+#'   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
+#' 
+
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "Classifier Name", lineColours = NULL,
@@ -135,6 +214,8 @@ setMethod("ROCplot", "list",
   comparison <- rlang::sym(comparison)
   ROCplots <- lapply(plotDataSets, function(plotData)
               {
+
+
                 ROCplot <- ggplot2::ggplot(plotData, ggplot2::aes(x = FPR, y = TPR, colour = !!lineColour)) +
                            ggplot2::geom_line(size = lineWidth) + ggplot2::xlab(NULL) + ggplot2::ylab(NULL) + ggplot2::labs(colour = legendTitle) + ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, size = lineWidth, colour = "black") + ggplot2::scale_x_continuous(breaks = labelPositions, limits = c(0, 1)) +  ggplot2::scale_y_continuous(breaks = labelPositions, limits = c(0, 1)) +
                            ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = c(1, 0), legend.justification = c(1, 0), legend.background = ggplot2::element_rect(fill = "transparent"), legend.title = ggplot2::element_text(size = fontSizes[4], hjust = 0), legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::guides(colour = ggplot2::guide_legend(title.hjust = 0.5)) + ggplot2::scale_colour_manual(values = lineColours)

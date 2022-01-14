@@ -4,7 +4,7 @@ setGeneric("crossValidate", function(measurements, ...)
 setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           function(measurements, classes, ...)
           {
-              crossValidate(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+              crossValidate(S4Vectors::DataFrame(t(measurements), check.names = FALSE), classes, ...)
           })
 
 setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inputs, transformed.
@@ -260,6 +260,19 @@ cleanClassifier <- function(classifier, measurements){
 
 ######################################
 ######################################
+#' Title
+#'
+#' @param nRepeats 
+#' @param nFolds 
+#' @param nCores 
+#' @param selectionOptimisation 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+#' @import BiocParallel
 generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisation){
     
     seed <- .Random.seed[1]
@@ -405,6 +418,22 @@ generateModellingParams <- function(datasetIDs,
 
 
 
+#' Title
+#'
+#' @param datasetIDs 
+#' @param measurements 
+#' @param nFeatures 
+#' @param selectionMethod 
+#' @param selectionOptimisation 
+#' @param classifier 
+#' @param multiViewMethod 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+#' @importFrom S4Vectors DataFrame 
 generateMultiviewParams <- function(datasetIDs,
                                     measurements,
                                     nFeatures,
@@ -444,7 +473,7 @@ generateMultiviewParams <- function(datasetIDs,
         # Update selectParams to use 
         params@selectParams <- SelectParams(selectMulti, 
                                             params = paramsDatasets, 
-                                            characteristics = DataFrame(characteristic = "Selection Name", value = "merge"),
+                                            characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "merge"),
                                             tuneParams = list(nFeatures = nFeatures[[1]], 
                                                               performanceType = "Balanced Error",
                                                               tuneMode = "none")

@@ -85,6 +85,7 @@
 
 # Creates two lists of lists. First has training samples, second has test samples for a range
 # of different cross-validation schemes.
+#' @import utils
 .samplesSplits <- function(crossValParams, classes)
 {
   if(crossValParams@samplesSplits %in% c("k-Fold", "Permute k-Fold"))

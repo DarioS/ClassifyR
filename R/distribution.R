@@ -1,3 +1,53 @@
+#' Get Frequencies of Feature Selection and Sample Errors
+#' 
+#' There are two modes. For aggregating feature selection results, the function
+#' counts the number of times each feature was selected in all
+#' cross-validations. For aggregating classification results, the error rate
+#' for each sample is calculated. This is useful in identifying outlier samples
+#' that are difficult to classify.
+#' 
+#' 
+#' @aliases distribution distribution,ClassifyResult-method
+#' @param result An object of class \code{\link{ClassifyResult}}.
+#' @param dataType Whether to calculate sample-wise error rate or the number of
+#' times a feature was selected.
+#' @param plotType Whether to draw a probability density curve or a histogram.
+#' @param summaryType Whether to summarise the feature selections as a
+#' percentage or count.
+#' @param plot Whether to draw a plot of the frequency of selection or error
+#' rate.
+#' @param xMax Maximum data value to show in plot.
+#' @param xLabel The label for the x-axis of the plot.
+#' @param yLabel The label for the y-axis of the plot.
+#' @param title An overall title for the plot.
+#' @param fontSizes A vector of length 3. The first number is the size of the
+#' title.  The second number is the size of the axes titles. The third number
+#' is the size of the axes values.
+#' @param ... Further parameters, such as \code{colour} and \code{fill}, passed
+#' to \code{\link[ggplot2]{geom_histogram}} or
+#' \code{\link[ggplot2]{stat_density}}, depending on the value of
+#' \code{plotType}.
+#' @return If \code{type} is "features", a vector as long as the number of
+#' features that were chosen at least once containing the number of times the
+#' feature was chosen in cross validations or the percentage of times chosen.
+#' If \code{type} is "samples", a vector as long as the number of samples,
+#' containing the cross-validation error rate of the sample. If \code{plot} is
+#' \code{TRUE}, then a plot is also made on the current graphics device.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   #if(require(sparsediscrim))
+#'   #{
+#'     data(asthma)
+#'     CVparams <- CrossValParams(permutations = 5)
+#'     result <- runTests(measurements, classes, CVparams, ModellingParams())
+#'     featureDistribution <- distribution(result, "features", summaryType = "count",
+#'                                         plotType = "histogram",
+#'                                         xLabel = "Number of Cross-validations", yLabel = "Count",
+#'                                         binwidth = 1)
+#'     print(head(featureDistribution))
+#'   #}
+#' @export
 setGeneric("distribution", function(result, ...)
            standardGeneric("distribution"))
 

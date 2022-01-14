@@ -1,8 +1,0 @@
-exportPattern("^[[:alpha:]]+")
-
-import(methods, BiocParallel, locfit, grid, utils, stats)
-importFrom("S4Vectors", DataFrame, as.data.frame, do.call)
-importFrom("MultiAssayExperiment", ExperimentList, experiments, MultiAssayExperiment, wideFormat)
-importFrom("dplyr", mutate, n)
-importFrom("tidyr", gather)
-importFrom("rlang", sym, dots_list)
