@@ -4,6 +4,8 @@ Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`
     
     if(!is.list(result)) result = list(result)
     
+    if(sd(unlist(lapply(result,function(x)nrow(x@predictions))))>0)stop("At the moment, all results have the same number of folds and repeats")
+    
     ch <- lapply(result, function(w){
         v <- w@characteristics$value
         names(v) <- w@characteristics$characteristic

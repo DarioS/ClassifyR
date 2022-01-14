@@ -599,7 +599,11 @@ CV <- function(measurements,
 
 
 
-
+simplifyResults <- function(results, values = c("dataset", "classifier", "selectionMethod", "multiViewMethod")){
+    ch <- sapply(results, function(x) x@characteristics[x@characteristics$characteristic %in% values, "value"], simplify = TRUE)
+    ch <- data.frame(t(ch))
+    results[!duplicated(ch)]
+}
 
 
 

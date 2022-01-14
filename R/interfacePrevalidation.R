@@ -86,6 +86,12 @@ setMethod("prevalTrainInterface", "DFrame",
              
               #fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
+              prevalidationTrain <- DataFrame(prevalidationTrain)
+              mcols(prevalidationTrain)$dataset = "pca"
+              mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
+              
+              
+              
               fullTrain = cbind(assayTrain[["clinical"]], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
               
@@ -168,7 +174,10 @@ setMethod("prevalPredictInterface", c("prevalModel", "DFrame"),
                   prediction}, simplify = FALSE) |>
                   extractPrevalidation()
               
- 
+              prevalidationPredict <- DataFrame(prevalidationPredict)
+              mcols(prevalidationPredict)$dataset = "pca"
+              mcols(prevalidationPredict)$feature = colnames(prevalidationPredict)
+              
               fullTest = cbind(assayTest[["clinical"]], prevalidationPredict[rownames(assayTest[["clinical"]]), , drop = FALSE])
               
               
