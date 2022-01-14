@@ -156,6 +156,40 @@ setMethod("crossValidate", "DataFrame", # Clinical data or one of the other inpu
                   
               }
               
+              
+              
+              ### Prevalidation to combine data
+              if(multiViewMethod == "pca"){
+                  
+                  
+                  # The below loops over different combinations of datasets and combines them together using prevalidation.
+                  # This allows someone to answer which combinations of the datasets might be most useful.
+                  
+                  
+                  if(is.null(multiViewCombinations)){
+                      multiViewCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
+                      multiViewCombinations <- multiViewCombinations[sapply(multiViewCombinations, function(x)"clinical"%in%x, simplify = TRUE)]
+                      if(length(multiViewCombinations)==0) stop("No multiViewCombinations with `clinical` data")
+                  }
+                  
+                  
+                  result <- sapply(multiViewCombinations, function(dataIndex){
+                      CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex], 
+                         classes = classes,
+                         nFeatures = nFeatures[dataIndex],
+                         selectionMethod = selectionMethod[dataIndex],
+                         selectionOptimisation = selectionOptimisation,
+                         classifier = classifier[dataIndex],
+                         multiViewMethod = ifelse(length(dataIndex)==1, "none", multiViewMethod),
+                         multiViewCombinations = dataIndex,
+                         nFolds = nFolds,
+                         nRepeats = nRepeats, 
+                         nCores = nCores, 
+                         characteristicsLabel = characteristicsLabel)
+                  }, simplify = FALSE)
+                  
+              }
+              
               result
               
           })
@@ -279,74 +313,17 @@ generateModellingParams <- function(datasetIDs,
 ){
     
     
-    
-    
-    if(multiViewMethod == "merge"){
-        
-        if(length(classifier) > 1) classifier <- classifier[[1]]
-        
-        # Split measurements up by dataset.
-        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
-        
-        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
-        paramsDatasets <- mapply(generateModellingParams,
-                                 nFeatures = nFeatures[datasetIDs], 
-                                 selectionMethod = selectionMethod[datasetIDs],
-                                 datasetIDs = datasetIDs,
-                                 measurements = assayTrain[datasetIDs],
-                                 MoreArgs = list(
-                                     selectionOptimisation = selectionOptimisation,
-                                     classifier = classifier,
-                                     multiViewMethod = "none"),
-                                 SIMPLIFY = FALSE)
-        
-        # Generate some params for merged model.
-        params <- generateModellingParams(datasetIDs = datasetIDs,
-                                          measurements = measurements,
-                                          nFeatures = nFeatures,
-                                          selectionMethod = selectionMethod,
-                                          selectionOptimisation = "none",
-                                          classifier = classifier,
-                                          multiViewMethod = "none")
-        
-        # Update selectParams to use 
-        params@selectParams <- SelectParams(selectMulti, 
-                                            params = paramsDatasets, 
-                                            characteristics = DataFrame(characteristic = "Selection Name", value = "merge"),
-                                            tuneParams = list(nFeatures = nFeatures[[1]], 
-                                                              performanceType = "Balanced Error",
-                                                              tuneMode = "none")
-        )
+    if(multiViewMethod != "none") {
+        params <- generateMultiviewParams(datasetIDs,
+                                          measurements,
+                                          nFeatures,
+                                          selectionMethod,
+                                          selectionOptimisation,
+                                          classifier,
+                                          multiViewMethod)
         return(params)
     }
     
-    if(multiViewMethod == "prevalidation"){
-        
-        # Split measurements up by dataset.
-        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
-        
-        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
-        paramsDatasets <- mapply(generateModellingParams,
-                                 nFeatures = nFeatures[datasetIDs], 
-                                 selectionMethod = selectionMethod[datasetIDs],
-                                 datasetIDs = datasetIDs,
-                                 measurements = assayTrain[datasetIDs],
-                                 classifier = classifier[datasetIDs],
-                                 MoreArgs = list(
-                                     selectionOptimisation = selectionOptimisation,
-                                     multiViewMethod = "none"),
-                                 SIMPLIFY = FALSE)
-        
-
-        params <- ModellingParams(
-            balancing = "none",
-            selectParams = NULL,
-            trainParams = TrainParams(prevalTrainInterface, params = paramsDatasets, characteristics = paramsDatasets$clinical@trainParams@characteristics),
-            predictParams = PredictParams(prevalPredictInterface, characteristics = paramsDatasets$clinical@predictParams@characteristics)
-        )
-        
-        return(params)
-    }
     
     
     
@@ -428,7 +405,137 @@ generateModellingParams <- function(datasetIDs,
 
 
 
-
+generateMultiviewParams <- function(datasetIDs,
+                                    measurements,
+                                    nFeatures,
+                                    selectionMethod,
+                                    selectionOptimisation,
+                                    classifier,
+                                    multiViewMethod){
+    
+    if(multiViewMethod == "merge"){
+        
+        if(length(classifier) > 1) classifier <- classifier[[1]]
+        
+        # Split measurements up by dataset.
+        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+        paramsDatasets <- mapply(generateModellingParams,
+                                 nFeatures = nFeatures[datasetIDs], 
+                                 selectionMethod = selectionMethod[datasetIDs],
+                                 datasetIDs = datasetIDs,
+                                 measurements = assayTrain[datasetIDs],
+                                 MoreArgs = list(
+                                     selectionOptimisation = selectionOptimisation,
+                                     classifier = classifier,
+                                     multiViewMethod = "none"),
+                                 SIMPLIFY = FALSE)
+        
+        # Generate some params for merged model.
+        params <- generateModellingParams(datasetIDs = datasetIDs,
+                                          measurements = measurements,
+                                          nFeatures = nFeatures,
+                                          selectionMethod = selectionMethod,
+                                          selectionOptimisation = "none",
+                                          classifier = classifier,
+                                          multiViewMethod = "none")
+        
+        # Update selectParams to use 
+        params@selectParams <- SelectParams(selectMulti, 
+                                            params = paramsDatasets, 
+                                            characteristics = DataFrame(characteristic = "Selection Name", value = "merge"),
+                                            tuneParams = list(nFeatures = nFeatures[[1]], 
+                                                              performanceType = "Balanced Error",
+                                                              tuneMode = "none")
+        )
+        return(params)
+    }
+    
+    if(multiViewMethod == "prevalidation"){
+        
+        # Split measurements up by dataset.
+        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+        paramsDatasets <- mapply(generateModellingParams,
+                                 nFeatures = nFeatures[datasetIDs], 
+                                 selectionMethod = selectionMethod[datasetIDs],
+                                 datasetIDs = datasetIDs,
+                                 measurements = assayTrain[datasetIDs],
+                                 classifier = classifier[datasetIDs],
+                                 MoreArgs = list(
+                                     selectionOptimisation = selectionOptimisation,
+                                     multiViewMethod = "none"),
+                                 SIMPLIFY = FALSE)
+        
+        
+        params <- ModellingParams(
+            balancing = "none",
+            selectParams = NULL,
+            trainParams = TrainParams(prevalTrainInterface, params = paramsDatasets, characteristics = paramsDatasets$clinical@trainParams@characteristics),
+            predictParams = PredictParams(prevalPredictInterface, characteristics = paramsDatasets$clinical@predictParams@characteristics)
+        )
+        
+        return(params)
+    }
+    
+    if(multiViewMethod == "prevalidation"){
+        
+        # Split measurements up by dataset.
+        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+        paramsDatasets <- mapply(generateModellingParams,
+                                 nFeatures = nFeatures[datasetIDs], 
+                                 selectionMethod = selectionMethod[datasetIDs],
+                                 datasetIDs = datasetIDs,
+                                 measurements = assayTrain[datasetIDs],
+                                 classifier = classifier[datasetIDs],
+                                 MoreArgs = list(
+                                     selectionOptimisation = selectionOptimisation,
+                                     multiViewMethod = "none"),
+                                 SIMPLIFY = FALSE)
+        
+        
+        params <- ModellingParams(
+            balancing = "none",
+            selectParams = NULL,
+            trainParams = TrainParams(prevalTrainInterface, params = paramsDatasets, characteristics = paramsDatasets$clinical@trainParams@characteristics),
+            predictParams = PredictParams(prevalPredictInterface, characteristics = paramsDatasets$clinical@predictParams@characteristics)
+        )
+        
+        return(params)
+    }
+    
+    
+    if(multiViewMethod == "pca"){
+        
+        # Split measurements up by dataset.
+        assayTrain <- sapply(datasetIDs, function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+        
+        # Generate params for each dataset. This could be extended to have different selectionMethods for each type
+        paramsClinical <-  list(clinical = generateModellingParams(
+                                 nFeatures = nFeatures["clinical"], 
+                                 selectionMethod = selectionMethod["clinical"],
+                                 datasetIDs = "clinical",
+                                 measurements = assayTrain[["clinical"]],
+                                 classifier = classifier["clinical"],
+                                 selectionOptimisation = selectionOptimisation,
+                                 multiViewMethod = "none"))
+        
+        
+        params <- ModellingParams(
+            balancing = "none",
+            selectParams = NULL,
+            trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
+            predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics)
+        )
+        
+        return(params)
+    }
+    
+}
 
 
 CV <- function(measurements, 
