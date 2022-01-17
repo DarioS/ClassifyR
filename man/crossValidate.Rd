@@ -8,7 +8,7 @@
 \alias{crossValidate,data.frame-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-crossValidate(
+\S4method{crossValidate}{DataFrame}(
   measurements,
   classes,
   nFeatures = 20,
@@ -20,8 +20,7 @@ crossValidate(
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL,
-  ...
+  characteristicsLabel = NULL
 )
 }
 \arguments{
