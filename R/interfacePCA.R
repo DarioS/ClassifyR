@@ -44,7 +44,7 @@ setMethod("pcaTrainInterface", "DFrame",
               
               finalModParam <- params[["clinical"]]
               
-              runTestOutput = ClassifyR::runTest(
+              runTestOutput = runTest(
                   fullTrain,
                   classes = classes,
                   training = seq_len(nrow(fullTrain)),

@@ -16,7 +16,7 @@ setMethod("mergeTrainInterface", "DFrame",
               params2@selectParams <- NULL
               
               
-              runTestOutput = ClassifyR::runTest(
+              runTestOutput = runTest(
                   fullTrain,
                   classes,
                   training = seq_len(nrow(fullTrain)),

@@ -18,8 +18,8 @@ Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`
     
     ch$dataset[ch$multiViewMethod != "none"] <- paste(ch$multiViewMethod, ch$dataset, sep = " - ")[ch$multiViewMethod != "none"]
     
-    matrix_df = lapply(result, ClassifyR::calcCVperformance,metric) |> 
-        lapply(ClassifyR::performance) |>
+    matrix_df = lapply(result, calcCVperformance,metric) |> 
+        lapply(performance) |>
         purrr::flatten() |> 
         lapply(t) |>
         rlist::list.rbind() |>

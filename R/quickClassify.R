@@ -1,11 +1,12 @@
+#'
 #' Quick and Easy Cross-validated Classification
-#' 
+#'
 #' This convenience function allows specification of cross-validation and
 #' classification by a couple of pre-defined keywords and all parameter setting
 #' is automatically taken care of. This avoids the need to create any S4
 #' parameter objects.
-#' 
-#' 
+#'
+#'
 #' @aliases quickClassify quickClassify,matrix-method
 #' quickClassify,DataFrameOrDataFrameList-method
 #' quickClassify,MultiAssayExperiment-method
@@ -54,7 +55,7 @@
 #' with the number of variables tried at each split eing 40\% of the total
 #' number of variables in the data set.  \item \code{"kTSP"}: Feature selection
 #' based on pairs differences ranking and classification based on weighted
-#' voting of the selected feature pairs.  } \itemdatasetModeDefault: "each".
+#' voting of the selected feature pairs.  } \item \code{datasetMode} Default: "each".
 #' Whether to classify each input data set individually or concatenate
 #' different ones into a single table by specifying \code{"combine"} or do
 #' classification on all possible pairs of data sets, using the first data set
@@ -67,9 +68,10 @@
 #' into and used by the \code{DataFrame} method or variables not used by
 #' \code{quickClassify} but used by runTests (i.e. \code{characteristics} and
 #' \code{verbose}.
-#' 
+#'
 #' @importFrom rlang dots_list
 #' @export
+
 setGeneric("quickClassify", function(measurements, ...)
   standardGeneric("quickClassify"))
 
@@ -85,21 +87,21 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
                    datasetMode = c("each", "combine", "allPairs"), ...)
           {
             if(is.null(rownames(measurements)))
-              stop("'measurements' DataFrame must have sample identifiers as its row names.")            
+              stop("'measurements' DataFrame must have sample identifiers as its row names.")
             if(any(is.na(measurements)))
               stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")
             datasetMode <- match.arg(datasetMode)
-            
+
             if(!is.list(nFeatures)) nFeatures <- list(nFeatures) # Package it up for looping.
             if(!is.list(classes)) classes <- list(classes) # Package it up for looping.
-            
+
             if(is(measurements, "DataFrame")) # Could have multiple data sets, details in mcols, if originating from MultiAssayExperiment.
             {
               if(!is.null(mcols(measurements)) && datasetMode == "each") datasetIDs <- unique(mcols(measurements[, "dataset"])) else datasetIDs <- "dataset"
             } else { # measurements is a DataFrameList of different projects, same assay.
               if(datasetMode != "combine") datasetIDs <- names(measurements) else datasetIDs <- "dataset"
             }
-            
+
             if(datasetMode == "each") # Classify each data set individually.
             {
               if(length(nFeatures) < length(measurements)) nFeatures <- rep(nFeatures, length.out = length(datasetIDs))
@@ -123,7 +125,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
                 datasetIDs <- rep(datasetIDs, length.out = length(classifier))
               }
             }
-            
+
             if(cores == 1)
             {
               BPparam <- SerialParam()
@@ -139,7 +141,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
               }
             }
             crossValParams <- CrossValParams(permutations = permutations, folds = folds, parallelParams = BPparam)
-            
+
             data(HuRI) # Loads a variable called interactors from data folder, human reference interactome.
             # Loop for single data set in cross-validation
             classifyResults <- mapply(function(datasetID, classesUse, classifierID, nFeaturesUse) # Could be two or more datasets, classifiers.
@@ -160,12 +162,12 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
                                         elasticNet = ModellingParams(selectParams = NULL, trainParams = TrainParams(elasticNetGLMtrainInterface, getFeatures = elasticNetFeatures), predictParams = PredictParams(elasticNetGLMpredictInterface)),
                                         SVM = ModellingParams(selectParams = NULL, trainParams = TrainParams(SVMtrainInterface, kernel = "polynomial", tuneParams = list(degree = 2:8, cost = 10^(-5:5))), predictParams = PredictParams(SVMpredictInterface)),
                                         randomForest = ModellingParams(selectParams = NULL, trainParams = TrainParams(randomForestTrainInterface, mtry = 0.4 * ncol(measurements)), predictParams = PredictParams(randomForestPredictInterface)),
-                                        kTSP = ModellingParams(balancing = "none", selectParams = SelectParams(pairsDifferencesRanking, subsetToSelections = FALSE, featurePairs = interactors, tuneParams = list(nFeatures = nFeaturesUse, performanceType = "Balanced Error")), trainParams = TrainParams(kTSPclassifier, difference = "weighted", intermediate = setNames("selectedFeatures", "featurePairs")), predictParams = NULL) 
+                                        kTSP = ModellingParams(balancing = "none", selectParams = SelectParams(pairsDifferencesRanking, subsetToSelections = FALSE, featurePairs = interactors, tuneParams = list(nFeatures = nFeaturesUse, performanceType = "Balanced Error")), trainParams = TrainParams(kTSPclassifier, difference = "weighted", intermediate = setNames("selectedFeatures", "featurePairs")), predictParams = NULL)
               )
               runTests(measurementsUse, classesUse, crossValParams = crossValParams, modellingParams = modellingParams, ...) # Pass through other info such as characteristics data frame.
-              
+
             }, datasetIDs, classes, classifier, nFeatures, SIMPLIFY = FALSE)
-            
+
             if(datasetMode == "allPairs") # Do all cross-classifications.
             { # Test each fitted model on a single data set on all other data sets using the same model.
               extras <- rlang::dots_list(...)
@@ -198,7 +200,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
               extras[["characteristics"]] <- characteristicsTable
               do.call(runTests, append(list(measurementsUse, classes[predictDatasetID], crossValParams = crossValParams, modellingParams = modellingParams), extras)) # Pass through other info such as characteristics data frame.
               }, diffCombinations[, "trainDatasetID"], diffCombinations[, "predictDatasetID"], diffCombinations[, "classifier"])
-              
+
               # Join individual classifications to cross-classifications.
               classifyResults <- mapply(function(classifyResult, datasetID)
                                  {
@@ -207,7 +209,7 @@ setMethod("quickClassify", "DataFrameOrDataFrameList", # Clinical data or one of
                                  })
               classifyResults <- append(classifyResults, crossClassifyResults)
             }
-            
+
             if(length(classifyResults) == 1) # Unpackage it to a ClassifyResult.
               classifyResults <- unlist(classifyResults)
             classifyResults
@@ -221,6 +223,6 @@ setMethod("quickClassify", "MultiAssayExperiment",
             tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
             measurements <- tablesAndClasses[["dataTable"]]
             classes <- tablesAndClasses[["classes"]]
-            
+
             quickClassify(measurements, classes, ...)
           })

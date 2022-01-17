@@ -68,7 +68,8 @@
 #'                                      classes[trainingSamples])
 #'     DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])
 #'   #}
-#' 
+#'   
+#' @include classes.R
 #' @export
 setGeneric("DLDAtrainInterface", function(measurements, ...)
 standardGeneric("DLDAtrainInterface"))
@@ -108,6 +109,8 @@ function(measurements, targets = names(measurements), classes, ...)
     DLDAtrainInterface(measurements, classes, ...)
 })
 
+
+#' @export
 setGeneric("DLDApredictInterface", function(model, test, ...)
 standardGeneric("DLDApredictInterface"))
 

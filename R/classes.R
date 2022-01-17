@@ -1,6 +1,17 @@
+##### Table of contents #####
+# Set old classes
+# Create union of classes
+# Set generic accessors
+
+################################################################################
+#
+# Set old classes
+#
+################################################################################
+
+
+
 # Delete when sparsediscrim is restored to CRAN.
-
-
 #' Trained dlda Object
 #' 
 #' Enables S4 method dispatching on it.
@@ -63,6 +74,19 @@ setOldClass("multnet")
 #' @docType class
 #' @author Dario Strbenac
 setOldClass("randomForest")
+
+
+
+
+################################################################################
+#
+# Create union of classes
+#
+################################################################################
+
+
+
+
 
 #' Union of A Function and NULL
 #' 
@@ -164,18 +188,26 @@ setClassUnion("listOrNULL", c("list", "NULL"))
 #' @author Dario Strbenac
 setClassUnion("DataFrameOrDataFrameList", c("DataFrame", "DataFrameList"))
 
+
+
+################################################################################
+#
+# Params
+#
+################################################################################
+
+##### CrossValParams #####
+
 setClass("CrossValParams", representation(
-  samplesSplits = "character",
-  permutations = "numericOrNULL",
-  percentTest = "numericOrNULL",  
-  folds = "numericOrNULL",
-  leave = "numericOrNULL",
-  tuneMode = "character",
-  parallelParams = "BiocParallelParam"
-  )
+    samplesSplits = "character",
+    permutations = "numericOrNULL",
+    percentTest = "numericOrNULL",  
+    folds = "numericOrNULL",
+    leave = "numericOrNULL",
+    tuneMode = "character",
+    parallelParams = "BiocParallelParam"
 )
-
-
+)
 
 #' Parameters for Cross-validation Specification
 #' 
@@ -225,6 +257,8 @@ setClass("CrossValParams", representation(
 #'   # Fully reproducible Leave-2-out cross-validation on 4 cores,
 #'   # even if feature selection or classifier use random sampling.
 #' 
+#' @rawNamespace exportPattern("^[[:alpha:]]+")
+#' @export
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
                            tuneMode = c("Resubstitution", "Nested CV", "none"), parallelParams = bpparam())
@@ -253,6 +287,9 @@ CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percenta
       parallelParams = parallelParams)
 }
 
+
+
+##### StageParams #####
 
 #' StageParams Virtual Class
 #' 
@@ -294,14 +331,17 @@ setClassUnion("StageParamsOrMissing", c("StageParams", "missing"))
 #' @author Dario Strbenac
 setClassUnion("StageParamsOrMissingOrNULL", c("StageParams", "missing", "NULL"))
 
+
+
+
+##### TransformParams #####
+
 setClass("TransformParams", representation(
   transform = "function",
   characteristics = "DataFrame",
   intermediate = "character",  
   otherParams = "list"), contains = "StageParams"
 )
-
-
 
 #' Union of A TransformParams Object and NULL
 #' 
@@ -386,6 +426,11 @@ setMethod("show", "TransformParams",
               }
             }
           })
+
+
+
+
+##### FeatureSetCollection #####
 
 setClass("FeatureSetCollection", representation(
   sets = "list")
@@ -557,6 +602,13 @@ setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
 #' 
 setClassUnion("FeatureSetCollectionOrNULL", c("FeatureSetCollection", "NULL"))
 
+
+
+
+
+##### SelectParams #####
+
+
 setClass("SelectParams", representation(
   featureRanking = "functionOrList",
   characteristics = "DataFrame",
@@ -691,6 +743,12 @@ setMethod("show", "SelectParams",
             }
           })
 
+
+
+
+##### TrainParams #####
+
+
 setClass("TrainParams", representation(
   classifier = "function",
   characteristics = "DataFrame",
@@ -700,7 +758,6 @@ setClass("TrainParams", representation(
   getFeatures = "functionOrNULL"
 ), contains = "StageParams"
 )
-
 
 
 #' Parameters for Classifier Training
@@ -792,6 +849,12 @@ setMethod("show", "TrainParams",
             if(!is.null(object@getFeatures))
               cat("Selected Features Extracted By: ", object@getFeatures@generic, ".\n", sep = '')
           })
+
+
+
+
+
+##### PredictParams #####
 
 setClass("PredictParams", representation(
   predictor = "functionOrNULL",
@@ -922,6 +985,9 @@ setClass("ModellingParams", representation(
 
 
 
+
+##### ModellingParams #####
+
 #' Parameters for Data Modelling Specification
 #' 
 #' Collects and checks necessary parameters required for data modelling. Apart
@@ -969,7 +1035,7 @@ setClass("ModellingParams", representation(
 #'                      trainParams = TrainParams(randomForestTrainInterface),
 #'                      predictParams = PredictParams(randomForestPredictInterface))
 #'   #}
-#' 
+#' @export
 ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
                             transformParams = NULL, selectParams = SelectParams(),
                             trainParams = TrainParams(), predictParams = PredictParams())
@@ -980,6 +1046,8 @@ ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
 }
 
 
+
+##### ClassifyResult #####
 
 #' Container for Storing Classification Results
 #' 
@@ -1085,6 +1153,18 @@ setMethod("show", "ClassifyResult", function(object)
               cat("Performance Measures: None calculated yet.\n", sep = '')
           })
 
+
+
+
+
+
+################################################################################
+#
+# Set generic accessors
+#
+################################################################################
+
+#' @export
 setGeneric("sampleNames", function(object, ...)
 standardGeneric("sampleNames"))
 setMethod("sampleNames", c("ClassifyResult"),
@@ -1093,6 +1173,7 @@ setMethod("sampleNames", c("ClassifyResult"),
             object@originalNames
           })
 
+#' @export
 setGeneric("featureNames", function(object, ...)
 standardGeneric("featureNames"))
 setMethod("featureNames", c("ClassifyResult"),
@@ -1101,6 +1182,7 @@ setMethod("featureNames", c("ClassifyResult"),
             object@originalFeatures
           })
 
+#' @export
 setGeneric("features", function(object, ...)
 standardGeneric("features"))
 setMethod("features", c("ClassifyResult"),
@@ -1109,6 +1191,7 @@ setMethod("features", c("ClassifyResult"),
             object@chosenFeatures
           })
 
+#' @export
 setGeneric("models", function(object, ...)
 standardGeneric("models"))
 setMethod("models", c("ClassifyResult"),
@@ -1117,6 +1200,7 @@ setMethod("models", c("ClassifyResult"),
             object@models
           })
 
+#' @export
 setGeneric("predictions", function(object, ...)
 standardGeneric("predictions"))
 setMethod("predictions", c("ClassifyResult"),
@@ -1125,6 +1209,7 @@ setMethod("predictions", c("ClassifyResult"),
             object@predictions
           })
 
+#' @export
 setGeneric("performance", function(object, ...)
 standardGeneric("performance"))
 setMethod("performance", c("ClassifyResult"),
@@ -1133,6 +1218,7 @@ setMethod("performance", c("ClassifyResult"),
             object@performance
           })
 
+#' @export
 setGeneric("actualClasses", function(object, ...)
 standardGeneric("actualClasses"))
 setMethod("actualClasses", c("ClassifyResult"),
@@ -1141,6 +1227,7 @@ setMethod("actualClasses", c("ClassifyResult"),
             object@actualClasses
           })
 
+#' @export
 setGeneric("tunedParameters", function(object, ...)
 standardGeneric("tunedParameters"))
 setMethod("tunedParameters", "ClassifyResult",
@@ -1149,6 +1236,7 @@ setMethod("tunedParameters", "ClassifyResult",
             object@tune
           })
 
+#' @export
 setGeneric("totalPredictions", function(result, ...)
 standardGeneric("totalPredictions"))
 setMethod("totalPredictions", c("ClassifyResult"),

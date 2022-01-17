@@ -56,13 +56,16 @@
 #' Correlation Coefficient (MCC). A score between -1 and 1 indicating how
 #' concordant the predicted classes are to the actual classes. Only defined if
 #' there are two classes.  }
+#' 
 #' @param actualClasses A factor vector specifying each sample's correct class.
 #' @param predictedClasses A factor vector of the same length as
 #' \code{actualClasses} specifying each sample's predicted class.
+#' 
 #' @return If \code{calcCVperformance} was run, an updated
 #' \code{\linkS4class{ClassifyResult}} object, with new metric values in the
 #' \code{performance} slot. If \code{calcExternalPerformance} was run, the
 #' performance metric value itself.
+#' 
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -76,10 +79,6 @@
 #'   result <- calcCVperformance(result) 
 #'   performance(result)
 #'   
-NULL
-
-
-
 #' @export
 setGeneric("calcExternalPerformance", function(actualClasses, predictedClasses, ...)
 standardGeneric("calcExternalPerformance"))

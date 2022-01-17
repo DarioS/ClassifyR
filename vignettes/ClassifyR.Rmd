@@ -190,7 +190,7 @@ For more complex data sets with multiple kinds of experiments (e.g. DNA methylat
 *runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature ranking and DLDA for classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*. By default, the number of features is tuned by resubstitution on the training set.
 
 ```{r, tidy = FALSE}
-crossValParams <- CrossValParams(permutations = 20)
+crossValParams <- CrossValParams(permutations = 5)
 DMresults <- runTests(measurements, classes, crossValParams, verbose = 1)
 DMresults
 ```
@@ -240,13 +240,14 @@ The naive Bayes kernel classifier by default uses the vertical distance between 
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
-```{r, fig.width = 10, fig.height = 7}
+```{r, fig.width = 10, fig.height = 7, eval = FALSE}
 library(grid)
 DMresults <- calcCVperformance(DMresults, "Sample Error")
 DDresults <- calcCVperformance(DDresults, "Sample Error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
 errorPlot <- samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
                               showXtickLabels = FALSE, plot = FALSE)
+grid.newpage()
 grid.draw(errorPlot)
 ```
 
@@ -254,7 +255,7 @@ The benefit of this plot is that it allows the easy identification of samples wh
 
 The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 50 different features were for the differential distribution classifier for all 5 folds in the 20 cross-validations.
 
-```{r}
+```{r eval = FALSE}
 rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:100,
                             xLabelPositions = c(1, seq(10, 100, 10)),
                             plot = FALSE)
@@ -271,7 +272,7 @@ Some classifiers can output scores or probabilities representing how likely a sa
 
 By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is 95% interval.
 
-```{r, fig.height = 5, fig.width = 6}
+```{r, fig.height = 5, fig.width = 6, eval = FALSE}
 ROCcurves <- ROCplot(list(DMresults, DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
@@ -295,7 +296,7 @@ Some feature ranking methods or classifiers allow the choosing of tuning paramet
 
 Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
-```{r}
+```{r, eval = FALSE}
 tuneList <- list(cost = c(0.01, 0.1, 1, 10))
 SVMparams <- ModellingParams(trainParams = TrainParams(SVMtrainInterface, kernel = "linear", tuneParams = tuneList),
                              predictParams = PredictParams(SVMpredictInterface))
@@ -304,7 +305,7 @@ SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
 
 The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
 
-```{r}
+```{r, eval = FALSE}
 length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[1:5]
 ```

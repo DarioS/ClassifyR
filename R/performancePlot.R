@@ -78,7 +78,7 @@
 #'   performancePlot(list(result1, result2), performanceName = "Macro F1",
 #'                   title = "Comparison")
 #' 
-#' @import rlang sym
+#' @importFrom rlang sym
 #' @export
 setGeneric("performancePlot", function(results, ...)
     standardGeneric("performancePlot"))

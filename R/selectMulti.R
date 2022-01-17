@@ -8,7 +8,7 @@ setMethod("selectMulti", "DataFrame",
               
               assayTrain <- sapply(unique(mcols(measurements)[["dataset"]]), function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
               
-              selectedFeatures <- mapply(ClassifyR:::.doSelection, 
+              selectedFeatures <- mapply(.doSelection, 
                                          measurements = assayTrain,
                                          modellingParams = params[names(assayTrain)],
                                          MoreArgs = list(classes = classes, 

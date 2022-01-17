@@ -61,7 +61,7 @@ setMethod("prevalTrainInterface", "DFrame",
               
               usePreval <- names(assayTrain)[names(assayTrain)!="clinical"]
               assayTests <- bpmapply(
-                  ClassifyR::runTests,
+                  runTests,
                   measurements = assayTrain[usePreval],
                   modellingParams = params[usePreval],
                   MoreArgs = list(
@@ -101,7 +101,7 @@ setMethod("prevalTrainInterface", "DFrame",
               finalModParam <- params[["clinical"]]
               #finalModParam@selectParams <- NULL
               
-              runTestOutput = ClassifyR::runTest(
+              runTestOutput = runTest(
                   fullTrain,
                   classes = classes,
                   training = seq_len(nrow(fullTrain)),
@@ -117,7 +117,7 @@ setMethod("prevalTrainInterface", "DFrame",
               fullModel$fullFeatures = colnames(fullTrain)
               
               prevalidationModels =  mapply(
-                  ClassifyR::runTest,
+                  runTest,
                   measurements = assayTrain[usePreval],
                   modellingParams = params[usePreval],
                   MoreArgs = list(

@@ -79,7 +79,7 @@ standardGeneric("ROCplot"))
 #'                             NULL, predicted, actual)
 #'   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
 #' 
-
+#' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "Classifier Name", lineColours = NULL,

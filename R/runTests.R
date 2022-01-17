@@ -11,9 +11,7 @@
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 #' \code{matrix}, the rows are features, and the columns are samples.  The
 #' sample identifiers must be present as column names of the \code{matrix} or
-#' the row names of the \code{DataFrame}. If pre-validation is activated by
-#' naming one of the lists in \code{params} \code{"prevalidated"}, this
-#' variable must be of type \code{\link{MultiAssayExperiment}}.
+#' the row names of the \code{DataFrame}. 
 #' @param classes A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} if it is a
 #' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}

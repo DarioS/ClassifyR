@@ -1,22 +1,20 @@
 # RandomForest
-#' @importFrom ClassifyR TrainParams PredictParams randomForestTrainInterface randomForestPredictInterface forestFeatures
 rfParams <- function() {
-    trainParams = ClassifyR::TrainParams(
-        ClassifyR::randomForestTrainInterface
+    trainParams = TrainParams(
+        randomForestTrainInterface
     )
     
-    predictParams = ClassifyR::PredictParams(predictor = ClassifyR::randomForestPredictInterface,
+    predictParams = PredictParams(predictor = randomForestPredictInterface,
                                              returnType = "both")
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
 # ElatsicNet
-#' @importFrom ClassifyR TrainParams PredictParams elasticNetGLMtrainInterface elasticNetGLMpredictInterface
 elasticParams <- function() {
-    trainParams = ClassifyR::TrainParams(ClassifyR::elasticNetGLMtrainInterface)
+    trainParams = TrainParams(elasticNetGLMtrainInterface)
     
-    predictParams = ClassifyR::PredictParams(predictor = ClassifyR::elasticNetGLMpredictInterface,
+    predictParams = PredictParams(predictor = elasticNetGLMpredictInterface,
                                              returnType = "both")
     
     
@@ -24,35 +22,31 @@ elasticParams <- function() {
 }
 
 # Logistic Params
-#' @importFrom ClassifyR TrainParams PredictParams
 logisticParams <- function() {
-    trainParams = ClassifyR::TrainParams(logisticTrainInterface)
-    predictParams = ClassifyR::PredictParams(predictor = logisticPredictInterface)
+    trainParams = TrainParams(logisticTrainInterface)
+    predictParams = PredictParams(predictor = logisticPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-#' @importFrom ClassifyR TrainParams PredictParams SVMtrainInterface SVMpredictInterface
 svmParams = function() {
-    trainParams = ClassifyR::TrainParams(ClassifyR::SVMtrainInterface)
-    predictParams = ClassifyR::PredictParams(predictor = ClassifyR::SVMpredictInterface,
+    trainParams = TrainParams(SVMtrainInterface)
+    predictParams = PredictParams(predictor = SVMpredictInterface,
                                              returnType = "both")
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-#' @importFrom ClassifyR TrainParams PredictParams DLDAtrainInterface DLDApredictInterface
 DLDAParams = function() {
-    trainParams = ClassifyR::TrainParams(ClassifyR::DLDAtrainInterface)
-    predictParams = ClassifyR::PredictParams(predictor = ClassifyR::DLDApredictInterface,
+    trainParams = TrainParams(DLDAtrainInterface)
+    predictParams = PredictParams(predictor = DLDApredictInterface,
                                              returnType = "both")
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-#' @importFrom ClassifyR TrainParams PredictParams naiveBayesKernel
 naiveBayesParams = function() {
-    trainParams = ClassifyR::TrainParams(ClassifyR::naiveBayesKernel)
+    trainParams = TrainParams(naiveBayesKernel)
     predictParams = PredictParams(
         predictor = NULL,
         weighted = "weighted",
@@ -62,11 +56,10 @@ naiveBayesParams = function() {
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-#' @importFrom ClassifyR TrainParams PredictParams elasticNetGLMpredictInterface
 elasticNetPreval = function() {
-    trainParams = ClassifyR::TrainParams(elasticNetGLMtrainInterfacePreval)
+    trainParams = TrainParams(elasticNetGLMtrainInterfacePreval)
     
-    predictParams = ClassifyR::PredictParams(predictor = ClassifyR::elasticNetGLMpredictInterface,
+    predictParams = PredictParams(predictor = elasticNetGLMpredictInterface,
                                              returnType = "both")
     
     
