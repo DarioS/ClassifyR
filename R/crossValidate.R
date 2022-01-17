@@ -1,8 +1,3 @@
-setGeneric("crossValidate", function(measurements,
-                                     classes,
-                                     ...)
-    standardGeneric("crossValidate"))
-
 #' Cross-validation to evaluate classification performance.
 #' 
 #' This function has been designed to faciliate the comparison of classification
@@ -79,6 +74,23 @@ setGeneric("crossValidate", function(measurements,
 #' 
 #' 
 #' Boxplot(c(result, resultMerge))
+#' 
+setGeneric("crossValidate", function(measurements,
+                                     classes,
+                                     nFeatures = 20,
+                                     selectionMethod = "t_test",
+                                     selectionOptimisation = "Resubstitution",
+                                     classifier = "randomForest",
+                                     multiViewMethod = "none",
+                                     dataCombinations = NULL,
+                                     nFolds = 5,
+                                     nRepeats = 20,
+                                     nCores = 1,
+                                     characteristicsLabel = NULL,
+                                     ...)
+    standardGeneric("crossValidate"))
+
+
 setMethod("crossValidate", "DataFrame", 
           function(measurements,
                    classes, 
@@ -275,7 +287,18 @@ setMethod("crossValidate", "DataFrame",
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("crossValidate", "MultiAssayExperiment",
-          function(measurements, classes, ...)
+          function(measurements,
+                   classes, 
+                   nFeatures = 20,
+                   selectionMethod = "t_test",
+                   selectionOptimisation = "Resubstitution",
+                   classifier = "randomForest",
+                   multiViewMethod = "none",
+                   dataCombinations = NULL,
+                   nFolds = 5,
+                   nRepeats = 20,
+                   nCores = 1,
+                   characteristicsLabel = NULL)
           {
               targets = names(measurements)
               tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
@@ -287,7 +310,18 @@ setMethod("crossValidate", "MultiAssayExperiment",
 
 
 setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurements,
+                   classes, 
+                   nFeatures = 20,
+                   selectionMethod = "t_test",
+                   selectionOptimisation = "Resubstitution",
+                   classifier = "randomForest",
+                   multiViewMethod = "none",
+                   dataCombinations = NULL,
+                   nFolds = 5,
+                   nRepeats = 20,
+                   nCores = 1,
+                   characteristicsLabel = NULL)
           {
               measurements <- S4Vectors::DataFrame(t(measurements), check.names = FALSE)
               mcols(measurements)$dataset <- "dataset"
@@ -296,19 +330,52 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           })
 
 setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurements,
+                   classes, 
+                   nFeatures = 20,
+                   selectionMethod = "t_test",
+                   selectionOptimisation = "Resubstitution",
+                   classifier = "randomForest",
+                   multiViewMethod = "none",
+                   dataCombinations = NULL,
+                   nFolds = 5,
+                   nRepeats = 20,
+                   nCores = 1,
+                   characteristicsLabel = NULL)
           {
               measurements <- S4Vectors::DataFrame(t(measurements), check.names = FALSE)
               mcols(measurements)$dataset <- "dataset"
               mcols(measurements)$feature <- colnames(measurements)
-              crossValidate(measurements, classes, ...)
+              crossValidate(measurements = measurements,
+                            classes = classes, 
+                            nFeatures = nFeatures,
+                            selectionMethod = selectionMethod,
+                            selectionOptimisation = selectionOptimisation,
+                            classifier = classifier,
+                            multiViewMethod = multiViewMethod,
+                            dataCombinations = dataCombinations,
+                            nFolds = nFolds,
+                            nRepeats = nRepeats,
+                            nCores = nCores,
+                            characteristicsLabel = characteristicsLabel)
 
           })
 
 
 ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 setMethod("crossValidate", "list", # data.frame of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurements,
+                   classes, 
+                   nFeatures = 20,
+                   selectionMethod = "t_test",
+                   selectionOptimisation = "Resubstitution",
+                   classifier = "randomForest",
+                   multiViewMethod = "none",
+                   dataCombinations = NULL,
+                   nFolds = 5,
+                   nRepeats = 20,
+                   nCores = 1,
+                   characteristicsLabel = NULL)
           {
               stop("I still need to implement list of datasets")
           })

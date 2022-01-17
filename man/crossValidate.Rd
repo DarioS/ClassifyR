@@ -8,7 +8,7 @@
 \alias{crossValidate,data.frame-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-\S4method{crossValidate}{DataFrame}(
+crossValidate(
   measurements,
   classes,
   nFeatures = 20,
@@ -20,7 +20,8 @@
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 }
 \arguments{
@@ -106,4 +107,5 @@ Boxplot(resultMerge)
 
 
 Boxplot(c(result, resultMerge))
+
 }
