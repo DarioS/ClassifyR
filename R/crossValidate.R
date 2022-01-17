@@ -119,6 +119,8 @@ setMethod("crossValidate", "DataFrame",
 
               # Which data-types or data-views are present?
               datasetIDs <- unique(mcols(measurements)[, "dataset"])
+              
+              ##!!!!! Do something with data combinations
 
               # Initiate seed so that comparisons are comparable.
               x <- runif(1)
@@ -305,7 +307,18 @@ setMethod("crossValidate", "MultiAssayExperiment",
               measurements <- tablesAndClasses[["dataTable"]]
               classes <- tablesAndClasses[["classes"]]
 
-              crossValidate(measurements, classes, ...)
+              crossValidate(measurements = measurements,
+                            classes = classes, 
+                            nFeatures = nFeatures,
+                            selectionMethod = selectionMethod,
+                            selectionOptimisation = selectionOptimisation,
+                            classifier = classifier,
+                            multiViewMethod = multiViewMethod,
+                            dataCombinations = dataCombinations,
+                            nFolds = nFolds,
+                            nRepeats = nRepeats,
+                            nCores = nCores,
+                            characteristicsLabel = characteristicsLabel)
           })
 
 
@@ -326,7 +339,18 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
               measurements <- S4Vectors::DataFrame(t(measurements), check.names = FALSE)
               mcols(measurements)$dataset <- "dataset"
               mcols(measurements)$feature <- colnames(measurements)
-              crossValidate(measurements, classes, ...)
+              crossValidate(measurements = measurements,
+                            classes = classes, 
+                            nFeatures = nFeatures,
+                            selectionMethod = selectionMethod,
+                            selectionOptimisation = selectionOptimisation,
+                            classifier = classifier,
+                            multiViewMethod = multiViewMethod,
+                            dataCombinations = dataCombinations,
+                            nFolds = nFolds,
+                            nRepeats = nRepeats,
+                            nCores = nCores,
+                            characteristicsLabel = characteristicsLabel)
           })
 
 setMethod("crossValidate", "matrix", # Matrix of numeric measurements.

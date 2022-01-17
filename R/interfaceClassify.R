@@ -1,0 +1,116 @@
+#' An Interface for PoiClaClu Package's Classify Function
+#' 
+#' More details of Poisson LDA are available in the documentation of
+#' \code{\link[PoiClaClu]{Classify}}.
+#' 
+#' Data tables which consist entirely of non-integer data cannot be analysed.
+#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
+#' the factor of sample classes must be stored in the DataFrame accessible by
+#' the \code{colData} function with column name \code{"class"}.
+#' 
+#' @aliases classifyInterface classifyInterface,matrix-method
+#' classifyInterface,DataFrame-method
+#' classifyInterface,MultiAssayExperiment-method
+#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
+#' \code{matrix}, the rows are features, and the columns are samples.  If of
+#' type \code{\link{DataFrame}}, the data set is subset to only those features
+#' of type \code{integer}.
+#' @param classes A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurements} if it is a
+#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
+#' (i.e. number of rows) or a character vector of length 1 containing the
+#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param test An object of the same class as \code{measurements} with no
+#' samples in common with \code{measurements} and the same number of features
+#' as it.
+#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"clinical"} is also a valid value
+#' and specifies that integer variables from the clinical data table will be
+#' used.
+#' @param ... Variables not used by the \code{matrix} nor the
+#' \code{MultiAssayExperiment} method which are passed into and used by the
+#' \code{DataFrame} method or parameters that \code{\link[PoiClaClu]{Classify}}
+#' can accept.
+#' @param returnType Default: \code{"both"}. Either \code{"class"},
+#' \code{"score"} or \code{"both"}.  Sets the return value from the prediction
+#' to either a vector of class labels, matrix of scores for each class, or both
+#' labels and scores in a \code{data.frame}.
+#' @param verbose Default: 3. A number between 0 and 3 for the amount of
+#' progress messages to give.  This function only prints progress messages if
+#' the value is 3.
+#' @return Either a factor vector of predicted classes, a matrix of scores for
+#' each class, or a table of both the class labels and class scores, depending
+#' on the setting of \code{returnType}.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   if(require(PoiClaClu))
+#'   {
+#'     readCounts <- CountDataSet(n = 100, p = 1000, 2, 5, 0.1)
+#'     # Rows are for features, columns are for samples.
+#'     trainData <- t(readCounts[['x']])
+#'     classes <- factor(paste("Class", readCounts[['y']]))
+#'     testData <- t(readCounts[['xte']])
+#'     storage.mode(trainData) <- storage.mode(testData) <- "integer"
+#'     classified <- classifyInterface(trainData, classes, testData)
+#'     
+#'     setNames(table(paste("Class", readCounts[["yte"]]) == classified), c("Incorrect", "Correct"))
+#'   }
+#'   
+#' @export
+setGeneric("classifyInterface", function(measurements, ...)
+standardGeneric("classifyInterface"))
+
+setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
+          function(measurements, classes, test, ...)
+{
+  classifyInterface(DataFrame(t(measurements), check.names = FALSE),
+                    classes,
+                    DataFrame(t(test), check.names = FALSE), ...)
+})
+
+# Clinical data or one of the other inputs, transformed.
+setMethod("classifyInterface", "DataFrame", function(measurements, classes, test, ...,
+                                returnType = c("both", "class", "score"), verbose = 3)
+{
+  splitDataset <- .splitDataAndClasses(measurements, classes)
+  trainingMatrix <- splitDataset[["measurements"]]
+  isInteger <- apply(trainingMatrix, 2, is.integer)
+  trainingMatrix <- as.matrix(trainingMatrix[, isInteger, drop = FALSE])
+  isInteger <- sapply(test, is.integer)
+  testingMatrix <- as.matrix(test[, isInteger, drop = FALSE])
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  
+  returnType <- match.arg(returnType)
+  
+  if(!requireNamespace("PoiClaClu", quietly = TRUE))
+    stop("The package 'PoiClaClu' could not be found. Please install it.")
+  
+  if(verbose == 3)
+    message("Fitting Poisson LDA classifier to training data and making predictions on test
+            data.")
+
+  predicted <- PoiClaClu::Classify(trainingMatrix, classes, testingMatrix, ...)
+  classPredictions <- predicted[["ytehat"]]
+  classScores <- predicted[["discriminant"]]
+  colnames(classScores) <- levels(classes)
+  switch(returnType, class = classPredictions, # Factor vector.
+         score = classScores, # Numeric matrix.
+         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
+})
+
+setMethod("classifyInterface", "MultiAssayExperiment",
+function(measurements, test, targets = names(measurements), classes, ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, "integer")
+  trainingMatrix <- tablesAndClasses[["dataTable"]]
+  classes <- tablesAndClasses[["classes"]]
+  testingMatrix <- .MAEtoWideTable(test, targets, "integer")
+            
+  .checkVariablesAndSame(trainingMatrix, testingMatrix)
+  classifyInterface(trainingMatrix, classes, testingMatrix, ...)
+})
