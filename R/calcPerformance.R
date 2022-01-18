@@ -78,7 +78,8 @@
 #'                            predictTable, actual)
 #'   result <- calcCVperformance(result) 
 #'   performance(result)
-#'   
+#' 
+#' @include classes.R
 #' @export
 setGeneric("calcExternalPerformance", function(actualClasses, predictedClasses, ...)
 standardGeneric("calcExternalPerformance"))

@@ -1,3 +1,23 @@
+#' Boxplot for looking at performance or ClassifyR object
+#'
+#' @param result A list of ClassifyR objects
+#' @param metric A performance metric from \code{calcPerformance}
+#' @param x Which Characteristic to use for the x-axis
+#' @param fill Which Characterstic to use for the fill
+#'
+#' @return ggplot object
+#' @export
+#'
+#' @examples
+#' 
+#' data(asthma)
+#' 
+#' # Compare randomForest and svm classifiers.
+#' result <- crossValidate(measurements, classes, nRepeats = 4)
+#' Boxplot(result)
+#' 
+#' @importFrom purrr flatten
+#' @importFrom rlist list.rbind
 Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`", fill = "dataset"){
     
     #! Add checks

@@ -90,7 +90,7 @@ classifier predicts all samples as belonging to the majority class.
                            predictTable, actual)
   result <- calcCVperformance(result) 
   performance(result)
-  
+
 }
 \author{
 Dario Strbenac
