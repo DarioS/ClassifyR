@@ -401,7 +401,56 @@ setMethod("crossValidate", "list", # data.frame of numeric measurements.
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
-              stop("I still need to implement list of datasets")
+              # Check if the list only contains one data type
+              if (measurements %>% sapply(class) %>% unique() %>% length() != 1) {
+                  stop("All datasets must be of the same type (e.g. data.frame, matrix)")
+              }
+              
+              # Check data type is valid
+              if (!(measurements[[1]] %>% class() %in% c("data.frame", "DataFrame", "matrix"))) {
+                  stop("Datasets must be of type data.frame, DataFrame or matrix")
+              }
+              
+              # Check the list is named
+              if (names(measurements) %>% is.null()) {
+                  stop("Measurements must be a named list")
+              }
+              
+              # Check same number of samples for all datasets
+              if ((df_list %>% sapply(dim))[2,] %>% unique() %>% length() != 1) {
+                  stop("All datasets must have the same number of samples")
+              }
+              
+              # Check the number of classes is the same
+              if ((df_list[[1]] %>% dim())[2] != classes %>% length()) {
+                  stop("Classes must have same number of samples as measurements")
+              }
+              
+              df_list <- sapply(measurements, t, simplify = FALSE)
+              df_list <- sapply(df_list , S4Vectors::DataFrame)
+              
+              df_list <- mapply(function(meas, nam){
+                  mcols(meas)$dataset <- nam
+                  mcols(meas)$feature <- colnames(meas)
+                  meas
+              }, df_list, names(df_list))
+              
+              
+              combined_df <- do.call(cbind, df_list)
+              colnames(combined_df) <- mcols(combined_df)$feature
+              
+              crossValidate(measurements = combined_df,
+                            classes = classes, 
+                            nFeatures = nFeatures,
+                            selectionMethod = selectionMethod,
+                            selectionOptimisation = selectionOptimisation,
+                            classifier = classifier,
+                            multiViewMethod = multiViewMethod,
+                            dataCombinations = dataCombinations,
+                            nFolds = nFolds,
+                            nRepeats = nRepeats,
+                            nCores = nCores,
+                            characteristicsLabel = characteristicsLabel)
           })
 
 
