@@ -83,8 +83,6 @@ setMethod("distribution", "ClassifyResult",
   } else { # features
     chosenFeatures <- features(result)
     
-    print(chosenFeatures[[1]])
-    
     if(is.vector(chosenFeatures[[1]]))
       allFeatures <- unlist(chosenFeatures)
     else if(is.data.frame(chosenFeatures[[1]]))
