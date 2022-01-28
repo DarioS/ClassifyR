@@ -76,7 +76,17 @@ setOldClass("multnet")
 setOldClass("randomForest")
 
 
+#' Trained coxph Object
+#' 
+#' Enables S4 method dispatching on it.
+#' 
+#' 
+#' @name randomForest
+#' @aliases coxph coxph-class
+#' @docType class
+setOldClass("coxph")
 
+setOldClass("Surv")
 
 ################################################################################
 #
@@ -155,6 +165,7 @@ setClassUnion("numericOrNULL", c("numeric", "NULL"))
 #'   omicsSelections <- new("Selections", features = featuresTable)
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
+setClassUnion("factorOrSurv", c("factor", "Surv"))
 
 
 
@@ -1123,7 +1134,7 @@ setClass("ClassifyResult", representation(
   originalFeatures = "characterOrDataFrame",
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
-  actualClasses = "factor",
+  actualClasses = "factorOrSurv",
   models = "list",
   tune = "listOrNULL",
   predictions = "data.frame",

@@ -95,10 +95,17 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
   performanceType <- match.arg(performanceType)
   if(length(levels(actualClasses)) > 2 && performanceType == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
-  levels(predictedClasses) <- levels(actualClasses)
+  if(is(predictedClasses, "factor")) levels(predictedClasses) <- levels(actualClasses)
   .calcPerformance(list(actualClasses), list(predictedClasses), performanceType = performanceType)[["values"]]
 })
 
+setMethod("calcExternalPerformance", c("Surv", "numeric"),
+          function(actualClasses, predictedClasses,
+                   performanceType = c("C index"))
+          {
+            performanceType <- match.arg(performanceType)
+            .calcPerformance(actualClasses, predictedClasses, performanceType = performanceType)[["values"]]
+          })
 
 
 #' @export
@@ -111,9 +118,22 @@ setMethod("calcCVperformance", "ClassifyResult",
                                                "Sample Error", "Sample Accuracy",
                                                "Micro Precision", "Micro Recall",
                                                "Micro F1", "Macro Precision",
-                                               "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
+                                               "Macro Recall", "Macro F1", "Matthews Correlation Coefficient", 
+                                               "C index"))
 {
   performanceType <- match.arg(performanceType)
+  
+  ### Performance for survival data
+  if(performanceType == "C index"){
+    performance <- .calcPerformance(actualClasses = actualClasses(result)[match(result@predictions[, "sample"], sampleNames(result))],
+                                    predictedClasses = -result@predictions[, "class"], 
+                                    performanceType = performanceType)
+    result@performance[[performance[["name"]]]] <- performance[["values"]]
+    return(result)
+  }
+  
+  
+  ### Performance for data with classes
   if(length(levels(actualClasses)) > 2 && performanceType == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
 
@@ -133,6 +153,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   result
 })
 
+#' @importFrom survival concordance
 .calcPerformance <- function(actualClasses, predictedClasses, samples = NA, performanceType, grouping = NULL)
 {
   if(performanceType %in% c("Sample Error", "Sample Accuracy"))
@@ -154,6 +175,11 @@ setMethod("calcCVperformance", "ClassifyResult",
     performanceValues <- as.numeric(sampleMetricValues / table(factor(resultTable[, "sample"], levels = allIDs)))
     names(performanceValues) <- allIDs
     return(list(name = performanceType, values = performanceValues))
+  }
+  
+  if(performanceType %in% c("C index")){
+    predictedClasses <- -predictedClasses
+    return(list(name = "C index", values = survival::concordance(actualClasses ~ predictedClasses)$concordance))
   }
   
   if(!is.null(grouping))

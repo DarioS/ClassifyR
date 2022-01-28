@@ -79,3 +79,5 @@ Collate:
     'simpleParams.R'
     'subtractFromLocation.R'
     'utilities.R'
+    'interfaceCoxPH.R'
+    'rankingCoxPH.R'

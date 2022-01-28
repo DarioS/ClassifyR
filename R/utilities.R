@@ -1,10 +1,13 @@
+#' @importFrom survival Surv
 .splitDataAndClasses <- function(measurements, classes)
 { # DataFrame methods' class variable can be character or factor, so it's a bit involved.
-  if(class(classes) == "character" && length(classes) > 1)
+  if(class(classes) == "character" && length(classes) > 3 && length(classes) != nrow(measurements))
     stop("'classes' is a character variable but has more than one element. Either provide a\n",
          "       single column name or a factor of the same length as the number of samples.")
 
-  if(class(classes) == "character")
+  
+  ## Specify the column of class
+  if(class(classes) == "character" & length(classes) == 1)
   {
     classColumn <- match(classes, colnames(measurements))
     if(is.na(classColumn))
@@ -14,8 +17,50 @@
     if(class(classes) != "factor")
       classes <- factor(classes)
   }
+  
+  ## Specify the column of survival data
+  if(class(classes) == "character" & length(classes) %in% c(2,3))
+  {
+    classColumn <- match(classes, colnames(measurements))
+    if(any(is.na(classColumn)))
+      stop("Specified column name of classes is not present in the data table.")
+    classes <- measurements[, classColumn]
+    measurements <- measurements[, -classColumn]
+  }
+  
+  if(class(classes) %in% c("data.frame", "DataFrame", "matrix", "DFrame") & ncol(classes) %in% c(2,3))
+  {
+    
+    numUniq <- sapply(classes, function(x)length(unique(x)))
+    if(numUniq[length(numUniq)] != 2) stop("As the length of 'classes' was 2 or 3 I thought it was a survival outcome. 
+                                           The last of the characters in classes must correspond to an 'event' and only have 2 values")
+    
+    if(is(classes[,ncol(classes)], "factor")){
+      warning(paste("Setting event to ", levels(droplevels(classes[,ncol(classes)]))[2]))
+      classes[ncol(classes)] <- as.numeric(droplevels(classes[,ncol(classes)]))-1
+    }
+    
+    
+    if(ncol(classes)==2){
+      classes <- survival::Surv(classes[,1], classes[,2])
+    }
+    
+    if(ncol(classes)==3){
+      classes <- survival::Surv(classes[,1], classes[,2], classes[,3])
+    }
+    
+  }  
+  
+  ## Convert class to factor
+  
+  if(class(classes) == "character" & length(classes) == nrow(measurements))
+  {
+      classes <- factor(classes)
+  }
+  
   list(measurements = measurements, classes = classes)
 }
+
 
 .MAEtoWideTable <- function(measurements, targets, classes, restrict = "numeric")
 {
@@ -99,6 +144,7 @@
       foldsIndexes <- rep(1:nFolds, length.out = length(classes))
       
       foldsIndex = 1
+      if(is(classes, "Surv")) classes <- factor(rep("a", length(classes)))
       for(className in levels(classes))
       {
         # Permute the indexes of samples in the class.
@@ -182,7 +228,8 @@
 .doSelection <- function(measurements, classes, training, crossValParams, modellingParams, verbose)
 {
   names(classes) <- rownames(measurements) # In case training specified by sample IDs rather than numeric indices.
-  trainClasses <- droplevels(classes[training])
+  trainClasses <- classes[training]
+  if(is(classes, "factor"))trainClasses <- droplevels(trainClasses)
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
   topNfeatures <- tuneParams[["nFeatures"]]
@@ -241,14 +288,14 @@
         } else { # Pass along features to use.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, setNames(list(rankingsVariety[whichTry]), names(modellingParams@trainParams@intermediate)))
         }
-        measurements <- measurements[training, , drop = FALSE]
+        measurementsTrain <- measurements[training, , drop = FALSE]
         if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
         modellingParams@trainParams@intermediate <- character(0)
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurements, trainClasses,
-                            training = 1:nrow(measurements), testing = 1:nrow(measurements),
+          result <- runTest(measurementsTrain, trainClasses,
+                            training = 1:nrow(measurementsTrain), testing = 1:nrow(measurementsTrain),
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
           
@@ -342,7 +389,8 @@
 .doTrain <- function(measurements, classes, training, testing, modellingParams, verbose)
 {
   names(classes) <- rownames(measurements) # In case training or testing specified by sample IDs rather than numeric indices.
-  trainClasses <- droplevels(classes[training])
+  trainClasses <- classes[training]
+  if(is(trainClasses, "factor"))trainClasses <- droplevels(trainClasses)
   measurementsTrain <- measurements[training, , drop = FALSE]
   measurementsTest <- measurements[testing, , drop = FALSE]
   

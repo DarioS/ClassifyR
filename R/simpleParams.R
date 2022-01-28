@@ -65,3 +65,11 @@ elasticNetPreval = function() {
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
+
+
+coxphParams = function() {
+    trainParams = TrainParams(coxphTrainInterface)
+    predictParams = PredictParams(predictor = coxphPredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}

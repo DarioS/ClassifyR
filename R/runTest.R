@@ -99,6 +99,7 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     splitDataset <- .splitDataAndClasses(measurements, classes)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
+    if(!is(classes, "Surv")){
     rebalanced <- .rebalanceTrainingClasses(measurements, classes, training, testing, modellingParams@balancing)
     measurements <- rebalanced[["measurements"]]
     classes <- rebalanced[["classes"]]
@@ -107,6 +108,7 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     # Testing and set is not rebalanced, only the indices are shifted because the number
     # of rows of measurements changes, so the row numbers are updated, but the individual samples in testing
     # do not change.
+    }
   }
   
   testingSamplesIDs <- rownames(measurements)[testing]

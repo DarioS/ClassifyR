@@ -156,7 +156,7 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   characteristics <- rbind(characteristics,
                              S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
 
-  if(is.factor(results[[1]][["predictions"]]))
+  if(is.factor(results[[1]][["predictions"]]) | is.numeric(results[[1]][["predictions"]]))
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, class = unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
   else # data frame
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)

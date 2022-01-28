@@ -75,6 +75,7 @@
 #' 
 #' Boxplot(c(result, resultMerge))
 #' 
+#' @importFrom survival Surv
 setGeneric("crossValidate", function(measurements,
                                      classes,
                                      nFeatures = 20,
@@ -106,9 +107,14 @@ setMethod("crossValidate", "DataFrame",
                    characteristicsLabel = NULL)
 
           {
+              
               # Check that data is in the right format
+              splitDataset <- .splitDataAndClasses(measurements, classes)
+              measurements <- splitDataset[["measurements"]]
+              classes <- splitDataset[["classes"]]
               checkData(measurements,
                         classes)
+              
               # Check that other variables are in the right format and fix
               nFeatures <- cleanNFeatures(nFeatures = nFeatures,
                                           measurements = measurements)
@@ -616,6 +622,8 @@ generateModellingParams <- function(datasetIDs,
 
     classifier <- unlist(classifier)
 
+    performanceType <- ifelse(classifier == "coxph", "C index", "Balanced Accuracy")
+    
     classifier = switch(
         classifier,
         "randomForest" = rfParams(),
@@ -624,7 +632,8 @@ generateModellingParams <- function(datasetIDs,
         "svm" = svmParams(),
         "dlda" = DLDAParams(),
         "naiveBayes" = naiveBayesParams(),
-        "elasticNetPreval" = elasticNetPreval()
+        "elasticNetPreval" = elasticNetPreval(),
+        "coxph" = coxphParams()
     )
 
 
@@ -646,15 +655,15 @@ generateModellingParams <- function(datasetIDs,
         "DMD" = DMDselection,
         "liklihood" = likelihoodRatioSelection,
         "KS" = KolmogorovSmirnovSelection,
-        "KL" = KullbackLeiblerSelection
+        "KL" = KullbackLeiblerSelection,
+         "coxph" = coxphRanking
     )
-
 
     selectParams = SelectParams(
         selectionMethodParam,
         tuneParams = list(nFeatures = nFeatures,
-                          performanceType = "Balanced Error")
-    )
+                          performanceType = performanceType
+    ))
 
     params = ModellingParams(
         balancing = "none",
