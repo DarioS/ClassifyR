@@ -138,7 +138,7 @@ function(model, test, ..., verbose = 3)
   
   output <- sapply(c("lp", "risk"), function(type)predict(model, as.data.frame(test), type = type), simplify = TRUE)
   output <- data.frame(output)
-  output$class <- output[, "risk"]
+  output$class <- output[, "lp"]
   output
 
 })

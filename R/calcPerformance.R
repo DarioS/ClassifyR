@@ -123,11 +123,24 @@ setMethod("calcCVperformance", "ClassifyResult",
 {
   performanceType <- match.arg(performanceType)
   
+  
+  ### Group by permutation
+  if(!performanceType %in% c("Sample Error", "Sample Accuracy"))
+  {
+    if("permutation" %in% colnames(result@predictions))
+      grouping <- result@predictions[, "permutation"]
+    else # A set of folds or all leave-k-out predictions.
+      grouping <- rep(1, nrow(result@predictions))
+  }
+  
   ### Performance for survival data
   if(performanceType == "C index"){
+    samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
     performance <- .calcPerformance(actualClasses = actualClasses(result)[match(result@predictions[, "sample"], sampleNames(result))],
-                                    predictedClasses = -result@predictions[, "class"], 
-                                    performanceType = performanceType)
+                                    predictedClasses = result@predictions[, "class"], 
+                                    samples = samples,
+                                    performanceType = performanceType, 
+                                    grouping = grouping)
     result@performance[[performance[["name"]]]] <- performance[["values"]]
     return(result)
   }
@@ -141,13 +154,6 @@ setMethod("calcCVperformance", "ClassifyResult",
   samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
   predictedClasses <- factor(result@predictions[, "class"], levels = classLevels)
   actualClasses <- factor(actualClasses(result)[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
-  if(!performanceType %in% c("Sample Error", "Sample Accuracy"))
-  {
-    if("permutation" %in% colnames(result@predictions))
-      grouping <- result@predictions[, "permutation"]
-    else # A set of folds or all leave-k-out predictions.
-      grouping <- rep(1, nrow(result@predictions))
-  }
   performance <- .calcPerformance(actualClasses, predictedClasses, samples, performanceType, grouping)
   result@performance[[performance[["name"]]]] <- performance[["values"]]
   result
@@ -177,16 +183,18 @@ setMethod("calcCVperformance", "ClassifyResult",
     return(list(name = performanceType, values = performanceValues))
   }
   
-  if(performanceType %in% c("C index")){
-    predictedClasses <- -predictedClasses
-    return(list(name = "C index", values = survival::concordance(actualClasses ~ predictedClasses)$concordance))
-  }
+
   
   if(!is.null(grouping))
   {
     actualClasses <- split(actualClasses, grouping)
     predictedClasses <- split(predictedClasses, grouping)
   }
+  
+  if(!is(actualClasses,"list")) actualClasses <- list(actualClasses)
+  if(!is(predictedClasses,"list")) predictedClasses <- list(predictedClasses)
+  
+
   if(performanceType %in% c("Accuracy", "Error")) {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
@@ -213,7 +221,13 @@ setMethod("calcCVperformance", "ClassifyResult",
       else
         mean(classErrors / classSizes)
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
-  } else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
+  } else if(performanceType %in% c("C index")){
+    performanceValues <- unlist(mapply(function(x,y){
+      y <- -y
+      survival::concordance(x ~ y)$concordance
+    },actualClasses, predictedClasses, SIMPLIFY = FALSE))
+
+    }else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       confusionMatrix <- table(iterationClasses, iterationPredictions)
@@ -258,6 +272,7 @@ setMethod("calcCVperformance", "ClassifyResult",
       {
         return(unname((truePositives[2] * trueNegatives[2] - falsePositives[2] * falseNegatives[2]) / sqrt((truePositives[2] + falsePositives[2]) * (truePositives[2] + falseNegatives[2]) * (trueNegatives[2] + falsePositives[2]) * (trueNegatives[2] + falseNegatives[2]))))
       }
+      
     }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
   }
 
