@@ -82,16 +82,23 @@ setMethod("distribution", "ClassifyResult",
     names(scores) <- sampleNames(result)
   } else { # features
     chosenFeatures <- features(result)
-    if(is.vector(chosenFeatures[[1]])) # No longer numeric row indicies, but character feature IDs.
+    
+    print(chosenFeatures[[1]])
+    
+    if(is.vector(chosenFeatures[[1]]))
       allFeatures <- unlist(chosenFeatures)
-    else if(is.data.frame(chosenFeatures[[1]])) # Data set and feature ID columns.
+    else if(is.data.frame(chosenFeatures[[1]]))
       allFeatures <- do.call(rbind, chosenFeatures)
     else if("Pairs" %in% class(chosenFeatures[[1]]))
       allFeatures <- as.data.frame(do.call(c, unname(chosenFeatures)))
+    else if(class(chosenFeatures[[1]]) == "DFrame")
+      allFeatures <- do.call(rbind, chosenFeatures) %>% as.data.frame()
+    else
+      stop("features(result) must be a data.frame or DataFrame")
 
     if(is.data.frame(allFeatures))
     {
-      if(all(colnames(allFeatures) == c("feature", "dataset")))
+      if(all(colnames(allFeatures) %in% c("feature", "dataset")))
         allFeatures <- paste(allFeatures[, "feature"], paste('(', allFeatures[, "dataset"], ')', sep = ''))
       else
         allFeatures <- paste(allFeatures[, "first"], allFeatures[, "second"], sep = ', ')
