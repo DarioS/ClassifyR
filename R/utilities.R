@@ -28,6 +28,8 @@
     measurements <- measurements[, -classColumn]
   }
   
+  
+  if(!is.null(ncol(classes))){
   if(class(classes) %in% c("data.frame", "DataFrame", "matrix", "DFrame") & ncol(classes) %in% c(2,3))
   {
     
@@ -48,6 +50,7 @@
     if(ncol(classes)==3){
       classes <- survival::Surv(classes[,1], classes[,2], classes[,3])
     }
+  }
     
   }  
   
