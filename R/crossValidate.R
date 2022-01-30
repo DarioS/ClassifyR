@@ -622,7 +622,7 @@ generateModellingParams <- function(datasetIDs,
 
     classifier <- unlist(classifier)
 
-    performanceType <- ifelse(classifier == "coxph", "C index", "Balanced Accuracy")
+    performanceType <- ifelse(classifier %in% c("coxph", "coxnet"), "C index", "Balanced Accuracy")
     
     classifier = switch(
         classifier,
@@ -633,7 +633,8 @@ generateModellingParams <- function(datasetIDs,
         "dlda" = DLDAParams(),
         "naiveBayes" = naiveBayesParams(),
         "elasticNetPreval" = elasticNetPreval(),
-        "coxph" = coxphParams()
+        "coxph" = coxphParams(),
+        "coxnet" = coxnetParams()
     )
 
 

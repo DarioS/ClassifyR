@@ -26,6 +26,11 @@ Boxplot <- function(result, metric = "Balanced Accuracy", x = "`Classifier Name`
     
     if(length(result)>1 & sd(unlist(lapply(result,function(x)nrow(x@predictions))))>0)stop("At the moment, all results have the same number of folds and repeats")
     
+    if(is(result[[1]]@actualClasses, "Surv") & metric != "C index"){
+        message("Class is survival and metric not equal to 'C index' so setting to 'C index'")
+        metric <- "C index"
+    } 
+    
     ch <- lapply(result, function(w){
         v <- w@characteristics$value
         names(v) <- w@characteristics$characteristic

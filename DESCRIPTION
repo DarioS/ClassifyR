@@ -3,7 +3,7 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 2.15.12
+Version: 2.15.13
 Date: 2021-12-22
 Author: Dario Strbenac, Ellis Patrick, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
@@ -81,3 +81,4 @@ Collate:
     'utilities.R'
     'interfaceCoxPH.R'
     'rankingCoxPH.R'
+    'interfaceCoxnet.R'

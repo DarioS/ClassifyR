@@ -73,3 +73,12 @@ coxphParams = function() {
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
+
+
+coxnetParams = function() {
+    trainParams = TrainParams(coxnetTrainInterface)
+    predictParams = PredictParams(predictor = coxnetPredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
