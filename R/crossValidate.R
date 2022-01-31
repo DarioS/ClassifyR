@@ -625,13 +625,26 @@ generateModellingParams <- function(datasetIDs,
 
     performanceType <- ifelse(classifier %in% c("coxph", "coxnet"), "C index", "Balanced Accuracy")
     
+    
+    classifiers <- c("randomForest", 
+                     "elasticNet",
+                     "logistic",
+                     "svm",
+                     "dlda",
+                     "naiveBayes",
+                     "elasticNetPreval",
+                     "coxph",
+                     "coxnet")
+    # Check classifier
+    if(!classifier %in% classifiers)stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
+    
     classifier = switch(
         classifier,
         "randomForest" = rfParams(),
         "elasticNet" = elasticParams(),
         "logistic" = logisticParams(),
         "svm" = svmParams(),
-        "dlda" = DLDAParams(),
+         "dlda" = DLDAParams(),
         "naiveBayes" = naiveBayesParams(),
         "elasticNetPreval" = elasticNetPreval(),
         "coxph" = coxphParams(),
