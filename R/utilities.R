@@ -6,6 +6,11 @@
          "       single column name or a factor of the same length as the number of samples.")
 
   
+  ###
+  # Specifying columns
+  ###
+  
+  
   ## Specify the column of class
   if(class(classes) == "character" & length(classes) == 1)
   {
@@ -27,6 +32,27 @@
     classes <- measurements[, classColumn]
     measurements <- measurements[, -classColumn]
   }
+  
+  
+  ###
+  # I think class is a vector...
+  ###
+  
+  if(is(classes,"factor") & length(classes) > 3 & length(classes) < nrow(measurements)){
+    stop("The length of classes isn't equal to the number of samples")
+  } 
+  
+  ## Convert class to factor
+  
+  if(class(classes) == "character" & length(classes) == nrow(measurements))
+  {
+    classes <- factor(classes)
+  }
+  
+  
+  ###
+  # Classes has columns so is likely survival
+  ###
   
   
   if(!is.null(ncol(classes))){
@@ -52,15 +78,20 @@
     }
   }
     
-  }  
-  
-  ## Convert class to factor
-  
-  if(class(classes) == "character" & length(classes) == nrow(measurements))
-  {
-      classes <- factor(classes)
   }
   
+  ###
+  # Lets just check that measurements has mcols
+  ###
+  
+  if(is(measurements, "DataFrame")){
+    if(is.null(mcols(measurements))){
+      message(paste("You have", ncol(measurements), "features and", nrow(measurements), "samples and only one data-type."))
+      mcols(measurements)$dataset <- "dataset"
+      mcols(measurements)$feature <- colnames(measurements)
+  }}
+  
+
   list(measurements = measurements, classes = classes)
 }
 

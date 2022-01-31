@@ -99,17 +99,12 @@ setMethod("coxnetTrainInterface", "DataFrame", function(measurements, classes, l
   measurements <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
   measurementsMatrix <- glmnet::makeX(as(measurements, "data.frame"))
 
-  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["classes"]], family = "cox", ...)
+  fit <- glmnet::cv.glmnet(measurementsMatrix, splitDataset[["classes"]], family = "cox", type = "C", ...)
+  fitted <- fit$glmnet.fit
+  
+  offset <- -mean(predict(fitted, measurementsMatrix, s = fit$lambda.min, type = "link"))
 
-  if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
-  { # Pick one lambda based on resubstitution performance.
-    bestLambda <- fitted[["lambda"]][which.max(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
-    {
-      classPredictions <- predict(fitted, measurementsMatrix, s = lambda, type = "link")
-      calcExternalPerformance(classes, classPredictions[,1], "C index")
-    }))[1]]
-    attr(fitted, "tune") <- list(lambda = bestLambda)
-  }
+  attr(fitted, "tune") <- list(lambda = fit$lambda.min, offset = offset)
   fitted
 })
 
@@ -170,8 +165,11 @@ setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, te
   testMatrix <- glmnet::makeX(as(test, "data.frame"))
   testMatrix <- testMatrix[, rownames(model[["beta"]])]
   
-  classPredictions <- predict(model, testMatrix, s = lambda, type = "link")
-  classScores <- predict(model, testMatrix, s = lambda, type = "response")
+  offset <- attr(model, "tune")[["offset"]]
+  model$offset <- TRUE
+  
+  classPredictions <- predict(model, testMatrix, s = lambda, type = "link", newoffset = offset)
+  classScores <- predict(model, testMatrix, s = lambda, type = "response", newoffset = offset)
   
   data.frame(link = classPredictions[,1], relativeRisk = classScores[,1], class = classPredictions[,1], check.names = FALSE)
 })
