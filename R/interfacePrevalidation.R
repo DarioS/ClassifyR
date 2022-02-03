@@ -53,12 +53,19 @@ setMethod("prevalTrainInterface", "DFrame",
                    ...)
           {
               
+              ###
+              # Splitting measurements into a list of each of the datasets
+              ###
               assayTrain <- sapply(unique(mcols(measurements)[["dataset"]]), function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
               
               if(! "clinical" %in% names(assayTrain)) stop("Must have a dataset called `clinical`")
               
+              # Create generic crossValParams to use for my prevalidation... should add this as a input parameter
               CVparams <- CrossValParams(permutations = 1, folds = 10, parallelParams = SerialParam(RNGseed = .Random.seed[1]), tuneMode = "Resubstitution") 
               
+              ###
+              # Fit a classification model for each non-clinical datasets, pulling models from "params"
+              ###
               usePreval <- names(assayTrain)[names(assayTrain)!="clinical"]
               assayTests <- bpmapply(
                   runTests,
@@ -72,8 +79,12 @@ setMethod("prevalTrainInterface", "DFrame",
                   BPPARAM = SerialParam(RNGseed = .Random.seed[1])) |>
                   sapply(function(x)x@predictions, simplify = FALSE)
               
+              ###
+              # Pull-out prevalidated vectors ie. the predictions on each of the test folds.
+              ###
               prevalidationTrain <- extractPrevalidation(assayTests)
               
+              # Feature select on clinical data before binding
               # selectedFeaturesClinical <- runTest(assayTrain[["clinical"]],
               #                                    classes = classes,
               #                                    training = seq_len(nrow(assayTrain[["clinical"]])),
@@ -91,16 +102,19 @@ setMethod("prevalTrainInterface", "DFrame",
               mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
               
               
-              
+              ###
+              # Bind the prevalidated data to the clinical data
+              ###
               fullTrain = cbind(assayTrain[["clinical"]], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
               
               
 
-              
+              # Pull out clinical data
               finalModParam <- params[["clinical"]]
               #finalModParam@selectParams <- NULL
               
+              # Fit classification model (from clinical in params)
               runTestOutput = runTest(
                   fullTrain,
                   classes = classes,
@@ -113,9 +127,11 @@ setMethod("prevalTrainInterface", "DFrame",
                   )
               
               
+              # Extract the classification model from runTest output
               fullModel = runTestOutput$models
               fullModel$fullFeatures = colnames(fullTrain)
               
+              # Fit models with each datatype for use in prevalidated prediction later..
               prevalidationModels =  mapply(
                   runTest,
                   measurements = assayTrain[usePreval],
@@ -130,7 +146,7 @@ setMethod("prevalTrainInterface", "DFrame",
                   )
               )
               
-              # Make a class
+              # Add prevalidated models and classification params for each datatype to the fullModel object
               fullModel$prevalidationModels <- prevalidationModels["models",]
               names(fullModel$prevalidationModels) <- colnames(prevalidationModels)
               fullModel$modellingParams <- params
