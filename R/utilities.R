@@ -11,6 +11,7 @@
   ###
   
   
+  
   ## Specify the column of class
   if(class(classes) == "character" & length(classes) == 1)
   {
@@ -56,28 +57,27 @@
   
   
   if(!is.null(ncol(classes))){
-  if(class(classes) %in% c("data.frame", "DataFrame", "matrix", "DFrame") & ncol(classes) %in% c(2,3))
-  {
-    
-    numUniq <- sapply(classes, function(x)length(unique(x)))
-    if(numUniq[length(numUniq)] != 2) stop("As the length of 'classes' was 2 or 3 I thought it was a survival outcome. 
-                                           The last of the characters in classes must correspond to an 'event' and only have 2 values")
-    
-    if(is(classes[,ncol(classes)], "factor")){
-      warning(paste("Setting event to ", levels(droplevels(classes[,ncol(classes)]))[2]))
-      classes[ncol(classes)] <- as.numeric(droplevels(classes[,ncol(classes)]))-1
+    if(class(classes) %in% c("data.frame", "DataFrame", "matrix", "DFrame") & ncol(classes) %in% c(2,3))
+    {
+      
+      numUniq <- sapply(classes, function(x)length(unique(x)))
+      if(numUniq[length(numUniq)] != 2) stop("As the length of 'classes' was 2 or 3 I thought it was a survival outcome. 
+                                             The last of the characters in classes must correspond to an 'event' and only have 2 values")
+      
+      if(is(classes[,ncol(classes)], "factor")){
+        warning(paste("Setting event to ", levels(droplevels(classes[,ncol(classes)]))[2]))
+        classes[ncol(classes)] <- as.numeric(droplevels(classes[,ncol(classes)]))-1
+      }
+      
+      
+      if(ncol(classes)==2){
+        classes <- survival::Surv(classes[,1], classes[,2])
+      }
+      
+      if(ncol(classes)==3){
+        classes <- survival::Surv(classes[,1], classes[,2], classes[,3])
+      }
     }
-    
-    
-    if(ncol(classes)==2){
-      classes <- survival::Surv(classes[,1], classes[,2])
-    }
-    
-    if(ncol(classes)==3){
-      classes <- survival::Surv(classes[,1], classes[,2], classes[,3])
-    }
-  }
-    
   }
   
   ###
