@@ -920,3 +920,8 @@ setMethod("predict", "ClassifyResult",
           {
               object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
           })
+
+
+
+
+
