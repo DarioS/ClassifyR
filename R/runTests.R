@@ -167,7 +167,7 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   
   ClassifyResult(characteristics, rownames(measurements), allFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, classes)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, classes, modellingParams)
 })
 
 setMethod("runTests", c("MultiAssayExperiment"),

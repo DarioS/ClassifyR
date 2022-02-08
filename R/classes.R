@@ -1057,6 +1057,17 @@ ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
 }
 
 
+#' Union of A ModellingParams Object and NULL
+#' 
+#' Allows a slot to be either a ModellingParams class object or empty. No
+#' constructor.
+#' 
+#' 
+#' @name ModellingParamsOrNULL
+#' @aliases ModellingParamsOrNULL ModellingParamsOrNULL-class
+#' @docType class
+setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
+
 
 ##### ClassifyResult #####
 
@@ -1138,17 +1149,19 @@ setClass("ClassifyResult", representation(
   models = "list",
   tune = "listOrNULL",
   predictions = "data.frame",
-  performance = "listOrNULL")
+  performance = "listOrNULL",
+  modellingParams = "ModellingParamsOrNULL",
+  finalModel = "listOrNULL")
 )
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           function(characteristics, originalNames, originalFeatures,
-                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualClasses)
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualClasses, modellingParams = NULL, finalModel = NULL)
           {
             new("ClassifyResult", characteristics = characteristics,
                 originalNames = originalNames, originalFeatures = originalFeatures,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
-                predictions = predictions, actualClasses = actualClasses)
+                predictions = predictions, actualClasses = actualClasses, modellingParams = modellingParams, finalModel = finalModel)
           })
 setMethod("show", "ClassifyResult", function(object)
           {
