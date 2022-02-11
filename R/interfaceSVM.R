@@ -3,37 +3,38 @@
 #' \code{SVMtrainInterface} generates a trained SVM classifier and
 #' \code{SVMpredictInterface} uses it to make predictions on a test data set.
 #' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
-#' 
 #' @aliases SVMtrainInterface SVMtrainInterface,matrix-method
 #' SVMtrainInterface,DataFrame-method
 #' SVMtrainInterface,MultiAssayExperiment-method SVMpredictInterface
 #' SVMpredictInterface,svm,matrix-method
 #' SVMpredictInterface,svm,DataFrame-method
 #' SVMpredictInterface,svm,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.  If of
-#' type \code{\link{DataFrame}}, the data set is subset to only those features
-#' of type \code{integer}.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
+
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
+#' as it.
+#' @param classesColumnTest Either NULL or a character vector of length 1, specifying the
+#' column name to remove from the test set.
 #' @param returnType Default: \code{"both"}. Either \code{"class"},
 #' \code{"score"} or \code{"both"}. Sets the return value from the prediction
 #' to either a vector of class labels, score for a sample belonging to the
 #' second class, as determined by the factor levels, or both labels and scores
 #' in a \code{data.frame}.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
-#' as it.  Also, if a \code{DataFrame}, the \code{class} column must be absent.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param model A fitted model as returned by \code{SVMtrainInterface}.
 #' @param ... Variables not used by the \code{matrix} nor the
@@ -69,72 +70,69 @@
 #'   }
 #' 
 #' @export
-setGeneric("SVMtrainInterface", function(measurements, ...)
+setGeneric("SVMtrainInterface", function(measurementsTrain, ...)
 standardGeneric("SVMtrainInterface"))
 
 setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurementsTrain, classesTrain, ...)
 {
-  SVMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  SVMtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-# Clinical data or one of the other inputs, transformed.
-setMethod("SVMtrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
+# Sample information data or one of the other inputs, transformed.
+setMethod("SVMtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  # Classifier requires matrix input data type.
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
 
   if(!requireNamespace("e1071", quietly = TRUE))
     stop("The package 'e1071' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting SVM classifier to data.")
 
-  e1071::svm(measurements, classes, probability = TRUE, ...)
+  e1071::svm(trainingMatrix, classesTrain, probability = TRUE, ...)
 })
 
 setMethod("SVMtrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), classes, ...)
+function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
   
-  if(ncol(measurements) == 0)
+  if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    SVMtrainInterface(measurements, classes, ...)
+    SVMtrainInterface(measurementsTrain, classesTrain, ...)
 })
 
 
 #' @export
-setGeneric("SVMpredictInterface", function(model, test, ...)
+setGeneric("SVMpredictInterface", function(model, measurementsTest, ...)
 standardGeneric("SVMpredictInterface"))
 
 setMethod("SVMpredictInterface", c("svm", "matrix"),
-          function(model, test, ...)
+          function(model, measurementsTest, ...)
 {
-  SVMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
+  SVMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, classes = NULL, returnType = c("both", "class", "score"), verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
-  if(!is.null(classes))
+  if(!is.null(classesColumnTest)) # Remove the column, since pamr uses positional matching of features.
   {
-    splitDataset <- .splitDataAndClasses(test, classes) # Remove classes, if present.
-    testMatrix <- splitDataset[["measurements"]]
-  } else {testMatrix <- test}
-  isNumeric <- sapply(testMatrix, is.numeric)
-  testMatrix <- testMatrix[, isNumeric, drop = FALSE]
+    splitDataset <- .splitDataAndOutcomes(measurementsTest, classesColumnTest) 
+    measurementsTest <- splitDataset[["measurements"]] # Without classes column.
+  }
   
   if(!requireNamespace("e1071", quietly = TRUE))
     stop("The package 'e1071' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained SVM classifier.")
   
-  classPredictions <- predict(model, test, probability = TRUE)
+  classPredictions <- predict(model, measurementsTest, probability = TRUE)
   classScores <- attr(classPredictions, "probabilities")[, model[["levels"]], drop = FALSE]
   attr(classPredictions, "probabilities") <- NULL
   switch(returnType, class = classPredictions, score = classScores,
@@ -142,13 +140,13 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, test, cl
 })
 
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),
-          function(model, test, targets = names(test), ...)
+          function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(test, targets)
-  test <- tablesAndClasses[["dataTable"]] # Remove any classes, if present.
+  tablesAndClasses <- .MAEtoWideTable(measurementsTest, targets)
+  measurementsTest <- tablesAndClasses[["dataTable"]] # Remove any classes, if present.
             
-  if(ncol(test) == 0)
+  if(ncol(measurementsTest) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    SVMpredictInterface(model, test, ...)
+    SVMpredictInterface(model, measurementsTest, ...)
 })

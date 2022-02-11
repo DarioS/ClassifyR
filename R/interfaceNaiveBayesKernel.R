@@ -25,20 +25,24 @@
 #' @aliases naiveBayesKernel naiveBayesKernel,matrix-method
 #' naiveBayesKernel,DataFrame-method
 #' naiveBayesKernel,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param ... Unused variables by the three top-level methods passed to the
 #' internal method which does the classification.
@@ -49,11 +53,11 @@
 #' Default: \code{list(bw = "nrd0", n = 1024, from =
 #' expression(min(featureValues)), to = expression(max(featureValues))}.
 #' @param difference Default: \code{"unweighted"}. Either \code{"unweighted"},
-#' \code{"weighted"}.  In weighted mode, the difference in densities is summed
-#' over all features.  If unweighted mode, each feature's vote is worth the
+#' \code{"weighted"}. In weighted mode, the difference in densities is summed
+#' over all features. If unweighted mode, each feature's vote is worth the
 #' same.
-#' @param weighting Default: \code{"both"}. Either \code{"height difference"}
-#' or \code{"height difference"}. The type of weight to calculate.  For
+#' @param weighting Default: \code{"height difference"}. Either \code{"height difference"}
+#' or \code{"height difference"}. The type of weight to calculate. For
 #' \code{"height difference"}, the weight of each prediction is equal to the
 #' vertical distance between the highest density and the second-highest, for a
 #' particular value of x. For \code{"crossover distance"}, the x positions
@@ -62,9 +66,8 @@
 #' is the distance of x from the nearest density crossover point.
 #' @param minDifference Default: 0. The minimum difference in density height
 #' between the highest density and second-highest for a feature to be allowed
-#' to vote. Can be a vector of cutoffs.  If no features for a particular sample
-#' have a difference large enough, the class predicted is simply the largest
-#' class.
+#' to vote. If no features for a particular sample have a difference large enough,
+#' the class predicted is simply the largest class.
 #' @param returnType Default: \code{"both"}. Either \code{"class"},
 #' \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 #' to either a vector of predicted classes, a matrix of scores with columns
@@ -92,34 +95,32 @@
 #'   # Make first 30 genes increased in value for sixth to tenth samples.
 #'   testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
 #'   
-#'   naiveBayesKernel(trainMatrix, classes, testMatrix)
+#'   naiveBayesKernel(trainMatrix, classesTrain, testMatrix)
 #' 
 #' @export
-setGeneric("naiveBayesKernel", function(measurements, ...)
+setGeneric("naiveBayesKernel", function(measurementsTrain, ...)
            standardGeneric("naiveBayesKernel"))
 
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, test, ...)
+          function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  naiveBayesKernel(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
-                   classes,
-                   DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+  naiveBayesKernel(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+                   classesTrain,
+                   DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
 })
 
-setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, test,
+setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, measurementsTest,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
                    difference = c("unweighted", "weighted"),
                    weighting = c("height difference", "crossover distance"),
                    minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndClasses(measurementsTrain, classesTrain)
   trainingMatrix <- splitDataset[["measurements"]]
-  isNumeric <- sapply(trainingMatrix, is.numeric)
-  trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
-  classes <- splitDataset[["classes"]]
-  isNumeric <- sapply(test, is.numeric)
-  testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
+  classesTrain <- splitDataset[["outcomes"]]
+  isNumeric <- sapply(measurementsTest, is.numeric)
+  testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
@@ -127,18 +128,18 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   weighting <- match.arg(weighting)
   returnType <- match.arg(returnType)
   
-  classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
+  classesSizes <- sapply(levels(classesTrain), function(class) sum(classesTrain == class))
   largestClass <- names(classesSizes)[which.max(classesSizes)[1]]
   
   if(verbose == 3)
     message("Fitting densities.")
   
-  featuresDensities <- lapply(measurements, function(featureValues)
+  featuresDensities <- lapply(measurementsTrain, function(featureValues)
   {
     densityParameters <- lapply(densityParameters, function(parameter) eval(parameter))
-    lapply(levels(classes), function(class)
+    lapply(levels(classesTrain), function(class)
     {
-      aClassMeasurements <- featureValues[classes == class]  
+      aClassMeasurements <- featureValues[classesTrain == class]  
       do.call(densityFunction, c(list(aClassMeasurements), densityParameters))
     }) # A fitted density for each class.
   })
@@ -158,7 +159,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
   # Needed even if horizontal distance weighting is used to determine the predicted class.
   posteriorsVertical <- mapply(function(featureSplines, testSamples)
   {
-    sapply(1:length(levels(classes)), function(classIndex)
+    sapply(1:length(levels(classesTrain)), function(classIndex)
     {
       featureSplines[[classIndex]](testSamples)
     })
@@ -166,7 +167,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     
   classesVertical <- sapply(posteriorsVertical, function(featureVertical)
   {
-      apply(featureVertical, 1, function(sampleVertical) levels(classes)[which.max(sampleVertical)])
+      apply(featureVertical, 1, function(sampleVertical) levels(classesTrain)[which.max(sampleVertical)])
   }) # Matrix, rows are test samples, columns are features.
     
   distancesVertical <- sapply(posteriorsVertical, function(featureVertical)
@@ -183,7 +184,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")
  
-    classesVerticalIndices <- matrix(match(classesVertical, levels(classes)),
+    classesVerticalIndices <- matrix(match(classesVertical, levels(classesTrain)),
                                      nrow = nrow(classesVertical), ncol = ncol(classesVertical))
     distancesHorizontal <- mapply(function(featureDensities, testSamples, predictedClasses)
     {
@@ -212,14 +213,14 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
     if(all(useFeatures == FALSE)) # No features have a large enough density difference.
     {                          # Simply vote for the larger class.
       classPredicted <- largestClass
-      classScores <- classesSizes / length(classes)
+      classScores <- classesSizes / length(classesTrain)
     } else { # One or more features are available to vote with.
       distancesUsed <- allDistances[sampleRow, useFeatures]
-      classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classes))
+      classPredictionsUsed <- factor(classesVertical[sampleRow, useFeatures], levels(classesTrain))
       if(difference == "unweighted")
       {
         classScores <- table(classPredictionsUsed)
-        classScores <- setNames(as.vector(classScores), levels(classes))
+        classScores <- setNames(as.vector(classScores), levels(classesTrain))
       } else { # Weighted voting.
         classScores <- tapply(distancesUsed, classPredictionsUsed, sum)
         classScores[is.na(classScores)] <- 0
@@ -228,23 +229,23 @@ setMethod("naiveBayesKernel", "DataFrame", # Clinical data or one of the other i
       classPredicted <- names(classScores)[which.max(classScores)]
     }
 
-    data.frame(class = factor(classPredicted, levels = levels(classes)), t(classScores), check.names = FALSE)
+    data.frame(class = factor(classPredicted, levels = levels(classesTrain)), t(classScores), check.names = FALSE)
   }))
 
   switch(returnType, class = predictions[, "class"],
-         score = predictions[, colnames(predictions) %in% levels(classes)],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classes)], check.names = FALSE)
+         score = predictions[, colnames(predictions) %in% levels(classesTrain)],
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain)], check.names = FALSE)
         )
 })
 
-setMethod("naiveBayesKernel", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), classes, ...)
+setMethod("naiveBayesKernel", "MultiAssayExperiment",
+          function(measurementsTrain, measurementsTest, targets = names(measurements), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingMatrix <- .MAEtoWideTable(test, targets)
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  testingMatrix <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  naiveBayesKernel(trainingMatrix, classes, testingMatrix, ...)
+  naiveBayesKernel(trainingMatrix, classesTrain, testingMatrix, ...)
 })

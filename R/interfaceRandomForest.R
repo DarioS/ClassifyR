@@ -11,10 +11,6 @@
 #' predictions of the trees to determine a single prediction for each test
 #' sample.
 #' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
-#' 
 #' @aliases randomForestInterface randomForestTrainInterface
 #' randomForestTrainInterface,matrix-method
 #' randomForestTrainInterface,DataFrame-method
@@ -23,23 +19,22 @@
 #' randomForestPredictInterface,randomForest,matrix-method
 #' randomForestPredictInterface,randomForest,DataFrame-method
 #' randomForestPredictInterface,randomForest,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param forest A trained random forest classifier, as created by
-#' \code{randomForestTrainInterface}, which has the same form as the output of
-#' \code{\link[randomForest]{randomForest}}.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that integer variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -79,24 +74,24 @@
 #'   }
 #' 
 #' @export
-setGeneric("randomForestTrainInterface", function(measurements, ...)
+setGeneric("randomForestTrainInterface", function(measurementsTrain, ...)
 standardGeneric("randomForestTrainInterface"))
 
 #' @export
-setGeneric("randomForestPredictInterface", function(models, test, ...)
+setGeneric("randomForestPredictInterface", function(models, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
 setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurementsTrain, classesTrain, ...)
 {
-  randomForestTrainInterface(DataFrame(t(measurements), check.names = FALSE),
-                             classes, ...)
+  randomForestTrainInterface(DataFrame(measurementsTrain, check.names = FALSE),
+                             classesTrain, ...)
 })
 
-# Clinical data or one of the other inputs, transformed.
-setMethod("randomForestTrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
+# Sample information data or one of the other inputs, transformed.
+setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
 
   if(!requireNamespace("randomForest", quietly = TRUE))
     stop("The package 'randomForest' could not be found. Please install it.")
@@ -105,17 +100,17 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurements, clas
             data.")
 
   # Convert to base data.frame as randomForest doesn't understand DataFrame.
-  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["classes"]], keep.forest = TRUE, ...)
+  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcomes"]], keep.forest = TRUE, ...)
 })
 
 setMethod("randomForestTrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), classes, ...)
+function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
   
-  randomForestTrainInterface(measurements, classes, ...)
+  randomForestTrainInterface(measurementsTrain, classesTrain, ...)
 })
 
 
@@ -128,33 +123,33 @@ function(measurements, targets = names(measurements), classes, ...)
 
 
 
-setGeneric("randomForestPredictInterface", function(forest, test, ...)
+setGeneric("randomForestPredictInterface", function(forest, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
-setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(forest, test, ...)
+setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(forest, measurementsTest, ...)
 {
-  randomForestPredictInterface(forest, DataFrame(t(test), check.names = FALSE), ...)
+  randomForestPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("randomForestPredictInterface", c("randomForest", "DataFrame"),
-function(forest, test, ..., returnType = c("both", "class", "score"), verbose = 3)
+function(forest, measurementsTest, ..., returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
   if(verbose == 3)
     message("Predicting using random forest.")  
   
-  classPredictions <- predict(forest, test)
-  classScores <- predict(forest, test, type = "vote")[, forest[["classes"]], drop = FALSE]
+  classPredictions <- predict(forest, measurementsTest)
+  classScores <- predict(forest, measurementsTest, type = "vote")[, forest[["classes"]], drop = FALSE]
   switch(returnType, class = classPredictions,
          score = classScores,
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperiment"),
-          function(forest, test, targets = names(test), ...)
+          function(forest, measurementsTest, targets = names(measurementsTest), ...)
 {
-  testingTable <- .MAEtoWideTable(test, targets)
+  testingTable <- .MAEtoWideTable(measurementsTest, targets)
   randomForestPredictInterface(models, testingTable, ...)
 })
 

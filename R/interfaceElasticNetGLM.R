@@ -4,18 +4,11 @@
 #
 ################################################################################
 
-
-
-
 #' An Interface for glmnet Package's glmnet Function
 #' 
 #' An elastic net GLM classifier uses a penalty which is a combination of a
 #' lasso penalty and a ridge penalty, scaled by a lambda value, to fit a sparse
 #' linear model to the data.
-#' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
 #' 
 #' The value of the \code{family} parameter is fixed to \code{"multinomial"} so
 #' that classification with more than 2 classes is possible and
@@ -32,29 +25,28 @@
 #' elasticNetGLMpredictInterface,multnet,matrix-method
 #' elasticNetGLMpredictInterface,multnet,DataFrame-method
 #' elasticNetGLMpredictInterface,multnet,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.  If of
-#' type \code{\link{DataFrame}}, the data set is subset to only those features
-#' of type \code{integer}.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 #' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training.
 #' @param lambda The lambda value passed directly to
 #' \code{\link[glmnet]{glmnet}} if the training function is used or passed as
 #' \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction function
 #' is used.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that integer variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -104,28 +96,28 @@
 #'   }
 #'   
 #' @export
-setGeneric("elasticNetGLMtrainInterface", function(measurements, ...)
+setGeneric("elasticNetGLMtrainInterface", function(measurementsTrain, ...)
 standardGeneric("elasticNetGLMtrainInterface"))
 
 setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurementsTrain, classesTrain, ...)
 {
-  elasticNetGLMtrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  elasticNetGLMtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-# Clinical data or one of the other inputs, transformed.
-setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, classes, lambda = NULL, ..., verbose = 3)
+# Sample information data or one of the other inputs, transformed.
+setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, lambda = NULL, ..., verbose = 3)
 {
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting elastic net regularised GLM classifier to data.")
   
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
-  measurementsMatrix <- glmnet::makeX(as(measurements, "data.frame"))
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain, restrict = NULL)
+  measurementsTrain <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
+  measurementsMatrix <- glmnet::makeX(as(measurementsTrain, "data.frame"))
 
-  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["classes"]], family = "multinomial", ...)
+  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["outcomes"]], family = "multinomial", ...)
 
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
   { # Pick one lambda based on resubstitution performance.
@@ -139,18 +131,18 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurements, cla
   fitted
 })
 
-# One or more omics datasets, possibly with clinical data.
+# One or more omics datasets, possibly with sample information data.
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), classes, ...)
+function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndOutcomes <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
+  measurementsTrain <- tablesAndOutcomes[["dataTable"]]
+  classesTrain <- tablesAndOutcomes[["outcomes"]]
   
-  if(ncol(measurements) == 0)
+  if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    elasticNetGLMtrainInterface(measurements, classes, ...)
+    elasticNetGLMtrainInterface(measurementsTrain, classesTrain, ...)
 })
 
 
@@ -165,22 +157,22 @@ function(measurements, targets = names(measurements), classes, ...)
 
 
 # Matrix of numeric measurements.
-setGeneric("elasticNetGLMpredictInterface", function(model, test, ...)
+setGeneric("elasticNetGLMpredictInterface", function(model, measurementsTest, ...)
 standardGeneric("elasticNetGLMpredictInterface"))
 
 setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
-          function(model, test, ...)
+          function(model, measurementsTest, ...)
 {
-  elasticNetGLMpredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
+  elasticNetGLMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
-# Clinical data only.
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
+# Sample information data, for example.
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
-  if(!is.null(classes))
+  if(!is.null(classesColumnTest))
   {
-    splitDataset <- .splitDataAndClasses(test, classes)  # Remove any classes, if present.
-    test <- splitDataset[["measurements"]]
+    splitDataset <- .splitDataAndClasses(measurementsTest, classesColumnTest)  # Remove any classes, if present.
+    measurementsTest <- splitDataset[["measurements"]]
   }
   
   returnType <- match.arg(returnType)
@@ -209,14 +201,14 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
-          function(model, test, targets = names(test), ...)
+          function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(test, targets)
-  test <- tablesAndClasses[["dataTable"]]
+  tablesAndClasses <- .MAEtoWideTable(measurementsTest, targets)
+  measurementsTest <- tablesAndClasses[["dataTable"]]
 
-  elasticNetGLMpredictInterface(model, test, ...)
+  elasticNetGLMpredictInterface(model, measurementsTest, ...)
 })
 
 

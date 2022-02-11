@@ -2,10 +2,8 @@
 #' Classes
 #' 
 #' Each pair of features votes for a class based on whether the value of one
-#' feature is less than the other feature.
-#' 
-#' If the voting is tied, the the class with the most samples in the training
-#' set is voted for.
+#' feature is less than the other feature. If the voting is tied, the the class with
+#' the most samples in the training set is voted for.
 #' 
 #' Because this method compares different features, they need to have
 #' comparable measurements. For example, RNA-seq counts would be unsuitable
@@ -17,21 +15,25 @@
 #' 
 #' @aliases kTSPclassifier kTSPclassifier,matrix-method
 #' kTSPclassifier,DataFrame-method kTSPclassifier,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
 #' @param featurePairs An object of class as \code{\link{Pairs}} containing the
 #' pairs of features to determine whether the inequality of the first feature
-#' being less than the second feature holds, indiciating evidence for the
-#' second level of the \code{classes} factor.
+#' being less than the second feature holds, indicating evidence for the
+#' second level of the \code{classesTrain} factor.
 #' @param difference Default: \code{"unweighted"}. Either \code{"unweighted"}
 #' or \code{"weighted"}.  In weighted mode, the difference in densities is
 #' summed over all features.  If unweighted mode, each feature's vote is worth
@@ -40,9 +42,9 @@
 #' feature to be allowed to vote. Can be a vector of cutoffs. If no features
 #' for a particular sample have a difference large enough, the class predicted
 #' is simply the largest class.
-#' @param target If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' name of the data table to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param target If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' name of the data table to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that integer variables from the sample information data table will be
 #' used.
 #' @param ... Unused variables by the methods for a \code{matrix} or a
 #' \code{MultiAssayExperiment} passed to the \code{DataFrame} method which does
@@ -82,24 +84,24 @@
 #'   kTSPclassifier(trainMatrix, classes[trainIndex], testMatrix, featurePairs)
 #' 
 #' @export
-setGeneric("kTSPclassifier", function(measurements, ...)
+setGeneric("kTSPclassifier", function(measurementsTrain, ...)
            standardGeneric("kTSPclassifier"))
 
 setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, test, featurePairs = NULL, ...)
+          function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL, ...)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
             
-  kTSPclassifier(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
-                 classes,
-                 DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), featurePairs, ...)
+  kTSPclassifier(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+                 classesTrain,
+                 DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), featurePairs, ...)
 })
 
-setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, test, featurePairs = NULL,
+setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL,
                    difference = c("unweighted", "weighted"), minDifference = 0,
                    returnType = c("both", "class", "score"), verbose = 3)
 {
@@ -108,21 +110,20 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
           
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- splitDataset[["measurements"]]
-  isNumeric <- sapply(trainingMatrix, is.numeric)
-  trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
-  isNumeric <- sapply(test, is.numeric)
-  testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
+  isNumeric <- sapply(measurementsTest, is.numeric)
+  testingMatrix <- as.matrix(classesTrain[, isNumeric, drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
   difference <- match.arg(difference)
   returnType <- match.arg(returnType)
   
-  classesSizes <- sapply(levels(classes), function(class) sum(classes == class))
+  classesSizes <- sapply(levels(classesTrain), function(class) sum(classesTrain == class))
   largerClass <- names(classesSizes)[which.max(classesSizes)[1]]
-  secondClass <- classes == levels(classes)[2]
+  secondClass <- classesTrain == levels(classesTrain)[2]
   
   if(verbose == 3)
     message("Determining inequalities of feature pairs.")
@@ -151,12 +152,12 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
     useFeatures <- which(abs(measureDifferences) > minDifference)
     if(length(useFeatures) == 0) # No features have a large enough distance difference.
     {                            # Simply vote for the larger class.
-      if(largerClass == levels(classes)[1])
+      if(largerClass == levels(classesTrain)[1])
       {
-        class <- levels(classes)[1]
+        class <- levels(classesTrain)[1]
         score <- -1
       } else {
-        class <- levels(classes)[2]
+        class <- levels(classesTrain)[2]
         score <- 1
       }
     } else { # One or more features are available to vote with.
@@ -167,39 +168,39 @@ setMethod("kTSPclassifier", "DataFrame", # Clinical data or one of the other inp
         score <- sum(measureDifferences > 0)
             
         if(score > length(measureDifferences) / 2)
-          class <- levels(classes)[2]
+          class <- levels(classesTrain)[2]
         else
-          class <- levels(classes)[1]
+          class <- levels(classesTrain)[1]
             
       } else { # Each pair contributes a score for class prediction.
                # For being in second class.
         score <- sum(measureDifferences)
 
         # Sum of scores is tested for being positive or negative.
-        class <- levels(classes)[(sum(measureDifferences) > 0) + 1]
+        class <- levels(classesTrain)[(sum(measureDifferences) > 0) + 1]
       }
     }
-    data.frame(class = factor(class, levels = levels(classes)), score = score, check.names = FALSE)
+    data.frame(class = factor(class, levels = levels(classesTrain)), score = score, check.names = FALSE)
   }))
 
   switch(returnType, class = predictions[, "class"],
-         score = predictions[, colnames(predictions) %in% levels(classes)],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classes)], check.names = FALSE)
+         score = predictions[, colnames(predictions) %in% levels(classesTrain)],
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain)], check.names = FALSE)
   )
 })
 
 setMethod("kTSPclassifier", "MultiAssayExperiment", 
-          function(measurements, test, target = names(measurements)[1], featurePairs = NULL, ...)
+          function(measurementsTrain, classesTrain, target = names(measurementsTrain)[1], featurePairs = NULL, ...)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, target)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, target)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingMatrix <- .MAEtoWideTable(test, target)
+  classes <- tablesAndClasses[["outcomes"]]
+  testingMatrix <- .MAEtoWideTable(measurementsTest, target)
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   kTSPclassifier(trainingMatrix, classes, testingMatrix, featurePairs, ...)

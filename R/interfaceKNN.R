@@ -10,22 +10,24 @@
 #' 
 #' @aliases kNNinterface kNNinterface,matrix-method
 #' kNNinterface,DataFrame-method kNNinterface,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.  If of
-#' type \code{\link{DataFrame}}, the data set is subset to only those features
-#' of type \code{integer}.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' removed before training.
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that integer variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -36,8 +38,7 @@
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
-#' @return A factor vector, the same as is returned by
-#' \code{\link[class]{knn}}.
+#' @return A factor vector, the same as is returned by \code{\link[class]{knn}}.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -53,40 +54,39 @@
 #'   }
 #'   
 #' @export
-setGeneric("kNNinterface", function(measurements, ...) standardGeneric("kNNinterface"))
+setGeneric("kNNinterface", function(measurementsTrain, ...) standardGeneric("kNNinterface"))
 
 setMethod("kNNinterface", "matrix",
-          function(measurements, classes, test, ...)
+          function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  kNNinterface(DataFrame(t(measurements), check.names = FALSE),
-               classes,
-               DataFrame(t(test), check.names = FALSE), ...)
+  kNNinterface(DataFrame(measurementsTrain, check.names = FALSE),
+               classesTrain,
+               DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
-setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., classifierName = "k Nearest Neighbours", verbose = 3)
+setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain, measurementsTest, ..., classifierName = "k Nearest Neighbours", verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  isNumeric <- sapply(test, is.numeric)
-  test <- test[, isNumeric, drop = FALSE]  
+  isNumeric <- sapply(measurementsTest, is.numeric)
+  measurementsTest <- measurementsTest[, isNumeric, drop = FALSE]
   
   if(!requireNamespace("class", quietly = TRUE))
     stop("The package 'class' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting k Nearest Neighbours classifier to data and predicting classes.")
   
-  class::knn(as.matrix(measurements), as.matrix(test), classes, ...)
+  class::knn(as.matrix(measurementsTrain), as.matrix(measurementsTest), classesTrain, ...)
 })
 
 setMethod("kNNinterface", "MultiAssayExperiment",
-function(measurements, test, targets = names(measurements), classes, ...)
+function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingTable <- .MAEtoWideTable(test, targets)
+  classes <- tablesAndClasses[["outcomes"]]
+  testingTable <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingTable, testingTable)
   kNNinterface(trainingTable, classes, testingTable, ...)

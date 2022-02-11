@@ -31,7 +31,7 @@
 #' \code{MultiAssayExperiment}, then a character vector of length 2, which
 #' contains the name of a data table as the first element and the name of a
 #' categorical feature as the second element, may be specified.  Additionally,
-#' the value \code{"clinical"} may be used to refer to the column annotation
+#' the value \code{"sampleInfo"} may be used to refer to the column annotation
 #' stored in the \code{colData} slot of the of the \code{MultiAssayExperiment}
 #' object. A density plot will have additional lines of different line types
 #' for each category. A strip chart plot will have a separate strip chart
@@ -126,7 +126,7 @@
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
 #'   plotFeatureClasses(dataContainer, targets = targetFeatures,
-#'                      groupBy = c("clinical", "Gender"),
+#'                      groupBy = c("sampleInfo", "Gender"),
 #'                      xAxisLabel = bquote(log[2]*'(expression)'))
 #' 
 #' @importFrom dplyr mutate n
@@ -171,7 +171,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
 
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["classes"]]
+  classes <- splitDataset[["outcomes"]]
 
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
@@ -350,24 +350,24 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
 })
 
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
-                                function(measurements, targets, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
+                                function(measurements, targets, classColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
 {
   if(missing(targets))
     stop("'targets' must be specified by the user.")
-  if(!all(targets[, 1] %in% c(names(measurements), "clinical")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+  if(!all(targets[, 1] %in% c(names(measurements), "sampleInfo")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")  
                                 
-  assaysTargets <- targets[targets[, 1] != "clinical", ]
-  sampleInfoTargets <- targets[targets[, 1] == "clinical", ]
+  assaysTargets <- targets[targets[, 1] != "sampleInfo", ]
+  sampleInfoTargets <- targets[targets[, 1] == "sampleInfo", ]
   measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
-  classes <- MultiAssayExperiment::colData(measurements)[, "class"]
+  classes <- MultiAssayExperiment::colData(measurements)[, classColumn]
 
   if(!is.null(groupBy))
   {
     if(is.null(groupingName))
       groupingName <- groupBy[2]
     groupingTable <- groupBy[1]
-    if(groupingTable == "clinical")
+    if(groupingTable == "sampleInfo")
     {
       groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
     } else { # One of the omics tables.
@@ -385,7 +385,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
   MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfoTargets[, 2]]
   measurements <- wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
   measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
-  S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(measurements)[, "sourceName"])
+  S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
   colnames(S4Vectors::mcols(measurements))[1] <- "dataset"
   S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
   missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])

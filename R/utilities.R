@@ -1,83 +1,72 @@
-#' @importFrom survival Surv
-.splitDataAndClasses <- function(measurements, classes)
-{ # DataFrame methods' class variable can be character or factor, so it's a bit involved.
-  if(class(classes) == "character" && length(classes) > 3 && length(classes) != nrow(measurements))
-    stop("'classes' is a character variable but has more than one element. Either provide a\n",
-         "       single column name or a factor of the same length as the number of samples.")
+# Operates on an input data frame, to extract the outcome column(s) and return
+# a list with the table of covariates in one element and the outcomes in another.
+# The outcomes need to be removed from the data table before predictor training!
+.splitDataAndOutcomes <- function(measurements, outcomes, restrict = "numeric")
+{ # DataFrame's outcomes variable can be character or factor, so it's a bit involved.
+  if(class(outcomes) == "character" && length(outcomes) > 3 && length(outcomes) != nrow(measurements))
+    stop("'outcomes' is a character variable but has more than one element. Either provide a\n",
+         "       one to three column names or a factor of the same length as the number of samples.")
 
-  
-  ###
-  # Specifying columns
-  ###
-  
-  
-  
-  ## Specify the column of class
-  if(class(classes) == "character" & length(classes) == 1)
+  ## String specifies the name of a single outcome column, typically a class.
+  if(class(outcomes) == "character" && length(outcomes) == 1)
   {
-    classColumn <- match(classes, colnames(measurements))
-    if(is.na(classColumn))
-      stop("Specified column name of classes is not present in the data table.")
-    classes <- measurements[, classColumn]
+    outcomesColumn <- match(outcomes, colnames(measurements))
+    if(is.na(outcomesColumn))
+      stop("Specified column name of outcomes is not present in the data table.")
+    outcomes <- measurements[, classColumn]
     measurements <- measurements[, -classColumn]
-    if(class(classes) != "factor")
-      classes <- factor(classes)
+    # R version 4 and greater no longer automatically casts character columns to factors because stringsAsFactors
+    # is FALSE by default, so it is more likely to be character format these days. Handle it.
+    if(class(outcomes) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
+      outcomes <- factor(outcomes)
   }
   
-  ## Specify the column of survival data
-  if(class(classes) == "character" & length(classes) %in% c(2,3))
+  # survival's Surv constructor has two inputs for the popular right-censored data and
+  # three inputs for less-common interval data.
+  if(class(outcomes) == "character" && length(outcomes) %in% 2:3)
   {
-    classColumn <- match(classes, colnames(measurements))
-    if(any(is.na(classColumn)))
-      stop("Specified column name of classes is not present in the data table.")
-    classes <- measurements[, classColumn]
-    measurements <- measurements[, -classColumn]
+    outcomesColumns <- match(outcomes, colnames(measurements))
+    if(any(is.na(outcomesColumns)))
+      stop("Specified column names of outcomes is not present in the data table.")
+    outcomes <- measurements[, outcomesColumns]
+    measurements <- measurements[, -outcomesColumns]
   }
   
+  if(is(outcomes, "factor") && length(outcomes) > 3 & length(outcomes) < nrow(measurements))
+    stop("The length of outcomes is not equal to the number of samples.")
   
-  ###
-  # I think class is a vector...
-  ###
+  ## A vector of charaters was input by the user. Ensure that it is a factor.
+  if(class(outcomes) == "character" & length(outcomes) == nrow(measurements))
+    outcomes <- factor(outcomes)
   
-  if(is(classes,"factor") & length(classes) > 3 & length(classes) < nrow(measurements)){
-    stop("The length of classes isn't equal to the number of samples")
-  } 
-  
-  ## Convert class to factor
-  
-  if(class(classes) == "character" & length(classes) == nrow(measurements))
+  # Outcomes has columns, so it is tabular. It is inferred to represent survival data.
+  if(!is.null(ncol(outcomes)))
   {
-    classes <- factor(classes)
-  }
-  
-  
-  ###
-  # Classes has columns so is likely survival
-  ###
-  
-  
-  if(!is.null(ncol(classes))){
-    if(class(classes) %in% c("data.frame", "DataFrame", "matrix", "DFrame") & ncol(classes) %in% c(2,3))
+    # Assume that event status is in the last column (second for two columns, third for three columns)
+    if(!is.null(dim(outcomes)) && length(dim(data)) == 2 && ncol(outcomes) %in% 2:3)
     {
-      
-      numUniq <- sapply(classes, function(x)length(unique(x)))
-      if(numUniq[length(numUniq)] != 2) stop("As the length of 'classes' was 2 or 3 I thought it was a survival outcome. 
-                                             The last of the characters in classes must correspond to an 'event' and only have 2 values")
-      
-      if(is(classes[,ncol(classes)], "factor")){
-        warning(paste("Setting event to ", levels(droplevels(classes[,ncol(classes)]))[2]))
-        classes[ncol(classes)] <- as.numeric(droplevels(classes[,ncol(classes)]))-1
-      }
+      numberEventTypes <- length(unique(outcomes[, ncol(outcomes)]))
+      # Could be one or two kinds of events. All events might be uncensored or censored
+      # in a rare but not impossible scenario.
+      if(numberEventTypes > 2)
+        stop("Number of distinct event types in the last column exceeds 2 but must be 1 or 2.")
       
       
-      if(ncol(classes)==2){
-        classes <- survival::Surv(classes[,1], classes[,2])
-      }
-      
-      if(ncol(classes)==3){
-        classes <- survival::Surv(classes[,1], classes[,2], classes[,3])
+      if(ncol(outcomes) == 2) # Typical, right-censored survival data.
+      {
+        outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2])
+      } else { # Three columns. Therefore, counting process data.
+        outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2], outcomes[, 3])
       }
     }
+  }
+  
+  if(!is.null(restrict))
+  {
+    isDesiredClass <- sapply(dataTable, function(column) is(column, restrict))
+    measurements <- measurements[, isDesiredClass, drop = FALSE]
+    if(ncol(measurements) == 0)
+      stop(paste("No features are left after restricting to", restrict, "but at least one must be."))
   }
   
   ###
@@ -92,71 +81,83 @@
   }}
   
 
-  list(measurements = measurements, classes = classes)
+  list(measurements = measurements, outcomes = outcomes)
 }
 
-
-.MAEtoWideTable <- function(measurements, targets, classes, restrict = "numeric")
+# Function to convert a MultiAssayExperiment object into a flat DataFrame table, to enable it
+# to be used in typical classification functions.
+# Returns a list with a covatiate table and and outcomes vector/table, or just a covariate table
+# in the case the input is a test data set.
+.MAEtoWideTable <- function(measurements, targets, outcomesColumns = NULL, restrict = "numeric")
 {
   if(is.null(targets))
     stop("'targets' is not specified but must be.")  
-  if(!all(targets %in% c(names(measurements), "clinical")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+  if(!all(targets %in% c(names(measurements), "sampleInfo")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")
+  sampleInfoColumns <- colnames(MultiAssayExperiment::colData(measurements))
+  if(!missing(outcomesColumns) & !all(outcomesColumns %in% sampleInfoColumns))
+    stop("Not all column names specified by 'outcomesColumns' found in sample information table.")  
 
-  if("clinical" %in% targets)
+  if("sampleInfo" %in% targets)
   {
-    clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))
-    targets <- targets[-match("clinical", targets)]
+    targets <- targets[targets != "sampleInfo"]
+    sampleInfoColumnsTrain <- sampleInfoColumns
+  } else {
+    sampleInfoColumnsTrain <- NULL
   }
   
   if(length(targets) > 0)
   {
     measurements <- measurements[, , targets]
   
-    dataTable <- wideFormat(measurements, colDataCols = classes, check.names = FALSE, collapse = ':')
+    # Get all desired measurements tables and sample information columns (other than the columns representing outcomes).
+    # These form the independent variables to be used for making predictions with.
+    # Variable names will have names like RNA:BRAF for traceability.
+    dataTable <- wideFormat(measurements, colDataCols = sampleInfoColumnsTrain, check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
-    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
+    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
   
+    # Sample information variable names not included in column metadata of wide table but only as row names of it.
+    # Create a combined column named "feature" which has feature names of the assays as well as the sample information.
     S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
     missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
     S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
+    
+    # Finally, a column annotation recording variable name and which table it originated from for all of the source tables.
     S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
-    if(classes %in% colnames(dataTable))
-      classesFactor <- dataTable[, classes]
-    else
-      classesFactor <- NULL
-  } else { # Must have only been clinical data.
+  } else { # Must have only been sample information data.
     dataTable <- MultiAssayExperiment::colData(measurements)
-    classesFactor <- dataTable[, classes]
   }
+  if(!is.null(outcomesColumns)) outcomes <- dataTable[, outcomesColumns]
   
   if(!is.null(restrict))
   {
-    if(restrict == "numeric")
-    {
-      isNumeric <- sapply(dataTable, is.numeric)
-      dataTable <- dataTable[, isNumeric, drop = FALSE]
-    } else if(restrict == "integer")
-    {
-      isInteger <- sapply(dataTable, is.integer)
-      dataTable <- dataTable[, isInteger, drop = FALSE]
-    }
+    isDesiredClass <- sapply(dataTable, function(column) is(column, restrict))
+    dataTable <- dataTable[, isDesiredClass, drop = FALSE]
+    if(ncol(dataTable) == 0)
+      stop(paste("No features are left after restricting to", restrict, "but at least one must be."))
   }
 
-  # Only return independent variables in the table.
-  dropColumns <- na.omit(match(c("primary", classes), colnames(dataTable)))
+  # Only return independent variables in dataTable for making classifications with.
+  # "primary" column is auto-generated by sample information table row names and a duplicate.
+  dropColumns <- na.omit(match(c("primary", outcomesColumns), colnames(dataTable)))
   if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
   
-  if(!is.null(classes))
-    list(dataTable = dataTable, classes = classesFactor)
-  else
+  # Training data table and outcomes for training data.
+  if(!is.null(outcomesColumns))
+      list(dataTable = dataTable, outcomes = outcomes)
+  else # Only test data table for test data input.
     dataTable
 }
 
+# For classifiers which use one single function for inputting a training and a testing table,
+# and work only for the numeric data type, this checks whether the training and testing tables 
+# both have the same set of features and there are at least some numeric features to use,
+# after they have been filtered by another function which splits the covariates and the outcomes from the input.
 .checkVariablesAndSame <- function(trainingMatrix, testingMatrix)
 {
-  if(ncol(trainingMatrix) == 0)
+  if(ncol(trainingMatrix) == 0) # Filtering of table removed all columns, leaving nothing to classify with.
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else if(ncol(trainingMatrix) != ncol(testingMatrix))
     stop("Training data set and testing data set contain differing numbers of features.")  
@@ -165,7 +166,7 @@
 # Creates two lists of lists. First has training samples, second has test samples for a range
 # of different cross-validation schemes.
 #' @import utils
-.samplesSplits <- function(crossValParams, classes)
+.samplesSplits <- function(crossValParams, outcomes)
 {
   if(crossValParams@samplesSplits %in% c("k-Fold", "Permute k-Fold"))
   {
@@ -175,14 +176,15 @@
     {
       # Create maximally-balanced folds, so class balance is about the same in all.
       allFolds <- vector(mode = "list", length = nFolds)
-      foldsIndexes <- rep(1:nFolds, length.out = length(classes))
+      foldsIndexes <- rep(1:nFolds, length.out = length(outcomes))
       
       foldsIndex = 1
-      if(is(classes, "Surv")) classes <- factor(rep("a", length(classes)))
-      for(className in levels(classes))
+      # Dummy encoding for when outcome is not a class.
+      if(is(outcomes, "Surv")) outcomes <- factor(rep("a", length(outcomes)))
+      for(outcomeName in levels(outcomes))
       {
         # Permute the indexes of samples in the class.
-        whichSamples <- sample(which(classes == className))
+        whichSamples <- sample(which(outcomes == outcomeName))
         whichFolds <- foldsIndexes[foldsIndex:(foldsIndex + length(whichSamples) - 1)]
         
         # Put each sample into its fold.
@@ -198,34 +200,34 @@
            test = allFolds
            )
     })
-    # Reorganise into three separate lists, no more nesting.
+    # Reorganise into two separate lists, no more nesting.
     list(train = unlist(lapply(samplesFolds, '[[', 1), recursive = FALSE),
          test = unlist(lapply(samplesFolds, '[[', 2), recursive = FALSE))
   } else if(crossValParams@samplesSplits == "Permute Percentage Split") {
     # Take the same percentage of samples from each class to be in training set.
     percent <- crossValParams@percentTest
-    samplesTrain <- round((100 - percent) / 100 * table(classes))
-    samplesTest <- round(percent / 100 * table(classes))
+    samplesTrain <- round((100 - percent) / 100 * table(outcomes))
+    samplesTest <- round(percent / 100 * table(outcomes))
     samplesLists <- lapply(1:crossValParams@permutations, function(permutation)
     {
-      trainSet <- unlist(mapply(function(className, number)
+      trainSet <- unlist(mapply(function(outcomeName, number)
       {
-        sample(which(classes == className), number)
-      }, levels(classes), samplesTrain))
+        sample(which(outcomes == outcomeName), number)
+      }, levels(outcomes), samplesTrain))
       testSet <- setdiff(1:length(classes), trainSet)
       list(trainSet, testSet)
     })
     # Reorganise into two lists: training, testing.
     list(train = lapply(samplesLists, "[[", 1), test = lapply(samplesLists, "[[", 2))
   } else if(crossValParams@samplesSplits == "Leave-k-Out") { # leave k out. 
-    testSamples <- as.data.frame(utils::combn(length(classes), crossValParams@leave))
-    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:length(classes), sample))
+    testSamples <- as.data.frame(utils::combn(length(outcomes), crossValParams@leave))
+    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:length(outcomes), sample))
     list(train = as.list(trainingSamples), test = as.list(testSamples))
   }
 }
 
 # Creates a two-column table for tracking the permutation, fold number, or subset of each set
-# of test samples.
+# of test samples (i.e. for leave-k-out scheme).
 .splitsTestInfo <- function(crossValParams, samplesSplits)
 {
   permutationIDs <- NULL
@@ -249,7 +251,7 @@
   summaryTable <- cbind(permutation = permutationIDs, fold = foldIDs, subset = subsetIDs)
 }
 
-# Add extra variables from within runTest functions to function specified by params.
+# Add extra variables from within runTest functions to function specified by a params object.
 .addIntermediates <- function(params)
 {
   intermediateName <- params@intermediate
@@ -259,16 +261,23 @@
   params
 }
 
-.doSelection <- function(measurements, classes, training, crossValParams, modellingParams, verbose)
+
+# Carries out one iteration of feature selection. Basically, a ranking function is used to rank
+# the features in the training set from best to worst and different top sets are used either for
+# predicting on the training set (resubstitution) or nested cross-valiation of the training set,
+# to find the set of top features which give the best (user-specified) performance measure.
+.doSelection <- function(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose)
 {
-  names(classes) <- rownames(measurements) # In case training specified by sample IDs rather than numeric indices.
-  trainClasses <- classes[training]
-  if(is(classes, "factor"))trainClasses <- droplevels(trainClasses)
+  
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
   topNfeatures <- tuneParams[["nFeatures"]]
   tuneMode <- ifelse("tuneMode" %in% names(tuneParams), tuneParams[["tuneMode"]], crossValParams@tuneMode)
   tuneParams <- tuneParams[-match(c("performanceType", "nFeatures"), names(tuneParams))] # Only used as evaluation metric.
+  
+  # Make selectParams NULL, since we are currently doing selection and it shouldn't call
+  # itself infinitely, but save the parameters of the ranking function for calling the ranking
+  # function directly using do.call below.
   featureRanking <- modellingParams@selectParams@featureRanking
   otherParams <- modellingParams@selectParams@otherParams
   doSubset <- modellingParams@selectParams@subsetToSelections 
@@ -276,12 +285,13 @@
   betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
   if(is.function(featureRanking)) # Not a list for ensemble selection.
   {
-    paramList <- list(measurements[training, , drop = FALSE], trainClasses, verbose = verbose)
+    paramList <- list(measurementsTrain, outcomesTrain, verbose = verbose)
     # Needs training and prediction functions for resubstitution or nested CV performance calculation.
     paramList <- append(paramList, otherParams) # Used directly by a feature selection function for rankings of features.
     if(length(tuneParams) == 0) tuneParams <- list(None = "none")
     tuneCombosSelect <- expand.grid(tuneParams, stringsAsFactors = FALSE)
 
+    # Generate feature rankings for each one of the tuning parameter combinations.
     rankings <- lapply(1:nrow(tuneCombosSelect), function(rowIndex)
     {
       tuneCombo <- tuneCombosSelect[rowIndex, , drop = FALSE]
@@ -326,10 +336,11 @@
         if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
         modellingParams@trainParams@intermediate <- character(0)
+        
+        # Do either resubstitution classification or nested-CV classification and calculate the resulting performance metric.
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurementsTrain, trainClasses,
-                            training = 1:nrow(measurementsTrain), testing = 1:nrow(measurementsTrain),
+          result <- runTest(measurementsTrain, outcomesTrain, measurementsTrain, outcomesTrain,
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
           
@@ -411,15 +422,18 @@
     }
 }
 
-.doTransform <- function(measurements, training, transformParams, verbose)
+# Only for transformations that need to be done within cross-validation.
+.doTransform <- function(measurementsTrain, transformParams, verbose)
 {
-  paramList <- list(measurements, training = training) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
+  paramList <- list(measurementsTrain) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
   if(length(transformParams@otherParams) > 0)
     paramList <- c(paramList, transformParams@otherParams)
   paramList <- c(paramList, verbose = verbose)
   do.call(transformParams@transform, paramList)
 }
 
+# Code to create a function call to a training function. Might also do training and testing
+# within the same function, so test samples are also passed in case they are needed.
 .doTrain <- function(measurements, classes, training, testing, modellingParams, verbose)
 {
   names(classes) <- rownames(measurements) # In case training or testing specified by sample IDs rather than numeric indices.
@@ -481,6 +495,7 @@
   list(model = trained, tune = tuneChosen)
 }
 
+# Creates a function call to a prediction function.
 .doTest <- function(trained, measurements, testing, predictParams, verbose)
 {
   if(!is.null(predictParams@predictor))
@@ -498,6 +513,7 @@
     prediction
 }
 
+# Converts the characteristics of cross-validation into a pretty character string.
 .validationText <- function(crossValParams)
 {
   switch(crossValParams@samplesSplits,
@@ -508,6 +524,7 @@
   independent = "Independent Set")
 }
 
+# Used for ROC area under curve calculation.
 .calcArea <- function(PRtable, distinctClasses)
 {
   do.call(rbind, lapply(distinctClasses, function(aClass)
@@ -522,12 +539,14 @@
   }))
 }
 
+# Converts features into strings to be displayed in plots.
 .getFeaturesStrings <- function(importantFeatures)
 {
+  # Do nothing if only a simple vector of feature IDs.
   if(is.data.frame(importantFeatures[[1]])) # Data set and feature ID columns.
     importantFeatures <- lapply(importantFeatures, function(features) paste(features[, 1], features[, 2]))
   else if("Pairs" %in% class(importantFeatures[[1]]))
-    importantFeatures <- lapply(importantFeatures, function(features) paste(first(features), second(features)))
+    importantFeatures <- lapply(importantFeatures, function(features) paste(first(features), second(features), sep = '-'))
   importantFeatures
 }
 
@@ -549,7 +568,8 @@
   characteristics <- rbind(characteristics, autoCharacteristics)
 }
 
-.addUserLevels <- function(plotData, orderingList) # Don't just plot groups alphabetically but meaningful order.
+# Don't just plot groups alphabetically, but do so in a meaningful order.
+.addUserLevels <- function(plotData, orderingList)
 {
   for(orderingIndex in 1:length(orderingList))
   {
@@ -559,6 +579,8 @@
   plotData
 }
 
+# Summary of the features used and the total number of them, no matter if they are a simple type
+# or something more complex like Pairs or feature sets.
 .summaryFeatures <- function(measurements, prevalidate)
 {
   # MultiAssayExperiment has feature details in mcols.
@@ -570,18 +592,13 @@
     allFeatures <- colnames(measurements)
     featureNames <- colnames(measurements)
   }
-  
   # Could refer to features or feature sets, depending on if a selection method utilising feature sets is used.
-  if(prevalidate == FALSE)
-  {
-    consideredFeatures <- ncol(measurements)
-  } else {
-    consideredFeatures <- nrow(subset(S4Vectors::mcols(measurements), dataset == "clinical")) +
-      length(unique(subset(S4Vectors::mcols(measurements), dataset != "clinical")[, "dataset"]))
-  }
+  consideredFeatures <- ncol(measurements)
+  
   list(allFeatures, featureNames, consideredFeatures)
 }
 
+# Function to identify the parameters of an S4 method.
 .methodFormals <- function(f, signature) {
   tryCatch({
     fdef <- getGeneric(f)
@@ -601,9 +618,11 @@
     })
 }
 
+# Find the x-axis positions where a set of density functions cross-over.
+# The trivial cross-overs at the beginning and end of the data range are removed.
+# Used by the mixtures of normals and naive Bayes classifiers.
 .densitiesCrossover <- function(densities) # A list of densities created by splinefun.
 {
-  
   if(!all(table(unlist(lapply(densities, function(density) density[['x']]))) == length(densities)))
     stop("x positions are not the same for all of the densities.")
   
@@ -627,7 +646,29 @@
   })
 }
 
-.dlda <- function(x, y, prior = NULL){ # Remove once sparsediscrim is reinstated to CRAN.
+# Samples in the training set are upsampled or downsampled so that the class imbalance is
+# removed.
+.rebalanceTrainingClasses <- function(measurementsTrain, classesTrain, balancing)
+{
+  samplesPerClassTrain <- table(classesTrain)
+  downsampleTo <- min(samplesPerClassTrain)
+  upsampleTo <- max(samplesPerClassTrain)
+  trainBalanced <- unlist(mapply(function(classSize, className)
+  {
+    if(balancing == "downsample" && classSize > downsampleTo)
+      sample(which(classesTrain == className), downsampleTo)
+    else if(balancing == "upsample" && classSize < upsampleTo)
+      sample(which(classesTrain == className), upsampleTo, replace = TRUE)
+    else
+      which(classesTrain == className)
+  }, samplesPerClassTrain, names(samplesPerClassTrain)))
+  measurementsTrain <- measurementsTrain[trainBalanced, ]
+  classesTrain <- classesTrain[trainBalanced]
+  
+  list(measurementsTrain = measurementsTrain, classesTrain = classesTrain)
+}
+
+.dlda <- function(x, y, prior = NULL){ # Remove this once sparsediscrim is reinstated to CRAN.
   obj <- list()
   obj$labels <- y
   obj$N <- length(y)
@@ -743,26 +784,4 @@
 
 .dmvnorm_diag <- function(x, mean, sigma) { # Remove once sparsediscrim is reinstated to CRAN.
   exp(sum(dnorm(x, mean=mean, sd=sqrt(sigma), log=TRUE)))
-}
-
-.rebalanceTrainingClasses <- function(measurements, classes, training, testing, balancing)
-{
-  samplesPerClassTrain <- table(classes[training])
-  downsampleTo <- min(samplesPerClassTrain)
-  upsampleTo <- max(samplesPerClassTrain)
-  trainBalanced <- unlist(mapply(function(classSize, className)
-  {
-    if(balancing == "downsample" && classSize > downsampleTo)
-      sample(which(classes[training] == className), downsampleTo)
-    else if(balancing == "upsample" && classSize < upsampleTo)
-      sample(which(classes[training] == className), upsampleTo, replace = TRUE)
-    else
-      which(classes[training] == className)
-  }, samplesPerClassTrain, names(samplesPerClassTrain)))
-  measurements <- measurements[c(training[trainBalanced], testing), ]
-  classes <- classes[c(training[trainBalanced], testing)]
-  training <- 1:length(trainBalanced)
-  testing <- (length(training) + 1):length(classes)
-  
-  list(measurements = measurements, classes = classes, training = training, testing = testing)
 }

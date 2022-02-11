@@ -12,11 +12,13 @@
 #' @aliases featureSetSummary featureSetSummary,matrix-method
 #' featureSetSummary,DataFrame-method
 #' featureSetSummary,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}} or \code{\link{DataFrame}}
-#' containing the training data. For a \code{matrix}, the rows are features,
-#' and the columns are samples.
+#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
 #' @param target If the input is a \code{\link{MultiAssayExperiment}}, this
-#' specifies which data set will be transformed. Can either be an integer or a
+#' specifies which data set will be transformed. Can either be an integer index or a
 #' character string specifying the name of the table. Must have length 1.
 #' @param location Default: The median. The type of location to summarise a set
 #' of features belonging to a feature set by.
@@ -65,7 +67,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   if(class(featureSets) != "FeatureSetCollection")
     stop("'featureSets' is not of type FeatureSetCollection but must be.")
 
-  assayedFeatures <- rownames(measurements)
+  assayedFeatures <- colnames(measurements)
   featureSets <- featureSets@sets
   keepSets <- sapply(featureSets, function(featureSet)
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)

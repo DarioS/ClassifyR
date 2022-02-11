@@ -9,11 +9,13 @@
 #' getLocationsAndScales,DataFrame-method
 #' getLocationsAndScales,MultiAssayExperiment-method
 #' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -41,10 +43,10 @@ setGeneric("getLocationsAndScales", function(measurements, ...)
 setMethod("getLocationsAndScales", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
-  getLocationsAndScales(DataFrame(t(measurements), check.names = FALSE), ...)
+  getLocationsAndScales(DataFrame(measurements, check.names = FALSE), ...)
 })
 
-setMethod("getLocationsAndScales", "DataFrame", # Clinical data or one of the other inputs, transformed.
+setMethod("getLocationsAndScales", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurements, location = c("mean", "median"), scale = c("SD", "MAD", "Qn"))
 {
   isNumeric <- sapply(measurements, is.numeric)
@@ -67,12 +69,12 @@ setMethod("getLocationsAndScales", "DataFrame", # Clinical data or one of the ot
                 c(location, scale))
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("getLocationsAndScales", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
-  if(!all(targets %in% c(names(measurements), "clinical")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
+  if(!all(targets %in% c(names(measurements), "sampleInfo")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")  
             
   combinedData <- .MAEtoWideTable(measurements, targets, NULL)
   if(class(combinedData) == "list")

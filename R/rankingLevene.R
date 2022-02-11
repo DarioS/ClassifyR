@@ -7,17 +7,18 @@
 #' 
 #' @aliases leveneRanking leveneRanking,matrix-method
 #' leveneRanking,DataFrame-method leveneRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain Either a vector of class labels of class \code{\link{factor}}
+#' of the same length as the number of samples in \code{measurementsTrain} or if the
 #' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' containing the column name in \code{measurement} is also permitted.
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -49,49 +50,42 @@
 #'   head(ranked)
 #' 
 #' @export
-setGeneric("leveneRanking", function(measurements, ...)
+setGeneric("leveneRanking", function(measurementsTrain, ...)
            standardGeneric("leveneRanking"))
 
 # Matrix of numeric measurements.
-setMethod("leveneRanking", "matrix", function(measurements, classes, ...)
+setMethod("leveneRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  leveneRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  leveneRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-setMethod("leveneRanking", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, verbose = 3)
+setMethod("leveneRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
   
   if(!requireNamespace("car", quietly = TRUE))
     stop("The package 'car' could not be found. Please install it.")            
   if(verbose == 3)
     message("Calculating Levene statistic.")
 
-  pValues <- apply(measurements, 2, function(featureColumn)
-             car::leveneTest(featureColumn, classes)[["Pr(>F)"]][1])
+  pValues <- apply(measurementsTrain, 2, function(featureColumn)
+             car::leveneTest(featureColumn, classesTrain)[["Pr(>F)"]][1])
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(pValues), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
   else
-    colnames(measurements)[order(pValues)]
+    colnames(measurementsTrain)[order(pValues)]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("leveneRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-
-  if(ncol(dataTable) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    leveneRanking(dataTable, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  
+  leveneRanking(measurementsTrain, classesTrain, ...)
 })

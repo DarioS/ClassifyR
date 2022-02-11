@@ -4,8 +4,12 @@
 \name{randomForest}
 \alias{randomForest}
 \alias{randomForest-class}
+\alias{coxph}
+\alias{coxph-class}
 \title{Trained randomForest Object}
 \description{
+Enables S4 method dispatching on it.
+
 Enables S4 method dispatching on it.
 }
 \author{

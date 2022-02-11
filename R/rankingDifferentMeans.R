@@ -12,15 +12,16 @@
 #' @aliases differentMeansRanking differentMeansRanking,matrix-method
 #' differentMeansRanking,DataFrame-method
 #' differentMeansRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 #' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training.
 #' @param targets Names of data tables to be combined into a single table and
@@ -49,46 +50,56 @@
 #'     head(ranked)
 #' 
 #' @export
-setGeneric("differentMeansRanking", function(measurements, ...)
+setGeneric("differentMeansRanking", function(measurementsTrain, ...)
            standardGeneric("differentMeansRanking"))
 
 # Matrix of numeric measurements.
-setMethod("differentMeansRanking", "matrix", function(measurements, classes, ...)
+setMethod("differentMeansRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  differentMeansRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  differentMeansRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
 setMethod("differentMeansRanking", "DataFrame",
-          function(measurements, classes, verbose = 3)
+          function(measurementsTrain, classesTrain, verbose = 3)
 {
   if(!requireNamespace("genefilter", quietly = TRUE))
     stop("The package 'genefilter' could not be found. Please install it.")
 
-  measurementsMatrix <- t(as.matrix(measurements))
+  splitDataset <- .splitDataAndOutcomes(countsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcomes"]]
+  # Data is required to be in traditional bioinformatics format - features in rows
+  # and samples in columns and also must be a matrix, not another kind of rectangular data.  
+  measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]]))
   
-  if(length(levels(classes)) == 2)
-    pValues <- genefilter::rowttests(measurementsMatrix, classes)[, "p.value"]
-  else
-    pValues <- genefilter::rowFtests(measurementsMatrix, classes)[, "p.value"]
+  if(length(levels(classesTrain)) == 2)
+  {
+    if(verbose == 3)
+      message("Ranking features based on t-statistic.")
+    pValues <- genefilter::rowttests(measurementsMatrix, classesTrain)[, "p.value"]
+  } else {
+    if(verbose == 3)
+      message("Ranking features based on F-statistic.")
+    pValues <- genefilter::rowFtests(measurementsMatrix, classesTrain)[, "p.value"]
+  }
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(pValues), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
   else
-    colnames(measurements)[order(pValues)]
+    colnames(measurementsTrain)[order(pValues)]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("differentMeansRanking", "MultiAssayExperiment", 
-          function(measurements, targets = NULL, classes, ...)
+          function(measurementsTrain, targets = NULL, classesTrain, ...)
 {
   if(is.null(targets))
     stop("'targets' must be specified but was not.")
-  if(length(setdiff(targets, names(measurements))))
+  if(length(setdiff(targets, names(measurementsTrain))))
     stop("Some values of 'targets' are not names of 'measurements' but all must be.")                            
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  differentMeansRanking(measurements, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  differentMeansRanking(measurementsTrain, classesTrain, ...)
 })

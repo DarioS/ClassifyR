@@ -70,9 +70,9 @@ setGeneric("runTests", function(measurements, ...)
 setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
           function(measurements, classes, ...)
 {
-  if(is.null(colnames(measurements)))
-    stop("'measurements' matrix must have sample identifiers as its column names.")
-  runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  if(is.null(rownames(measurements)))
+    stop("'measurements' matrix must have sample identifiers as its row names.")
+  runTests(DataFrame(measurements, check.names = FALSE), classes, ...)
 })
 
 setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, transformed.
@@ -88,27 +88,16 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
             
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["classes"]]
+  classes <- splitDataset[["outcomes"]]
   
-  # Elements of list returned by runTest, in order.
+  # Element names of the list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
   
-  if("prevalidated" %in% names(modellingParams@trainParams))
-  { # Check that all assays have a specification of how to classify them.
-    prevalidate <- TRUE
-    assaysWithoutParams <- setdiff(S4Vectors::mcols(measurements)[, "dataset"], c(names(modellingParams@trainParams), "clinical"))
-    if(length(assaysWithoutParams) > 0)
-      stop(paste("'trainParams' lacks a list for", paste(assaysWithoutParams, collapse = ", "), "assay."))
-    return("To do.")
-  } else {
-    prevalidate <- FALSE
-  }  # Re-implement pre-validation the right way later.
-  
-  featureInfo <- .summaryFeatures(measurements, prevalidate)
+  featureInfo <- .summaryFeatures(measurements)
   allFeatures <- featureInfo[[1]]
   featureNames <- featureInfo[[2]]
   consideredFeatures <- featureInfo[[3]]
-  # Create all partitions of training, testing and optionally validation sets.
+  # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, classes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
   
@@ -119,7 +108,8 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
       message("Processing sample set ", setNumber, '.')
     
     # crossValParams is needed at least for nested feature tuning.
-    runTest(measurements, classes, trainingSamples, testSamples,
+    runTest(measurements[trainingSamples, ], classes[trainingSamples],
+            measurements[testSamples, ], classes[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
             .iteration = setNumber)
   }, samplesSplits[["train"]], samplesSplits[["test"]], (1:length(samplesSplits[["train"]])),
@@ -147,11 +137,11 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   autoCharacteristics <- do.call(rbind, autoCharacteristics)
 
   # Add extra settings which don't create varieties.
-  # extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
-  # if(length(extras) > 0)
-  #   extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
-  # extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-  # characteristics <- rbind(characteristics, extrasDF)
+  extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
+  if(length(extras) > 0)
+    extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
+  extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+  characteristics <- rbind(characteristics, extrasDF)
   characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
   characteristics <- rbind(characteristics,
                              S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
@@ -174,5 +164,5 @@ setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), classes, ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
-  runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+  runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["outcomes"]], ...)            
 })
