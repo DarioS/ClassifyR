@@ -890,6 +890,10 @@ CV <- function(measurements,
     characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
 
     classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
+    
+    fullResult <- runTest(measurements, classes, training = seq_len(nrow(measurements)), testing = seq_len(nrow(measurements)), crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+    
+    classifyResults@finalModel <- list(fullResult$models)
     classifyResults
 
 }
@@ -904,6 +908,18 @@ simplifyResults <- function(results, values = c("dataset", "classifier", "select
     ch <- data.frame(t(ch))
     results[!duplicated(ch)]
 }
+
+
+
+
+
+setMethod("predict", "ClassifyResult", 
+          function(object,
+                   newData)
+          {
+              object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
+          })
+
 
 
 
