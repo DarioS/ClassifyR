@@ -7,10 +7,10 @@
 #' @aliases previousSelection previousSelection,matrix-method
 #' previousSelection,DataFrame-method
 #' previousSelection,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
 #' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Do not specify this variable. It is ignored and only used to
+#' @param classesTrain Do not specify this variable. It is ignored and only used to
 #' create consistency of formal parameters with other feature selection
 #' methods.
 #' @param ... Variables not used by the \code{matrix} nor the
@@ -68,19 +68,19 @@
 #' @importFrom MultiAssayExperiment colData wideFormat
 #' @importFrom S4Vectors mcols
 #' @export
-setGeneric("previousSelection", function(measurements, ...)
+setGeneric("previousSelection", function(measurementsTrain, ...)
 standardGeneric("previousSelection"))
 
 setMethod("previousSelection", "matrix", 
-          function(measurements, ...)
+          function(measurementsTrain, ...)
 {
-  previousSelection(DataFrame(t(measurements), check.names = FALSE), ...)
+  previousSelection(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection but of course not used here.
 setMethod("previousSelection", "DataFrame", 
-          function(measurements, classes, classifyResult, minimumOverlapPercent = 80,
+          function(measurementsTrain, classesTrain, classifyResult, minimumOverlapPercent = 80,
                    .iteration, verbose = 3)
 {
   if(verbose == 3)
@@ -89,11 +89,11 @@ setMethod("previousSelection", "DataFrame",
   previousIDs <- features(classifyResult)[[.iteration]]
   if(is.character(previousIDs))
   {
-    commonFeatures <- intersect(previousIDs, colnames(measurements))
+    commonFeatures <- intersect(previousIDs, colnames(measurementsTrain))
     overlapPercent <- length(commonFeatures) / length(previousIDs) * 100
   } else { # A data.frame describing the data set and variable name of the chosen feature.
     keepRows <- numeric()
-    varInfo <- S4Vectors::mcols(measurements) # mcols stores source information about variables.
+    varInfo <- S4Vectors::mcols(measurementsTrain) # mcols stores source information about variables.
     variable <- varInfo[, "rowname"]
     variable[is.na(variable)] <- varInfo[is.na(variable), "colname"]
     for(index in 1:length(previousIDs))
@@ -111,10 +111,10 @@ setMethod("previousSelection", "DataFrame",
 })
 
 setMethod("previousSelection", "MultiAssayExperiment", 
-          function(measurements, ...)
+          function(measurementsTrain, ...)
           {
-            clinicalColumns <- colnames(MultiAssayExperiment::colData(clinicalColumns))
-            dataTable <- wideFormat(measurements, colDataCols = clinicalColumns, check.names = FALSE, collapse = ':')
-            S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
+            sampleInfoColumns <- colnames(MultiAssayExperiment::colData(sampleInfoColumns))
+            dataTable <- wideFormat(measurementsTrain, colDataCols = sampleInfoColumns, check.names = FALSE, collapse = ':')
+            S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
             previousSelection(dataTable, ...)
           })

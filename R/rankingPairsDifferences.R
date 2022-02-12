@@ -11,18 +11,19 @@
 #' @aliases pairsDifferencesRanking pairsDifferencesRanking,matrix-method
 #' pairsDifferencesRanking,DataFrame-method
 #' pairsDifferencesRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain Either a vector of class labels of class \code{\link{factor}}
+#' of the same length as the number of samples in \code{measurementsTrain} or if the
 #' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
+#' containing the column name in \code{measurement} is also permitted.
 #' @param featurePairs An S4 object of type \code{\link{Pairs}} containing
 #' feature identifiers to calculate the sum of differences within each class
 #' for.
-#' @param target If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' @param target If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' name of the data table to be used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -59,37 +60,33 @@
 #'   pairsDifferencesRanking(measurements, classes, featurePairs = featurePairs)
 #' 
 #' @export
-setGeneric("pairsDifferencesRanking", function(measurements, ...)
+setGeneric("pairsDifferencesRanking", function(measurementsTrain, ...)
            standardGeneric("pairsDifferencesRanking"))
 
 setMethod("pairsDifferencesRanking", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, featurePairs = NULL, ...)
+          function(measurementsTrain, classesTrain, featurePairs = NULL, ...)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")
             
-  pairsDifferencesRanking(DataFrame(t(measurements), check.names = FALSE), classes, featurePairs, ...)
+  pairsDifferencesRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, featurePairs, ...)
 })
 
 setMethod("pairsDifferencesRanking", "DataFrame",
-          function(measurements, classes, featurePairs = NULL, verbose = 3)
+          function(measurementsTrain, classesTrain, featurePairs = NULL, verbose = 3)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")
             
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
   
   suppliedPairs <- length(featurePairs)
-  keepPairs <- S4Vectors::first(featurePairs) %in% colnames(measurements) & S4Vectors::second(featurePairs) %in% colnames(measurements)
+  keepPairs <- S4Vectors::first(featurePairs) %in% colnames(measurementsTrain) & S4Vectors::second(featurePairs) %in% colnames(measurementsTrain)
   featurePairs <- featurePairs[keepPairs]
   
   if(verbose == 3)
@@ -98,10 +95,10 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   if(verbose == 3)
     message("Selecting pairs of features with consistent differences.")
 
-  oneClassTraining <- which(classes == levels(classes)[1])
-  otherClassTraining <- which(classes == levels(classes)[2])
-  oneClassMeasurements <- measurements[oneClassTraining, ]
-  otherClassMeasurements <- measurements[otherClassTraining, ]
+  oneClassTraining <- which(classesTrain == levels(classesTrain)[1])
+  otherClassTraining <- which(classesTrain == levels(classesTrain)[2])
+  oneClassMeasurements <- measurementsTrain[oneClassTraining, ]
+  otherClassMeasurements <- measurementsTrain[otherClassTraining, ]
 
   numerator <- as.matrix(oneClassMeasurements[, S4Vectors::first(featurePairs)])
   denominator <- as.matrix(oneClassMeasurements[, S4Vectors::second(featurePairs)])
@@ -116,17 +113,17 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   featurePairs[order(abs(pairsClassDifferences), decreasing = TRUE)]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("pairsDifferencesRanking", "MultiAssayExperiment",
-          function(measurements, target = names(measurements)[1], classes, featurePairs = NULL, ...)
+          function(measurementsTrain, target = names(measurementsTrain)[1], classesTrain, featurePairs = NULL, ...)
 {
   if(is.null(featurePairs))
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")         
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, target, classes)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]            
-  pairsDifferencesRanking(dataTable, classes, featurePairs, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, target, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]            
+  pairsDifferencesRanking(measurementsTrain, classesTrain, featurePairs, ...)
 })

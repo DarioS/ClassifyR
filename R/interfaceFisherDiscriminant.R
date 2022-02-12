@@ -1,36 +1,31 @@
 #' Classification Using Fisher's LDA
 #' 
 #' Finds the decision boundary using the training set, and gives predictions
-#' for the test set.
-#' 
-#' Unlike ordinary LDA, Fisher's version does not have assumptions about the
-#' normality of the features.
-#' 
-#' Data tables which consist entirely of non-numeric data cannot be analysed.
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
+#' for the test set. Unlike ordinary LDA, Fisher's version does not have assumptions
+#' about the normality of the features. Data tables which consist entirely of non-numeric
+#' data cannot be analysed.
 #' 
 #' @aliases fisherDiscriminant fisherDiscriminant,matrix-method
 #' fisherDiscriminant,DataFrame-method
 #' fisherDiscriminant,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 #' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that integer variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -41,7 +36,7 @@
 #' second class, as determined by the factor levels, or both labels and scores
 #' in a \code{data.frame}.
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
-#' progress messages to give.  This function only prints progress messages if
+#' progress messages to give. This function only prints progress messages if
 #' the value is 3.
 #' @return A vector or \code{data.frame} of class prediction information, as
 #' long as the number of samples in the test data.
@@ -66,28 +61,27 @@ setGeneric("fisherDiscriminant", function(measurements, ...)
            standardGeneric("fisherDiscriminant"))
 
 setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, test, ...)
+          function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  fisherDiscriminant(DataFrame(t(measurements[, , drop = FALSE]), check.names = FALSE),
-                     classes,
-                     DataFrame(t(test[, , drop = FALSE]), check.names = FALSE), ...)
+  fisherDiscriminant(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+                     classesTrain,
+                     DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
 })
 
-setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, test, returnType = c("both", "class", "score"), verbose = 3)
+setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  trainingMatrix <- splitDataset[["measurements"]]
-  isNumeric <- sapply(trainingMatrix, is.numeric)
-  trainingMatrix <- as.matrix(trainingMatrix[, isNumeric, drop = FALSE])
-  isNumeric <- sapply(test, is.numeric)
-  testingMatrix <- as.matrix(test[, isNumeric, drop = FALSE])
+  splitDataset <- .splitDataAndClasses(measurementsTrain, classesTrain)
+  trainingMatrix <- as.matrix(splitDataset[["measurements"]])
+  classesTrain <- splitDataset[["outcomes"]]
+  isNumeric <- sapply(measurementsTest, is.numeric)
+  testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   returnType <- match.arg(returnType)
 
-  oneClassTraining <- which(classes == levels(classes)[1])
-  otherClassTraining <- which(classes == levels(classes)[2])
+  oneClassTraining <- which(classesTrain == levels(classesTrain)[1])
+  otherClassTraining <- which(classesTrain == levels(classesTrain)[2])
   varOneClass <- apply(measurements[oneClassTraining, ], 2, var)
   varOtherClass <- apply(measurements[otherClassTraining, ], 2, var)
   varAll <- ((length(varOneClass) - 1) * varOneClass + (length(varOtherClass) - 1)
@@ -100,29 +94,29 @@ setMethod("fisherDiscriminant", "DataFrame", # Clinical data or one of the other
   if(verbose == 3)
     message("Critical value calculated.")
   
-  classes <- factor(apply(test, 1, function(testSample)
+  classesPredicted <- factor(apply(measurementsTest, 1, function(testSample)
   {
     if(aT %*% as.matrix(testSample) >= criticalValue)
-      levels(classes)[1]
+      levels(classesTrain)[1]
     else
-      levels(classes)[2]
-  }), levels = levels(classes))
-  scores <- apply(test, 1, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
+      levels(classesTrain)[2]
+  }), levels = levels(classesTrain))
+  scores <- apply(measurementsTest, 1, function(testSample) -1 * (aT %*% as.matrix(testSample))) # In reference to the second level of 'classes'. 
   
-  switch(returnType, class = classes,
+  switch(returnType, class = classesPredicted,
                      score = scores,
-                     both = data.frame(class = classes, score = scores, check.names = FALSE))  
+                     both = data.frame(class = classesPredicted, score = scores, check.names = FALSE))  
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("fisherDiscriminant", "MultiAssayExperiment", 
-          function(measurements, test, targets = names(measurements), classes, ...)
+          function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classesTrain)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingMatrix <- .MAEtoWideTable(test, targets)
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  testingMatrix <- .MAEtoWideTable(measurementsTest, targets)
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
-  fisherDiscriminant(trainingMatrix, classes, testingMatrix, ...)
+  fisherDiscriminant(trainingMatrix, classesTrain, testingMatrix, ...)
 })

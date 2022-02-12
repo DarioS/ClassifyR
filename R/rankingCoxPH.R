@@ -1,6 +1,6 @@
 #' Ranking of Differential Variability with coxph Statistic
 #' 
-#' Ranks allfeatures from largest coxph statistic to smallest.
+#' Ranks all features from largest coxph statistic to smallest.
 #' 
 #' The calculation of the test statistic is performed by the
 #' \code{\link{coxph.test}} function from the \code{\link{stats}} package.
@@ -9,17 +9,16 @@
 #' 
 #' @aliases coxphRanking coxphRanking,matrix-method
 #' coxphRanking,DataFrame-method coxphRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
-#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-#' removed before ranking.
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param survivalTrain A tabular data type of survival information of the
+#' same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}}, or a character vector of length 2 to 3 containing the
+#' column names in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
+#' removed before training.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
 #' names of the data tables to be used. \code{"clinical"} is also a valid value
 #' and specifies that numeric variables from the clinical data table will be
@@ -39,40 +38,40 @@ setGeneric("coxphRanking", function(measurements, ...)
 standardGeneric("coxphRanking"))
 
 setMethod("coxphRanking", "matrix", # Matrix of numeric measurements.
-function(measurements, classes, ...)
+function(measurementsTrain, survivalTrain, ...)
 {
-  coxphRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  coxphRanking(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
 setMethod("coxphRanking", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, verbose = 3)
+          function(measurementsTrain, survivalTrain, verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["classes"]]
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
+  survivalTrain <- splitDataset[["outcomes"]]
 
-  pValues <- apply(measurements, 2, function(featureColumn){
-    fit <- survival::coxph(classes ~ featureColumn)
+  pValues <- apply(measurementsTrain, 2, function(featureColumn){
+    fit <- survival::coxph(survivalTrain ~ featureColumn)
     s <- summary(fit)
     s$waldtest["pvalue"]
   })
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(pValues), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
   else
-    colnames(measurements)[order(pValues)]
+    colnames(measurementsTrain)[order(pValues)]
 })
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("coxphRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)
+  measurementsTrain <- tablesAndSurvival[["dataTable"]]
+  survivalTrain <- tablesAndSurvival[["outcomes"]]
   
-  if(ncol(measurements) == 0)
+  if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    coxphRanking(measurements, classes, ...)
+    coxphRanking(measurementsTrain, survivalTrain, ...)
 })

@@ -1,12 +1,12 @@
 #' Cross-validation to evaluate classification performance.
 #' 
-#' This function has been designed to faciliate the comparison of classification
+#' This function has been designed to facilitate the comparison of classification
 #'  methods using cross-validation. A selection of typical 
 #' comparisons are implemented.
 #'
 #' @param measurements Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
 #' or a list of these objects containing the training data.  For a
-#' \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}}
+#' \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
 #' the rows are features and the columns are samples as is typical in Bioconductor.
 #' @param classes A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
@@ -111,9 +111,8 @@ setMethod("crossValidate", "DataFrame",
               # Check that data is in the right format
               splitDataset <- .splitDataAndClasses(measurements, classes)
               measurements <- splitDataset[["measurements"]]
-              classes <- splitDataset[["classes"]]
-              checkData(measurements,
-                        classes)
+              classes <- splitDataset[["outcomes"]]
+              checkData(measurements, classes)
               
               # Check that other variables are in the right format and fix
               nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -311,7 +310,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
               targets = names(measurements)
               tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
               measurements <- tablesAndClasses[["dataTable"]]
-              classes <- tablesAndClasses[["classes"]]
+              classes <- tablesAndClasses[["outcomes"]]
 
               crossValidate(measurements = measurements,
                             classes = classes, 
@@ -891,6 +890,10 @@ CV <- function(measurements,
     characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
 
     classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
+    
+    fullResult <- runTest(measurements, classes, training = seq_len(nrow(measurements)), testing = seq_len(nrow(measurements)), crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+    
+    classifyResults@finalModel <- list(fullResult$models)
     classifyResults
 
 }
@@ -905,6 +908,18 @@ simplifyResults <- function(results, values = c("dataset", "classifier", "select
     ch <- data.frame(t(ch))
     results[!duplicated(ch)]
 }
+
+
+
+
+
+setMethod("predict", "ClassifyResult", 
+          function(object,
+                   newData)
+          {
+              object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
+          })
+
 
 
 

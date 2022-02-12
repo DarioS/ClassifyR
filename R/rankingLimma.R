@@ -13,8 +13,7 @@
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 #' \code{matrix}, the rows are features, and the columns are samples.
 #' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements}. Not used if
-#' \code{measurements} is a \code{MultiAssayExperiment} object.
+#' same length as the number of samples in \code{measurements}.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method or optional settings that are passed to
@@ -77,7 +76,7 @@ setMethod("limmaRanking", "DataFrame",
     colnames(measurements)[order(linearModel[["F.p.value"]])]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("limmaRanking", "MultiAssayExperiment", 
           function(measurements, targets = NULL, classes, ...)
 {
@@ -88,6 +87,6 @@ setMethod("limmaRanking", "MultiAssayExperiment",
             
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  classes <- tablesAndClasses[["outcomes"]]
   limmaRanking(measurements, classes, ...)
 })

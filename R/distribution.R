@@ -1,4 +1,4 @@
-#' Get Frequencies of Feature Selection and Sample Errors
+#' Get Frequencies of Feature Selection and Sample-wise Classification Errors
 #' 
 #' There are two modes. For aggregating feature selection results, the function
 #' counts the number of times each feature was selected in all

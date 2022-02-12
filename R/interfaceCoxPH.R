@@ -7,10 +7,7 @@
 
 #' An Interface for survival Package's coxph Function
 #' 
-#' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
+#' Cox proportional hazards.
 #' 
 #' @aliases coxphInterface coxphTrainInterface
 #' coxphInterface,matrix-method
@@ -20,22 +17,24 @@
 #' coxphPredictInterface,coxph,matrix-method
 #' coxphPredictInterface,coxph,DataFrame-method
 #' coxphPredictInterface,coxph,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 #' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
-#' measurements are of class \code{DataFrame} a character vector of length 1
-#' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param model A trained random coxph classifier, as created by
+#' @param survivalTrain A tabular data type of survival information of the
+#' same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}}, or a character vector of length 2 to 3 containing the
+#' column names in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
+#' removed before training.
+#' @param model A trained coxph classifier, as created by
 #' \code{coxphTrainInterface}, which has the same form as the output of
 #' \code{\link[coxph]{coxph}}.
-#' @param test An object of the same class as \code{measurements} with no
-#' samples in common with \code{measurements} and the same number of features
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
+#' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that integer variables from the clinical data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
@@ -80,37 +79,35 @@ setGeneric("coxphTrainInterface", function(measurements, ...)
 standardGeneric("coxphTrainInterface"))
 
 setMethod("coxphTrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurementsTrain, survivalTrain, ...)
 {
-  coxphTrainInterface(DataFrame(t(measurements), check.names = FALSE),
-                             classes, ...)
+  coxphTrainInterface(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
 # Clinical data or one of the other inputs, transformed.
-setMethod("coxphTrainInterface", "DataFrame", function(measurements, classes, ..., verbose = 3)
+setMethod("coxphTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-
   if(!requireNamespace("survival", quietly = TRUE))
     stop("The package 'survival' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting coxph classifier to training data and making predictions on test
             data.")
+
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)  
+  survivalTrain <- splitDataset[["outcomes"]]
+  measurementsTrain <- splitDataset[["measurements"]]
   
-  classes <- splitDataset[["classes"]]
-  measurements <- splitDataset[["measurements"]]
-  
-  survival::coxph(classes~., measurements)
+  survival::coxph(survivalTrain ~ ., measurementsTrain)
 })
 
 setMethod("coxphTrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), classes, ...)
+function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain, restrict = NULL)
+  measurementsTrain <- tablesAndSurvival[["dataTable"]]
+  survivalTrain <- tablesAndSurvival[["outcomes"]]
   
-  coxphTrainInterface(measurements, classes, ...)
+  coxphTrainInterface(measurementsTrain, survivalTrain, ...)
 })
 
 
@@ -124,19 +121,19 @@ function(measurements, targets = names(measurements), classes, ...)
 
 
 #' @export
-setGeneric("coxphPredictInterface", function(model, test, ...)
+setGeneric("coxphPredictInterface", function(model, measurementsTest, ...)
   standardGeneric("coxphPredictInterface"))
 
-setMethod("coxphPredictInterface", c("coxph", "matrix"), function(model, test, ...)
+setMethod("coxphPredictInterface", c("coxph", "matrix"), function(model, measurementsTest, ...)
 {
-  coxphPredictInterface(forest, DataFrame(t(test), check.names = FALSE), ...)
+  coxphPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("coxphPredictInterface", c("coxph", "DataFrame"),
-function(model, test, ..., verbose = 3)
+function(model, measurementsTest, ..., verbose = 3)
 {
   
-  output <- sapply(c("lp", "risk"), function(type)predict(model, as.data.frame(test), type = type), simplify = TRUE)
+  output <- sapply(c("lp", "risk"), function(type)predict(model, as.data.frame(measurementsTest), type = type), simplify = TRUE)
   output <- data.frame(output)
   output$class <- output[, "lp"]
   output

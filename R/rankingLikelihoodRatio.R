@@ -21,8 +21,8 @@
 #' containing the column name in \code{measurement} is also permitted. Not used
 #' if \code{measurements} is a \code{MultiAssayExperiment} object.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -67,16 +67,12 @@ setMethod("likelihoodRatioRanking", "matrix", function(measurements, classes, ..
   likelihoodRatioRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
 })
 
-setMethod("likelihoodRatioRanking", "DataFrame", # Clinical data or one of the other inputs, transformed.
+setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurements, classes, alternative = c(location = "different", scale = "different"),
                    ..., verbose = 3)
 {
   splitDataset <- .splitDataAndClasses(measurements, classes)
   measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
 
   if(verbose == 3)
     message("Ranking features by likelihood ratio test statistic.")
@@ -103,13 +99,13 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Clinical data or one of the o
     colnames(measurements)[order(logLikelihoodRatios)]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("likelihoodRatioRanking", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), classes, ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
   dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  classes <- tablesAndClasses[["outcomes"]]
 
   if(ncol(dataTable) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

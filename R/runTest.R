@@ -11,31 +11,24 @@
 #' 
 #' @aliases runTest runTest,matrix-method runTest,DataFrame-method
 #' runTest,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.  The
-#' sample identifiers must be present as column names of the \code{matrix} or
-#' the row names of the \code{DataFrame}.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
-#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-#' removed before training.
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param outcomesTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
+#' a character string, or vector of such strings, containing column name(s) of column(s)
+#' containing either classes or time and event information about survival.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
 #' specifying the kind of cross-validation to be done, if nested
 #' cross-validation is used to tune any parameters.
 #' @param modellingParams An object of class \code{\link{ModellingParams}},
 #' specifying the class rebalancing, transformation (if any), feature selection
 #' (if any), training and prediction to be done on the data set.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
-#' @param outcomeColumn The column name of the clinical data table containing
-#' the outcome to be predicted. Will automatically be removed from the clinical
+#' @param outcomeColumn The column name of the sample information data table containing
+#' the outcome to be predicted. Will automatically be removed from the sample information
 #' data table during model training. Must be specified if data is a
 #' \code{MultiAssayExperiment}.
 #' @param ... Variables not used by the \code{matrix} nor the
@@ -74,57 +67,53 @@
 #' 
 #' @importFrom S4Vectors do.call
 #' @export
-setGeneric("runTest", function(measurements, ...)
+setGeneric("runTest", function(measurementsTrain, ...)
            standardGeneric("runTest"))
 
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
-  function(measurements, classes, ...)
+  function(measurementsTrain, outcomesTrain, ...)
 {
-  if(is.null(colnames(measurements)))
-    stop("'measurements' matrix must have sample identifiers as its column names.")    
-  runTest(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  if(is.null(rownames(measurementsTrain)))
+    stop("'measurementsTrain' matrix must have sample identifiers as its row names.")    
+  runTest(DataFrame(measurementsTrain, check.names = FALSE), outcomesTrain, ...)
 })
 
-setMethod("runTest", "DataFrame", # Clinical data or one of the other inputs, transformed.
-function(measurements, classes, training, testing, crossValParams = CrossValParams(), # crossValParams used for tuning optimisation.
+setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
+function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
+         crossValParams = CrossValParams(), # crossValParams used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
 {
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
-    if(is.null(rownames(measurements)))
-      stop("'measurements' DataFrame must have sample identifiers as its row names.")
-    if(any(is.na(measurements)))
+    if(is.null(rownames(measurementsTrain)))
+      stop("'measurementsTrain' DataFrame must have sample identifiers as its row names.")
+    if(any(is.na(measurementsTrain)))
       stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")                
     
-    splitDataset <- .splitDataAndClasses(measurements, classes)
+    splitDatasetTrain <- .splitDataAndOutcomes(measurementsTrain, outcomesTrain)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
-    if(!is(classes, "Surv")){
-    rebalanced <- .rebalanceTrainingClasses(measurements, classes, training, testing, modellingParams@balancing)
-    measurements <- rebalanced[["measurements"]]
-    classes <- rebalanced[["classes"]]
-    training <- rebalanced[["training"]]
-    testing <- rebalanced[["testing"]]
-    # Testing and set is not rebalanced, only the indices are shifted because the number
-    # of rows of measurements changes, so the row numbers are updated, but the individual samples in testing
-    # do not change.
+    if(!is(classes, "Surv"))
+    {
+      rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], training, testing, modellingParams@balancing)
+      measurementsTrain <- rebalanced[["measurementsTrain"]]
+      classesTrain <- rebalanced[["classesTrain"]]
     }
   }
   
-  testingSamplesIDs <- rownames(measurements)[testing]
   # All input features.
-  if(!is.null(S4Vectors::mcols(measurements)))
-    allFeatures <- S4Vectors::mcols(measurements)
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    allFeatures <- S4Vectors::mcols(measurementsTrain)
   else
-    allFeatures <- colnames(measurements)
+    allFeatures <- colnames(measurementsTrain)
   
   if(!is.null(modellingParams@transformParams))
   {
     if(length(modellingParams@transformParams@intermediate) != 0)
       modellingParams@transformParams <- .addIntermediates(modellingParams@transformParams)
     
-    measurements <- tryCatch(.doTransform(measurements, training, modellingParams@transformParams, verbose), error = function(error) error[["message"]])
-    if(is.character(measurements)) return(measurements) # An error occurred.
+    measurementsTrain <- tryCatch(.doTransform(measurementsTrain, modellingParams@transformParams, verbose), error = function(error) error[["message"]])
+    if(is.character(measurementsTrain)) return(measurementsTrain) # An error occurred.
   }
 
   rankedFeatures <- NULL
@@ -135,7 +124,7 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
     
-    topFeatures <- tryCatch(.doSelection(measurements, classes, training, modellingParams, verbose = verbose, crossValParams = crossValParams),
+    topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, modellingParams, verbose = verbose, crossValParams = crossValParams),
                             error = function(error) error[["message"]]) 
 
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
@@ -145,14 +134,14 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
   
     if(modellingParams@selectParams@subsetToSelections == TRUE)
     { # Subset the the data table to only the selected features.
-      if(is.null(S4Vectors::mcols(measurements)))
+      if(is.null(S4Vectors::mcols(measurementsTrain)))
       { # Input was ordinary matrix or DataFrame.
-          measurements <- measurements[, selectedFeatures, drop = FALSE]
+          measurementsTrain <- measurementsTrain[, selectedFeatures, drop = FALSE]
       } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
           selectedIDs <-  do.call(paste, selectedFeatures)
-          featuresIDs <- do.call(paste, S4Vectors::mcols(measurements)[, c("dataset", "feature")])
+          featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
           selectedColumns <- match(selectedIDs, featuresIDs)
-          measurements <- measurements[, selectedColumns, drop = FALSE]
+          measurementsTrain <- measurementsTrain[, selectedColumns, drop = FALSE]
       }
     }
   } 
@@ -161,7 +150,7 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
   if(length(modellingParams@trainParams@intermediate) > 0)
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
   
-  trained <- tryCatch(.doTrain(measurements, classes, training, testing, modellingParams, verbose),
+  trained <- tryCatch(.doTrain(measurementsTrain, classes, training, testing, modellingParams, verbose),
                       error = function(error) error[["message"]])
 
   if(is.character(trained)) return(trained) # An error occurred.
@@ -186,7 +175,7 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
                              
-    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurements, testing, modellingParams@predictParams, verbose),
+    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurementsTrain, testing, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
     if(is.character(predictedClasses)) # An error occurred.
@@ -210,18 +199,20 @@ function(measurements, classes, training, testing, crossValParams = CrossValPara
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
 .
-    # extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
-    # extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
-    # characteristics <- rbind(characteristics, extrasDF)
+    extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
+    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    characteristics <- rbind(characteristics, extrasDF)
     
-    ClassifyResult(characteristics, rownames(measurements), allFeatures, list(rankedFeatures), list(selectedFeatures),
+    ClassifyResult(characteristics, rownames(measurementsTrain), allFeatures, list(rankedFeatures), list(selectedFeatures),
                    list(models), tuneDetails, data.frame(sample = testing, class = predictedClasses), classes)
   }  
 })
 
 setMethod("runTest", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
-  runTest(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+  tablesAndClassesTrain <- .MAEtoWideTable(measurementsTrain, targets, outcomesColumns, restrict = NULL)
+  tablesAndClassesTest <- .MAEtoWideTable(measurementsTest, targets, outcomesColumns, restrict = NULL)
+  runTest(tablesAndClassesTrain[["dataTable"]], tablesAndClassesTrain[["outcomes"]],
+          tablesAndClassesTest[["dataTable"]], tablesAndClassesTest[["outcomes"]], ...)            
 })

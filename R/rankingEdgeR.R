@@ -10,23 +10,19 @@
 #' generalised linear model followed by a likelihood ratio test.
 #' 
 #' Data tables which consist entirely of non-numeric data cannot be analysed.
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
 #' 
 #' @aliases edgeRranking edgeRranking,matrix-method
 #' edgeRranking,DataFrame-method edgeRranking,MultiAssayExperiment-method
-#' @param counts Either a \code{\link{matrix}} or
+#' @param countsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
 #' \code{\link{MultiAssayExperiment}} containing the unnormalised counts.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
-#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-#' removed before training.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{countsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of
+#' length 1 containing the column name in \code{countsTrain} if it is a
+#' \code{\link{DataFrame}} or the column name in \code{colData(counts)} if
+#' \code{countsTrain} is a \code{\link{MultiAssayExperiment}}. If a column name,
+#' that column will be removed before training.
+#' @param targets If \code{countsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the data tables of counts to be used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -74,17 +70,17 @@ setGeneric("edgeRranking", function(counts, ...)
            standardGeneric("edgeRranking"))
 
 setMethod("edgeRranking", "matrix", # Matrix of integer counts.
-          function(counts, classes, ...)
+          function(countsTrain, classesTrain, ...)
 {
-  edgeRranking(DataFrame(t(counts), check.names = FALSE), classes, ...)
+  edgeRranking(DataFrame(countsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of counts, likely created by runTests or runTest.
 setMethod("edgeRranking", "DataFrame",
-          function(counts, classes, normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL, verbose = 3)
+          function(countsTrain, classesTrain, normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL, verbose = 3)
 {
   if(verbose == 3)
-    message("Doing edgeR LRT feature selection.")
+    message("Doing edgeR LRT feature ranking")
   
   # DGEList stores features as rows and samples as columns.          
   countsList <- edgeR::DGEList(t(as.matrix(counts)), group = classes)
@@ -114,9 +110,9 @@ setMethod("edgeRranking", "DataFrame",
     colnames(counts)[order(test[, "PValue"])]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("edgeRranking", "MultiAssayExperiment",
-          function(counts, targets = NULL, ...)
+          function(countsTrain, targets = NULL, ...)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))
     stop("The package 'edgeR' could not be found. Please install it.")
@@ -125,8 +121,8 @@ setMethod("edgeRranking", "MultiAssayExperiment",
   if(length(setdiff(targets, names(counts))))
     stop("Some values of 'targets' are not names of 'counts' but all must be.")            
 
-  tablesAndClasses <- .MAEtoWideTable(counts, targets, "integer")
+  tablesAndClasses <- .MAEtoWideTable(countsTrain, targets, "integer")
   countsTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  classes <- tablesAndClasses[["outcomes"]]
   edgeRranking(countsTable, classes, ...)
 })

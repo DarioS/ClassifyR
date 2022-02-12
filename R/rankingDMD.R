@@ -13,20 +13,21 @@
 #' 
 #' @aliases DMDranking DMDranking,matrix-method DMDranking,DataFrame-method
 #' DMDranking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 #' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -59,33 +60,29 @@
 #'   head(ranked)
 #' 
 #' @export
-setGeneric("DMDranking", function(measurements, ...)
+setGeneric("DMDranking", function(measurementsTrain, ...)
            standardGeneric("DMDranking"))
 
 setMethod("DMDranking", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+          function(measurementsTrain, classesTrain, ...)
 {
-  DMDranking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  DMDranking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-setMethod("DMDranking", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, differences = c("both", "location", "scale"),
+setMethod("DMDranking", "DataFrame", # sampleInfo data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, differences = c("both", "location", "scale"),
                    ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
-  
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
+
   if(verbose == 3)
     message("Selecting features by DMD.")
   differences <- match.arg(differences)
   
-  allClassesLocationsScales <- lapply(levels(classes), function(class)
+  allClassesLocationsScales <- lapply(levels(classesTrain), function(class)
   {
-    aClassMeasurements <- measurements[which(classes == class), ]
+    aClassMeasurements <- measurementsTrain[which(classesTrain == class), ]
     getLocationsAndScales(aClassMeasurements, ...)
   })
   allClassesLocations <- sapply(allClassesLocationsScales, "[[", 1)
@@ -102,12 +99,12 @@ setMethod("DMDranking", "DataFrame", # Clinical data or one of the other inputs,
   order(divergence, decreasing = TRUE)
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("DMDranking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]            
-  DMDranking(dataTable, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]            
+  DMDranking(measurementsTrain, classesTrain, ...)
 })

@@ -9,9 +9,7 @@
 #' 
 #' All metrics except Matthews Correlation Coefficient are suitable for
 #' evaluating classification scenarios with more than two classes and are
-#' reimplementations of those available from
-#' \href{https://software.intel.com/en-us/daal-programming-guide-details-40Intel
-#' DAAL}.
+#' reimplementations of those available from Intel DAAL.
 #' 
 #' If \code{\link{runTests}} was run in resampling mode, one performance
 #' measure is produced for every resampling. If the leave-k-out mode was used,

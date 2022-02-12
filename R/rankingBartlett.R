@@ -9,20 +9,21 @@
 #' 
 #' @aliases bartlettRanking bartlettRanking,matrix-method
 #' bartlettRanking,DataFrame-method bartlettRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
+#' same length as the number of samples in \code{measurementsTrain} if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+#' containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 #' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-#' removed before ranking.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
+#' removed before training.
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+#' and specifies that numeric variables from the sample information table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -61,48 +62,44 @@
 #'
 #' @import stats methods
 #' @export
-setGeneric("bartlettRanking", function(measurements, ...)
+setGeneric("bartlettRanking", function(measurementsTrain, ...)
 standardGeneric("bartlettRanking"))
 
 setMethod("bartlettRanking", "matrix", # Matrix of numeric measurements.
-function(measurements, classes, ...)
+function(measurementsTrain, classesTrain, ...)
 {
-  bartlettRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  bartlettRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-setMethod("bartlettRanking", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, verbose = 3)
+setMethod("bartlettRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
+          function(measurementsTrain, classesTrain, verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["classes"]]
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
+  classesTrain <- splitDataset[["outcomes"]]
   
   if(verbose == 3)
     message("Ranking features based on Bartlett statistic.")
   
-  pValues <- apply(measurements, 2, function(featureColumn)
-    stats::bartlett.test(featureColumn, classes)[["p.value"]])
+  pValues <- apply(measurementsTrain, 2, function(featureColumn)
+    stats::bartlett.test(featureColumn, classesTrain)[["p.value"]])
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(pValues), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
   else
-    colnames(measurements)[order(pValues)]
+    colnames(measurementsTrain)[order(pValues)]
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
 setMethod("bartlettRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
   
-  if(ncol(measurements) == 0)
+  if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-    bartlettRanking(measurements, classes, ...)
+    bartlettRanking(measurementsTrain, classesTrain, ...)
 })

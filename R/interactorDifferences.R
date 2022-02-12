@@ -13,7 +13,7 @@
 #' interactorDifferences,MultiAssayExperiment-method
 #' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
+#' \code{matrix}, the rows are samples, and the columns are features.
 #' @param featurePairs A object of type \code{\link{Pairs}}.
 #' @param absolute If TRUE, then the absolute values of the differences are
 #' returned.
@@ -59,7 +59,7 @@ setGeneric("interactorDifferences", function(measurements, ...)
 setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
-  interactorDifferences(DataFrame(t(measurements), check.names = FALSE), ...)
+  interactorDifferences(DataFrame(measurements, check.names = FALSE), ...)
 })
 
 setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
