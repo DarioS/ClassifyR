@@ -192,9 +192,12 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   if(!is(targets, "DataFrame"))
   {
     if(!"Pairs" %in% class(targets))
-      measurements <- measurements[targets]
+      measurements <- tryCatch(measurements[targets], 
+                               error = function(error) message("Error: Can't find target in measurements, subscript contains invalid names"))
+      
     else
-      measurements <- measurements[union(S4Vectors::first(targets), S4Vectors::second(targets))]
+      measurements <- tryCatch(measurements[union(S4Vectors::first(targets), S4Vectors::second(targets))], 
+                               error = function(error) message("Error: Can't find targets in measurements, subscript contains invalid names"))
   }
 
   if(!"Pairs" %in% class(targets))
