@@ -51,26 +51,32 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   # if(require(sparsediscrim)) Package currently removed from CRAN.
-#'   #{
-#'     # Genes 76 to 100 have differential expression.
-#'     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-#'                                       c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
-#'     classes <- factor(rep(c("Poor", "Good"), each = 25))
-#'     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
-#'     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-#'     selected <- rownames(genesMatrix)[91:100]
-#'     trainingSamples <- c(1:20, 26:45)
-#'     testingSamples <- c(21:25, 46:50)
-#'     
-#'     classifier <- DLDAtrainInterface(genesMatrix[selected, trainingSamples],
-#'                                      classes[trainingSamples])
-#'     DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])
-#'   #}
+# if(require(sparsediscrim)) #Package currently removed from CRAN.
+#   {
+    # Genes 76 to 100 have differential expression.
+    # genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
+    # genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
+    #                                   c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+    # classes <- factor(rep(c("Poor", "Good"), each = 25))
+    # colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
+    # rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+    # selected <- rownames(genesMatrix)[91:100]
+    # trainingSamples <- c(1:20, 26:45)
+    # testingSamples <- c(21:25, 46:50)
+    # 
+    # classifier <- DLDAtrainInterface(genesMatrix[selected, trainingSamples],
+    #                                  classes[trainingSamples])
+    # hello <- DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])
+    # 
+    # 
+    # predictions <- .predict(classifier, as.matrix(genesMatrix[selected, testingSamples]))
+#   }
 #'   
 #' @include classes.R
 #' @export
+
+
+
 setGeneric("DLDAtrainInterface", function(measurements, ...)
 standardGeneric("DLDAtrainInterface"))
 
@@ -133,7 +139,7 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, test, 
   
   #predict(model, as.matrix(test))
   predictions <- .predict(model, as.matrix(test)) # Copy in utilities.R.
-  
+  predictions[["posterior"]][, model[["groups"]]]
   switch(returnType, class = predictions[["class"]], # Factor vector.
                    score = predictions[["posterior"]][, model[["groups"]]], # Numeric matrix.
                    both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]], check.names = FALSE))

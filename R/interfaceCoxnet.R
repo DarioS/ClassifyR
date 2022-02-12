@@ -78,6 +78,7 @@
 #' 
 #'   
 #' @export
+
 setGeneric("coxnetTrainInterface", function(measurements, ...)
 standardGeneric("coxnetTrainInterface"))
 
