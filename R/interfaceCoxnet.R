@@ -18,7 +18,7 @@
 #' the \code{colData} function with column name \code{"class"}.
 #' 
 #' The value of the \code{family} parameter is fixed to \code{"cox"} so
-#' that classification with survival is possible and
+#' that classification with survival is possible.
 #' During classifier training, if more than one lambda value
 #' is considered by specifying a vector of them as input or leaving the default
 #' value of NULL, then the chosen value is determined based on classifier
@@ -31,24 +31,21 @@
 #' coxnetPredictInterface,multnet,matrix-method
 #' coxnetPredictInterface,multnet,DataFrame-method
 #' coxnetPredictInterface,multnet,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.  If of
-#' type \code{\link{DataFrame}}, the data set is subset to only those features
-#' of type \code{integer}.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
-#' same length as the number of samples in \code{measurements} if it is a
-#' \code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-#' (i.e. number of rows) or a character vector of length 1 containing the
-#' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-#' column name in \code{colData(measurements)} if \code{measurements} is a
-#' \code{\link{MultiAssayExperiment}}. If a column name, that column will be
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param survivalTrain A tabular data type of survival information of the
+#' same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
+#' \code{\link{matrix}} or a \code{\link{DataFrame}}, or a character vector of length 2 to 3 containing the
+#' column names in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+#' column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+#' \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
 #' removed before training.
 #' @param lambda The lambda value passed directly to
 #' \code{\link[glmnet]{glmnet}} if the training function is used or passed as
 #' \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction function
 #' is used.
-#' @param test An object of the same class as \code{measurements} with no
+#' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
 #' samples in common with \code{measurements} and the same number of features
 #' as it.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
@@ -78,50 +75,50 @@
 #' 
 #'   
 #' @export
-
-setGeneric("coxnetTrainInterface", function(measurements, ...)
-standardGeneric("coxnetTrainInterface"))
+setGeneric("coxnetTrainInterface", function(measurementsTrain, ...)
+  standardGeneric("coxnetTrainInterface"))
 
 setMethod("coxnetTrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurements, classes, ...)
-{
-  coxnetTrainInterface(DataFrame(t(measurements), check.names = FALSE), classes, ...)
-})
+          function(measurementsTrain, survivalTrain, ...)
+          {
+            coxnetTrainInterface(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
+          })
 
 # Clinical data or one of the other inputs, transformed.
-setMethod("coxnetTrainInterface", "DataFrame", function(measurements, classes, lambda = NULL, ..., verbose = 3)
+setMethod("coxnetTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, lambda = NULL, ..., verbose = 3)
 {
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting coxnet model to data.")
   
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
-  measurementsMatrix <- glmnet::makeX(as(measurements, "data.frame"))
-
-  fit <- glmnet::cv.glmnet(measurementsMatrix, splitDataset[["classes"]], family = "cox", type = "C", ...)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
+  measurementsTrain <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
+  measurementsMatrix <- glmnet::makeX(as(measurementsTrain, "data.frame"))
+  
+  # The response variable is a Surv class of object.
+  fit <- glmnet::cv.glmnet(measurementsMatrix, splitDataset[["outcomes"]], family = "cox", type = "C", ...)
   fitted <- fit$glmnet.fit
   
   offset <- -mean(predict(fitted, measurementsMatrix, s = fit$lambda.min, type = "link"))
-
   attr(fitted, "tune") <- list(lambda = fit$lambda.min, offset = offset)
+  
   fitted
 })
 
 # One or more omics datasets, possibly with clinical data.
 setMethod("coxnetTrainInterface", "MultiAssayExperiment",
-function(measurements, targets = names(measurements), classes, ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  
-  if(ncol(measurements) == 0)
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else
-    coxnetTrainInterface(measurements, classes, ...)
-})
+          function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
+          {
+            tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)
+            measurementsTrain <- tablesAndClasses[["dataTable"]]
+            survivalTrain <- tablesAndClasses[["outcomes"]]
+            
+            if(ncol(measurementsTrain) == 0)
+              stop("No variables in data tables specified by \'targets\' are numeric.")
+            else
+              coxnetTrainInterface(measurementsTrain, survivalTrain, ...)
+          })
 
 
 
@@ -135,22 +132,22 @@ function(measurements, targets = names(measurements), classes, ...)
 
 
 # Matrix of numeric measurements.
-setGeneric("coxnetPredictInterface", function(model, test, ...)
-standardGeneric("coxnetPredictInterface"))
+setGeneric("coxnetPredictInterface", function(model, measurementsTest, ...)
+  standardGeneric("coxnetPredictInterface"))
 
 setMethod("coxnetPredictInterface", c("coxnet", "matrix"),
-          function(model, test, ...)
-{
-  coxnetPredictInterface(model, DataFrame(t(test), check.names = FALSE), ...)
-})
+          function(model, measurementsTest, ...)
+          {
+            coxnetPredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+          })
 
 # Clinical data only.
-setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, test, classes = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
+setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, measurementsTest, survivalTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
-  if(!is.null(classes))
+  if(!is.null(survivalTest))
   {
-    splitDataset <- .splitDataAndClasses(test, classes)  # Remove any classes, if present.
-    test <- splitDataset[["measurements"]]
+    splitDataset <- .splitDataAndOutcomes(measurementsTest, survivalTest)  # Remove any classes, if present.
+    measurementsTest <- splitDataset[["measurements"]]
   }
   
   returnType <- match.arg(returnType)
@@ -159,31 +156,31 @@ setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, te
     stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using cox model.")
-
+  
   if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
-
-  testMatrix <- glmnet::makeX(as(test, "data.frame"))
+  
+  testMatrix <- glmnet::makeX(as(measurementsTest, "data.frame"))
   testMatrix <- testMatrix[, rownames(model[["beta"]])]
   
   offset <- attr(model, "tune")[["offset"]]
   model$offset <- TRUE
   
-  classPredictions <- predict(model, testMatrix, s = lambda, type = "link", newoffset = offset)
-  classScores <- predict(model, testMatrix, s = lambda, type = "response", newoffset = offset)
+  survPredictions <- predict(model, testMatrix, s = lambda, type = "link", newoffset = offset)
+  survScores <- predict(model, testMatrix, s = lambda, type = "response", newoffset = offset)
   
-  data.frame(link = classPredictions[,1], relativeRisk = classScores[,1], class = classPredictions[,1], check.names = FALSE)
+  data.frame(link = survPredictions[, 1], relativeRisk = survScores[, 1], check.names = FALSE)
 })
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("coxnetPredictInterface", c("coxnet", "MultiAssayExperiment"),
-          function(model, test, targets = names(test), ...)
-{
-  tablesAndClasses <- .MAEtoWideTable(test, targets)
-  test <- tablesAndClasses[["dataTable"]]
-
-  coxnetPredictInterface(model, test, ...)
-})
+          function(model, measurementsTest, targets = names(measurementsTest), ...)
+          {
+            tables <- .MAEtoWideTable(measurementsTest, targets)
+            measurementsTest <- tables[["dataTable"]]
+            
+            coxnetPredictInterface(model, measurementsTest, ...)
+          })
 
 
 
@@ -192,6 +189,3 @@ setMethod("coxnetPredictInterface", c("coxnet", "MultiAssayExperiment"),
 # Get selected features
 #
 ################################################################################
-
-
-
