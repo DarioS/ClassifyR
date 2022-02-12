@@ -54,6 +54,7 @@
     "coxphRanking", "Cox Proportional Hazards",
     "coxnetTrainInterface", "Penalised Cox Proportional Hazards",
     "coxnetPredictInterface", "Penalised Cox Proportional Hazards",
-    "NEMOEtrainInterface", "Nutrition-Ecotype Mixture of Experts"),
+    "NEMOEtrainInterface", "Nutrition-Ecotype Mixture of Experts",
+    "NEMOEpredictInterface", "Nutrition-Ecotype Mixture of Experts"),
   ncol = 2, byrow = TRUE, dimnames = list(NULL, c("character", "name"))
 ) |> as.data.frame()
