@@ -57,11 +57,9 @@
 #'   fisherDiscriminant(trainMatrix, classes, testMatrix)
 #' 
 #' @export
-setGeneric("fisherDiscriminant", function(measurements, ...)
-           standardGeneric("fisherDiscriminant"))
+setGeneric("fisherDiscriminant", function(measurementsTrain, ...) standardGeneric("fisherDiscriminant"))
 
-setMethod("fisherDiscriminant", "matrix", # Matrix of numeric measurements.
-          function(measurementsTrain, classesTrain, measurementsTest, ...)
+setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTrain, measurementsTest, ...) # Matrix of numeric measurements.
 {
   fisherDiscriminant(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
                      classesTrain,
@@ -88,8 +86,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of
              * varOtherClass) / (length(oneClassTraining) + length(otherClassTraining) - 2)
   aT <- (apply(measurements[oneClassTraining, ], 2, mean) - apply(measurements[otherClassTraining, ], 2, mean)) / varAll
   criticalValue <- 0.5 * aT %*% as.matrix(apply(measurements[oneClassTraining, ], 2, mean) +
-                                          apply(measurements[otherClassTraining, ], 2, mean)
-                                         )
+                                          apply(measurements[otherClassTraining, ], 2, mean))
   
   if(verbose == 3)
     message("Critical value calculated.")
@@ -109,8 +106,7 @@ setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of
 })
 
 # One or more omics data sets, possibly with sample information data.
-setMethod("fisherDiscriminant", "MultiAssayExperiment", 
-          function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)
+setMethod("fisherDiscriminant", "MultiAssayExperiment", function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, classesTrain)
   trainingMatrix <- tablesAndClasses[["dataTable"]]

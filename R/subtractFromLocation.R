@@ -35,12 +35,10 @@
 #' 
 #' @importFrom MultiAssayExperiment ExperimentList colData experiments MultiAssayExperiment
 #' @export
-setGeneric("subtractFromLocation", function(measurements, ...)
-           standardGeneric("subtractFromLocation"))
+setGeneric("subtractFromLocation", function(measurementsTrain, ...) standardGeneric("subtractFromLocation"))
 
-setMethod("subtractFromLocation", "matrix", 
-          function(measurementsTrain, location = c("mean", "median"),
-                   absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+setMethod("subtractFromLocation", "matrix", function(measurementsTrain, location = c("mean", "median"),
+           absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
 {
   location <- match.arg(location)
   if(location == "mean")
@@ -58,39 +56,38 @@ setMethod("subtractFromLocation", "matrix",
   transformed # Return an endomorphic variable; a matrix.
 })
 
-setMethod("subtractFromLocation", "DataFrame", # Sample information data or one of the other inputs, transformed.
-          function(measurementsTrain, location = c("mean", "median"),
-                   absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
-          {
-            isNumeric <- sapply(measurementsTrain, is.numeric)
-            if(sum(isNumeric) == 0)
-              stop("No features are numeric but at least one must be.")
-            
-            if(sum(isNumeric) != ncol(measurementsTrain) && verbose == 3)
-              message("Some columns are not numeric. Only subtracting values from location for\n", 
-                      "the columns containing numeric data.")
-            
-            location <- match.arg(location)
-            measurementsTrain <- measurementsTrain[, isNumeric]
-            if(location == "mean")
-              locations <- apply(measurementsTrain, 2, mean, na.rm = TRUE)
-            else # median.
-              locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
-            transformed <- measurementsTrain
-            transformed[, isNumeric] <- DataFrame(t(apply(measurementsTrain[, isNumeric], 1, '-', locations)))
-            if(absolute == TRUE)
-              transformed[, isNumeric] <- DataFrame(lapply(transformed[, isNumeric], abs))
-            
-            if(verbose == 3)
-              message("Subtraction from ", location,
-                      {if(absolute == TRUE) " and absolute transformation"}, " completed.")
-            
-            transformed # Return an endomorphic variable; a DataFrame.
-          })
+# Sample information data or one of the other inputs, transformed.
+setMethod("subtractFromLocation", "DataFrame", function(measurementsTrain, location = c("mean", "median"),
+           absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+{
+  isNumeric <- sapply(measurementsTrain, is.numeric)
+  if(sum(isNumeric) == 0)
+    stop("No features are numeric but at least one must be.")
+  
+  if(sum(isNumeric) != ncol(measurementsTrain) && verbose == 3)
+    message("Some columns are not numeric. Only subtracting values from location for\n", 
+            "the columns containing numeric data.")
+  
+  location <- match.arg(location)
+  measurementsTrain <- measurementsTrain[, isNumeric]
+  if(location == "mean")
+    locations <- apply(measurementsTrain, 2, mean, na.rm = TRUE)
+  else # median.
+    locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
+  transformed <- measurementsTrain
+  transformed[, isNumeric] <- DataFrame(t(apply(measurementsTrain[, isNumeric], 1, '-', locations)))
+  if(absolute == TRUE)
+    transformed[, isNumeric] <- DataFrame(lapply(transformed[, isNumeric], abs))
+  
+  if(verbose == 3)
+    message("Subtraction from ", location,
+            {if(absolute == TRUE) " and absolute transformation"}, " completed.")
+  
+  transformed # Return an endomorphic variable; a DataFrame.
+})
 
-setMethod("subtractFromLocation", "MultiAssayExperiment", 
-          function(measurementsTrain, targets = names(measurementsTrain),
-                   location = c("mean", "median"), absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+setMethod("subtractFromLocation", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain),
+           location = c("mean", "median"), absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
 {
   location <- match.arg(location)
   if(!all(targets %in% c(names(measurementsTrain), "sampleInfo")))

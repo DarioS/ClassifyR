@@ -64,20 +64,18 @@
 #'   #}
 #' 
 #' @export
-setGeneric("runTests", function(measurements, ...)
-           standardGeneric("runTests"))
+setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
-setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+setMethod("runTests", c("matrix"), function(measurements, classes, ...) # Matrix of numeric measurements.
 {
   if(is.null(rownames(measurements)))
     stop("'measurements' matrix must have sample identifiers as its row names.")
   runTests(DataFrame(measurements, check.names = FALSE), classes, ...)
 })
 
-setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
-                   characteristics = DataFrame(), verbose = 1)
+# Clinical data or one of the other inputs, transformed.
+setMethod("runTests", "DataFrame", function(measurements, classes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
+           characteristics = DataFrame(), verbose = 1)
 {
   # Get out the classes if inside of data table.           
   if(is.null(rownames(measurements)))
@@ -86,7 +84,7 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   if(any(is.na(measurements)))
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
             
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["outcomes"]]
   

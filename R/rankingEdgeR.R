@@ -66,18 +66,15 @@
 #'   }
 #' 
 #' @export
-setGeneric("edgeRranking", function(counts, ...)
-           standardGeneric("edgeRranking"))
+setGeneric("edgeRranking", function(countsTrain, ...) standardGeneric("edgeRranking"))
 
-setMethod("edgeRranking", "matrix", # Matrix of integer counts.
-          function(countsTrain, classesTrain, ...)
+setMethod("edgeRranking", "matrix", function(countsTrain, classesTrain, ...) # Matrix of integer counts. 
 {
   edgeRranking(DataFrame(countsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of counts, likely created by runTests or runTest.
-setMethod("edgeRranking", "DataFrame",
-          function(countsTrain, classesTrain, normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL, verbose = 3)
+setMethod("edgeRranking", "DataFrame", function(countsTrain, classesTrain, normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL, verbose = 3)
 {
   if(verbose == 3)
     message("Doing edgeR LRT feature ranking")
@@ -111,8 +108,7 @@ setMethod("edgeRranking", "DataFrame",
 })
 
 # One or more omics data sets, possibly with sample information data.
-setMethod("edgeRranking", "MultiAssayExperiment",
-          function(countsTrain, targets = NULL, ...)
+setMethod("edgeRranking", "MultiAssayExperiment", function(countsTrain, targets = NULL, ...)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))
     stop("The package 'edgeR' could not be found. Please install it.")

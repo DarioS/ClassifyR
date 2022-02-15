@@ -70,14 +70,12 @@
 #'   
 #' @include classes.R
 #' @export
-setGeneric("DLDAtrainInterface", function(measurements, ...)
-  standardGeneric("DLDAtrainInterface"))
+setGeneric("DLDAtrainInterface", function(measurementsTrain, ...) standardGeneric("DLDAtrainInterface"))
 
-setMethod("DLDAtrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurementsTrain, classesTrain, ...)
-          {
-            DLDAtrainInterface(DataFrame(measurements, check.names = FALSE), classes, ...)
-          })
+setMethod("DLDAtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...) # Matrix of numeric measurements.
+{
+  DLDAtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+})
 
 setMethod("DLDAtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, verbose = 3)
 {
@@ -91,32 +89,29 @@ setMethod("DLDAtrainInterface", "DataFrame", function(measurementsTrain, classes
     message("Fitting DLDA classifier to data.")
   
   # sparsediscrim::dlda(as.matrix(measurements), classes)
-  .dlda(as.matrix(measurements), classesTrain)
+  .dlda(as.matrix(measurementsTrain), classesTrain)
 })
 
-setMethod("DLDAtrainInterface", "MultiAssayExperiment",
-          function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
-          {
-            tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
-            measurementsTrain <- tablesAndClasses[["dataTable"]]
-            classesTrain <- tablesAndClasses[["outcomes"]]
-            
-            if(ncol(measurementsTrain) == 0)
-              stop("No variables in data tables specified by \'targets\' are numeric.")
-            else
-              DLDAtrainInterface(measurementsTrain, classesTrain, ...)
-          })
+setMethod("DLDAtrainInterface", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  
+  if(ncol(measurementsTrain) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    DLDAtrainInterface(measurementsTrain, classesTrain, ...)
+})
 
 
 #' @export
-setGeneric("DLDApredictInterface", function(model, measurementsTest, ...)
-  standardGeneric("DLDApredictInterface"))
+setGeneric("DLDApredictInterface", function(model, measurementsTest, ...) standardGeneric("DLDApredictInterface"))
 
-setMethod("DLDApredictInterface", c("dlda", "matrix"),
-          function(model, measurementsTest, ...)
-          {
-            DLDApredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
-          })
+setMethod("DLDApredictInterface", c("dlda", "matrix"), function(model, measurementsTest, ...)
+{
+  DLDApredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+})
 
 setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
@@ -137,14 +132,13 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, measur
          both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]], check.names = FALSE))
 })
 
-setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"),
-          function(model, measurementsTest, targets = names(measurementsTest), ...)
-          {
-            tablesAndClasses <- .MAEtoWideTable(measurementsTest, targets)
-            measurementsTest <- tablesAndClasses[["dataTable"]]
+setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"), function(model, measurementsTest, targets = names(measurementsTest), ...)
+{
+  tablesAndClasses <- .MAEtoWideTable(measurementsTest, targets)
+  measurementsTest <- tablesAndClasses[["dataTable"]]
             
-            if(ncol(measurementsTest) == 0)
-              stop("No variables in data tables specified by \'targets\' are numeric.")
-            else
-              DLDApredictInterface(model, measurementsTest, ...)
-          })
+  if(ncol(measurementsTest) == 0)
+    stop("No variables in data tables specified by \'targets\' are numeric.")
+  else
+    DLDApredictInterface(model, measurementsTest, ...)
+})

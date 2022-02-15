@@ -106,17 +106,14 @@
 #'   mixModelsPredict(trained, genesMatrix[selected, testSamples])
 #' 
 #' @export
-setGeneric("mixModelsTrain", function(measurements, ...)
-           standardGeneric("mixModelsTrain"))
+setGeneric("mixModelsTrain", function(measurementsTrain, ...) standardGeneric("mixModelsTrain"))
 
-setMethod("mixModelsTrain", "matrix", # Matrix of numeric measurements.
-          function(measurementsTrain, ...)
+setMethod("mixModelsTrain", "matrix", function(measurementsTrain, ...) # Matrix of numeric measurements.
 {
   mixModelsTrain(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
-setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
-          function(measurementsTrain, classesTrain, ..., verbose = 3)
+setMethod("mixModelsTrain", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3) # Mixed data types.
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
@@ -129,7 +126,7 @@ setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
 
   models <- lapply(levels(classesTrain), function(class)
             {
-                aClassMeasurements <- measurements[classesTrain == class, , drop = FALSE]
+                aClassMeasurements <- measurementsTest[classesTrain == class, , drop = FALSE]
                 apply(aClassMeasurements, 2, function(featureColumn)
                 {
                    mixmodParams <- list(featureColumn)
@@ -153,21 +150,19 @@ setMethod("mixModelsTrain", "DataFrame", # Mixed data types.
 })
 
 # One or more omics data sets, possibly with sample information data.
-setMethod("mixModelsTrain", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+setMethod("mixModelsTrain", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
-  mixModelsTrain(dataTable, classes, ...)
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  mixModelsTrain(dataTable, classesTrain, ...)
 })
 
-setGeneric("mixModelsPredict", function(models, test, ...)
-           standardGeneric("mixModelsPredict"))
+setGeneric("mixModelsPredict", function(models, measurementsTest, ...) standardGeneric("mixModelsPredict"))
 
-setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, test, ...)
+setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, measurementsTest, ...)
 {
-  mixModelsPredict(models, DataFrame(t(test), check.names = FALSE), ...)
+  mixModelsPredict(models, DataFrame(t(measurementsTest), check.names = FALSE), ...)
 })
 
 setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample information data, perhaps.
@@ -302,8 +297,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample info
 })
 
 # One or more omics data sets, possibly with sample information data.
-setMethod("mixModelsPredict", c("MixModelsListsSet", "MultiAssayExperiment"),
-          function(models, measurementsTest, targets = names(measurementsTest), ...)
+setMethod("mixModelsPredict", c("MixModelsListsSet", "MultiAssayExperiment"), function(models, measurementsTest, targets = names(measurementsTest), ...)
 {
   testingMatrix <- .MAEtoWideTable(measurementsTest, targets)
   mixModelsPredict(models, testingMatrix, ...)

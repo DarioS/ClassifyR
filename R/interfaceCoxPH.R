@@ -75,11 +75,9 @@
 #' 
 #' @importFrom survival coxph predict concordance
 #' @export
-setGeneric("coxphTrainInterface", function(measurements, ...)
-standardGeneric("coxphTrainInterface"))
+setGeneric("coxphTrainInterface", function(measurementsTrain, ...) standardGeneric("coxphTrainInterface"))
 
-setMethod("coxphTrainInterface", "matrix", # Matrix of numeric measurements.
-          function(measurementsTrain, survivalTrain, ...)
+setMethod("coxphTrainInterface", "matrix", function(measurementsTrain, survivalTrain, ...)
 {
   coxphTrainInterface(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
@@ -100,8 +98,7 @@ setMethod("coxphTrainInterface", "DataFrame", function(measurementsTrain, surviv
   survival::coxph(survivalTrain ~ ., measurementsTrain)
 })
 
-setMethod("coxphTrainInterface", "MultiAssayExperiment",
-function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
+setMethod("coxphTrainInterface", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain, restrict = NULL)
   measurementsTrain <- tablesAndSurvival[["dataTable"]]
@@ -124,7 +121,8 @@ function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, .
 setGeneric("coxphPredictInterface", function(model, measurementsTest, ...)
   standardGeneric("coxphPredictInterface"))
 
-setMethod("coxphPredictInterface", c("coxph", "matrix"), function(model, measurementsTest, ...)
+setMethod("coxphPredictInterface", c("coxph", "matrix"), # Matrix of numeric measurements.
+          function(model, measurementsTest, ...)
 {
   coxphPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
@@ -142,7 +140,7 @@ function(model, measurementsTest, ..., verbose = 3)
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("coxphPredictInterface", c("coxph", "MultiAssayExperiment"),
-          function(model, test, targets = names(test), ...)
+          function(model, measurementsTest, targets = names(test), ...)
 {
   testingTable <- .MAEtoWideTable(test, targets)
   coxphPredictInterface(model, testingTable, ...)

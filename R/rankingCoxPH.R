@@ -34,17 +34,14 @@
 #' least promising feature in the last position.
 #' @import survival coxph
 #' @export
-setGeneric("coxphRanking", function(measurements, ...)
-standardGeneric("coxphRanking"))
+setGeneric("coxphRanking", function(measurementsTrain, ...) standardGeneric("coxphRanking"))
 
-setMethod("coxphRanking", "matrix", # Matrix of numeric measurements.
-function(measurementsTrain, survivalTrain, ...)
+setMethod("coxphRanking", "matrix", function(measurementsTrain, survivalTrain, ...) # Matrix of numeric measurements.
 {
   coxphRanking(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
-setMethod("coxphRanking", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurementsTrain, survivalTrain, verbose = 3)
+setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
   measurementsTrain <- splitDataset[["measurements"]]
@@ -63,8 +60,7 @@ setMethod("coxphRanking", "DataFrame", # Clinical data or one of the other input
 })
 
 # One or more omics data sets, possibly with clinical data.
-setMethod("coxphRanking", "MultiAssayExperiment",
-          function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
+setMethod("coxphRanking", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)
   measurementsTrain <- tablesAndSurvival[["dataTable"]]
