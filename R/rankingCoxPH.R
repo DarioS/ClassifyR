@@ -32,7 +32,7 @@
 #' @return A vector or data frame (if \code{MultiAssayExperiment} input) of
 #' features, from the most promising features in the first position to the
 #' least promising feature in the last position.
-#' @import survival coxph
+#' @importFrom survival coxph
 #' @export
 setGeneric("coxphRanking", function(measurementsTrain, ...) standardGeneric("coxphRanking"))
 

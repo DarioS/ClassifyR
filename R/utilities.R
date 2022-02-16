@@ -63,7 +63,7 @@
   
   if(!is.null(restrict))
   {
-    isDesiredClass <- sapply(dataTable, function(column) is(column, restrict))
+    isDesiredClass <- sapply(measurements, function(column) is(column, restrict))
     measurements <- measurements[, isDesiredClass, drop = FALSE]
     if(ncol(measurements) == 0)
       stop(paste("No features are left after restricting to", restrict, "but at least one must be."))

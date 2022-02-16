@@ -27,11 +27,9 @@ Description: The software formalises a framework for classification in R.
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
 RoxygenNote: 7.1.2
-Collate: 
-    'ROCplot.R'
+Collate:
     'classes.R'
     'calcPerformance.R'
-    'classifyInterface.R'
     'constants.R'
     'crossValidate.R'
     'data.R'
@@ -62,6 +60,7 @@ Collate:
     'previousSelection.R'
     'previousTrained.R'
     'quickClassify.R'
+    'ROCplot.R'
     'rankingBartlett.R'
     'rankingCoxPH.R'
     'rankingDMD.R'

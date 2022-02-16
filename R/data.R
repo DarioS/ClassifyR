@@ -8,8 +8,9 @@
 #' @name asthma
 #' @aliases measurements classes
 #' @docType data
-#' @format \code{measurements} has a row for each gene and a column for each
-#' sample. \code{classes} is a factor vector.
+#' @format \code{measurements} has a row for each sample and a column for each
+#' gene. \code{classes} is a factor vector with values No and Yes, indicating if
+#' a partiular person has asthma or not.
 #' @source A Nasal Brush-based Classifier of Asthma Identified by Machine
 #' Learning Analysis of Nasal RNA Sequence Data, \emph{Scientific Reports},
 #' 2018.  Webpage: \url{http://www.nature.com/articles/s41598-018-27189-4}

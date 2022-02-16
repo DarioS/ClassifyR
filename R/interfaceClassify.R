@@ -47,11 +47,11 @@
 #'   {
 #'     readCounts <- CountDataSet(n = 100, p = 1000, 2, 5, 0.1)
 #'     # Rows are for features, columns are for samples.
-#'     trainData <- t(readCounts[['x']])
-#'     classes <- factor(paste("Class", readCounts[['y']]))
-#'     testData <- t(readCounts[['xte']])
+#'     trainData <- readCounts[['x']]
+#'     trainClasses <- factor(paste("Class", readCounts[['y']]))
+#'     testData <- readCounts[['xte']]
 #'     storage.mode(trainData) <- storage.mode(testData) <- "integer"
-#'     classified <- classifyInterface(trainData, classes, testData)
+#'     classified <- classifyInterface(trainData, trainClasses, testData)
 #'     
 #'     setNames(table(paste("Class", readCounts[["yte"]]) == classified), c("Incorrect", "Correct"))
 #'   }
@@ -80,7 +80,7 @@ setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, 
   splitDataset <- .splitDataAndOutcomes(countsTrain, classesTrain, restrict = "integer")
   classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isInteger <- sapply(test, is.integer)
+  isInteger <- sapply(countsTest, is.integer)
   testingMatrix <- as.matrix(countsTest[, isInteger, drop = FALSE])
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   

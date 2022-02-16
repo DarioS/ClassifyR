@@ -30,7 +30,7 @@
 #' \url{http://www.tandfonline.com/doi/pdf/10.1080/01621459.1993.10476408}
 #' @examples
 #' 
-#'   genesMatrix <- matrix(rnorm(1000, 8, 4), ncol = 10)
+#'   genesMatrix <- matrix(rnorm(1000, 8, 4), nrow = 10)
 #'   distributionInfo <- getLocationsAndScales(genesMatrix, "median", "MAD")
 #'   
 #'   mean(distributionInfo[["median"]]) # Typical median.

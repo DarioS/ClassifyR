@@ -19,7 +19,7 @@
 #' coxphPredictInterface,coxph,MultiAssayExperiment-method
 #' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
 #' @param survivalTrain A tabular data type of survival information of the
 #' same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
 #' \code{\link{matrix}} or a \code{\link{DataFrame}}, or a character vector of length 2 to 3 containing the

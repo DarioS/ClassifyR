@@ -40,15 +40,15 @@
 #' 
 #'   pairs <- Pairs(rep(c('A', 'G'), each = 3), c('B', 'C', 'D', 'H', 'I', 'J'))
 #'                            
-#'   # Class differences for interactors of A.                                           
+#'   # Consistent differences for interactors of A.                                           
 #'   measurements <- matrix(c(5.7, 10.1, 6.9, 7.7, 8.8, 9.1, 11.2, 6.4, 7.0, 5.5,
-#'                            5.6, 9.6, 7.0, 8.4, 10.8, 12.2, 8.1, 5.7, 5.4, 12.1,
-#'                            4.5, 9.0, 6.9, 7.0, 7.3, 6.9, 7.8, 7.9, 5.7, 8.7,
-#'                            8.1, 10.6, 7.4, 7.15, 10.4, 6.1, 7.3, 2.7, 11.0, 9.1,
-#'                            round(rnorm(60, 8, 1), 1)), ncol = 10, byrow = TRUE)
+#'                            3.6, 7.6, 4.0, 4.4, 5.8, 6.2, 8.1, 3.7, 4.4, 2.1,
+#'                            8.5, 13.0, 9.9, 10.0, 10.3, 11.9, 13.8, 9.9, 10.7, 8.5,
+#'                            8.1, 10.6, 7.4, 10.7, 10.8, 11.1, 13.3, 9.7, 11.0, 9.1,
+#'                            round(rnorm(60, 8, 0.3), 1)), nrow = 10)
 #'                          
-#'   rownames(measurements) <- LETTERS[1:10]
-#'   colnames(measurements) <- paste("Patient", 1:10)
+#'   rownames(measurements) <- paste("Patient", 1:10)
+#'   colnames(measurements) <- LETTERS[1:10]
 #'   
 #'   interactorDifferences(measurements, pairs)
 #'
