@@ -82,18 +82,18 @@
 #' @author Dario Strbenac, John Ormerod
 #' @examples
 #' 
-#'   trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+#'   trainMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 5))
-#'   colnames(trainMatrix) <- paste("Sample", 1:10)
+#'   rownames(trainMatrix) <- paste("Sample", 1:10)
 #'   
 #'   # Make first 30 genes increased in value for poor samples.
-#'   trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
+#'   trainMatrix[1:5, 1:30] <- trainMatrix[1:5, 1:30] + 5
 #'   
-#'   testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-#'   colnames(testMatrix) <- paste("Sample", 11:20)
+#'   testMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
+#'   rownames(testMatrix) <- paste("Sample", 11:20)
 #'   
 #'   # Make first 30 genes increased in value for sixth to tenth samples.
-#'   testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
+#'   testMatrix[6:10, 1:30] <- testMatrix[6:10, 1:30] + 5
 #'   
 #'   naiveBayesKernel(trainMatrix, classesTrain, testMatrix)
 #' 

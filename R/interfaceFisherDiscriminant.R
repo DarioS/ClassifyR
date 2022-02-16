@@ -43,16 +43,16 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+#'   trainMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 5))
 #'   
 #'   # Make first 30 genes increased in value for poor samples.
-#'   trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
+#'   trainMatrix[1:5, 1:30] <- trainMatrix[1:5, 1:30] + 5
 #'   
-#'   testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+#'   testMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
 #'   
 #'   # Make first 30 genes increased in value for sixth to tenth samples.
-#'   testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
+#'   testMatrix[6:10, 1:30] <- testMatrix[6:10, 1:30] + 5
 #'   
 #'   fisherDiscriminant(trainMatrix, classes, testMatrix)
 #' 

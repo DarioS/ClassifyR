@@ -1,6 +1,6 @@
 #' Ranking of Differential Variability with Bartlett Statistic
 #' 
-#' Ranks allfeatures from largest Bartlett statistic to smallest.
+#' Ranks all features from largest Bartlett statistic to smallest.
 #' 
 #' The calculation of the test statistic is performed by the
 #' \code{\link{bartlett.test}} function from the \code{\link{stats}} package.
@@ -39,24 +39,19 @@
 #' 
 #'   # Samples in one class with differential variability to other class.
 #'   # First 20 genes are DV.
-#'   genesRNAmatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 1)))
-#'   moreVariable <- sapply(1:25, function(sample) rnorm(20, 9, 5))
-#'   genesRNAmatrix <- cbind(genesRNAmatrix, rbind(moreVariable,
-#'                           sapply(1:25, function(sample) rnorm(80, 9, 1))))
-#'   colnames(genesRNAmatrix) <- paste("Sample", 1:50)
-#'   rownames(genesRNAmatrix) <- paste("Gene", 1:100)
-#'   genesSNPmatrix <- matrix(sample(c("None", "Missense"), 250, replace = TRUE),
-#'                            ncol = 50)
-#'   colnames(genesSNPmatrix) <- paste("Sample", 1:50)
-#'   rownames(genesSNPmatrix) <- paste("Gene", 1:5)
+#'   genesRNAmatrix <- sapply(1:20, function(sample) c(rnorm(25, 9, 1), rnorm(25, 9, 5)))
+#'   genesRNAmatrix <- cbind(genesRNAmatrix, sapply(1:80, function(sample) rnorm(50, 9, 1)))
+#'   rownames(genesRNAmatrix) <- paste("Sample", 1:50)
+#'   colnames(genesRNAmatrix) <- paste("Gene", 1:100)
+#'   genesSNPmatrix <- matrix(sample(c("None", "Missense"), 250, replace = TRUE), nrow = 50)
+#'   rownames(genesSNPmatrix) <- paste("Sample", 1:50)
+#'   colnames(genesSNPmatrix) <- paste("Gene", 1:5)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'   names(classes) <- paste("Sample", 1:50)
-#'   genesDataset <- MultiAssayExperiment(list(RNA = genesRNAmatrix, SNP = genesSNPmatrix),
+#'   
+#'   
+#'   genesDataset <- MultiAssayExperiment(list(RNA = t(genesRNAmatrix), SNP = t(genesSNPmatrix)),
 #'                                        colData = DataFrame(class = classes))
-#'   # Wait for update to MultiAssayExperiment wideFormat function.  
-#'   trainIDs <- paste("Sample", c(1:20, 26:45))
-#'   genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
-#'                                        targets = "RNA") # Exclude SNP data.
 #'                                          
 #'   bartlettRanking(genesDataset, targets = "RNA")
 #'

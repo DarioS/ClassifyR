@@ -44,10 +44,10 @@
 #' 
 #'   if(require(pamr))
 #'   {
-#'     # Samples in one class with differential expression to other class.
-#'     genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-#'                                  c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+#'     # Samples in one class with differential expression to other class for last 25 features.
+#'     genesMatrix <- sapply(1:100, function(sampleColumn) c(rnorm(25, 9, 1)))
+#'     genesMatrix <- rbind(genesMatrix, cbind(sapply(1:50, function(sampleColumn) rnorm(25, 9, 1)),
+#'                                             sapply(1:50, function(sampleColumn) rnorm(25, 14, 1))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'     
 #'     NSCtrainInterface(genesMatrix, classes)
@@ -57,9 +57,9 @@
 setGeneric("NSCtrainInterface", function(measurementsTrain, ...)
 standardGeneric("NSCtrainInterface"))
 
-setMethod("NSCtrainInterface", "matrix", function(measurementsTrain, classes, ...)
+setMethod("NSCtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  NSCtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classes, ...)
+  NSCtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 setMethod("NSCtrainInterface", "DataFrame", # Sample information data or one of the other inputs, transformed.
@@ -145,14 +145,14 @@ setMethod("NSCtrainInterface", "MultiAssayExperiment",
 #' 
 #'   if(require(pamr))
 #'   {
-#'     # Samples in one class with differential expression to other class.
-#'     genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-#'                                  c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+#'     # Samples in one class with differential expression to other class for last 25 features.
+#'     genesMatrix <- sapply(1:100, function(sampleColumn) c(rnorm(25, 9, 1)))
+#'     genesMatrix <- rbind(genesMatrix, cbind(sapply(1:50, function(sampleColumn) rnorm(25, 9, 1)),
+#'                                             sapply(1:50, function(sampleColumn) rnorm(25, 14, 1))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'     
-#'     fit <- NSCtrainInterface(genesMatrix[, c(1:20, 26:45)], classes[c(1:20, 26:45)])
-#'     NSCpredictInterface(fit, genesMatrix[, c(21:25, 46:50)])
+#'     fit <- NSCtrainInterface(genesMatrix[c(1:20, 26:45), ], classes[c(1:20, 26:45)])
+#'     NSCpredictInterface(fit, genesMatrix[c(21:25, 46:50), ])
 #'   }
 #' 
 #' @export
@@ -242,8 +242,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'     
 #'     model <- NSCtrainInterface(genesMatrix, classes)
-#'     # ClassifyR framework internally uses DataFrames for measurements storage.
-#'     selected <- NSCfeatures(model, DataFrame(t(genesMatrix), check.names = FALSE), classes)
+#'     selected <- NSCfeatures(model, genesMatrix, classes)
 #'     selected[[2]]                                                       
 #'   }
 #' 

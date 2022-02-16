@@ -1,7 +1,7 @@
 #' Ranking of Differentially Abundant Features
 #' 
 #' Uses a moderated F-test with empirical Bayes shrinkage to rank
-#' differentially expressed features based on differences of means.  This means
+#' differentially expressed features based on differences of means. This means
 #' it works when there are three or more classes.
 #' 
 #' This ranking method looks for changes in means and uses a moderated F-test
@@ -9,10 +9,12 @@
 #' 
 #' @aliases limmaRanking limmaRanking,matrix-method
 #' limmaRanking,DataFrame-method limmaRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes A vector of class labels of class \code{\link{factor}} of the
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements}.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -51,42 +53,42 @@ setGeneric("limmaRanking", function(measurements, ...)
            standardGeneric("limmaRanking"))
 
 # Matrix of numeric measurements.
-setMethod("limmaRanking", "matrix", function(measurements, classes, ...)
+setMethod("limmaRanking", "matrix", function(measurements, classesTrain, ...)
 {
-  limmaRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  limmaRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
 setMethod("limmaRanking", "DataFrame",
-          function(measurements, classes, ..., verbose = 3)
+          function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
   if(!requireNamespace("limma", quietly = TRUE))
     stop("The package 'limma' could not be found. Please install it.")
 
-  fitParams <- list(t(as.matrix(measurements)), model.matrix(~ classes))
+  fitParams <- list(t(as.matrix(measurementsTrain)), model.matrix(~ classesTrain))
   if(!missing(...))
     fitParams <- append(fitParams, ...)
   linearModel <- do.call(limma::lmFit, fitParams)
   linearModel <- limma::eBayes(linearModel)
   linearModel <- linearModel[, -1] # Get rid of intercept.
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(linearModel[["F.p.value"]]), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(linearModel[["F.p.value"]]), ]
   else
-    colnames(measurements)[order(linearModel[["F.p.value"]])]
+    colnames(measurementsTrain)[order(linearModel[["F.p.value"]])]
 })
 
 # One or more omics data sets, possibly with sample information data.
 setMethod("limmaRanking", "MultiAssayExperiment", 
-          function(measurements, targets = NULL, classes, ...)
+          function(measurementsTrain, targets = NULL, classesTrain, ...)
 {
   if(is.null(targets))
     stop("'targets' must be specified but was not.")
-  if(length(setdiff(targets, names(measurements))))
-    stop("Some values of 'targets' are not names of 'measurements' but all must be.")                            
+  if(length(setdiff(targets, names(measurementsTrain))))
+    stop("Some values of 'targets' are not names of 'measurementsTrain' but all must be.")                            
             
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  measurements <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
-  limmaRanking(measurements, classes, ...)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  limmaRanking(measurementsTrain, classesTrain, ...)
 })

@@ -12,15 +12,17 @@
 #' @aliases likelihoodRatioRanking likelihoodRatioRanking,matrix-method
 #' likelihoodRatioRanking,DataFrame-method
 #' likelihoodRatioRanking,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-#' \code{matrix}, the rows are features, and the columns are samples.
-#' @param classes Either a vector of class labels of class \code{\link{factor}}
-#' of the same length as the number of samples in \code{measurements} or if the
+#' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing the training data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+#' to only those features of type \code{numeric}.
+#' @param classesTrain Either a vector of class labels of class \code{\link{factor}}
+#' of the same length as the number of samples in \code{measurementsTrain} or if the
 #' measurements are of class \code{DataFrame} a character vector of length 1
 #' containing the column name in \code{measurement} is also permitted. Not used
-#' if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' if \code{measurementsTrain} is a \code{MultiAssayExperiment} object.
+#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that numeric variables from the sample information data table will be
 #' used.
@@ -44,46 +46,45 @@
 #'   # First 20 features have bimodal distribution for Poor class.
 #'   # Other 80 features have normal distribution for both classes.
 #' 
-#'   genesMatrix <- sapply(1:25, function(sample)
+#'   genesMatrix <- sapply(1:20, function(feature)
 #'                               {
-#'                                 randomMeans <- sample(c(8, 12), 20, replace = TRUE)
-#'                                 c(rnorm(20, randomMeans, 1), rnorm(80, 10, 1))
+#'                                 randomMeans <- sample(c(8, 12), 25, replace = TRUE)
+#'                                 c(rnorm(25, randomMeans, 1), rnorm(25, 10, 1))
 #'                               }
 #'                        )
-#'   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
-#'   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+#'   genesMatrix <- cbind(genesMatrix, sapply(1:80, function(feature) rnorm(50, 10, 1)))
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25))
 #' 
 #'   ranked <- likelihoodRatioRanking(genesMatrix, classes)
 #'   head(ranked)
 #' 
 #' @export
-setGeneric("likelihoodRatioRanking", function(measurements, ...)
+setGeneric("likelihoodRatioRanking", function(measurementsTrain, ...)
            standardGeneric("likelihoodRatioRanking"))
 
 # Matrix of numeric measurements.
-setMethod("likelihoodRatioRanking", "matrix", function(measurements, classes, ...)
+setMethod("likelihoodRatioRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  likelihoodRatioRanking(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  likelihoodRatioRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
-          function(measurements, classes, alternative = c(location = "different", scale = "different"),
+          function(measurementsTrain, classesTrain, alternative = c(location = "different", scale = "different"),
                    ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
-  measurements <- splitDataset[["measurements"]]
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  measurementsTrain <- splitDataset[["measurements"]]
 
   if(verbose == 3)
     message("Ranking features by likelihood ratio test statistic.")
 
-  allDistribution <- getLocationsAndScales(measurements, ...)
+  allDistribution <- getLocationsAndScales(measurementsTrain, ...)
   logLikelihoodRatios <- unlist(mapply(function(featureMeasurements, scale, location)
   sum(dnorm(featureMeasurements, scale, location, log = TRUE)),
-  measurements, allDistribution[[1]], allDistribution[[2]])) -
-  rowSums(sapply(levels(classes), function(class)
+  measurementsTrain, allDistribution[[1]], allDistribution[[2]])) -
+  rowSums(sapply(levels(classesTrain), function(class)
   {
-    classMeasurements <- measurements[which(classes == class), ]
+    classMeasurements <- measurements[which(classesTrain == class), ]
     classDistribution <- getLocationsAndScales(classMeasurements, ...)
     
     unlist(mapply(function(featureMeasurements, scale, location)
@@ -93,22 +94,22 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or on
     switch(alternative[["scale"]], same = allDistribution[[2]], different = classDistribution[[2]])))    
   }))
   
-  if(!is.null(S4Vectors::mcols(measurements)))
-    S4Vectors::mcols(measurements)[order(logLikelihoodRatios), ]
+  if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    S4Vectors::mcols(measurementsTrain)[order(logLikelihoodRatios), ]
   else
-    colnames(measurements)[order(logLikelihoodRatios)]
+    colnames(measurementsTrain)[order(logLikelihoodRatios)]
 })
 
 # One or more omics data sets, possibly with sample information data.
 setMethod("likelihoodRatioRanking", "MultiAssayExperiment",
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
-  dataTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
+  measurementsTrain <- tablesAndClasses[["dataTable"]]
+  classesTrain <- tablesAndClasses[["outcomes"]]
 
-  if(ncol(dataTable) == 0)
+  if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")
   else
-  likelihoodRatioRanking(dataTable, classes, ...)
+  likelihoodRatioRanking(measurementsTrain, classesTrain, ...)
 })

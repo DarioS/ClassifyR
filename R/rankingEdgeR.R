@@ -15,6 +15,8 @@
 #' edgeRranking,DataFrame-method edgeRranking,MultiAssayExperiment-method
 #' @param countsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
 #' \code{\link{MultiAssayExperiment}} containing the unnormalised counts.
+#' For a \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
+#' are features, unlike the convention used in edgeR.
 #' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{countsTrain} if it is a
 #' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of
@@ -49,7 +51,7 @@
 #'   if(require(parathyroidSE) && require(PoiClaClu))
 #'   {
 #'     data(parathyroidGenesSE)
-#'     expression <- assays(parathyroidGenesSE)[[1]]
+#'     expression <- assays(parathyroidGenesSE)[[1]] # Genes in rows, samples in columns.
 #'     sampleNames <- paste("Sample", 1:ncol(parathyroidGenesSE))
 #'     colnames(expression) <- sampleNames
 #'     DPN <- which(colData(parathyroidGenesSE)[, "treatment"] == "DPN")
@@ -58,10 +60,11 @@
 #'     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
 #'     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small data set.
 #'     
-#'     ranked <- edgeRranking(expression, classes)
+#'     # ClassifyR is using the convention of samples in rows and features in columns.
+#'     ranked <- edgeRranking(t(expression), classes)
 #'                                         
 #'     head(ranked)
-#'     plotFeatureClasses(expression, classes, "ENSG00000044574",
+#'     plotFeatureClasses(t(expression), classes, "ENSG00000044574",
 #'                        dotBinWidth = 500, xAxisLabel = "Unnormalised Counts")
 #'   }
 #' 

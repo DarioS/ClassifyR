@@ -17,6 +17,10 @@
 #' @param outcomesTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival.
+#' @param measurementsTest Same data type as \code{measurementsTrain}, but only the test
+#' samples.
+#' @param outcomesTest Same data type as \code{outcomesTrain}, but only the test
+#' samples.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
 #' specifying the kind of cross-validation to be done, if nested
 #' cross-validation is used to tune any parameters.
@@ -27,10 +31,6 @@
 #' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that numeric variables from the sample information data table will be
 #' used.
-#' @param outcomeColumn The column name of the sample information data table containing
-#' the outcome to be predicted. Will automatically be removed from the sample information
-#' data table during model training. Must be specified if data is a
-#' \code{MultiAssayExperiment}.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -38,11 +38,9 @@
 #' characteristics of the classification used. First column must be named
 #' \code{"charateristic"} and second column must be named \code{"value"}.
 #' Useful for automated plot annotation by plotting functions within this
-#' package.  Transformation, selection and prediction functions provided by
+#' package. Transformation, selection and prediction functions provided by
 #' this package will cause the characteristics to be automatically determined
 #' and this can be left blank.
-#' @param training A vector which specifies the training samples.
-#' @param testing A vector which specifies the test samples.
 #' @param verbose Default: 1. A number between 0 and 3 for the amount of
 #' progress messages to give.  A higher number will produce more messages as
 #' more lower-level functions print messages.
@@ -95,7 +93,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     # or leave untouched if balancing is none.
     if(!is(classes, "Surv"))
     {
-      rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], training, testing, modellingParams@balancing)
+      rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], modellingParams@balancing)
       measurementsTrain <- rebalanced[["measurementsTrain"]]
       classesTrain <- rebalanced[["classesTrain"]]
     }
@@ -112,8 +110,8 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     if(length(modellingParams@transformParams@intermediate) != 0)
       modellingParams@transformParams <- .addIntermediates(modellingParams@transformParams)
     
-    measurementsTrain <- tryCatch(.doTransform(measurementsTrain, modellingParams@transformParams, verbose), error = function(error) error[["message"]])
-    if(is.character(measurementsTrain)) return(measurementsTrain) # An error occurred.
+    measurementsTransformedList <- tryCatch(.doTransform(measurementsTrain, measurementsTest, modellingParams@transformParams, verbose), error = function(error) error[["message"]])
+    if(is.character(measurementsTransformedList[[1]])) return(measurementsTransformedList[[1]]) # An error occurred.
   }
 
   rankedFeatures <- NULL
@@ -150,7 +148,8 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   if(length(modellingParams@trainParams@intermediate) > 0)
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
   
-  trained <- tryCatch(.doTrain(measurementsTrain, classes, training, testing, modellingParams, verbose),
+  # Some classifiers have one function for training and testing, so that's why test data is also passed in.
+  trained <- tryCatch(.doTrain(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
                       error = function(error) error[["message"]])
 
   if(is.character(trained)) return(trained) # An error occurred.

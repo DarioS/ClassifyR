@@ -140,9 +140,9 @@ function(model, measurementsTest, ..., verbose = 3)
 
 # One or more omics data sets, possibly with clinical data.
 setMethod("coxphPredictInterface", c("coxph", "MultiAssayExperiment"),
-          function(model, measurementsTest, targets = names(test), ...)
+          function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
-  testingTable <- .MAEtoWideTable(test, targets)
+  testingTable <- .MAEtoWideTable(measurementsTest, targets)
   coxphPredictInterface(model, testingTable, ...)
 })
 

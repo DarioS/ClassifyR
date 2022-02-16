@@ -34,14 +34,13 @@
 #'   # First 20 features have bimodal distribution for Poor class.
 #'   # Other 80 features have normal distribution for both classes.
 #'   set.seed(1984)
-#'   genesMatrix <- sapply(1:25, function(sample)
+#'   genesMatrix <- sapply(1:20, function(feature)
 #'                               {
-#'                                 randomMeans <- sample(c(8, 12), 20, replace = TRUE)
-#'                                 c(rnorm(20, randomMeans, 1), rnorm(80, 10, 1))
+#'                                 randomMeans <- sample(c(8, 12), 25, replace = TRUE)
+#'                                 c(rnorm(25, randomMeans, 1), rnorm(25, 10, 1))
 #'                               }
 #'                        )
-#'   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
-#'   rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+#'   genesMatrix <- cbind(genesMatrix, sapply(1:80, function(feature) rnorm(50, 10, 1)))
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25))
 #' 
 #'   ranked <- KolmogorovSmirnovRanking(genesMatrix, classes)

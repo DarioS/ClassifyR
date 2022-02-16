@@ -55,18 +55,18 @@
 #'   if(require(e1071))
 #'   {
 #'     # Genes 76 to 100 have differential expression.
-#'     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-#'                                       c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+#'     genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+#'     genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+#'                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
 #'     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
 #'     trainingSamples <- c(1:20, 26:45)
 #'     testingSamples <- c(21:25, 46:50)
 #'     
-#'     classifier <- SVMtrainInterface(genesMatrix[, trainingSamples],
+#'     classifier <- SVMtrainInterface(genesMatrix[trainingSamples, ],
 #'                                      classes[trainingSamples], kernel = "linear")
-#'     SVMpredictInterface(classifier, genesMatrix[, testingSamples])
+#'     SVMpredictInterface(classifier, genesMatrix[testingSamples, ])
 #'   }
 #' 
 #' @export

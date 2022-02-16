@@ -3,10 +3,6 @@
 #' \code{DLDAtrainInterface} generates a trained diagonal LDA classifier and
 #' \code{DLDApredictInterface} uses it to make predictions on a test data set.
 #' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
-#' 
 #' @aliases DLDAtrainInterface DLDAtrainInterface,matrix-method
 #' DLDAtrainInterface,DataFrame-method
 #' DLDAtrainInterface,MultiAssayExperiment-method DLDApredictInterface
@@ -53,19 +49,19 @@
 #'   # if(require(sparsediscrim)) Package currently removed from CRAN.
 #'   #{
 #'     # Genes 76 to 100 have differential expression.
-#'     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-#'                                       c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+#'     genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+#'     genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+#'                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
-#'     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
-#'     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
-#'     selected <- rownames(genesMatrix)[91:100]
+#'     rownames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
+#'     colnames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+#'     selected <- colnames(genesMatrix)[91:100]
 #'     trainingSamples <- c(1:20, 26:45)
 #'     testingSamples <- c(21:25, 46:50)
 #'     
-#'     classifier <- DLDAtrainInterface(genesMatrix[selected, trainingSamples],
+#'     classifier <- DLDAtrainInterface(genesMatrix[trainingSamples, selected],
 #'                                      classes[trainingSamples])
-#'     DLDApredictInterface(classifier, genesMatrix[selected, testingSamples])
+#'     DLDApredictInterface(classifier, genesMatrix[testingSamples, selected])
 #'   #}
 #'   
 #' @include classes.R

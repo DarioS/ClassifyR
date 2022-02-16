@@ -35,11 +35,12 @@
 #'   #if(require(sparsediscrim))
 #'   #{
 #'     # Genes 76 to 100 have differential expression.
-#'     genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-#'     genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-#'                                  c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
-#'     colnames(genesMatrix) <- paste("Sample", 1:50)
-#'     rownames(genesMatrix) <- paste("Gene", 1:100)                                 
+#'     genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+#'     genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+#'                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
+#'     classes <- factor(rep(c("Poor", "Good"), each = 25))
+#'     rownames(genesMatrix) <- paste("Sample", 1:50)
+#'     colnames(genesMatrix) <- paste("Gene", 1:100)                          
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #' 
 #'     CVparams <- CrossValParams(permutations = 2, folds = 2)
@@ -47,10 +48,11 @@
 #'     features(result)
 #'                        
 #'     # Genes 50 to 74 have differential expression in new data set.
-#'     newDataset <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-#'     newDataset <- cbind(newDataset, rbind(sapply(1:25, function(sample) rnorm(49, 9, 2)),
-#'                                           sapply(1:25, function(sample) rnorm(25, 14, 2)),
-#'                                           sapply(1:25, function(sample) rnorm(26, 9, 2))))
+#'     
+#'     newDataset <- sapply(1:100, function(sample) c(rnorm(25, 9, 0.3)))
+#'     newDataset <- rbind(newDataset, cbind(sapply(1:49, function(sample) rnorm(25, 9, 0.3)),
+#'                                           sapply(1:25, function(sample) rnorm(25, 14, 0.3)),
+#'                                           sapply(1:26, function(sample) rnorm(25, 9, 0.3))))
 #'                                           
 #'     rownames(newDataset) <- rownames(genesMatrix)
 #'     colnames(newDataset) <- colnames(genesMatrix)

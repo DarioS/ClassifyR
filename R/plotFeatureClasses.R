@@ -106,8 +106,9 @@
 #'   genesMatrix <- cbind(genesMatrix, sapply(1:10, function(geneColumn) c(rnorm(5, 15, 1))))
 #'   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 2))))
 #'   genesMatrix <- rbind(genesMatrix, sapply(1:50, function(geneColumn) rnorm(95, 9, 3)))
-#'   rownames(genesMatrix) <- paste("Gene", 1:100)
-#'   colnames(genesMatrix) <- paste("Sample", 1:50)
+#'   genesMatrix <- t(genesMatrix)
+#'   rownames(genesMatrix) <- paste("Sample", 1:50)
+#'   colnames(genesMatrix) <- paste("Gene", 1:100)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
 #'   plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
@@ -118,13 +119,13 @@
 #'   genders <- factor(rep(c("Male", "Female"), each = 10, length.out = 50))
 #'   clinicalData <- DataFrame(Gender = genders, Sugar = runif(50, 4, 10),
 #'                               Infection = factor(infectionResults, levels = c("No", "Yes")),
-#'                             row.names = colnames(genesMatrix))
+#'                             row.names = rownames(genesMatrix))
 #'   plotFeatureClasses(clinicalData, classes, targets = "Infection")
 #'   plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")
 #'   
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
-#'   targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
+#'   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
 #'   plotFeatureClasses(dataContainer, targets = targetFeatures,
 #'                      groupBy = c("sampleInfo", "Gender"),
 #'                      xAxisLabel = bquote(log[2]*'(expression)'))
@@ -140,11 +141,7 @@ setMethod("plotFeatureClasses", "matrix", function(measurements, classes, target
   if(missing(targets))
     stop("'targets' must be specified.")
   
-  if(!"Pairs" %in% class(targets))
-    flippedMatrix <- t(measurements[targets, , drop = FALSE])
-  else
-    flippedMatrix <- t(measurements[union(S4Vectors::first(targets), S4Vectors::second(targets)), , drop = FALSE])
-  plotFeatureClasses(DataFrame(flippedMatrix, check.names = FALSE), classes, targets, ...)
+  plotFeatureClasses(DataFrame(measurements, check.names = FALSE), classes, targets, ...)
 })
 
 setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
@@ -169,7 +166,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
                     facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
   
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurements, classes)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["outcomes"]]
   

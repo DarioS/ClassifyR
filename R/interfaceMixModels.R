@@ -90,20 +90,20 @@
 #'   # First 25 samples and first 5 genes are mixtures of two normals. Last 25 samples are
 #'   # one normal.
 #'   
-#'   genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(5, sample(c(5, 15), replace = TRUE, 5))))
-#'   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 1))))
-#'   genesMatrix <- rbind(genesMatrix, sapply(1:50, function(geneColumn) rnorm(5, 9, 1)))
-#'   rownames(genesMatrix) <- paste("Gene", 1:10)
-#'   colnames(genesMatrix) <- paste("Sample", 1:50)
+#'   genesMatrix <- t(sapply(1:25, function(geneColumn) c(rnorm(5, sample(c(5, 15), replace = TRUE, 5)))))
+#'   genesMatrix <- rbind(genesMatrix, sapply(1:5, function(geneColumn) c(rnorm(25, 9, 1))))
+#'   genesMatrix <- cbind(genesMatrix, sapply(1:5, function(geneColumn) rnorm(50, 9, 1)))
+#'   rownames(genesMatrix) <- paste("Sample", 1:50)
+#'   colnames(genesMatrix) <- paste("Gene", 1:10)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
 #'   
 #'   trainSamples <- c(1:15, 26:40)
 #'   testSamples <- c(16:25, 41:50)
 #'   selected <- 1:5
 #'   
-#'   trained <- mixModelsTrain(genesMatrix[selected, trainSamples], classes[trainSamples],
+#'   trained <- mixModelsTrain(genesMatrix[trainSamples, selected], classes[trainSamples],
 #'                             nbCluster = 1:3)
-#'   mixModelsPredict(trained, genesMatrix[selected, testSamples])
+#'   mixModelsPredict(trained, genesMatrix[trainSamples, selected])
 #' 
 #' @export
 setGeneric("mixModelsTrain", function(measurementsTrain, ...) standardGeneric("mixModelsTrain"))

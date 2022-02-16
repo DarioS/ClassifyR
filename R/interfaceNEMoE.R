@@ -27,7 +27,7 @@ setGeneric("NEMOEtrainInterface", function(measurementsTrain, ...) standardGener
 
 setMethod("NEMOEtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  NEMOEtrainInterface(DataFrame(t(measurementsTrain), check.names = FALSE), classesTrain, ...)
+  NEMOEtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 setMethod("NEMOEtrainInterface", "DataFrame", # Clinical data or one of the other inputs, transformed.
@@ -79,7 +79,7 @@ setGeneric("NEMOEpredictInterface", function(model, measurementsTest, ...) stand
 
 setMethod("NEMOEpredictInterface", c("NEMoE", "matrix"), function(model, measurementsTest, ...)
 {
-  NEMOEpredictInterface(trained, DataFrame(t(measurementsTest), check.names = FALSE), ...)
+  NEMOEpredictInterface(trained, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("NEMOEpredictInterface", c("NEMoE", "DFrame"), function(model, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
@@ -111,7 +111,7 @@ setMethod("NEMOEpredictInterface", c("NEMoE", "DFrame"), function(model, measure
          both = data.frame(class = factors, score_matrix, check.names = FALSE))
 })
 
-setMethod("NEMOEpredictInterface", c("NEMoE", "MultiAssayExperiment"), function(model, measurementsTest, targets = names(test), ...)
+setMethod("NEMOEpredictInterface", c("NEMoE", "MultiAssayExperiment"), function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
   measurementsTest <- .MAEtoWideTable(measurementsTest, targets)[["dataTable"]] # Remove any classes, if present.
   

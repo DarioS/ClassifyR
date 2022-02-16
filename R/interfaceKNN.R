@@ -44,12 +44,12 @@
 #' 
 #'   if(require(class))
 #'   {
-#'     classes <- factor(rep(c("Healthy", "Disease"), each = 5),
-#'                       levels = c("Healthy", "Disease"))
-#'     measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), ncol = 10)
-#'     colnames(measurements) <- paste("Sample", 1:10)
-#'     rownames(measurements) <- paste("mRNA", 1:10)
+#'     classes <- factor(rep(c("Healthy", "Disease"), each = 5), levels = c("Healthy", "Disease"))
+#'     measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), nrow = 10, byrow = TRUE)
+#'     rownames(measurements) <- paste("Sample", 1:10)
+#'     colnames(measurements) <- paste("mRNA", 1:10)
 #'     
+#'     # Train with 9 samples, test with one.
 #'     kNNinterface(measurements[, 1:9], classes[1:9], measurements[, 10, drop = FALSE])
 #'   }
 #'   

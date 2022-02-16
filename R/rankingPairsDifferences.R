@@ -43,20 +43,19 @@
 #' \url{https://academic.oup.com/bioinformatics/article/21/20/3896/203010}.
 #' @examples
 #' 
-#'   featurePairs <- Pairs(c('A', 'A'), c('B', 'C'))
+#'   featurePairs <- Pairs(c('A', 'C'), c('B', 'C'))
 #'                            
 #'   # Difference in differences for features A and C between classes.                                           
 #'   measurements <- matrix(c(9.9, 10.5, 10.1, 10.9, 11.0, 6.6, 7.7, 7.0, 8.1, 6.5,
 #'                            8.5, 10.5, 12.5, 10.5, 9.5, 8.5, 10.5, 12.5, 10.5, 9.5,
 #'                            6.6, 7.7, 7.0, 8.1, 6.5, 11.2, 11.0, 11.1, 11.4, 12.0,
 #'                            8.1, 10.6, 7.4, 7.1, 10.4, 6.1, 7.3, 2.7, 11.0, 9.1,
-#'                            round(rnorm(60, 8, 1), 1)), ncol = 10, byrow = TRUE)
+#'                            round(rnorm(60, 8, 1), 1)), nrow = 10)
 #'   classes <- factor(rep(c("Good", "Poor"), each = 5))
 #'                          
-#'   rownames(measurements) <- LETTERS[1:10]
-#'   colnames(measurements) <- names(classes) <- paste("Patient", 1:10)
+#'   rownames(measurements) <- paste("Patient", 1:10)
+#'   colnames(measurements) <- LETTERS[1:10]
 #'   
-#'   predictParams <- PredictParams(NULL)
 #'   pairsDifferencesRanking(measurements, classes, featurePairs = featurePairs)
 #' 
 #' @export

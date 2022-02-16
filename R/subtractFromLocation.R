@@ -3,18 +3,19 @@
 #' For each numeric feature, calculates the location, and subtracts all
 #' measurements from that location.
 #' 
-#' Only the samples specified by \code{training} are used in the calculation of
-#' the location.  To use all samples for calculation of the location, simply
-#' provide indices of all the samples.
+#' Only the samples specified by \code{measurementsTrain} are used in the calculation of
+#' the location.
 #' 
-#' @aliases subtractFromLocation subtractFromLocation,matrix-method
-#' subtractFromLocation,DataFrame-method
-#' subtractFromLocation,MultiAssayExperiment-method
+#' @aliases subtractFromLocation subtractFromLocation,matrix,matrix-method
+#' subtractFromLocation,DataFrame,DataFrame-method
+#' subtractFromLocation,MultiAssayExperiment,MultiAssayExperiment-method
 #' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data. For a
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
 #' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
 #' to only those features of type \code{numeric}.
+#' @param measurementsTest A data set of the same type as \code{measurementsTrain} with no samples in common with it.
+#' The subtraction will also be performed to it.
 #' @param location Character. Either "mean" or "median".
 #' @param absolute Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute
 #' values of the differences are returned. Otherwise, they are signed.
@@ -22,8 +23,6 @@
 #' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that numeric variables from the sample information data table will be
 #' used.
-#' @param transformName Default: Location Subtraction. Useful for automated
-#' plot annotation by plotting functions within this package.
 #' @param verbose Default: 3. A progress message is shown if this value is 3.
 #' @return The same class of variable as the input variable \code{measurements}
 #' is, with the numeric features subtracted from the calculated location.
@@ -35,30 +34,35 @@
 #' 
 #' @importFrom MultiAssayExperiment ExperimentList colData experiments MultiAssayExperiment
 #' @export
-setGeneric("subtractFromLocation", function(measurementsTrain, ...) standardGeneric("subtractFromLocation"))
+setGeneric("subtractFromLocation", function(measurementsTrain, measurementsTest, ...) standardGeneric("subtractFromLocation"))
 
-setMethod("subtractFromLocation", "matrix", function(measurementsTrain, location = c("mean", "median"),
-           absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+setMethod("subtractFromLocation", c("matrix", "matrix"), function(measurementsTrain, measurementsTest, location = c("mean", "median"),
+           absolute = TRUE, verbose = 3)
 {
   location <- match.arg(location)
   if(location == "mean")
     featureTrainingLocations <- colMeans(measurementsTrain, na.rm = TRUE)
   else # median.
     featureTrainingLocations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
-  transformed <- apply(measurementsTrain, 1, '-', featureTrainingLocations)
+  
+  transformedTrain <- t(apply(measurementsTrain, 1, '-', featureTrainingLocations))
+  transformedTest <- t(apply(measurementsTrain, 1, '-', featureTrainingLocations))
   if(absolute == TRUE)
-    transformed <- abs(transformed)
+  {
+    transformedTrain <- abs(transformedTrain)
+    transformedTest <- abs(transformedTest)
+  }
   
   if(verbose == 3)
     message("Subtraction from ", location,
             {if(absolute == TRUE) " and absolute transformation"}, " completed.")
             
-  transformed # Return an endomorphic variable; a matrix.
+  list(transformedTrain, transformedTest)
 })
 
 # Sample information data or one of the other inputs, transformed.
-setMethod("subtractFromLocation", "DataFrame", function(measurementsTrain, location = c("mean", "median"),
-           absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+setMethod("subtractFromLocation", c("DataFrame", "DataFrame"), function(measurementsTrain, measurementsTest, location = c("mean", "median"),
+           absolute = TRUE, verbose = 3)
 {
   isNumeric <- sapply(measurementsTrain, is.numeric)
   if(sum(isNumeric) == 0)
@@ -70,30 +74,34 @@ setMethod("subtractFromLocation", "DataFrame", function(measurementsTrain, locat
   
   location <- match.arg(location)
   measurementsTrain <- measurementsTrain[, isNumeric]
+  measurementsTest <- measurementsTest[, isNumeric]
   if(location == "mean")
     locations <- apply(measurementsTrain, 2, mean, na.rm = TRUE)
   else # median.
     locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
-  transformed <- measurementsTrain
-  transformed[, isNumeric] <- DataFrame(t(apply(measurementsTrain[, isNumeric], 1, '-', locations)))
+  
+  transformedTrain <- DataFrame(t(apply(measurementsTrain, 1, '-', locations)))
+  transformedTest <- DataFrame(t(apply(measurementsTest, 1, '-', locations)))
   if(absolute == TRUE)
-    transformed[, isNumeric] <- DataFrame(lapply(transformed[, isNumeric], abs))
+  {
+    transformedTrain <- DataFrame(lapply(transformedTrain, abs))
+    transformedTest <- DataFrame(lapply(transformedTest, abs))
+  }
   
   if(verbose == 3)
     message("Subtraction from ", location,
             {if(absolute == TRUE) " and absolute transformation"}, " completed.")
   
-  transformed # Return an endomorphic variable; a DataFrame.
+  list(transformedTrain, transformedTest)
 })
 
-setMethod("subtractFromLocation", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain),
-           location = c("mean", "median"), absolute = TRUE, transformName = "Location Subtraction", verbose = 3)
+setMethod("subtractFromLocation", "MultiAssayExperiment",
+          function(measurementsTrain, measurementsTest, targets = names(measurementsTrain),
+           location = c("mean", "median"), absolute = TRUE, verbose = 3)
 {
   location <- match.arg(location)
   if(!all(targets %in% c(names(measurementsTrain), "sampleInfo")))
     stop("Some table names in 'targets' are not assay names in 'measurementsTrain' or \"sampleInfo\".")  
-  
-  transformed <- measurementsTrain
   
   if("sampleInfo" %in% targets)
   {
@@ -104,28 +112,40 @@ setMethod("subtractFromLocation", "MultiAssayExperiment", function(measurementsT
       locations <- apply(sampleInfoTrain, 2, mean, na.rm = TRUE)
     else # median.
       locations <- apply(sampleInfoTrain, 2, median, na.rm = TRUE)
-    transformedSampleInfo <- DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTrain), 1, '-', locations)))
+    transformedSampleInfoTrain <- DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTrain), 1, '-', locations)))
+    transformedSampleInfoTest <- DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTest), 1, '-', locations)))
     if(absolute == TRUE)
-      transformedSampleInfo <- DataFrame(lapply(transformedSampleInfo, abs))
-    MultiAssayExperiment::colData(transformed)[, isNumeric] <- transformedSampleInfo
+    {
+      transformedSampleInfoTrain <- DataFrame(lapply(transformedSampleInfoTrain, abs))
+      transformedSampleInfoTest <- DataFrame(lapply(transformedSampleInfoTest, abs))
+    }
+    MultiAssayExperiment::colData(measurementsTrain)[, isNumeric] <- transformedSampleInfoTrain
+    MultiAssayExperiment::colData(measurementsTest)[, isNumeric] <- transformedSampleInfoTest
   }
   
+  # Now, transform the experiments. The features are in the rows, unlike for colData.
   measurementsTrain <- measurementsTrain[, , targets]
   if(location == "mean")
     featureTrainingLocations <- lapply(MultiAssayExperiment::experiments(measurementsTrain), rowMeans, na.rm = TRUE)
   else # median.
     featureTrainingLocations <- lapply(MultiAssayExperiment::experiments(measurementsTrain), function(dataTable)
                                                 apply(dataTable, 1, median, na.rm = TRUE))
-  transformedTables <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
+  transformedTablesTrain <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
               MultiAssayExperiment::experiments(measurementsTrain[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
+  transformedTablesTest <- mapply(function(dataTable, locations) apply(dataTable, 2, '-', locations),
+              MultiAssayExperiment::experiments(measurementsTest[, , targets]), featureTrainingLocations, SIMPLIFY = FALSE)
   if(absolute == TRUE)
-    transformedTables <- lapply(transformedTables, abs)
+  {
+    transformedTablesTrain <- lapply(transformedTablesTrain, abs)
+    transformedTablesTest <- lapply(transformedTablesTest, abs)
+  }
   
-  MultiAssayExperiment::experiments(transformed)[targets] <- MultiAssayExperiment::ExperimentList(transformedTables)
+  MultiAssayExperiment::experiments(measurementsTrain)[targets] <- MultiAssayExperiment::ExperimentList(transformedTablesTrain)
+  MultiAssayExperiment::experiments(measurementsTest)[targets] <- MultiAssayExperiment::ExperimentList(transformedTablesTest)
 
   if(verbose == 3)
     message("Subtraction from ", location,
             {if(absolute == TRUE) " and absolute transformation"}, " completed.")
   
-  transformed # Return an endomorphic variable; a MultiAssayExperiment.
+  list(measurementsTrain, measurementsTest)
 })
