@@ -49,9 +49,9 @@
 #'   # Adhesion genes have a median gene difference between classes.
 #'   genesMatrix <- matrix(c(rnorm(5, 9, 0.3), rnorm(5, 7, 0.3), rnorm(5, 8, 0.3),
 #'                         rnorm(5, 6, 0.3), rnorm(10, 7, 0.3), rnorm(70, 5, 0.1)),
-#'                         ncol = 10, byrow = TRUE)
-#'   rownames(genesMatrix) <- paste("Gene", 1:10)
-#'   colnames(genesMatrix) <- paste("Patient", 1:10)
+#'                         nrow = 10)
+#'   rownames(genesMatrix) <- paste("Patient", 1:10)
+#'   colnames(genesMatrix) <- paste("Gene", 1:10)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 5)) # But not used for transformation.
 #'   
 #'   featureSetSummary(genesMatrix, featureSets = featureSets)
