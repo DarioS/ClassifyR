@@ -7,26 +7,27 @@
 \alias{edgeRranking,MultiAssayExperiment-method}
 \title{Feature Ranking Based on Differential Expression for Count Data}
 \usage{
-edgeRranking(counts, ...)
+edgeRranking(countsTrain, ...)
 }
 \arguments{
-\item{counts}{Either a \code{\link{matrix}} or
-\code{\link{MultiAssayExperiment}} containing the unnormalised counts.}
+\item{countsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
+\code{\link{MultiAssayExperiment}} containing the unnormalised counts.
+For a \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
+are features, unlike the convention used in edgeR.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
-\code{\link{MultiAssayExperiment}}. If a column name, that column will be
-removed before training.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{countsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of
+length 1 containing the column name in \code{countsTrain} if it is a
+\code{\link{DataFrame}} or the column name in \code{colData(counts)} if
+\code{countsTrain} is a \code{\link{MultiAssayExperiment}}. If a column name,
+that column will be removed before training.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
+\item{targets}{If \code{countsTrain} is a \code{MultiAssayExperiment}, the
 names of the data tables of counts to be used.}
 
 \item{normFactorsOptions}{A named \code{list} of any options to be passed to
@@ -59,16 +60,13 @@ factors, calculating dispersion, in this case robustly, and then fitting a
 generalised linear model followed by a likelihood ratio test.
 
 Data tables which consist entirely of non-numeric data cannot be analysed.
-If \code{measurements} is an object of class \code{MultiAssayExperiment},
-the factor of sample classes must be stored in the DataFrame accessible by
-the \code{colData} function with column name \code{"class"}.
 }
 \examples{
 
   if(require(parathyroidSE) && require(PoiClaClu))
   {
     data(parathyroidGenesSE)
-    expression <- assays(parathyroidGenesSE)[[1]]
+    expression <- assays(parathyroidGenesSE)[[1]] # Genes in rows, samples in columns.
     sampleNames <- paste("Sample", 1:ncol(parathyroidGenesSE))
     colnames(expression) <- sampleNames
     DPN <- which(colData(parathyroidGenesSE)[, "treatment"] == "DPN")
@@ -77,10 +75,11 @@ the \code{colData} function with column name \code{"class"}.
     classes <- factor(rep(c("Contol", "DPN"), c(length(control), length(DPN))))
     expression <- expression[rowSums(expression > 1000) > 8, ] # Make small data set.
     
-    ranked <- edgeRranking(expression, classes)
+    # ClassifyR is using the convention of samples in rows and features in columns.
+    ranked <- edgeRranking(t(expression), classes)
                                         
     head(ranked)
-    plotFeatureClasses(expression, classes, "ENSG00000044574",
+    plotFeatureClasses(t(expression), classes, "ENSG00000044574",
                        dotBinWidth = 500, xAxisLabel = "Unnormalised Counts")
   }
 

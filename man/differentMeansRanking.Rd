@@ -7,23 +7,24 @@
 \alias{differentMeansRanking,MultiAssayExperiment-method}
 \title{Ranking of Differentially Abundant Features}
 \usage{
-differentMeansRanking(measurements, ...)
+differentMeansRanking(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
@@ -53,12 +54,12 @@ classes.
 \examples{
 
     # Genes 76 to 100 have differential expression.
-    genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-                                 c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+    genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+    genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+                                      c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
-    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+    rownames(genesMatrix) <- paste("Sample", 1:50)
+    colnames(genesMatrix) <- paste("Gene", 1:100)
     
     ranked <- differentMeansRanking(genesMatrix, classes)
     head(ranked)

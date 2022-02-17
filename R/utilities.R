@@ -268,7 +268,6 @@
 # to find the set of top features which give the best (user-specified) performance measure.
 .doSelection <- function(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose)
 {
-  
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
   topNfeatures <- tuneParams[["nFeatures"]]
@@ -318,21 +317,20 @@
         whichTry <- 1:tuneCombosTrain[rowIndex, "topN"]
         if(doSubset)
         {
-          if(is.null(S4Vectors::mcols(measurements))) # There are no different data sets.
+          if(is.null(S4Vectors::mcols(measurementsTrain))) # There are no different data sets.
           {
             topFeatures <- rankingsVariety[whichTry]
-            measurements <- measurements[, topFeatures, drop = FALSE] # Features in columns
+            measurementsTrain <- measurementsTrain[, topFeatures, drop = FALSE] # Features in columns
           } else { # Match to relevant variables, considering data set of them.
             topFeatures <- rankingsVariety[whichTry, ]
             topIDs <-  do.call(paste, topFeatures)
-            featuresIDs <- do.call(paste, S4Vectors::mcols(measurements)[, c("dataset", "feature")])
+            featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
             topColumns <- match(topIDs, featuresIDs)
-            measurements <- measurements[, topColumns, drop = FALSE]
+            measurementsTrain <- measurementsTrain[, topColumns, drop = FALSE]
           }
         } else { # Pass along features to use.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, setNames(list(rankingsVariety[whichTry]), names(modellingParams@trainParams@intermediate)))
         }
-        measurementsTrain <- measurements[training, , drop = FALSE]
         if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
         modellingParams@trainParams@intermediate <- character(0)
@@ -340,6 +338,7 @@
         # Do either resubstitution classification or nested-CV classification and calculate the resulting performance metric.
         if(crossValParams@tuneMode == "Resubstitution")
         {
+          # Specify measurementsTrain and outcomesTrain for testing, too.
           result <- runTest(measurementsTrain, outcomesTrain, measurementsTrain, outcomesTrain,
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
@@ -349,9 +348,9 @@
            predictedClasses <- predictions[, "class"]
           else
            predictedClasses <- predictions
-          calcExternalPerformance(classes[training], predictedClasses, performanceType)
+          calcExternalPerformance(outcomesTrain, predictedClasses, performanceType)
         } else {
-           result <- runTests(measurements, classes[training], crossValParams, modellingParams, verbose = verbose)
+           result <- runTests(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose = verbose)
            result <- calcCVperformance(result, performanceType)
            median(performance(result)[[performanceType]])
          }
@@ -370,7 +369,7 @@
       if(ncol(tuneRow) > 1) tuneDetails <- tuneRow[, -1, drop = FALSE] else tuneDetails <- NULL
       
       rankingUse <- rankings[[tunePick]]
-      if(is.null(S4Vectors::mcols(measurements)))
+      if(is.null(S4Vectors::mcols(measurementsTrain)))
         selection <- rankingUse[1:tuneRow[, "topN"]]
       else # A data frame. Subset the rows.
         selection <- rankingUse[1:tuneRow[, "topN"], ]
@@ -379,7 +378,7 @@
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurements[training, , drop = FALSE], trainClasses, trainParams = trainParams,
+        paramList <- list(measurementsTrain, outcomesTrain, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
         do.call(selector, paramList)
@@ -390,22 +389,22 @@
         topIndices <- unlist(lapply(featuresLists, function(features) features[1:topN]))
         topIndicesCounts <- table(topIndices)
         keep <- names(topIndicesCounts)[topIndicesCounts >= modellingParams@selectParams@minPresence]
-        measurementsSelected <- measurements[training, keep, drop = FALSE] # Features in columns
+        measurementsSelected <- measurementsTrain[, keep, drop = FALSE] # Features in columns
         
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurementsSelected, trainClasses,
+          result <- runTest(measurementsSelected, classesTrain,
                             training = 1:nrow(measurementsSelected), testing = 1:nrow(measurementsSelected),
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
           predictions <- result[["predictions"]]
           if(class(predictions) == "data.frame")
-            predictedClasses <- predictions[, "class"]
+            predictedOutcomes <- predictions[, "class"]
           else
-            predictedClasses <- predictions
-          calcExternalPerformance(classes[training], predictedClasses, performanceType)
+            predictedOutcomes <- predictions
+          calcExternalPerformance(outcomesTrain, predictedOutcomes, performanceType)
         } else {
-          result <- runTests(measurementsSubset, classes[training], crossValParams, modellingParams, verbose = verbose)
+          result <- runTests(measurementsSubset, outcomesTrain, crossValParams, modellingParams, verbose = verbose)
           result <- calcCVperformance(result, performanceType)
           median(performance(aResult)[[performanceType]])
         }
@@ -423,9 +422,9 @@
 }
 
 # Only for transformations that need to be done within cross-validation.
-.doTransform <- function(measurementsTrain, transformParams, verbose)
+.doTransform <- function(measurementsTrain, measurementsTest, transformParams, verbose)
 {
-  paramList <- list(measurementsTrain) # Often a central point, like the mean, is used for subtraction or standardisation of values. Pass this to the transformation function.
+  paramList <- list(measurementsTrain, measurementsTest)
   if(length(transformParams@otherParams) > 0)
     paramList <- c(paramList, transformParams@otherParams)
   paramList <- c(paramList, verbose = verbose)
@@ -434,14 +433,8 @@
 
 # Code to create a function call to a training function. Might also do training and testing
 # within the same function, so test samples are also passed in case they are needed.
-.doTrain <- function(measurements, classes, training, testing, modellingParams, verbose)
+.doTrain <- function(measurementsTrain, outcomesTrain, measurementsTest, classesTest, modellingParams, verbose)
 {
-  names(classes) <- rownames(measurements) # In case training or testing specified by sample IDs rather than numeric indices.
-  trainClasses <- classes[training]
-  if(is(trainClasses, "factor"))trainClasses <- droplevels(trainClasses)
-  measurementsTrain <- measurements[training, , drop = FALSE]
-  measurementsTest <- measurements[testing, , drop = FALSE]
-  
   tuneChosen <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
   {
@@ -452,8 +445,7 @@
     {
       if(crossValParams@tuneMode == "Resubstitution")
       {
-        result <- runTest(measurements, classes,
-                          training = training, testing = training,
+        result <- runTest(measurementsTrain, outcomesTrain, measurementsTest, classesTest,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
         
@@ -464,7 +456,7 @@
           predictedClasses <- predictions
         sapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, performanceName))
       } else {
-        result <- runTests(measurementsTrain, trainClasses,
+        result <- runTests(measurementsTrain, outcomesTrain,
                            crossValParams, modellingParams,
                            verbose = verbose, .iteration = "internal")
         result <- calcCVperformance(result, performanceName)
@@ -478,7 +470,7 @@
   }
 
   if(modellingParams@trainParams@classifier@generic != "previousTrained")
-    paramList <- list(measurements = measurementsTrain, classes = trainClasses)
+    paramList <- list(measurements = measurementsTrain, outcomes = outcomesTrain)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
     paramList <- list()
   if(is.null(modellingParams@predictParams)) # One function does both training and testing.
@@ -496,13 +488,11 @@
 }
 
 # Creates a function call to a prediction function.
-.doTest <- function(trained, measurements, testing, predictParams, verbose)
+.doTest <- function(trained, measurementsTest, predictParams, verbose)
 {
   if(!is.null(predictParams@predictor))
   {
-    testMeasurements <- measurements[testing, , drop = FALSE]
-  
-    paramList <- list(trained, testMeasurements)
+    paramList <- list(trained, measurementsTest)
     if(length(predictParams@otherParams) > 0) paramList <- c(paramList, predictParams@otherParams)
       paramList <- c(paramList, verbose = verbose)
       prediction <- do.call(predictParams@predictor, paramList)
@@ -550,8 +540,12 @@
   importantFeatures
 }
 
+# Function to overwrite characteristics which are automatically derived from function names
+# by user-specified values.
 .filterCharacteristics <- function(characteristics, autoCharacteristics)
 {
+  # Remove duplication of values for classifiers that have one function for training and 
+  # one function for prediction.
   if("Classifier Name" %in% autoCharacteristics[, "characteristic"] && "Predictor Name" %in% autoCharacteristics[, "characteristic"])
   {
     classRow <- which(autoCharacteristics[, "characteristic"] == "Classifier Name")
@@ -559,13 +553,16 @@
     if(autoCharacteristics[classRow, "value"] == autoCharacteristics[predRow, "value"])
       autoCharacteristics <- autoCharacteristics[-predRow, ]
   }
+  # Overwrite automatically-chosen names with user's names.
   if(nrow(autoCharacteristics) > 0 && nrow(characteristics) > 0)
   {
     overwrite <- na.omit(match(characteristics[, "characteristic"], autoCharacteristics[, "characteristic"]))
     if(length(overwrite) > 0)
       autoCharacteristics <- autoCharacteristics[-overwrite, ]
   }
-  characteristics <- rbind(characteristics, autoCharacteristics)
+  
+  # Merge characteristics tables and return.
+  rbind(characteristics, autoCharacteristics)
 }
 
 # Don't just plot groups alphabetically, but do so in a meaningful order.
@@ -661,7 +658,7 @@
       sample(which(classesTrain == className), upsampleTo, replace = TRUE)
     else
       which(classesTrain == className)
-  }, samplesPerClassTrain, names(samplesPerClassTrain)))
+  }, samplesPerClassTrain, names(samplesPerClassTrain), SIMPLIFY = FALSE))
   measurementsTrain <- measurementsTrain[trainBalanced, ]
   classesTrain <- classesTrain[trainBalanced]
   

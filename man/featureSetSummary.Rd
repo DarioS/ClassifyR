@@ -11,12 +11,14 @@ Abundances.}
 featureSetSummary(measurements, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}} or \code{\link{DataFrame}}
-containing the training data. For a \code{matrix}, the rows are features,
-and the columns are samples.}
+\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{target}{If the input is a \code{\link{MultiAssayExperiment}}, this
-specifies which data set will be transformed. Can either be an integer or a
+specifies which data set will be transformed. Can either be an integer index or a
 character string specifying the name of the table. Must have length 1.}
 
 \item{location}{Default: The median. The type of location to summarise a set
@@ -58,9 +60,9 @@ features being compared between samples during classification.
   # Adhesion genes have a median gene difference between classes.
   genesMatrix <- matrix(c(rnorm(5, 9, 0.3), rnorm(5, 7, 0.3), rnorm(5, 8, 0.3),
                         rnorm(5, 6, 0.3), rnorm(10, 7, 0.3), rnorm(70, 5, 0.1)),
-                        ncol = 10, byrow = TRUE)
-  rownames(genesMatrix) <- paste("Gene", 1:10)
-  colnames(genesMatrix) <- paste("Patient", 1:10)
+                        nrow = 10)
+  rownames(genesMatrix) <- paste("Patient", 1:10)
+  colnames(genesMatrix) <- paste("Gene", 1:10)
   classes <- factor(rep(c("Poor", "Good"), each = 5)) # But not used for transformation.
   
   featureSetSummary(genesMatrix, featureSets = featureSets)

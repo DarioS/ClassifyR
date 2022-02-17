@@ -49,11 +49,11 @@
 #'   #}
 #' 
 #' @export
-setGeneric("limmaRanking", function(measurements, ...)
+setGeneric("limmaRanking", function(measurementsTrain, ...)
            standardGeneric("limmaRanking"))
 
 # Matrix of numeric measurements.
-setMethod("limmaRanking", "matrix", function(measurements, classesTrain, ...)
+setMethod("limmaRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
   limmaRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })

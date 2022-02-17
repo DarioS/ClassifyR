@@ -3,7 +3,7 @@
 \name{distribution}
 \alias{distribution}
 \alias{distribution,ClassifyResult-method}
-\title{Get Frequencies of Feature Selection and Sample Errors}
+\title{Get Frequencies of Feature Selection and Sample-wise Classification Errors}
 \usage{
 distribution(result, ...)
 }

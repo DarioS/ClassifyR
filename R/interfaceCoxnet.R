@@ -13,10 +13,6 @@
 #' lasso penalty and a ridge penalty, scaled by a lambda value, to fit a sparse
 #' linear model to the data.
 #' 
-#' If \code{measurements} is an object of class \code{MultiAssayExperiment},
-#' the factor of sample classes must be stored in the DataFrame accessible by
-#' the \code{colData} function with column name \code{"class"}.
-#' 
 #' The value of the \code{family} parameter is fixed to \code{"cox"} so
 #' that classification with survival is possible.
 #' During classifier training, if more than one lambda value

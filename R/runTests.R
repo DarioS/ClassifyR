@@ -97,7 +97,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
     
     # crossValParams is needed at least for nested feature tuning.
     runTest(measurements[trainingSamples, ], outcomes[trainingSamples],
-            measurements[testSamples, ], outcomes[testSamples],
+            measurements[testSamples, , drop = FALSE], outcomes[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
             .iteration = setNumber)
   }, samplesSplits[["train"]], samplesSplits[["test"]], (1:length(samplesSplits[["train"]])),

@@ -7,29 +7,33 @@
 \alias{naiveBayesKernel,MultiAssayExperiment-method}
 \title{Classification Using A Bayes Classifier with Kernel Density Estimates}
 \usage{
-naiveBayesKernel(measurements, ...)
+naiveBayesKernel(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Unused variables by the three top-level methods passed to the
 internal method which does the classification.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
-measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+\code{\link{MultiAssayExperiment}}. If a column name, that column will be
+removed before training.}
 
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} and the same number of features
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
 used.}
 
 \item{densityFunction}{Default: \code{\link{density}}. A function which will
@@ -41,12 +45,12 @@ Default: \code{list(bw = "nrd0", n = 1024, from =
 expression(min(featureValues)), to = expression(max(featureValues))}.}
 
 \item{difference}{Default: \code{"unweighted"}. Either \code{"unweighted"},
-\code{"weighted"}.  In weighted mode, the difference in densities is summed
-over all features.  If unweighted mode, each feature's vote is worth the
+\code{"weighted"}. In weighted mode, the difference in densities is summed
+over all features. If unweighted mode, each feature's vote is worth the
 same.}
 
-\item{weighting}{Default: \code{"both"}. Either \code{"height difference"}
-or \code{"height difference"}. The type of weight to calculate.  For
+\item{weighting}{Default: \code{"height difference"}. Either \code{"height difference"}
+or \code{"height difference"}. The type of weight to calculate. For
 \code{"height difference"}, the weight of each prediction is equal to the
 vertical distance between the highest density and the second-highest, for a
 particular value of x. For \code{"crossover distance"}, the x positions
@@ -56,9 +60,8 @@ is the distance of x from the nearest density crossover point.}
 
 \item{minDifference}{Default: 0. The minimum difference in density height
 between the highest density and second-highest for a feature to be allowed
-to vote. Can be a vector of cutoffs.  If no features for a particular sample
-have a difference large enough, the class predicted is simply the largest
-class.}
+to vote. If no features for a particular sample have a difference large enough,
+the class predicted is simply the largest class.}
 
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
@@ -101,20 +104,20 @@ other class' density are used as the crossover points for that class.
 }
 \examples{
 
-  trainMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
+  trainMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
   classes <- factor(rep(c("Poor", "Good"), each = 5))
-  colnames(trainMatrix) <- paste("Sample", 1:10)
+  rownames(trainMatrix) <- paste("Sample", 1:10)
   
   # Make first 30 genes increased in value for poor samples.
-  trainMatrix[1:30, 1:5] <- trainMatrix[1:30, 1:5] + 5
+  trainMatrix[1:5, 1:30] <- trainMatrix[1:5, 1:30] + 5
   
-  testMatrix <- matrix(rnorm(1000, 8, 2), ncol = 10)
-  colnames(testMatrix) <- paste("Sample", 11:20)
+  testMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
+  rownames(testMatrix) <- paste("Sample", 11:20)
   
   # Make first 30 genes increased in value for sixth to tenth samples.
-  testMatrix[1:30, 6:10] <- testMatrix[1:30, 6:10] + 5
+  testMatrix[6:10, 1:30] <- testMatrix[6:10, 1:30] + 5
   
-  naiveBayesKernel(trainMatrix, classes, testMatrix)
+  naiveBayesKernel(trainMatrix, classesTrain, testMatrix)
 
 }
 \author{

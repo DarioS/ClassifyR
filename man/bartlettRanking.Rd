@@ -7,29 +7,30 @@
 \alias{bartlettRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Variability with Bartlett Statistic}
 \usage{
-bartlettRanking(measurements, ...)
+bartlettRanking(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-removed before ranking.}
+removed before training.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information table will be
 used.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
@@ -42,7 +43,7 @@ features, from the most promising features in the first position to the
 least promising feature in the last position.
 }
 \description{
-Ranks allfeatures from largest Bartlett statistic to smallest.
+Ranks all features from largest Bartlett statistic to smallest.
 }
 \details{
 The calculation of the test statistic is performed by the
@@ -54,24 +55,19 @@ Data tables which consist entirely of non-numeric data cannot be ranked.
 
   # Samples in one class with differential variability to other class.
   # First 20 genes are DV.
-  genesRNAmatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 1)))
-  moreVariable <- sapply(1:25, function(sample) rnorm(20, 9, 5))
-  genesRNAmatrix <- cbind(genesRNAmatrix, rbind(moreVariable,
-                          sapply(1:25, function(sample) rnorm(80, 9, 1))))
-  colnames(genesRNAmatrix) <- paste("Sample", 1:50)
-  rownames(genesRNAmatrix) <- paste("Gene", 1:100)
-  genesSNPmatrix <- matrix(sample(c("None", "Missense"), 250, replace = TRUE),
-                           ncol = 50)
-  colnames(genesSNPmatrix) <- paste("Sample", 1:50)
-  rownames(genesSNPmatrix) <- paste("Gene", 1:5)
+  genesRNAmatrix <- sapply(1:20, function(sample) c(rnorm(25, 9, 1), rnorm(25, 9, 5)))
+  genesRNAmatrix <- cbind(genesRNAmatrix, sapply(1:80, function(sample) rnorm(50, 9, 1)))
+  rownames(genesRNAmatrix) <- paste("Sample", 1:50)
+  colnames(genesRNAmatrix) <- paste("Gene", 1:100)
+  genesSNPmatrix <- matrix(sample(c("None", "Missense"), 250, replace = TRUE), nrow = 50)
+  rownames(genesSNPmatrix) <- paste("Sample", 1:50)
+  colnames(genesSNPmatrix) <- paste("Gene", 1:5)
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   names(classes) <- paste("Sample", 1:50)
-  genesDataset <- MultiAssayExperiment(list(RNA = genesRNAmatrix, SNP = genesSNPmatrix),
+  
+  
+  genesDataset <- MultiAssayExperiment(list(RNA = t(genesRNAmatrix), SNP = t(genesSNPmatrix)),
                                        colData = DataFrame(class = classes))
-  # Wait for update to MultiAssayExperiment wideFormat function.  
-  trainIDs <- paste("Sample", c(1:20, 26:45))
-  genesDataset <- subtractFromLocation(genesDataset, training = trainIDs,
-                                       targets = "RNA") # Exclude SNP data.
                                          
   bartlettRanking(genesDataset, targets = "RNA")
 

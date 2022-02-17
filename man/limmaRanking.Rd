@@ -7,21 +7,22 @@
 \alias{limmaRanking,MultiAssayExperiment-method}
 \title{Ranking of Differentially Abundant Features}
 \usage{
-limmaRanking(measurements, ...)
+limmaRanking(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method or optional settings that are passed to
 \code{\link[limma]{lmFit}}.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements}. Not used if
-\code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurements}.}
 
 \item{targets}{Names of data tables to be combined into a single table and
 used in the analysis.}
@@ -37,7 +38,7 @@ least promising feature in the last position.
 }
 \description{
 Uses a moderated F-test with empirical Bayes shrinkage to rank
-differentially expressed features based on differences of means.  This means
+differentially expressed features based on differences of means. This means
 it works when there are three or more classes.
 }
 \details{

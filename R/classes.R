@@ -62,6 +62,12 @@ setOldClass("svm")
 #' @author Dario Strbenac
 setOldClass("multnet")
 
+#' @name coxnet
+#' @aliases coxnet coxnet-class
+#' @docType class
+#' @author Dario Strbenac
+setOldClass("coxnet")
+
 
 
 #' Trained randomForest Object
@@ -1271,42 +1277,33 @@ setMethod("totalPredictions", c("ClassifyResult"),
 
 
 #' 
-#' setClass("MixModelsListsSet", representation(
-#'   set = "list")
-#' )
+#' setClass("MixModelsListsSet", representation(set = "list"))
 #' 
-#' #' Container for a List of Lists Containing Mixture Models
-#' #' 
-#' #' Stores a list of lists of trained mixture models, to prevent them being
-#' #' unintentionally being unlisted during cross-validation. Not intended for
-#' #' end-user.
-#' #' 
-#' #' 
-#' #' @name MixModelsListsSet
-#' #' @aliases MixModelsListsSet MixModelsListsSet-class
-#' #' MixModelsListsSet,list-method
-#' #' @docType class
-#' #' @section Constructor: \describe{ \item{}{
-#' #' \preformatted{MixModelsListsSet(set)} Creates a MixModelsListsSet object
-#' #' which stores the mixture models.  \describe{ \item{list("set")}{A list as
-#' #' long as the number of classes in the data set. Each element is a list, which
-#' #' each element of is a mixture model trained on one feature.} } } }
-#' #' @author Dario Strbenac
-#' #' @examples
-#' #' 
-#' #'   if(require(Rmixmod))
-#' #'   {
-#' #'     mixModels <- list(Good = list(mixmodCluster(rnorm(20), nbCluster = 1:2)),
-#' #'                       Poor = list(mixmodCluster(rnorm(20), nbCluster = 1:2)))
-#' #'     MixModelsListsSet(mixModels)
-#' #'   }
-#' #' 
-#' #' @export
-#' setGeneric("MixModelsListsSet", function(set, ...)
-#' standardGeneric("MixModelsListsSet"))
-#' setMethod("MixModelsListsSet", c("list"),
-#'           function(set)
-#'           {
-#'             new("MixModelsListsSet", set = set)
-#'           })
+#' Container for a List of Lists Containing Mixture Models
 #' 
+#' Stores a list of lists of trained mixture models. Not intended for end-user.
+#' 
+#' @name MixModelsListsSet
+#' @aliases MixModelsListsSet MixModelsListsSet-class
+#' MixModelsListsSet,list-method
+#' @docType class
+#' @section Constructor: \describe{ \item{}{
+#' \preformatted{MixModelsListsSet(set)} Creates a MixModelsListsSet object
+#' which stores the mixture models.  \describe{ \item{list("set")}{A list as
+#' long as the number of classes in the data set. Each element is a list, which
+#' each element of is a mixture model trained on one feature.} } } }
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   if(require(Rmixmod))
+#'   {
+#'     mixModels <- list(Good = list(mixmodCluster(rnorm(20), nbCluster = 1:2)),
+#'                       Poor = list(mixmodCluster(rnorm(20), nbCluster = 1:2)))
+#'     MixModelsListsSet(mixModels)
+#'   }
+#' 
+#' @export
+ 
+ setClass("MixModelsListsSet", representation(set = "list"))
+ setGeneric("MixModelsListsSet", function(set, ...) standardGeneric("MixModelsListsSet"))
+ setMethod("MixModelsListsSet", c("list"), function(set) new("MixModelsListsSet", set = set))

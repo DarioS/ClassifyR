@@ -11,23 +11,17 @@ runTests(measurements, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.  The
-sample identifiers must be present as column names of the \code{matrix} or
-the row names of the \code{DataFrame}.}
+or \code{\link{MultiAssayExperiment}} containing all of the data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
+are features.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
-\code{\link{MultiAssayExperiment}}. If a column name, that column will be
-removed before training.}
+\item{outcomes}{Either a factor vector of classes, a \code{\link{Surv}} object, or
+a character string, or vector of such strings, containing column name(s) of column(s)
+containing either classes or time and event information about survival.}
 
 \item{crossValParams}{An object of class \code{\link{CrossValParams}},
 specifying the kind of cross-validation to be done.}
@@ -47,11 +41,6 @@ and this can be left blank.}
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"clinical"} is also a valid value
 and specifies that the clinical data table will be used.}
-
-\item{outcomeColumn}{The column name of the clinical data table containing
-the outcome to be predicted. Will automatically be removed from the clinical
-data table during model training. Must be specified if data is a
-\code{MultiAssayExperiment}.}
 
 \item{verbose}{Default: 1. A number between 0 and 3 for the amount of
 progress messages to give.  A higher number will produce more messages as

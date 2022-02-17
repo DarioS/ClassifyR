@@ -7,27 +7,28 @@
 \alias{KolmogorovSmirnovRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Distributions with Kolmogorov-Smirnov Distance}
 \usage{
-KolmogorovSmirnovRanking(measurements, ...)
+KolmogorovSmirnovRanking(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method or options which are accepted by the function
 \code{\link{ks.test}}.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
+\item{classesTrain}{Either a vector of class labels of class \code{\link{factor}}
+of the same length as the number of samples in \code{measurementsTrain} or if the
 measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+containing the column name in \code{measurement} is also permitted.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
 used.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
@@ -47,14 +48,13 @@ Ranks features from largest Kolmogorov-Smirnov distance to smallest.
   # First 20 features have bimodal distribution for Poor class.
   # Other 80 features have normal distribution for both classes.
   set.seed(1984)
-  genesMatrix <- sapply(1:25, function(sample)
+  genesMatrix <- sapply(1:20, function(feature)
                               {
-                                randomMeans <- sample(c(8, 12), 20, replace = TRUE)
-                                c(rnorm(20, randomMeans, 1), rnorm(80, 10, 1))
+                                randomMeans <- sample(c(8, 12), 25, replace = TRUE)
+                                c(rnorm(25, randomMeans, 1), rnorm(25, 10, 1))
                               }
                        )
-  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
-  rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+  genesMatrix <- cbind(genesMatrix, sapply(1:80, function(feature) rnorm(50, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
 
   ranked <- KolmogorovSmirnovRanking(genesMatrix, classes)

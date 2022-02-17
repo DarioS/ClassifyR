@@ -7,27 +7,27 @@
 \alias{NSCpredictInterface,pamrtrained,MultiAssayExperiment-method}
 \title{Interface for \code{pamr.predict} Function from \code{pamr} CRAN Package}
 \usage{
-NSCpredictInterface(trained, test, ...)
+NSCpredictInterface(model, measurementsTest, ...)
 }
 \arguments{
-\item{trained}{An object of class \code{pamrtrained}.}
+\item{model}{An object of class \code{pamrtrained}.}
 
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} used in the training stage and
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} used in the training stage and
 the same number of features as it.  Also, if a \code{DataFrame}, the
-\code{class} column must be absent.}
+\code{classesTrain} column must be absent.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method or optional settings that are passed to
 \code{\link[pamr]{pamr.predict}}.}
 
-\item{classes}{Either NULL or a character vector of length 1, specifying the
-column name to remove.}
+\item{classesColumnTest}{Either NULL or a character vector of length 1, specifying the
+column name to remove from the test set.}
 
-\item{targets}{If \code{test} is a \code{MultiAssayExperiment}, the names of
-the data tables to be used. \code{"clinical"} is also a valid value and
-specifies that numeric variables from the clinical data table will be used.}
+\item{targets}{If \code{measurementsTest} is a \code{MultiAssayExperiment}, the names of
+the data tables to be used. \code{"sampleInfo"} is also a valid value and
+specifies that numeric variables from the sample information table will be used.}
 
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
@@ -57,14 +57,14 @@ gives the minimum error rate in the training data.
 
   if(require(pamr))
   {
-    # Samples in one class with differential expression to other class.
-    genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-                                 c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+    # Samples in one class with differential expression to other class for last 25 features.
+    genesMatrix <- sapply(1:100, function(sampleColumn) c(rnorm(25, 9, 1)))
+    genesMatrix <- rbind(genesMatrix, cbind(sapply(1:50, function(sampleColumn) rnorm(25, 9, 1)),
+                                            sapply(1:50, function(sampleColumn) rnorm(25, 14, 1))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
-    fit <- NSCtrainInterface(genesMatrix[, c(1:20, 26:45)], classes[c(1:20, 26:45)])
-    NSCpredictInterface(fit, genesMatrix[, c(21:25, 46:50)])
+    fit <- NSCtrainInterface(genesMatrix[c(1:20, 26:45), ], classes[c(1:20, 26:45)])
+    NSCpredictInterface(fit, genesMatrix[c(21:25, 46:50), ])
   }
 
 }

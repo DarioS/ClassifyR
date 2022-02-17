@@ -8,31 +8,35 @@
 \title{Classification Using k Pairs of Features With Relative Differences Between
 Classes}
 \usage{
-kTSPclassifier(measurements, ...)
+kTSPclassifier(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Unused variables by the methods for a \code{matrix} or a
 \code{MultiAssayExperiment} passed to the \code{DataFrame} method which does
 the classification.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
-measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+\code{\link{MultiAssayExperiment}}. If a column name, that column will be
+removed before training.}
 
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} and the same number of features
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
 \item{featurePairs}{An object of class as \code{\link{Pairs}} containing the
 pairs of features to determine whether the inequality of the first feature
-being less than the second feature holds, indiciating evidence for the
-second level of the \code{classes} factor.}
+being less than the second feature holds, indicating evidence for the
+second level of the \code{classesTrain} factor.}
 
 \item{difference}{Default: \code{"unweighted"}. Either \code{"unweighted"}
 or \code{"weighted"}.  In weighted mode, the difference in densities is
@@ -44,9 +48,9 @@ feature to be allowed to vote. Can be a vector of cutoffs. If no features
 for a particular sample have a difference large enough, the class predicted
 is simply the largest class.}
 
-\item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-name of the data table to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
+\item{target}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+name of the data table to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
 used.}
 
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
@@ -65,12 +69,10 @@ the number of samples in the test data.
 }
 \description{
 Each pair of features votes for a class based on whether the value of one
-feature is less than the other feature.
+feature is less than the other feature. If the voting is tied, the the class with
+the most samples in the training set is voted for.
 }
 \details{
-If the voting is tied, the the class with the most samples in the training
-set is voted for.
-
 Because this method compares different features, they need to have
 comparable measurements. For example, RNA-seq counts would be unsuitable
 since these depend on the length of a feature, whereas F.P.K.M. values would
@@ -86,15 +88,15 @@ conjunction with \code{pairsDifferencesRanking}.
                            8.5, 10.5, 12.5, 10.5, 9.5, 8.5, 10.5, 12.5, 10.5, 9.5,
                            6.6, 7.7, 7.0, 8.1, 6.5, 11.2, 11.0, 11.1, 11.4, 12.0,
                            8.1, 10.6, 7.4, 7.1, 10.4, 6.1, 7.3, 2.7, 11.0, 9.1,
-                           round(rnorm(60, 8, 1), 1)), ncol = 10, byrow = TRUE)
+                           round(rnorm(60, 8, 1), 1)), ncol = 10)
   classes <- factor(rep(c("Good", "Poor"), each = 5))
                          
-  rownames(measurements) <- LETTERS[1:10]
-  colnames(measurements) <- names(classes) <- paste("Patient", 1:10)
+  rownames(measurements) <- paste("Patient", 1:10)
+  colnames(measurements) <- LETTERS[1:10]
   
   trainIndex <- c(1:4, 6:9)
-  trainMatrix <- measurements[, trainIndex]
-  testMatrix <- measurements[, c(5, 10)]
+  trainMatrix <- measurements[trainIndex, ]
+  testMatrix <- measurements[c(5, 10), ]
   
   featurePairs <- Pairs('A', 'C') # Could be ranked by pairsDifferencesRanking function and
                                   # selected internally by tuning of features selected.

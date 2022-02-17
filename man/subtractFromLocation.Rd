@@ -2,19 +2,22 @@
 % Please edit documentation in R/subtractFromLocation.R
 \name{subtractFromLocation}
 \alias{subtractFromLocation}
-\alias{subtractFromLocation,matrix-method}
-\alias{subtractFromLocation,DataFrame-method}
-\alias{subtractFromLocation,MultiAssayExperiment-method}
+\alias{subtractFromLocation,matrix,matrix-method}
+\alias{subtractFromLocation,DataFrame,DataFrame-method}
+\alias{subtractFromLocation,MultiAssayExperiment,MultiAssayExperiment-method}
 \title{Subtract Numeric Feature Measurements from a Location}
 \usage{
-subtractFromLocation(measurements, ...)
+subtractFromLocation(measurementsTrain, measurementsTest, ...)
 }
 \arguments{
-\item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
-\code{\link{MultiAssayExperiment}} object containing the data.  For a
-matrix, the rows are for features and the columns are for samples.}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
-\item{training}{A vector specifying which samples are in the training set.}
+\item{measurementsTest}{A data set of the same type as \code{measurementsTrain} with no samples in common with it.
+The subtraction will also be performed to it.}
 
 \item{location}{Character. Either "mean" or "median".}
 
@@ -22,12 +25,9 @@ matrix, the rows are for features and the columns are for samples.}
 values of the differences are returned. Otherwise, they are signed.}
 
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
 used.}
-
-\item{transformName}{Default: Location Subtraction. Useful for automated
-plot annotation by plotting functions within this package..}
 
 \item{verbose}{Default: 3. A progress message is shown if this value is 3.}
 }
@@ -40,9 +40,8 @@ For each numeric feature, calculates the location, and subtracts all
 measurements from that location.
 }
 \details{
-Only the samples specified by \code{training} are used in the calculation of
-the location.  To use all samples for calculation of the location, simply
-provide indices of all the samples.
+Only the samples specified by \code{measurementsTrain} are used in the calculation of
+the location.
 }
 \examples{
 

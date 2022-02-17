@@ -49,8 +49,8 @@
 #' each class. Another element at the end of the list has the class sizes of
 #' the classes in the training data.
 #' @param difference Default: \code{"unweighted"}. Either \code{"unweighted"}
-#' or \code{"weighted"}.  In weighted mode, the difference in densities is
-#' summed over all features.  If unweighted mode, each feature's vote is worth
+#' or \code{"weighted"}. In weighted mode, the difference in densities is
+#' summed over all features. If unweighted mode, each feature's vote is worth
 #' the same. Both can be calculated simultaneously.
 #' @param weighting Default: \code{"height difference"}. Either \code{"height
 #' difference"}, or \code{"crossover distance"}. The type of weight to
@@ -81,7 +81,7 @@
 #' the value is 3.
 #' @return For \code{mixModelsTrain}, a list of trained models of class
 #' \code{\link[Rmixmod:MixmodCluster-class]{MixmodCluster}}.  For
-#' \code{mixModelsPredict}, a vector or list of class prediction information
+#' \code{mixModelsPredict}, a vector of class prediction information
 #' (i.e. classes and/or scores), as long as the number of samples in the test
 #' data.
 #' @author Dario Strbenac

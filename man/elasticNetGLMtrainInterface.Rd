@@ -12,14 +12,14 @@
 \alias{elasticNetGLMpredictInterface,multnet,MultiAssayExperiment-method}
 \title{An Interface for glmnet Package's glmnet Function}
 \usage{
-elasticNetGLMtrainInterface(measurements, ...)
+elasticNetGLMtrainInterface(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.  If of
-type \code{\link{DataFrame}}, the data set is subset to only those features
-of type \code{integer}.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
@@ -29,12 +29,11 @@ function, this variable simply contains any parameters passed from the
 classification framework to it which aren't used by glmnet's \code{predict}
 fuction.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
@@ -43,13 +42,13 @@ removed before training.}
 \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction function
 is used.}
 
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} and the same number of features
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
 used.}
 
 \item{model}{A trained elastic net GLM, as created by the \code{glmnet}
@@ -77,10 +76,6 @@ lasso penalty and a ridge penalty, scaled by a lambda value, to fit a sparse
 linear model to the data.
 }
 \details{
-If \code{measurements} is an object of class \code{MultiAssayExperiment},
-the factor of sample classes must be stored in the DataFrame accessible by
-the \code{colData} function with column name \code{"class"}.
-
 The value of the \code{family} parameter is fixed to \code{"multinomial"} so
 that classification with more than 2 classes is possible and
 \code{type.multinomial} is fixed to \code{"grouped"} so that a grouped lasso
@@ -94,9 +89,9 @@ resubstitution error rate.
   if(require(glmnet))
   {
     # Genes 76 to 100 have differential expression.
-    genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-                                      c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+    genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+    genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+                                      c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))

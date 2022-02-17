@@ -5,16 +5,16 @@
 \alias{NSCfeatures,pamrtrained-method}
 \title{Interface for \code{pamr.listgenes} Function from \code{pamr} CRAN Package}
 \usage{
-NSCfeatures(trained, measurements, classes)
+NSCfeatures(model, measurementsTrain, classesTrain)
 }
 \arguments{
-\item{trained}{The output of \code{\link{NSCtrainInterface}}, which is
+\item{model}{The output of \code{\link{NSCtrainInterface}}, which is
 identical to the output of \code{\link[pamr]{pamr.listgenes}}.}
 
-\item{measurements}{A \code{\link{DataFrame}} containing the training data.}
+\item{measurementsTrain}{A \code{\link{DataFrame}} containing the training data.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements}.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain}.}
 }
 \value{
 A list with the first element being empty (no feature ranking is
@@ -40,9 +40,8 @@ and classes will automatically be passed to this function in each iteration.
     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))                                 
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
-    trained <- NSCtrainInterface(genesMatrix, classes)
-    # ClassifyR framework internally uses DataFrames for measurements storage.
-    selected <- NSCfeatures(trained, DataFrame(t(genesMatrix), check.names = FALSE), classes)
+    model <- NSCtrainInterface(genesMatrix, classes)
+    selected <- NSCfeatures(model, genesMatrix, classes)
     selected[[2]]                                                       
   }
 

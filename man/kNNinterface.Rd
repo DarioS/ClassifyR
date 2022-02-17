@@ -7,33 +7,35 @@
 \alias{kNNinterface,MultiAssayExperiment-method}
 \title{An Interface for class Package's knn Function}
 \usage{
-kNNinterface(measurements, ...)
+kNNinterface(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.  If of
-type \code{\link{DataFrame}}, the data set is subset to only those features
-of type \code{integer}.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method or parameters that \code{\link[class]{knn}} can
 accept.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
-measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+\code{\link{MultiAssayExperiment}}. If a column name, that column will be
+removed before training.}
 
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} and the same number of features
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
 used.}
 
 \item{classifierName}{Default: k Nearest Neighbours. Useful for automated
@@ -44,8 +46,7 @@ progress messages to give.  This function only prints progress messages if
 the value is 3.}
 }
 \value{
-A factor vector, the same as is returned by
-\code{\link[class]{knn}}.
+A factor vector, the same as is returned by \code{\link[class]{knn}}.
 }
 \description{
 More details of k Nearest Neighbours are available in the documentation of
@@ -61,12 +62,12 @@ the \code{colData} function with column name \code{"class"}.
 
   if(require(class))
   {
-    classes <- factor(rep(c("Healthy", "Disease"), each = 5),
-                      levels = c("Healthy", "Disease"))
-    measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), ncol = 10)
-    colnames(measurements) <- paste("Sample", 1:10)
-    rownames(measurements) <- paste("mRNA", 1:10)
+    classes <- factor(rep(c("Healthy", "Disease"), each = 5), levels = c("Healthy", "Disease"))
+    measurements <- matrix(c(rnorm(50, 10), rnorm(50, 5)), nrow = 10, byrow = TRUE)
+    rownames(measurements) <- paste("Sample", 1:10)
+    colnames(measurements) <- paste("mRNA", 1:10)
     
+    # Train with 9 samples, test with one.
     kNNinterface(measurements[, 1:9], classes[1:9], measurements[, 10, drop = FALSE])
   }
   

@@ -8,30 +8,31 @@
 \title{Ranking by Differential Distributions with Differences in Means or Medians
 and a Deviation Measure}
 \usage{
-DMDranking(measurements, ...)
+DMDranking(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method or parameters for
 \code{\link{getLocationsAndScales}}, such as \code{location}, \code{scale}.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
-same length as the number of samples in \code{measurements} if it is a
-\code{\link{matrix}} (i.e. number of columns) or a \code{\link{DataFrame}}
-(i.e. number of rows) or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
 used.}
 
 \item{differences}{Default: \code{"both"}. Either \code{"both"},
@@ -60,13 +61,13 @@ parameter is calculated for.
 
   # First 20 features have bimodal distribution for Poor class.
   # Other 80 features have normal distribution for both classes.
-  genesMatrix <- sapply(1:25, function(sample)
+  genesMatrix <- sapply(1:20, function(feature)
                               {
-                                randomMeans <- sample(c(8, 12), 20, replace = TRUE)
-                                c(rnorm(20, randomMeans, 1), rnorm(80, 10, 1))
+                                randomMeans <- sample(c(8, 12), 25, replace = TRUE)
+                                c(rnorm(25, randomMeans, 1), rnorm(25, 10, 1))
                               }
                        )
-  genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample) rnorm(100, 10, 1)))
+  genesMatrix <- cbind(genesMatrix, sapply(1:80, function(feature) rnorm(50, 10, 1)))
   classes <- factor(rep(c("Poor", "Good"), each = 25))
   
   ranked <- DMDranking(genesMatrix, classes)

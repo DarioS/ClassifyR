@@ -7,28 +7,30 @@
 \alias{NSCtrainInterface,MultiAssayExperiment-method}
 \title{Interface for \code{pamr.train} Function from \code{pamr} CRAN Package}
 \usage{
-NSCtrainInterface(measurements, ...)
+NSCtrainInterface(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+or \code{\link{MultiAssayExperiment}} containing the training data. For a
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
+to only those features of type \code{numeric}.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
-\code{DataFrame} method or extra arguments passed to
-\code{\link[pamr]{pamr.train}}.}
+\code{DataFrame} method or extra arguments passed to \code{\link[pamr]{pamr.train}}.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
-measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+\code{\link{MultiAssayExperiment}}. If a column name, that column will be
+removed before training.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
-used.}
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
+as it.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
@@ -49,10 +51,10 @@ This function is an interface between the ClassifyR framework and
 
   if(require(pamr))
   {
-    # Samples in one class with differential expression to other class.
-    genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-                                 c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
+    # Samples in one class with differential expression to other class for last 25 features.
+    genesMatrix <- sapply(1:100, function(sampleColumn) c(rnorm(25, 9, 1)))
+    genesMatrix <- rbind(genesMatrix, cbind(sapply(1:50, function(sampleColumn) rnorm(25, 9, 1)),
+                                            sapply(1:50, function(sampleColumn) rnorm(25, 14, 1))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     
     NSCtrainInterface(genesMatrix, classes)

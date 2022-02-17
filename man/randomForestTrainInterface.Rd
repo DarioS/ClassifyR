@@ -12,12 +12,12 @@
 \alias{randomForestPredictInterface,randomForest,MultiAssayExperiment-method}
 \title{An Interface for randomForest Package's randomForest Function}
 \usage{
-randomForestTrainInterface(measurements, ...)
+randomForestTrainInterface(measurementsTrain, ...)
 }
 \arguments{
-\item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+\item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
-\code{matrix}, the rows are features, and the columns are samples.}
+\code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.}
 
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
@@ -25,23 +25,21 @@ or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 by the \code{\link[randomForest]{randomForest}} or
 \code{\link[randomForest]{predict.randomForest}} functions.}
 
-\item{classes}{Either a vector of class labels of class \code{\link{factor}}
-of the same length as the number of samples in \code{measurements} or if the
-measurements are of class \code{DataFrame} a character vector of length 1
-containing the column name in \code{measurement} is also permitted. Not used
-if \code{measurements} is a \code{MultiAssayExperiment} object.}
+\item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
+same length as the number of samples in \code{measurementsTrain} if it is a
+\code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
+containing the column name in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or the
+column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
+\code{\link{MultiAssayExperiment}}. If a column name, that column will be
+removed before training.}
 
-\item{forest}{A trained random forest classifier, as created by
-\code{randomForestTrainInterface}, which has the same form as the output of
-\code{\link[randomForest]{randomForest}}.}
-
-\item{test}{An object of the same class as \code{measurements} with no
-samples in common with \code{measurements} and the same number of features
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
 used.}
 
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
@@ -65,28 +63,23 @@ A random forest classifier builds multiple decision trees and uses the
 predictions of the trees to determine a single prediction for each test
 sample.
 }
-\details{
-If \code{measurements} is an object of class \code{MultiAssayExperiment},
-the factor of sample classes must be stored in the DataFrame accessible by
-the \code{colData} function with column name \code{"class"}.
-}
 \examples{
 
   if(require(randomForest))
   {
     # Genes 76 to 100 have differential expression.
-    genesMatrix <- sapply(1:25, function(sample) c(rnorm(100, 9, 2)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(sample)
-                                      c(rnorm(75, 9, 2), rnorm(25, 14, 2))))
+    genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+    genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+                                      c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
-    colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix), sep = ' ')
-    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix), sep = '-')
+    colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
+    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     
-    trained <- randomForestTrainInterface(genesMatrix[, trainingSamples],
+    trained <- randomForestTrainInterface(genesMatrix[trainingSamples, ],
                                           classes[trainingSamples])
-    predicted <- randomForestPredictInterface(trained, genesMatrix[, testingSamples])
+    predicted <- randomForestPredictInterface(trained, genesMatrix[testingSamples, ])
   }
 
 }

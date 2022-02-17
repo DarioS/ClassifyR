@@ -48,8 +48,7 @@
 #' of the cross-validation iteration, if called by \code{\link{runTests}}.
 #' @return If called directly by the user rather than being used internally by
 #' \code{\link{runTests}}, a \code{\link{ClassifyResult}} object. Otherwise a
-#' list of different aspects of the result which is passed back to
-#' \code{\link{runTests}}.
+#' list of different aspects of the result which is passed back to \code{\link{runTests}}.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -59,8 +58,11 @@
 #'     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
 #'     selectParams <- SelectParams(limmaRanking, tuneParams = tuneList)
 #'     modellingParams <- ModellingParams(selectParams = selectParams)
-#'     runTest(measurements, classes, modellingParams = modellingParams,
-#'             training = seq(1, ncol(measurements), 2), testing = seq(2, ncol(measurements), 2))
+#'     trainIndices <- seq(1, nrow(measurements), 2)
+#'     testIndices <- seq(2, nrow(measurements), 2)
+#'     
+#'     runTest(measurements[trainIndices, ], classes[trainIndices],
+#'             measurements[testIndices, ], classes[testIndices], modellingParams = modellingParams)
 #'   #}
 #' 
 #' @importFrom S4Vectors do.call
@@ -69,18 +71,18 @@ setGeneric("runTest", function(measurementsTrain, ...)
            standardGeneric("runTest"))
 
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
-  function(measurementsTrain, outcomesTrain, ...)
+  function(measurementsTrain, ...)
 {
   if(is.null(rownames(measurementsTrain)))
     stop("'measurementsTrain' matrix must have sample identifiers as its row names.")    
-  runTest(DataFrame(measurementsTrain, check.names = FALSE), outcomesTrain, ...)
+  runTest(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
          crossValParams = CrossValParams(), # crossValParams used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
-{
+{ # if(!is.null(.iteration) && .iteration == "internal") browser()
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -94,8 +96,8 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     if(!is(classes, "Surv"))
     {
       rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], modellingParams@balancing)
-      measurementsTrain <- rebalanced[["measurementsTrain"]]
-      classesTrain <- rebalanced[["classesTrain"]]
+      measurementsTrain <- rebalancedTrain[["measurementsTrain"]]
+      outcomesTrain <- rebalancedTrain[["classesTrain"]]
     }
   }
   
@@ -174,7 +176,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
                              
-    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurementsTrain, testing, modellingParams@predictParams, verbose),
+    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
     if(is.character(predictedClasses)) # An error occurred.
@@ -188,7 +190,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
   if(!is.null(.iteration)) # This function was called by runTests.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = testingSamplesIDs, predictions = predictedClasses, tune = tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedClasses, tune = tuneDetails)
   } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
     modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)

@@ -29,7 +29,7 @@
 #' removed before training.
 #' @param model A trained coxph classifier, as created by
 #' \code{coxphTrainInterface}, which has the same form as the output of
-#' \code{\link[coxph]{coxph}}.
+#' \code{\link[survival]{coxph}}.
 #' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
 #' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
@@ -40,8 +40,8 @@
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method (e.g. \code{verbose}) or options which are accepted
-#' by the \code{\link[coxph]{coxph}} or
-#' \code{\link[coxph]{predict.coxph}} functions.
+#' by the \code{\link[survival]{coxph}} or
+#' \code{\link[survival]{predict}} functions.
 #' @param returnType Default: \code{"both"}. Either \code{"class"},
 #' \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 #' to either a vector of class labels, score for a sample belonging to the
@@ -73,7 +73,7 @@
 #'   #   predicted <- randomForestPredictInterface(trained, genesMatrix[, testingSamples])
 #'   # }
 #' 
-#' @importFrom survival coxph predict concordance
+#' @importFrom survival coxph concordance
 #' @export
 setGeneric("coxphTrainInterface", function(measurementsTrain, ...) standardGeneric("coxphTrainInterface"))
 
@@ -124,18 +124,14 @@ setGeneric("coxphPredictInterface", function(model, measurementsTest, ...)
 setMethod("coxphPredictInterface", c("coxph", "matrix"), # Matrix of numeric measurements.
           function(model, measurementsTest, ...)
 {
-  coxphPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
+  coxphPredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("coxphPredictInterface", c("coxph", "DataFrame"),
 function(model, measurementsTest, ..., verbose = 3)
 {
-  
-  output <- sapply(c("lp", "risk"), function(type)predict(model, as.data.frame(measurementsTest), type = type), simplify = TRUE)
-  output <- data.frame(output)
-  output$class <- output[, "lp"]
-  output
-
+  # Linear predictor ("lp") is default prediction format.
+  predict(model, as.data.frame(measurementsTest))
 })
 
 # One or more omics data sets, possibly with clinical data.

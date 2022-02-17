@@ -28,6 +28,7 @@ License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
 RoxygenNote: 7.1.2
 Collate:
+    'ROCplot.R'
     'classes.R'
     'calcPerformance.R'
     'constants.R'
@@ -49,6 +50,7 @@ Collate:
     'interfaceKTSPclassifier.R'
     'interfaceMerge.R'
     'interfaceMixModels.R'
+    'interfaceNEMoE.R'
     'interfaceNSC.R'
     'interfaceNaiveBayesKernel.R'
     'interfacePCA.R'
@@ -60,7 +62,6 @@ Collate:
     'previousSelection.R'
     'previousTrained.R'
     'quickClassify.R'
-    'ROCplot.R'
     'rankingBartlett.R'
     'rankingCoxPH.R'
     'rankingDMD.R'

@@ -38,7 +38,7 @@ feature, may be specified.  If \code{measurements} is a
 \code{MultiAssayExperiment}, then a character vector of length 2, which
 contains the name of a data table as the first element and the name of a
 categorical feature as the second element, may be specified.  Additionally,
-the value \code{"clinical"} may be used to refer to the column annotation
+the value \code{"sampleInfo"} may be used to refer to the column annotation
 stored in the \code{colData} slot of the of the \code{MultiAssayExperiment}
 object. A density plot will have additional lines of different line types
 for each category. A strip chart plot will have a separate strip chart
@@ -134,8 +134,9 @@ drawn.
   genesMatrix <- cbind(genesMatrix, sapply(1:10, function(geneColumn) c(rnorm(5, 15, 1))))
   genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn) c(rnorm(5, 9, 2))))
   genesMatrix <- rbind(genesMatrix, sapply(1:50, function(geneColumn) rnorm(95, 9, 3)))
-  rownames(genesMatrix) <- paste("Gene", 1:100)
-  colnames(genesMatrix) <- paste("Sample", 1:50)
+  genesMatrix <- t(genesMatrix)
+  rownames(genesMatrix) <- paste("Sample", 1:50)
+  colnames(genesMatrix) <- paste("Gene", 1:100)
   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
   plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
@@ -146,15 +147,15 @@ drawn.
   genders <- factor(rep(c("Male", "Female"), each = 10, length.out = 50))
   clinicalData <- DataFrame(Gender = genders, Sugar = runif(50, 4, 10),
                               Infection = factor(infectionResults, levels = c("No", "Yes")),
-                            row.names = colnames(genesMatrix))
+                            row.names = rownames(genesMatrix))
   plotFeatureClasses(clinicalData, classes, targets = "Infection")
   plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")
   
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
-  targetFeatures <- DataFrame(table = "RNA", feature = "Gene 50")                                     
+  targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures,
-                     groupBy = c("clinical", "Gender"),
+                     groupBy = c("sampleInfo", "Gender"),
                      xAxisLabel = bquote(log[2]*'(expression)'))
 
 }
