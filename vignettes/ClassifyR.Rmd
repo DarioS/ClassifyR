@@ -197,12 +197,13 @@ DMresults
 
 Here, 20 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing paralle processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
-## Evalulation of a Classification
+## Evaluation of a Classification
 
 The most frequently selected gene can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
 
 ```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
 selectionPercentages <- distribution(DMresults, plot = FALSE)
+head(selectionPercentages)
 sortedPercentages <- sort(selectionPercentages, decreasing = TRUE)
 head(sortedPercentages)
 mostChosen <- names(sortedPercentages)[1]

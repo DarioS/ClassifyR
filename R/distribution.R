@@ -63,7 +63,9 @@ setMethod("distribution", "ClassifyResult",
   summaryType <- match.arg(summaryType)
   
   # Automatically choose the axes labels and titles, depending on what is being summarised.
-  if(summaryType == "percentage")
+  if(plotType == "density")
+    yLabel <- "Density"
+  else if(summaryType == "percentage")
     yLabel <- "Percentage"
   else # Count of misclassifications or feature selections.
     yLabel <- "Count"
@@ -76,18 +78,21 @@ setMethod("distribution", "ClassifyResult",
     title <- "Distribution of Sample Misclassifications"
   }
 
-  if(dataType == "samples")
+  # summaryType must be percentage if samples are analysed.
+  # One CV scheme doesn't guarantee that all samples will be predicted equal number of times.
+  if(dataType == "samples") 
   {
     errors <- by(allPredictions, allPredictions[, "sample"], function(samplePredicitons)
-             {
+              {
                 sampleClass <- rep(actualClasses(result)[samplePredicitons[1, 1]], nrow(samplePredicitons))
                 confusion <- table(samplePredicitons[, 2], sampleClass)
                 (confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)]) /
                 (sum(diag(confusion)) + confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)])
-             }) # Sample error rate.
+              }) # Sample error rate.
     scores <- rep(NA, length(sampleNames(result)))
     scores[as.numeric(names(errors))] <- errors
     names(scores) <- sampleNames(result)
+    scores <- round(scores * 100)
   } else { # features
     chosenFeatures <- features(result)
     
@@ -105,12 +110,8 @@ setMethod("distribution", "ClassifyResult",
       stop("features(result) must be a list of vector, Pairs or DataFrame elements.")
     }
     scores <- table(allFeaturesText)
-  }
-
-  if(dataType == "features" && summaryType == "percentage")
-  {
-    crossValidations <- length(features(result))
-    scores <- scores / crossValidations * 100
+    if(summaryType == "percentage")
+      scores <- scores / length(chosenFeatures) * 100
   }
   
   if(is.null(xMax))
@@ -118,7 +119,7 @@ setMethod("distribution", "ClassifyResult",
     if(dataType == "features")
       xMax <- max(scores)
     else # Samples
-      xMax <- 1 # Error rates.
+      xMax <- 100 # Error Percentages.
   }
   
   plotData <- data.frame(scores = as.numeric(scores))
@@ -142,18 +143,32 @@ setMethod("distribution", "ClassifyResult",
                          plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5)))
   }
   
-  # Return scores alongside original features format.
+  # Return scores alongside original chosen features format.
   if(is.vector(chosenFeatures[[1]]))
   { # Simply a vector with names.
     scores
-  } else { # Features. They could be Pairs or data frames.
+  } else { # Not simple vectors and features. They could be Pairs or data frames.
     isPairs <- "Pairs" %in% class(chosenFeatures[[1]])
-    if(isPairs) # Make it DataFrame for counting of the
+    if(isPairs) # Make it DataFrame for counting of the occurrences.
       allFeatures <- as(allFeatures, "DataFrame")
-    timesTable <- aggregate(list(times = rep(1, nrow(allFeatures))), as.data.frame(allFeatures), length)
+    
+    summaryTable <- aggregate(list(count = rep(1, nrow(allFeatures))), as.data.frame(allFeatures), length)
+    
+    if(summaryType == "percentage")
+    {
+      summaryTable[, 3] <- round(summaryTable[, 3] / length(chosenFeatures) * 100)
+      colnames(summaryTable)[3] <- "percentage"
+    }
+    
     if(isPairs) # Recreate a Pairs object but add metadata of times occurrence.
-      S4Vectors::Pairs(timesTable[, "first"], timesTable[, "second"], timesTable[, "times"])
-    else # A table of dataset and feature.
-      timesTable
+    {
+      pairsSummary <- S4Vectors::Pairs(summaryTable[, "first"], summaryTable[, "second"], summaryTable[, 3])
+      colnames(mcols(pairsSummary)) <- colnames(summaryTable[, 3])
+      return(pairsSummary)
+    } else { # A table of dataset and feature.
+      if(all(summaryTable[, "dataset"] == "dataset")) # Just return a vector and get rid of unnecessary dataset.
+        summaryTable <- setNames(summaryTable[, 3], summaryTable[, 2])
+      summaryTable
+    }
   }
 })
