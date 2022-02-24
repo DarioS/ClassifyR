@@ -59,8 +59,7 @@ of the cross-validation iteration, if called by \code{\link{runTests}}.}
 \value{
 If called directly by the user rather than being used internally by
 \code{\link{runTests}}, a \code{\link{ClassifyResult}} object. Otherwise a
-list of different aspects of the result which is passed back to
-\code{\link{runTests}}.
+list of different aspects of the result which is passed back to \code{\link{runTests}}.
 }
 \description{
 For a data set of features and samples, the classification process is run.
@@ -81,8 +80,11 @@ perform each iteration.
     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
     selectParams <- SelectParams(limmaRanking, tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
-    runTest(measurements, classes, modellingParams = modellingParams,
-            training = seq(1, ncol(measurements), 2), testing = seq(2, ncol(measurements), 2))
+    trainIndices <- seq(1, nrow(measurements), 2)
+    testIndices <- seq(2, nrow(measurements), 2)
+    
+    runTest(measurements[trainIndices, ], classes[trainIndices],
+            measurements[testIndices, ], classes[testIndices], modellingParams = modellingParams)
   #}
 
 }

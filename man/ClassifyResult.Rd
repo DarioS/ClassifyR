@@ -12,8 +12,8 @@
 \alias{featureNames,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
-\alias{actualClasses}
-\alias{actualClasses,ClassifyResult-method}
+\alias{actualOutcomes}
+\alias{actualOutcomes,ClassifyResult-method}
 \alias{features}
 \alias{features,ClassifyResult-method}
 \alias{models}
@@ -39,7 +39,7 @@ created by \code{\link{runTest}} or \code{\link{runTests}}.
  \describe{ \item{}{
 \preformatted{ClassifyResult(characteristics, originalNames,
 originalFeatures, rankedFeatures, chosenFeatures, predictions,
-actualClasses, models, validation, tune = NULL)} } } \describe{
+actualOutcomes, models, validation, tune = NULL)} } } \describe{
 \item{list("characteristics")}{A \code{\link{DataFrame}} describing the
 characteristics of classification done. First column must be named
 \code{"charateristic"} and second column must be named \code{"value"}. If
@@ -56,7 +56,7 @@ vector or DataFrame if data set is a \code{MultiAssayExperiment}.}
 \item{list("predictions")}{A \code{\link{list}} of \code{\link{data.frame}}
 containing information about samples, their actual class and predicted class
 and/or class score and information about the cross-validation fold in which
-the prediction was made.} \item{list("actualClasses")}{Factor of class of
+the prediction was made.} \item{list("actualOutcomes")}{Factor of class of
 each sample.} \item{list("models")}{All of the models fitted to the training
 data.} \item{list("validation")}{List with first element being the name of
 the validation scheme, and other elements providing details about the

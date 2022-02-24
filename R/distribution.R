@@ -17,9 +17,6 @@
 #' @param plot Whether to draw a plot of the frequency of selection or error
 #' rate.
 #' @param xMax Maximum data value to show in plot.
-#' @param xLabel The label for the x-axis of the plot.
-#' @param yLabel The label for the y-axis of the plot.
-#' @param title An overall title for the plot.
 #' @param fontSizes A vector of length 3. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values.
@@ -27,10 +24,10 @@
 #' to \code{\link[ggplot2]{geom_histogram}} or
 #' \code{\link[ggplot2]{stat_density}}, depending on the value of
 #' \code{plotType}.
-#' @return If \code{type} is "features", a vector as long as the number of
+#' @return If \code{dataType} is "features", a vector as long as the number of
 #' features that were chosen at least once containing the number of times the
 #' feature was chosen in cross validations or the percentage of times chosen.
-#' If \code{type} is "samples", a vector as long as the number of samples,
+#' If \code{dataType} is "samples", a vector as long as the number of samples,
 #' containing the cross-validation error rate of the sample. If \code{plot} is
 #' \code{TRUE}, then a plot is also made on the current graphics device.
 #' @author Dario Strbenac
@@ -42,9 +39,7 @@
 #'     CVparams <- CrossValParams(permutations = 5)
 #'     result <- runTests(measurements, classes, CVparams, ModellingParams())
 #'     featureDistribution <- distribution(result, "features", summaryType = "count",
-#'                                         plotType = "histogram",
-#'                                         xLabel = "Number of Cross-validations", yLabel = "Count",
-#'                                         binwidth = 1)
+#'                                         plotType = "histogram", binwidth = 1)
 #'     print(head(featureDistribution))
 #'   #}
 #' @export
@@ -54,8 +49,7 @@ setGeneric("distribution", function(result, ...)
 setMethod("distribution", "ClassifyResult", 
           function(result, dataType = c("features", "samples"),
                    plotType = c("density", "histogram"), summaryType = c("percentage", "count"),
-                   plot = TRUE, xMax = NULL, xLabel = "Percentage of Cross-validations",
-                   yLabel = "Density", title = "Distribution of Feature Selections",
+                   plot = TRUE, xMax = NULL,
                    fontSizes = c(24, 16, 12), ...)
 {
   if(plot == TRUE && !requireNamespace("ggplot2", quietly = TRUE))
@@ -67,6 +61,20 @@ setMethod("distribution", "ClassifyResult",
   dataType <- match.arg(dataType)
   plotType <- match.arg(plotType)
   summaryType <- match.arg(summaryType)
+  
+  # Automatically choose the axes labels and titles, depending on what is being summarised.
+  if(summaryType == "percentage")
+    yLabel <- "Percentage"
+  else # Count of misclassifications or feature selections.
+    yLabel <- "Count"
+  if(dataType == "features")
+  {
+    xLabel <- "Number of Cross-validations"
+    title <- "Distribution of Feature Selections"
+  } else { # Sample-wise error rate.
+    xLabel <- "Number of Misclassifications"
+    title <- "Distribution of Sample Misclassifications"
+  }
 
   if(dataType == "samples")
   {
@@ -84,24 +92,19 @@ setMethod("distribution", "ClassifyResult",
     chosenFeatures <- features(result)
     
     if(is.vector(chosenFeatures[[1]]))
-      allFeatures <- unlist(chosenFeatures)
-    else if(is.data.frame(chosenFeatures[[1]]))
-      allFeatures <- do.call(rbind, chosenFeatures)
-    else if("Pairs" %in% class(chosenFeatures[[1]]))
-      allFeatures <- as.data.frame(do.call(c, unname(chosenFeatures)))
-    else if(class(chosenFeatures[[1]]) == "DFrame")
-      allFeatures <- do.call(rbind, chosenFeatures) %>% as.data.frame()
-    else
-      stop("features(result) must be a data.frame or DataFrame")
-
-    if(is.data.frame(allFeatures))
     {
-      if(all(colnames(allFeatures) %in% c("feature", "dataset")))
-        allFeatures <- paste(allFeatures[, "feature"], paste('(', allFeatures[, "dataset"], ')', sep = ''))
-      else
-        allFeatures <- paste(allFeatures[, "first"], allFeatures[, "second"], sep = ', ')
+      allFeatures <- unlist(chosenFeatures)
+      allFeaturesText <- allFeatures
+    } else if(is(chosenFeatures[[1]], "DataFrame")) {
+      allFeatures <- do.call(rbind, chosenFeatures)
+      allFeaturesText <- paste(allFeatures[, "dataset"], allFeatures[, "feature"], sep = ':')
+    } else if("Pairs" %in% class(chosenFeatures[[1]])) {
+      allFeatures <- do.call(c, unname(chosenFeatures))
+      allFeaturesText <- paste(first(allFeatures), second(allFeatures), sep = ', ')
+    } else {
+      stop("features(result) must be a list of vector, Pairs or DataFrame elements.")
     }
-    scores <- table(allFeatures)
+    scores <- table(allFeaturesText)
   }
 
   if(dataType == "features" && summaryType == "percentage")
@@ -139,5 +142,18 @@ setMethod("distribution", "ClassifyResult",
                          plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5)))
   }
   
-  scores
+  # Return scores alongside original features format.
+  if(is.vector(chosenFeatures[[1]]))
+  { # Simply a vector with names.
+    scores
+  } else { # Features. They could be Pairs or data frames.
+    isPairs <- "Pairs" %in% class(chosenFeatures[[1]])
+    if(isPairs) # Make it DataFrame for counting of the
+      allFeatures <- as(allFeatures, "DataFrame")
+    timesTable <- aggregate(list(times = rep(1, nrow(allFeatures))), as.data.frame(allFeatures), length)
+    if(isPairs) # Recreate a Pairs object but add metadata of times occurrence.
+      S4Vectors::Pairs(timesTable[, "first"], timesTable[, "second"], timesTable[, "times"])
+    else # A table of dataset and feature.
+      timesTable
+  }
 })

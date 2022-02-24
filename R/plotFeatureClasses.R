@@ -19,7 +19,7 @@
 #' length 1 containing the column name in \code{measurement} is also permitted.
 #' Not used if \code{measurements} is a \code{MultiAssayExperiment} object.
 #' @param targets If \code{measurements} is a \code{matrix} or
-#' \code{DataFrame}, then a vector of numeric or character indicies or the
+#' \code{DataFrame}, then a vector of numeric or character indices or the
 #' feature identifiers corresponding to the feature(s) to be plotted. If
 #' \code{measurements} is a \code{MultiAssayExperiment}, then a
 #' \code{DataFrame} of 2 columns must be specified. The first column contains
@@ -186,11 +186,16 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   if(yLabelPositions[1] == "auto")
     yLabelPositions <- ggplot2::waiver()
   
+  # Subsetting of measurements to the features of interest.
+  
+  # Remove unnecessary dataset column for a single dataset.
+  if(!is.null(ncol(targets)) && all(targets[, "dataset"] == "dataset")) targets <- targets[, "feature"]
+  
   if(!is(targets, "DataFrame"))
   {
-    if(!"Pairs" %in% class(targets))
+    if(!"Pairs" %in% class(targets)) # A simple vector.
       measurements <- tryCatch(measurements[targets], error = function(error) message("Error: Parameter 'targets' not in measurements, subscript contains out-of-bounds indices"))
-    else
+    else # Pairs object.
       measurements <- tryCatch(measurements[union(S4Vectors::first(targets), S4Vectors::second(targets))], error = function(error) message("Error: Parameter 'targets' not in measurements, subscript contains out-of-bounds indices"))
   }
   
@@ -380,7 +385,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
             }
             
             MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfoTargets[, 2]]
-            measurements <- wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
+            measurements <- MultiAssayExperiment::wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
             measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
             S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
             colnames(S4Vectors::mcols(measurements))[1] <- "dataset"

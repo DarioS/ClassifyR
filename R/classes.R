@@ -274,7 +274,6 @@ setClass("CrossValParams", representation(
 #'   # Fully reproducible Leave-2-out cross-validation on 4 cores,
 #'   # even if feature selection or classifier use random sampling.
 #' 
-#' @rawNamespace exportPattern("^[[:alpha:]]+")
 #' @export
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
@@ -415,7 +414,7 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
 
-setMethod("TransformParams", c("function"),
+setMethod("TransformParams", "function",
           function(transform, characteristics = DataFrame(), intermediate = character(0), ...)
           {
             if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
@@ -1091,8 +1090,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
 #' featureNames featureNames,ClassifyResult-method predictions
-#' predictions,ClassifyResult-method actualClasses
-#' actualClasses,ClassifyResult-method features features,ClassifyResult-method
+#' predictions,ClassifyResult-method actualOutcomes
+#' actualOutcomes,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
 #' performance,ClassifyResult-method tunedParameters
 #' tunedParameters,ClassifyResult-method totalPredictions
@@ -1101,7 +1100,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @section Constructor: \describe{ \item{}{
 #' \preformatted{ClassifyResult(characteristics, originalNames,
 #' originalFeatures, rankedFeatures, chosenFeatures, predictions,
-#' actualClasses, models, validation, tune = NULL)} } } \describe{
+#' actualOutcomes, models, validation, tune = NULL)} } } \describe{
 #' \item{list("characteristics")}{A \code{\link{DataFrame}} describing the
 #' characteristics of classification done. First column must be named
 #' \code{"charateristic"} and second column must be named \code{"value"}. If
@@ -1118,7 +1117,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{list("predictions")}{A \code{\link{list}} of \code{\link{data.frame}}
 #' containing information about samples, their actual class and predicted class
 #' and/or class score and information about the cross-validation fold in which
-#' the prediction was made.} \item{list("actualClasses")}{Factor of class of
+#' the prediction was made.} \item{list("actualOutcomes")}{Factor of class of
 #' each sample.} \item{list("models")}{All of the models fitted to the training
 #' data.} \item{list("validation")}{List with first element being the name of
 #' the validation scheme, and other elements providing details about the
@@ -1151,7 +1150,7 @@ setClass("ClassifyResult", representation(
   originalFeatures = "characterOrDataFrame",
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
-  actualClasses = "factorOrSurv",
+  actualOutcomes = "factorOrSurv",
   models = "list",
   tune = "listOrNULL",
   predictions = "data.frame",
@@ -1161,13 +1160,13 @@ setClass("ClassifyResult", representation(
 )
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           function(characteristics, originalNames, originalFeatures,
-                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualClasses, modellingParams = NULL, finalModel = NULL)
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)
           {
             new("ClassifyResult", characteristics = characteristics,
                 originalNames = originalNames, originalFeatures = originalFeatures,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
-                predictions = predictions, actualClasses = actualClasses, modellingParams = modellingParams, finalModel = finalModel)
+                predictions = predictions, actualOutcomes = actualOutcomes, modellingParams = modellingParams, finalModel = finalModel)
           })
 setMethod("show", "ClassifyResult", function(object)
           {
@@ -1249,12 +1248,12 @@ setMethod("performance", c("ClassifyResult"),
           })
 
 #' @export
-setGeneric("actualClasses", function(object, ...)
-standardGeneric("actualClasses"))
-setMethod("actualClasses", c("ClassifyResult"),
+setGeneric("actualOutcomes", function(object, ...)
+standardGeneric("actualOutcomes"))
+setMethod("actualOutcomes", c("ClassifyResult"),
           function(object)
           {
-            object@actualClasses
+            object@actualOutcomes
           })
 
 #' @export

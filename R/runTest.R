@@ -80,9 +80,9 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
 
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
-         crossValParams = CrossValParams(), # crossValParams used for tuning optimisation.
+         crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
-{ # if(!is.null(.iteration) && .iteration == "internal") browser()
+{ #if(!is.null(.iteration) && .iteration == "internal") browser()
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -93,7 +93,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     splitDatasetTrain <- .splitDataAndOutcomes(measurementsTrain, outcomesTrain)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
-    if(!is(classes, "Surv"))
+    if(!is(outcomesTrain, "Surv"))
     {
       rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], modellingParams@balancing)
       measurementsTrain <- rebalancedTrain[["measurementsTrain"]]
@@ -176,22 +176,23 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
                              
-    predictedClasses <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
+    predictedOutcomes <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
-    if(is.character(predictedClasses)) # An error occurred.
-      return(predictedClasses) # Return early.
+    if(is.character(predictedOutcomes)) # An error occurred.
+      return(predictedOutcomes) # Return early.
     
-  } else {
-    predictedClasses <- trained[[1]]
+  } else { # One function that does training and testing, so predictions were made earlier
+           # by .doTrain, rather than this .doTest stage.
+    predictedOutcomes <- trained[[1]]
   }
   
   if(is.null(modellingParams@predictParams)) models <- NULL else models <- trained[[1]] # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
-  if(!is.null(.iteration)) # This function was called by runTests.
+  if(!is.null(.iteration)) # This function was not called by the end user.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedClasses, tune = tuneDetails)
-  } else { # runTest is being used directly, rather than from runTests. Create a ClassifyResult object.
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcomes, tune = tuneDetails)
+  } else { # runTest executed by the end user. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
     modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
     if(!is.null(tuneDetails)) characteristics <- rbind(characteristics, data.frame(characteristic = colnames(tuneDetails),
@@ -199,13 +200,22 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     autoCharacteristics <- do.call(rbind, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
-.
+
     extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
     extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
     characteristics <- rbind(characteristics, extrasDF)
     
+    allSamples <- c(rownames(measurementsTrain), rownames(measurementsTest))
+    if(!is.null(ncol(outcomesTrain)))
+    {
+      allOutcomes <- rbind(outcomesTrain, outcomesTest)
+      rownames(allOutcomes) <- allSamples
+    } else { 
+      allOutcomes <- c(outcomesTrain, outcomesTest)
+      names(allOutcomes) <- allSamples
+    }
     ClassifyResult(characteristics, rownames(measurementsTrain), allFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, data.frame(sample = testing, class = predictedClasses), classes)
+                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), outcome = predictedOutcomes), allOutcomes)
   }  
 })
 

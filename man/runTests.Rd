@@ -51,7 +51,7 @@ An object of class \code{\link{ClassifyResult}}.
 }
 \description{
 Enables doing classification schemes such as ordinary 10-fold, 100
-permutations 5-fold, and leave one out cross-validation.  Processing in
+permutations 5-fold, and leave one out cross-validation. Processing in
 parallel is possible by leveraging the package \code{\link{BiocParallel}}.
 }
 \examples{

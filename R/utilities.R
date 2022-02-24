@@ -344,11 +344,12 @@
                             verbose = verbose, .iteration = "internal")
           
           predictions <- result[["predictions"]]
+          # Classifiers will use a column "class" and survival models will use a column "risk".
           if(class(predictions) == "data.frame")
-           predictedClasses <- predictions[, "class"]
+           predictedOutcomes <- predictions[, na.omit(match(c("class", "risk"), colnames(predictions)))]
           else
-           predictedClasses <- predictions
-          calcExternalPerformance(outcomesTrain, predictedClasses, performanceType)
+           predictedOutcomes <- predictions
+          calcExternalPerformance(outcomesTrain, predictedOutcomes, performanceType)
         } else {
            result <- runTests(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose = verbose)
            result <- calcCVperformance(result, performanceType)
@@ -433,7 +434,7 @@
 
 # Code to create a function call to a training function. Might also do training and testing
 # within the same function, so test samples are also passed in case they are needed.
-.doTrain <- function(measurementsTrain, outcomesTrain, measurementsTest, classesTest, modellingParams, verbose)
+.doTrain <- function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose)
 {
   tuneChosen <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
@@ -445,16 +446,16 @@
     {
       if(crossValParams@tuneMode == "Resubstitution")
       {
-        result <- runTest(measurementsTrain, outcomesTrain, measurementsTest, classesTest,
+        result <- runTest(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
         
         predictions <- result[["predictions"]]
-        if(class(predictions[[1]]) == "data.frame")
-          predictedClasses <- lapply(predictions, function(set) set[, "class"])
+        if(class(predictions) == "data.frame")
+          predictedOutcomes <- predictions[, "outcome"]
         else
-          predictedClasses <- predictions
-        sapply(predictedClasses, function(classSet) calcExternalPerformance(classes, classSet, performanceName))
+          predictedOutcomes <- predictions
+        calcExternalPerformance(outcomesTest, predictedOutcomes, performanceName)
       } else {
         result <- runTests(measurementsTrain, outcomesTrain,
                            crossValParams, modellingParams,
@@ -470,7 +471,8 @@
   }
 
   if(modellingParams@trainParams@classifier@generic != "previousTrained")
-    paramList <- list(measurements = measurementsTrain, outcomes = outcomesTrain)
+    # Don't name these first two variables. Some classifier functions might use classesTrain and others use outcomesTrain.
+    paramList <- list(measurementsTrain, outcomesTrain)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
     paramList <- list()
   if(is.null(modellingParams@predictParams)) # One function does both training and testing.
