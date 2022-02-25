@@ -239,8 +239,8 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #'     genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
 #'                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
-#'     colnames(genesMatrix) <- paste("Sample", 1:ncol(genesMatrix))
-#'     rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))
+#'     rownames(genesMatrix) <- paste("Sample", 1:nrow(genesMatrix))
+#'     colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
 #'     
 #'     model <- NSCtrainInterface(genesMatrix, classes)
 #'     selected <- NSCfeatures(model, genesMatrix, classes)
@@ -261,7 +261,7 @@ setMethod("NSCfeatures", "pamrtrained",
             params <- c(list(model), list(list(x = t(as.matrix(measurementsTrain)), y = measurementsTrain, geneid = 1:ncol(measurementsTrain))), threshold)
             chosen <- as.numeric(do.call(pamr::pamr.listgenes, params)[, 1])
             
-            if(is.null(S4Vectors::mcols(measurementsTrain)))
+            if(is.matrix(measurementsTrain) || is.null(S4Vectors::mcols(measurementsTrain)))
               chosen <- colnames(measurementsTrain)[chosen]
             else
               chosen <- S4Vectors::mcols(measurementsTrain)[chosen, ]
