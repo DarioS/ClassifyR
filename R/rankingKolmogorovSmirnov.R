@@ -59,7 +59,7 @@ setMethod("KolmogorovSmirnovRanking", "matrix", function(measurementsTrain, clas
 setMethod("KolmogorovSmirnovRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
   
   if(verbose == 3)

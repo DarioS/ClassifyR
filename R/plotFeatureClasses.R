@@ -215,7 +215,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
         featureText <- colnames(measurements)[columnIndex]
       } else {
         featureText <- S4Vectors::mcols(measurements)[columnIndex, "feature"]
-        if(showDatasetName == TRUE)
+        if(showDatasetName == TRUE && !all(S4Vectors::mcols(measurements)[, "dataset"] == "dataset"))
         {
           featureText <- paste(featureText, paste('(', S4Vectors::mcols(measurements)[columnIndex, "dataset"], ')', sep = ''))
         }

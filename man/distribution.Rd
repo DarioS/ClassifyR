@@ -28,21 +28,15 @@ rate.}
 
 \item{xMax}{Maximum data value to show in plot.}
 
-\item{xLabel}{The label for the x-axis of the plot.}
-
-\item{yLabel}{The label for the y-axis of the plot.}
-
-\item{title}{An overall title for the plot.}
-
 \item{fontSizes}{A vector of length 3. The first number is the size of the
 title.  The second number is the size of the axes titles. The third number
 is the size of the axes values.}
 }
 \value{
-If \code{type} is "features", a vector as long as the number of
+If \code{dataType} is "features", a vector as long as the number of
 features that were chosen at least once containing the number of times the
 feature was chosen in cross validations or the percentage of times chosen.
-If \code{type} is "samples", a vector as long as the number of samples,
+If \code{dataType} is "samples", a vector as long as the number of samples,
 containing the cross-validation error rate of the sample. If \code{plot} is
 \code{TRUE}, then a plot is also made on the current graphics device.
 }
@@ -61,9 +55,7 @@ that are difficult to classify.
     CVparams <- CrossValParams(permutations = 5)
     result <- runTests(measurements, classes, CVparams, ModellingParams())
     featureDistribution <- distribution(result, "features", summaryType = "count",
-                                        plotType = "histogram",
-                                        xLabel = "Number of Cross-validations", yLabel = "Count",
-                                        binwidth = 1)
+                                        plotType = "histogram", binwidth = 1)
     print(head(featureDistribution))
   #}
 }

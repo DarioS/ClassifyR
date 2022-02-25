@@ -69,7 +69,7 @@ setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTra
 setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
   classesTrain <- splitDataset[["outcomes"]]
   isNumeric <- sapply(measurementsTest, is.numeric)

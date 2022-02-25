@@ -171,7 +171,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(classesColumnTest))
   {
-    splitDataset <- .splitDataAndClasses(measurementsTest, classesColumnTest)  # Remove any classes, if present.
+    splitDataset <- .splitDataAndOutcomes(measurementsTest, classesColumnTest)  # Remove any classes, if present.
     measurementsTest <- splitDataset[["measurements"]]
   }
   

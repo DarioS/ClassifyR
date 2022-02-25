@@ -25,7 +25,7 @@ length 1 containing the column name in \code{measurement} is also permitted.
 Not used if \code{measurements} is a \code{MultiAssayExperiment} object.}
 
 \item{targets}{If \code{measurements} is a \code{matrix} or
-\code{DataFrame}, then a vector of numeric or character indicies or the
+\code{DataFrame}, then a vector of numeric or character indices or the
 feature identifiers corresponding to the feature(s) to be plotted. If
 \code{measurements} is a \code{MultiAssayExperiment}, then a
 \code{DataFrame} of 2 columns must be specified. The first column contains

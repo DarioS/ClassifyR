@@ -74,8 +74,6 @@ setMethod("NEMOEtrainInterface", "MultiAssayExperiment",
 #
 ################################################################################
 
-#' @import NEMoE
-
 setGeneric("NEMOEpredictInterface", function(model, measurementsTest, ...) standardGeneric("NEMOEpredictInterface"))
 
 setMethod("NEMOEpredictInterface", c("NEMoE", "matrix"), function(model, measurementsTest, ...)

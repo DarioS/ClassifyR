@@ -109,7 +109,7 @@ setMethod("crossValidate", "DataFrame",
           {
               
               # Check that data is in the right format
-              splitDataset <- .splitDataAndClasses(measurements, classes)
+              splitDataset <- .splitDataAndOutcomes(measurements, classes)
               measurements <- splitDataset[["measurements"]]
               classes <- splitDataset[["outcomes"]]
               checkData(measurements, classes)

@@ -116,7 +116,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
                    weighting = c("height difference", "crossover distance"),
                    minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   trainingMatrix <- splitDataset[["measurements"]]
   classesTrain <- splitDataset[["outcomes"]]
   isNumeric <- sapply(measurementsTest, is.numeric)

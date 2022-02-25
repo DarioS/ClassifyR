@@ -37,15 +37,12 @@ htmltools::img(src = knitr::image_uri("functionRules.png"),
 There is an implementation of the *k* Nearest Neighbours algorithm in the package **class**. Its function has the form `knn(train, test, cl, k = 1, l = 0, prob = FALSE, use.all = TRUE)`.  It accepts a `matrix` or a `data.frame` variable as input, but **ClassifyR** calls transformation, feature selection and classifier functions with a `DataFrame`, a core Bioconductor data container from [S4Vectors](https://bioconductor.org/packages/release/bioc/html/S4Vectors.html). It also expects training data to be the first parameter, the classes of it to be the second parameter and the test data to be the third. Therefore, a wrapper for `DataFrame` reordering the parameters is created.
 
 ```{r, eval = FALSE}
-setGeneric("kNNinterface", function(measurements, ...) standardGeneric("kNNinterface"))
+setGeneric("kNNinterface", function(measurementsTrain, ...) standardGeneric("kNNinterface"))
 
-setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ..., verbose = 3)
+setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain, measurementsTest, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurements, is.numeric)
-  measurements <- measurements[, isNumeric, drop = FALSE]
-  isNumeric <- sapply(test, is.numeric)
   test <- test[, isNumeric, drop = FALSE]  
   
   if(!requireNamespace("class", quietly = TRUE))
@@ -53,30 +50,30 @@ setMethod("kNNinterface", "DataFrame", function(measurements, classes, test, ...
   if(verbose == 3)
     message("Fitting k Nearest Neighbours classifier to data and predicting classes.")
   
-  class::knn(as.matrix(measurements), as.matrix(test), classes, ...)
+  class::knn(as.matrix(measurementsTrain), as.matrix(measurementsTest), measurementsTest, ...)
 })
 ```
 
-The function only emits a progress message if `verbose` is 3. The verbosity levels are explained in the introductory vignette. `.splitDataAndClasses` is an internal function in **ClassifyR** which ensures that classes are not in `measurements`. If `classes` is a factor vector, then the function has no effect. If `classes` is the character name of a column in `measurements`, that column is removed from the table and returned as a separate variable. The `...` parameter captures any options to be passed onto `knn`, such as `k` (number of neighbours considered) and `l` (minimum vote for a definite decision), for example. The function is also defensive and removes any non-numeric columns from the input table.
+The function only emits a progress message if `verbose` is 3. The verbosity levels are explained in the introductory vignette. `.splitDataAndOutcomes` is an internal function in **ClassifyR** which ensures that outcomes are not in `measurements` when model training happens. If `classesTrain` is a factor vector, then the function has no effect. If `classesTrain` is the character name of a column in `measurementsTrain`, that column is removed from the table and returned as a separate variable. The `...` parameter captures any options to be passed onto `knn`, such as `k` (number of neighbours considered) and `l` (minimum vote for a definite decision), for example. The function is also defensive and removes any non-numeric columns from the input table.
 
 **ClassifyR** also accepts a `matrix` and a `MultiAssayExperiment` as input. Provide convenience methods for these inputs which converts them into a `DataFrame`. In this way, only the `DataFrame` version of `kNNinterface` does the classification.
 
 ```{r, eval = FALSE}
 setMethod("kNNinterface", "matrix",
-          function(measurements, classes, test, ...)
+          function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  kNNinterface(DataFrame(t(measurements), check.names = FALSE),
-               classes,
-               DataFrame(t(test), check.names = FALSE), ...)
+  kNNinterface(DataFrame(measurementsTrain, check.names = FALSE),
+               classesTrain,
+               DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("kNNinterface", "MultiAssayExperiment",
-function(measurements, test, targets = names(measurements), classes, ...)
+function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["classes"]]
-  testingTable <- .MAEtoWideTable(test, targets)
+  classes <- tablesAndClasses[["outcomes"]]
+  testingTable <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingTable, testingTable)
   kNNinterface(trainingTable, classes, testingTable, ...)
@@ -104,7 +101,7 @@ knnParams <- ModellingParams(selectParams = NULL,
 CVparams <- CrossValParams("Leave-k-Out", leave = 1)
 classified <- runTests(measurements, classes, CVparams, knnParams)
 classified
-cbind(predictions(classified), known = actualClasses(classified))
+cbind(predictions(classified), known = actualOutcomes(classified))
 ```
 
 `NULL` is specified instead of a function to `PredictParams` because one function does training and prediction. As expected for this easy task, the classifier predicts all samples correctly.

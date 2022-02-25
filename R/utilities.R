@@ -35,7 +35,7 @@
   if(is(outcomes, "factor") && length(outcomes) > 3 & length(outcomes) < nrow(measurements))
     stop("The length of outcomes is not equal to the number of samples.")
   
-  ## A vector of charaters was input by the user. Ensure that it is a factor.
+  ## A vector of characters was input by the user. Ensure that it is a factor.
   if(class(outcomes) == "character" & length(outcomes) == nrow(measurements))
     outcomes <- factor(outcomes)
   
@@ -580,7 +580,7 @@
 
 # Summary of the features used and the total number of them, no matter if they are a simple type
 # or something more complex like Pairs or feature sets.
-.summaryFeatures <- function(measurements, prevalidate)
+.summaryFeatures <- function(measurements)
 {
   # MultiAssayExperiment has feature details in mcols.
   if(!is.null(S4Vectors::mcols(measurements)))

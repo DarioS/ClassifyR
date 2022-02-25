@@ -53,11 +53,11 @@
 #' recall.  \item\code{"Matthews Correlation Coefficient"}: Matthews
 #' Correlation Coefficient (MCC). A score between -1 and 1 indicating how
 #' concordant the predicted classes are to the actual classes. Only defined if
-#' there are two classes.  }
+#' there are two classes.}
 #' 
-#' @param actualClasses A factor vector specifying each sample's correct class.
-#' @param predictedClasses A factor vector of the same length as
-#' \code{actualClasses} specifying each sample's predicted class.
+#' @param actualOutcomes A factor vector specifying each sample's correct class.
+#' @param predictedOutcomes A factor vector of the same length as
+#' \code{actualOutcomes} specifying each sample's predicted class.
 #' 
 #' @return If \code{calcCVperformance} was run, an updated
 #' \code{\linkS4class{ClassifyResult}} object, with new metric values in the
@@ -79,11 +79,11 @@
 #' 
 #' @include classes.R
 #' @export
-setGeneric("calcExternalPerformance", function(actualClasses, predictedClasses, ...)
+setGeneric("calcExternalPerformance", function(actualOutcomes, predictedOutcomes, ...)
 standardGeneric("calcExternalPerformance"))
 
 setMethod("calcExternalPerformance", c("factor", "factor"),
-          function(actualClasses, predictedClasses,
+          function(actualOutcomes, predictedOutcomes, # Both are classes.
                    performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
                                        "Sample Error", "Sample Accuracy",
                                        "Micro Precision", "Micro Recall",
@@ -91,18 +91,18 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
                                        "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
 {
   performanceType <- match.arg(performanceType)
-  if(length(levels(actualClasses)) > 2 && performanceType == "Matthews Correlation Coefficient")
+  if(length(levels(actualOutcomes)) > 2 && performanceType == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
-  if(is(predictedClasses, "factor")) levels(predictedClasses) <- levels(actualClasses)
-  .calcPerformance(list(actualClasses), list(predictedClasses), performanceType = performanceType)[["values"]]
+  if(is(predictedOutcomes, "factor")) levels(predictedOutcomes) <- levels(actualOutcomes)
+  .calcPerformance(list(actualOutcomes), list(predictedOutcomes), performanceType = performanceType)[["values"]]
 })
 
 setMethod("calcExternalPerformance", c("Surv", "numeric"),
-          function(actualClasses, predictedClasses,
-                   performanceType = c("C index"))
+          function(actualOutcomes, predictedOutcomes,
+                   performanceType = "C index")
           {
             performanceType <- match.arg(performanceType)
-            .calcPerformance(actualClasses, predictedClasses, performanceType = performanceType)[["values"]]
+            .calcPerformance(actualOutcomes, predictedOutcomes, performanceType = performanceType)[["values"]]
           })
 
 
@@ -134,8 +134,8 @@ setMethod("calcCVperformance", "ClassifyResult",
   ### Performance for survival data
   if(performanceType == "C index"){
     samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-    performance <- .calcPerformance(actualClasses = actualClasses(result)[match(result@predictions[, "sample"], sampleNames(result))],
-                                    predictedClasses = result@predictions[, "class"], 
+    performance <- .calcPerformance(actualOutcomes = actualOutcomes(result)[match(result@predictions[, "sample"], sampleNames(result))],
+                                    predictedOutcomes = result@predictions[, "class"], 
                                     samples = samples,
                                     performanceType = performanceType, 
                                     grouping = grouping)
@@ -145,26 +145,26 @@ setMethod("calcCVperformance", "ClassifyResult",
   
   
   ### Performance for data with classes
-  if(length(levels(actualClasses)) > 2 && performanceType == "Matthews Correlation Coefficient")
+  if(length(levels(actualOutcomes)) > 2 && performanceType == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
 
-  classLevels <- levels(actualClasses(result))
+  classLevels <- levels(actualOutcomes(result))
   samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-  predictedClasses <- factor(result@predictions[, "class"], levels = classLevels)
-  actualClasses <- factor(actualClasses(result)[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
-  performance <- .calcPerformance(actualClasses, predictedClasses, samples, performanceType, grouping)
+  predictedOutcomes <- factor(result@predictions[, "class"], levels = classLevels)
+  actualOutcomes <- factor(actualOutcomes(result)[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
+  performance <- .calcPerformance(actualOutcomes, predictedOutcomes, samples, performanceType, grouping)
   result@performance[[performance[["name"]]]] <- performance[["values"]]
   result
 })
 
 #' @importFrom survival concordance
-.calcPerformance <- function(actualClasses, predictedClasses, samples = NA, performanceType, grouping = NULL)
+.calcPerformance <- function(actualOutcomes, predictedOutcomes, samples = NA, performanceType, grouping = NULL)
 {
   if(performanceType %in% c("Sample Error", "Sample Accuracy"))
   {
     resultTable <- data.frame(sample = samples,
-                              actual = actualClasses,
-                              predicted = predictedClasses)
+                              actual = actualOutcomes,
+                              predicted = predictedOutcomes)
     allIDs <- levels(resultTable[, "sample"])
     sampleMetricValues <- sapply(allIDs, function(sampleID)
     {
@@ -185,12 +185,12 @@ setMethod("calcCVperformance", "ClassifyResult",
   
   if(!is.null(grouping))
   {
-    actualClasses <- split(actualClasses, grouping)
-    predictedClasses <- split(predictedClasses, grouping)
+    actualOutcomes <- split(actualOutcomes, grouping)
+    predictedOutcomes <- split(predictedOutcomes, grouping)
   }
   
-  if(!is(actualClasses,"list")) actualClasses <- list(actualClasses)
-  if(!is(predictedClasses,"list")) predictedClasses <- list(predictedClasses)
+  if(!is(actualOutcomes,"list")) actualOutcomes <- list(actualOutcomes)
+  if(!is(predictedOutcomes,"list")) predictedOutcomes <- list(predictedOutcomes)
   
 
   if(performanceType %in% c("Accuracy", "Error")) {
@@ -206,7 +206,7 @@ setMethod("calcCVperformance", "ClassifyResult",
         correctPredictions / totalPredictions
       else # It is "error".
         wrongPredictions / totalPredictions
-    }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
+    }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
   } else if(performanceType %in% c("Balanced Accuracy", "Balanced Error")) {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
@@ -218,12 +218,12 @@ setMethod("calcCVperformance", "ClassifyResult",
         mean(diag(confusionMatrix) / classSizes)
       else
         mean(classErrors / classSizes)
-    }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
+    }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
   } else if(performanceType %in% c("C index")){
     performanceValues <- unlist(mapply(function(x,y){
       y <- -y
       survival::concordance(x ~ y)$concordance
-    },actualClasses, predictedClasses, SIMPLIFY = FALSE))
+    },actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
 
     }else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
@@ -271,7 +271,7 @@ setMethod("calcCVperformance", "ClassifyResult",
         return(unname((truePositives[2] * trueNegatives[2] - falsePositives[2] * falseNegatives[2]) / sqrt((truePositives[2] + falsePositives[2]) * (truePositives[2] + falseNegatives[2]) * (trueNegatives[2] + falsePositives[2]) * (trueNegatives[2] + falseNegatives[2]))))
       }
       
-    }, actualClasses, predictedClasses, SIMPLIFY = FALSE))
+    }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
   }
 
   list(name = performanceType, values = performanceValues)

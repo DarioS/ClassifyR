@@ -1274,10 +1274,8 @@ setMethod("totalPredictions", c("ClassifyResult"),
               nrow(predictions(result))
           })
 
+setClass("MixModelsListsSet", representation(set = "list"))
 
-#' 
-#' setClass("MixModelsListsSet", representation(set = "list"))
-#' 
 #' Container for a List of Lists Containing Mixture Models
 #' 
 #' Stores a list of lists of trained mixture models. Not intended for end-user.
@@ -1302,7 +1300,5 @@ setMethod("totalPredictions", c("ClassifyResult"),
 #'   }
 #' 
 #' @export
- 
- setClass("MixModelsListsSet", representation(set = "list"))
  setGeneric("MixModelsListsSet", function(set, ...) standardGeneric("MixModelsListsSet"))
  setMethod("MixModelsListsSet", c("list"), function(set) new("MixModelsListsSet", set = set))

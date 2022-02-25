@@ -9,13 +9,13 @@
 \title{Add Performance Calculations to a ClassifyResult Object or Calculate for a
 Pair of Factor Vectors}
 \usage{
-calcExternalPerformance(actualClasses, predictedClasses, ...)
+calcExternalPerformance(actualOutcomes, predictedOutcomes, ...)
 }
 \arguments{
-\item{actualClasses}{A factor vector specifying each sample's correct class.}
+\item{actualOutcomes}{A factor vector specifying each sample's correct class.}
 
-\item{predictedClasses}{A factor vector of the same length as
-\code{actualClasses} specifying each sample's predicted class.}
+\item{predictedOutcomes}{A factor vector of the same length as
+\code{actualOutcomes} specifying each sample's predicted class.}
 
 \item{result}{An object of class \code{\link{ClassifyResult}}.}
 
@@ -42,7 +42,7 @@ score obtained by calculating the harmonic mean of macro precision and macro
 recall.  \item\code{"Matthews Correlation Coefficient"}: Matthews
 Correlation Coefficient (MCC). A score between -1 and 1 indicating how
 concordant the predicted classes are to the actual classes. Only defined if
-there are two classes.  }}
+there are two classes.}}
 }
 \value{
 If \code{calcCVperformance} was run, an updated
