@@ -84,7 +84,7 @@ setMethod("distribution", "ClassifyResult",
   {
     errors <- by(allPredictions, allPredictions[, "sample"], function(samplePredicitons)
               {
-                sampleClass <- rep(actualClasses(result)[samplePredicitons[1, 1]], nrow(samplePredicitons))
+                sampleClass <- rep(actualOutcomes(result)[samplePredicitons[1, 1]], nrow(samplePredicitons))
                 confusion <- table(samplePredicitons[, 2], sampleClass)
                 (confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)]) /
                 (sum(diag(confusion)) + confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)])

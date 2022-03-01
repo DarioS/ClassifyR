@@ -161,7 +161,7 @@ setGeneric("NSCpredictInterface", function(model, measurementsTest, ...)
 
 setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(model, measurementsTest, ...)
 {
-  NSCpredictInterface(model, DataFrame(test, check.names = FALSE), ...)
+  NSCpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, ..., returnType = c("both", "class", "score"), verbose = 3)
@@ -246,7 +246,9 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #'     selected <- NSCfeatures(model, genesMatrix, classes)
 #'     selected[[2]]                                                       
 #'   }
-#' 
+#'
+#' @export
+
 setGeneric("NSCfeatures", function(model, measurementsTrain, classesTrain)
   standardGeneric("NSCfeatures"))
 

@@ -34,11 +34,12 @@ and classes will automatically be passed to this function in each iteration.
   if(require(pamr))
   {
     # Genes 76 to 100 have differential expression.
-    genesMatrix <- sapply(1:25, function(geneColumn) c(rnorm(100, 9, 1)))
-    genesMatrix <- cbind(genesMatrix, sapply(1:25, function(geneColumn)
-                                 c(rnorm(75, 9, 1), rnorm(25, 14, 1))))
-    rownames(genesMatrix) <- paste("Gene", 1:nrow(genesMatrix))                                 
+    genesMatrix <- sapply(1:100, function(sample) rnorm(25, 9, 0.3))
+    genesMatrix <- rbind(genesMatrix, t(sapply(1:25, function(sample)
+                                      c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
+    rownames(genesMatrix) <- paste("Sample", 1:nrow(genesMatrix))
+    colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
     
     model <- NSCtrainInterface(genesMatrix, classes)
     selected <- NSCfeatures(model, genesMatrix, classes)

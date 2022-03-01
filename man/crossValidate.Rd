@@ -28,7 +28,7 @@ crossValidate(
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
 or a list of these objects containing the training data.  For a
 \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
-the rows are features and the columns are samples as is typical in Bioconductor.}
+the rows are features and the columns are samples, as is typical in Bioconductor.}
 
 \item{classes}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
@@ -91,7 +91,7 @@ Boxplot(result)
 # Compare performance of different datasets. 
 # First make a toy example dataset with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
 set.seed(51773)
-measurements <- DataFrame(t(measurements))
+measurements <- DataFrame(measurements)
 mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
 mcols(measurements)$feature <- colnames(measurements)
 

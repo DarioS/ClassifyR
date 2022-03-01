@@ -53,7 +53,7 @@
 #'   genesDataset <- MultiAssayExperiment(list(RNA = t(genesRNAmatrix), SNP = t(genesSNPmatrix)),
 #'                                        colData = DataFrame(class = classes))
 #'                                          
-#'   bartlettRanking(genesDataset, targets = "RNA")
+#'   bartlettRanking(genesDataset, targets = "RNA", classesTrain = "class")
 #'
 #' @import stats methods
 #' @export

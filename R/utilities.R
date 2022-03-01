@@ -85,13 +85,15 @@
 }
 
 # Function to convert a MultiAssayExperiment object into a flat DataFrame table, to enable it
-# to be used in typical classification functions.
-# Returns a list with a covatiate table and and outcomes vector/table, or just a covariate table
+# to be used in typical model building functions.
+# Returns a list with a covariate table and and outcomes vector/table, or just a covariate table
 # in the case the input is a test data set.
-.MAEtoWideTable <- function(measurements, targets, outcomesColumns = NULL, restrict = "numeric")
+.MAEtoWideTable <- function(measurements, targets = NULL, outcomesColumns = NULL, restrict = "numeric")
 {
   if(is.null(targets))
-    stop("'targets' is not specified but must be.")  
+    stop("'targets' is not specified but must be.")
+  if(is.null(targets))
+    stop("'outcomesColumns' is not specified but must be.")    
   if(!all(targets %in% c(names(measurements), "sampleInfo")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")
   sampleInfoColumns <- colnames(MultiAssayExperiment::colData(measurements))
@@ -113,7 +115,7 @@
     # Get all desired measurements tables and sample information columns (other than the columns representing outcomes).
     # These form the independent variables to be used for making predictions with.
     # Variable names will have names like RNA:BRAF for traceability.
-    dataTable <- wideFormat(measurements, colDataCols = sampleInfoColumnsTrain, check.names = FALSE, collapse = ':')
+    dataTable <- wideFormat(measurements, colDataCols = union(sampleInfoColumnsTrain, outcomesColumns), check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
     S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"

@@ -90,7 +90,7 @@ setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, 
   predicted <- PoiClaClu::Classify(trainingMatrix, classesTrain, testingMatrix, ...)
   classPredictions <- predicted[["ytehat"]]
   classScores <- predicted[["discriminant"]]
-  colnames(classScores) <- levels(classes)
+  colnames(classScores) <- levels(classesTrain)
   switch(returnType, class = classPredictions, # Factor vector.
          score = classScores, # Numeric matrix.
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
