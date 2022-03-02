@@ -94,11 +94,13 @@
 #'     head(tunedParameters(classified))
 #'     performance(classified)
 #'   }
-#'   
+#' @rdname elasticNetGLM
 #' @export
 setGeneric("elasticNetGLMtrainInterface", function(measurementsTrain, ...)
 standardGeneric("elasticNetGLMtrainInterface"))
 
+#' @rdname elasticNetGLM
+#' @export
 setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
@@ -106,6 +108,10 @@ setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measureme
 })
 
 # Sample information data or one of the other inputs, transformed.
+#' @rdname elasticNetGLM
+#' @seealso \code{\link{elasticNetFeatures}} for a function used to extract the features
+#' with non-zero coefficients from the model.
+#' @export
 setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, lambda = NULL, ..., verbose = 3)
 {
   if(!requireNamespace("glmnet", quietly = TRUE))
@@ -124,7 +130,7 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain
     bestLambda <- fitted[["lambda"]][which.min(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
     {
       classPredictions <- factor(as.character(predict(fitted, measurementsMatrix, s = lambda, type = "class")), levels = fitted[["classnames"]])
-      calcExternalPerformance(classes, classPredictions, "Balanced Error")
+      calcExternalPerformance(splitDataset[["outcomes"]], classPredictions, "Balanced Error")
     }))[1]]
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
@@ -132,6 +138,8 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain
 })
 
 # One or more omics datasets, possibly with sample information data.
+#' @rdname elasticNetGLM
+#' @export
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
@@ -153,13 +161,14 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 #
 ################################################################################
 
-
-
-
 # Matrix of numeric measurements.
+#' @rdname elasticNetGLM
+#' @export
 setGeneric("elasticNetGLMpredictInterface", function(model, measurementsTest, ...)
 standardGeneric("elasticNetGLMpredictInterface"))
 
+#' @rdname elasticNetGLM
+#' @export
 setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
           function(model, measurementsTest, ...)
 {
@@ -167,6 +176,8 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
 })
 
 # Sample information data, for example.
+#' @rdname elasticNetGLM
+#' @export
 setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(classesColumnTest))
@@ -202,6 +213,8 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname elasticNetGLM
+#' @export
 setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
           function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
@@ -211,15 +224,11 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
   elasticNetGLMpredictInterface(model, measurementsTest, ...)
 })
 
-
-
 ################################################################################
 #
 # Get selected features
 #
 ################################################################################
-
-
 
 #' Extract Vectors of Ranked and Selected Features From an Elastic Net GLM
 #' Object
@@ -261,11 +270,13 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
 #'                                         
 #'       elasticNetFeatures(models(classified)[[1]])
 #'     }
-#' 
+#' @rdname elasticNetFeatures
 #' @export
 setGeneric("elasticNetFeatures", function(model, ...)
   standardGeneric("elasticNetFeatures"))
 
+#' @rdname elasticNetFeatures
+#' @export
 setMethod("elasticNetFeatures", "multnet",
           function(model)
           {

@@ -25,8 +25,6 @@
 #' @param measurementsTest An object of the same class as \code{measurementsTrain} with no
 #' samples in common with \code{measurementsTrain} and the same number of features
 #' as it.
-#' @param classesColumnTest Either NULL or a character vector of length 1, specifying the
-#' column name to remove from the test set.
 #' @param returnType Default: \code{"both"}. Either \code{"class"},
 #' \code{"score"} or \code{"both"}. Sets the return value from the prediction
 #' to either a vector of class labels, score for a sample belonging to the
@@ -60,7 +58,7 @@
 #'                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
 #'     classes <- factor(rep(c("Poor", "Good"), each = 25))
 #'     rownames(genesMatrix) <- paste("Sample", 1:nrow(genesMatrix))
-#'     colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
+#'     colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix)) # svm changes spaces to dots.
 #'     trainingSamples <- c(1:20, 26:45)
 #'     testingSamples <- c(21:25, 46:50)
 #'     
@@ -118,23 +116,25 @@ setMethod("SVMpredictInterface", c("svm", "matrix"),
   SVMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
-setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, returnType = c("both", "class", "score"), verbose = 3)
+setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
-  if(!is.null(classesColumnTest)) # Remove the column, since pamr uses positional matching of features.
-  {
-    splitDataset <- .splitDataAndOutcomes(measurementsTest, classesColumnTest) 
-    measurementsTest <- splitDataset[["measurements"]] # Without classes column.
-  }
-  
+
   if(!requireNamespace("e1071", quietly = TRUE))
     stop("The package 'e1071' could not be found. Please install it.")
   if(verbose == 3)
     message("Predicting classes using trained SVM classifier.")
   
+  # Prediction function depends on test data having same set of columns in same order as
+  # selected features used for training.
+  colnames(measurementsTest) <- make.names(colnames(measurementsTest)) # svm silently converts feature names.
+  measurementsTest <- measurementsTest[, colnames(model[["SV"]])]
   classPredictions <- predict(model, measurementsTest, probability = TRUE)
+  
+  # e1071 uses attributes to pass back probabilities. Make them a standalone variable.
   classScores <- attr(classPredictions, "probabilities")[, model[["levels"]], drop = FALSE]
   attr(classPredictions, "probabilities") <- NULL
+  
   switch(returnType, class = classPredictions, score = classScores,
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })

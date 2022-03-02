@@ -13,6 +13,44 @@
 \title{An Interface for glmnet Package's glmnet Function}
 \usage{
 elasticNetGLMtrainInterface(measurementsTrain, ...)
+
+\S4method{elasticNetGLMtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{elasticNetGLMtrainInterface}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  lambda = NULL,
+  ...,
+  verbose = 3
+)
+
+\S4method{elasticNetGLMtrainInterface}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+
+elasticNetGLMpredictInterface(model, measurementsTest, ...)
+
+\S4method{elasticNetGLMpredictInterface}{multnet,matrix}(model, measurementsTest, ...)
+
+\S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(
+  model,
+  measurementsTest,
+  classesColumnTest = NULL,
+  lambda,
+  ...,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{elasticNetGLMpredictInterface}{multnet,MultiAssayExperiment}(
+  model,
+  measurementsTest,
+  targets = names(measurementsTest),
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -42,9 +80,9 @@ removed before training.}
 \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction function
 is used.}
 
-\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
-samples in common with \code{measurementsTrain} and the same number of features
-as it.}
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
 
 \item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
@@ -54,14 +92,14 @@ used.}
 \item{model}{A trained elastic net GLM, as created by the \code{glmnet}
 function.}
 
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
+as it.}
+
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, matrix of scores for each class, or both
 labels and scores in a \code{data.frame}.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 For \code{elasticNetGLMtrainInterface}, an object of type
@@ -108,7 +146,10 @@ resubstitution error rate.
     head(tunedParameters(classified))
     performance(classified)
   }
-  
+}
+\seealso{
+\code{\link{elasticNetFeatures}} for a function used to extract the features
+with non-zero coefficients from the model.
 }
 \author{
 Dario Strbenac

@@ -7,6 +7,8 @@
 Object}
 \usage{
 elasticNetFeatures(model, ...)
+
+\S4method{elasticNetFeatures}{multnet}(model)
 }
 \arguments{
 \item{model}{A fitted multinomial GLM which was created by
@@ -47,7 +49,6 @@ non-zero coefficient.
                                         
       elasticNetFeatures(models(classified)[[1]])
     }
-
 }
 \author{
 Dario Strbenac

@@ -45,7 +45,7 @@ A function to generate a ModellingParams object
 data(asthma)
 # First make a toy example dataset with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
 set.seed(51773)
-measurements <- DataFrame(t(measurements))
+measurements <- DataFrame(measurements, check.names = FALSE) 
 mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
 mcols(measurements)$feature <- colnames(measurements)
 modellingParams <- generateModellingParams(datasetIDs = c("clinical", "gene", "protein"),

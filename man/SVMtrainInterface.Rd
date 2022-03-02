@@ -37,9 +37,6 @@ removed before training.}
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{classesColumnTest}{Either NULL or a character vector of length 1, specifying the
-column name to remove from the test set.}
-
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}. Sets the return value from the prediction
 to either a vector of class labels, score for a sample belonging to the
@@ -78,7 +75,7 @@ both the class labels and second class scores, depending on the setting of
                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     rownames(genesMatrix) <- paste("Sample", 1:nrow(genesMatrix))
-    colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
+    colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix)) # svm changes spaces to dots.
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     

@@ -52,7 +52,7 @@
 #' 
 #' # Compare randomForest and svm classifiers.
 #' result <- crossValidate(measurements, classes, classifier = c("randomForest", "svm"))
-#' Boxplot(result)
+#' # Boxplot(result)
 #' 
 #' 
 #' # Compare performance of different datasets. 
@@ -65,12 +65,12 @@
 #' # We'll use different nFeatures for each dataset. We'll also use repeated cross-validation with 5 repeats for speed in the example.
 #' set.seed(51773)
 #' result <- crossValidate(measurements, classes, nFeatures = c(clinical = 5, gene = 20, protein = 30), classifier = "randomForest", nRepeats = 5)
-#' Boxplot(result)
+#' # Boxplot(result)
 #' 
 #' # Merge different datasets. But we will only do this for two combinations. If dataCombinations is not specified it would attempt all combinations.
 #' set.seed(51773)
 #' result <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
-#' Boxplot(resultMerge)
+#' # Boxplot(resultMerge)
 #' 
 #' 
 #' Boxplot(c(result, resultMerge))
@@ -107,7 +107,6 @@ setMethod("crossValidate", "DataFrame",
                    characteristicsLabel = NULL)
 
           {
-              #browser()
               # Check that data is in the right format
               splitDataset <- .splitDataAndOutcomes(measurements, classes)
               measurements <- splitDataset[["measurements"]]
