@@ -84,7 +84,7 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or on
   measurementsTrain, allDistribution[[1]], allDistribution[[2]])) -
   rowSums(sapply(levels(classesTrain), function(class)
   {
-    classMeasurements <- measurements[which(classesTrain == class), ]
+    classMeasurements <- measurementsTrain[which(classesTrain == class), ]
     classDistribution <- getLocationsAndScales(classMeasurements, ...)
     
     unlist(mapply(function(featureMeasurements, scale, location)

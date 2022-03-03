@@ -31,7 +31,7 @@
 #'   edges <- data.frame(interactor, otherInteractor, stringsAsFactors = FALSE)
 #'   
 #'   edgesToHubNetworks(edges, minCardinality = 4)
-#' 
+#' @export
 edgesToHubNetworks <- function(edges, minCardinality = 5)
 {
   if(class(edges) == "matrix")

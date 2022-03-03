@@ -83,7 +83,7 @@
 #' @examples
 #' 
 #'   trainMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
-#'   classes <- factor(rep(c("Poor", "Good"), each = 5))
+#'   classesTrain <- factor(rep(c("Poor", "Good"), each = 5))
 #'   rownames(trainMatrix) <- paste("Sample", 1:10)
 #'   
 #'   # Make first 30 genes increased in value for poor samples.
@@ -104,9 +104,9 @@ setGeneric("naiveBayesKernel", function(measurementsTrain, ...)
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  naiveBayesKernel(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+  naiveBayesKernel(DataFrame(measurementsTrain, check.names = FALSE),
                    classesTrain,
-                   DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
+                   DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of the other inputs, transformed.
@@ -119,8 +119,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   trainingMatrix <- splitDataset[["measurements"]]
   classesTrain <- splitDataset[["outcomes"]]
-  isNumeric <- sapply(measurementsTest, is.numeric)
-  testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
+  testingMatrix <- as.matrix(measurementsTest[, colnames(trainingMatrix), drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
@@ -144,7 +143,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
     }) # A fitted density for each class.
   })
 
-  classesScaleFactors <- classesSizes / nrow(measurements)
+  classesScaleFactors <- classesSizes / nrow(trainingMatrix)
   splines <- lapply(featuresDensities, function(featureDensities) 
              {
                mapply(function(featureDensity, scaleFactor)
@@ -163,7 +162,7 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
     {
       featureSplines[[classIndex]](testSamples)
     })
-  }, splines, test, SIMPLIFY = FALSE)
+  }, splines, as.data.frame(testingMatrix), SIMPLIFY = FALSE)
     
   classesVertical <- sapply(posteriorsVertical, function(featureVertical)
   {

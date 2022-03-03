@@ -36,7 +36,6 @@ element contains all features which have an interaction with it.
   edges <- data.frame(interactor, otherInteractor, stringsAsFactors = FALSE)
   
   edgesToHubNetworks(edges, minCardinality = 4)
-
 }
 \references{
 VAN: an R package for identifying biologically perturbed

@@ -103,16 +103,21 @@
 #'   
 #'   trained <- mixModelsTrain(genesMatrix[trainSamples, selected], classes[trainSamples],
 #'                             nbCluster = 1:3)
-#'   mixModelsPredict(trained, genesMatrix[trainSamples, selected])
+#'   mixModelsPredict(trained, genesMatrix[testSamples, selected])
 #' 
+#' @rdname mixModels
 #' @export
 setGeneric("mixModelsTrain", function(measurementsTrain, ...) standardGeneric("mixModelsTrain"))
 
+#' @rdname mixModels
+#' @export
 setMethod("mixModelsTrain", "matrix", function(measurementsTrain, ...) # Matrix of numeric measurements.
 {
   mixModelsTrain(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
+#' @rdname mixModels
+#' @export
 setMethod("mixModelsTrain", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3) # Mixed data types.
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
@@ -126,7 +131,7 @@ setMethod("mixModelsTrain", "DataFrame", function(measurementsTrain, classesTrai
 
   models <- lapply(levels(classesTrain), function(class)
             {
-                aClassMeasurements <- measurementsTest[classesTrain == class, , drop = FALSE]
+                aClassMeasurements <- measurementsTrain[classesTrain == class, , drop = FALSE]
                 apply(aClassMeasurements, 2, function(featureColumn)
                 {
                    mixmodParams <- list(featureColumn)
@@ -150,6 +155,8 @@ setMethod("mixModelsTrain", "DataFrame", function(measurementsTrain, classesTrai
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname mixModels
+#' @export
 setMethod("mixModelsTrain", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
@@ -158,13 +165,19 @@ setMethod("mixModelsTrain", "MultiAssayExperiment", function(measurementsTrain, 
   mixModelsTrain(dataTable, classesTrain, ...)
 })
 
+#' @rdname mixModels
+#' @export
 setGeneric("mixModelsPredict", function(models, measurementsTest, ...) standardGeneric("mixModelsPredict"))
 
+#' @rdname mixModels
+#' @export
 setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, measurementsTest, ...)
 {
-  mixModelsPredict(models, DataFrame(t(measurementsTest), check.names = FALSE), ...)
+  mixModelsPredict(models, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname mixModels
+#' @export
 setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample information data, perhaps.
           function(models, measurementsTest, difference = c("unweighted", "weighted"),
                    weighting = c("height difference", "crossover distance"),
@@ -296,6 +309,8 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample info
   )
 })
 
+#' @rdname mixModels
+#' @export
 # One or more omics data sets, possibly with sample information data.
 setMethod("mixModelsPredict", c("MixModelsListsSet", "MultiAssayExperiment"), function(models, measurementsTest, targets = names(measurementsTest), ...)
 {

@@ -75,7 +75,7 @@ both the class labels and second class scores, depending on the setting of
                                       c(rnorm(75, 9, 0.3), rnorm(25, 14, 0.3)))))
     classes <- factor(rep(c("Poor", "Good"), each = 25))
     rownames(genesMatrix) <- paste("Sample", 1:nrow(genesMatrix))
-    colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix)) # svm changes spaces to dots.
+    colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
     trainingSamples <- c(1:20, 26:45)
     testingSamples <- c(21:25, 46:50)
     

@@ -95,10 +95,10 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
       message("Summarising features to feature sets.")
 
   # Transform measurements into one feature per set.
-  apply(measurements, 2, function(sampleMeasurements)
+  t(apply(measurements, 1, function(sampleMeasurements)
   {
     sapply(featureSets, function(featureSet) locationFunction(sampleMeasurements[featureSet]))
-  })
+  })) # Columns are sets, rows are samples.
 })
 
 setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.

@@ -73,7 +73,7 @@
 #' # Boxplot(resultMerge)
 #' 
 #' 
-#' Boxplot(c(result, resultMerge))
+#' # Boxplot(c(result, resultMerge))
 #' 
 #' @importFrom survival Surv
 setGeneric("crossValidate", function(measurements,
@@ -196,7 +196,6 @@ setMethod("crossValidate", "DataFrame",
 
 
                   if(is.null(dataCombinations)) dataCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
-
 
                   result <- sapply(dataCombinations, function(dataIndex){
                       CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex],
@@ -464,7 +463,7 @@ setMethod("crossValidate", "list", # data.frame of numeric measurements.
 cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up
     obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
-    if(is.null(nFeatures) | nFeatures == "all") nFeatures <- as.list(obsFeatures)
+    if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
     if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
     if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(obsFeatures, nFeatures), simplify = FALSE)
     #if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
@@ -853,7 +852,7 @@ CV <- function(measurements,
     # Check that data is in the right format
     checkData(measurements,
               classes)
-
+    
     # Check that other variables are in the right format and fix
     nFeatures <- cleanNFeatures(nFeatures = nFeatures,
                                 measurements = measurements)

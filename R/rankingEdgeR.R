@@ -83,31 +83,31 @@ setMethod("edgeRranking", "DataFrame", function(countsTrain, classesTrain, normF
     message("Doing edgeR LRT feature ranking")
   
   # DGEList stores features as rows and samples as columns.          
-  countsList <- edgeR::DGEList(t(as.matrix(counts)), group = classes)
+  countsList <- edgeR::DGEList(t(as.matrix(countsTrain)), group = classesTrain)
   paramList <- list(countsList)
   if(!is.null(normFactorsOptions))
     paramList <- append(paramList, normFactorsOptions)
   if(verbose == 3)
     message("Calculating scaling factors.")
   countsList <- do.call(edgeR::calcNormFactors, paramList)
-  paramList <- list(countsList, model.matrix(~ classes))
+  paramList <- list(countsList, model.matrix(~ classesTrain))
   if(!is.null(dispOptions))
     paramList <- append(paramList, dispOptions)
   if(verbose == 3)
     message("Estimating dispersion.")
   countsList <- do.call(edgeR::estimateDisp, paramList)
-  paramList <- list(countsList, model.matrix(~ classes))
+  paramList <- list(countsList, model.matrix(~ classesTrain))
   if(!is.null(fitOptions))
     paramList <- append(paramList, fitOptions)
   if(verbose == 3)
     message("Fitting linear model.")
   fit <- do.call(edgeR::glmFit, paramList)
-  test <- edgeR::glmLRT(fit, coef = 2:length(levels(classes)))[["table"]]
+  test <- edgeR::glmLRT(fit, coef = 2:length(levels(classesTrain)))[["table"]]
   
-  if(!is.null(S4Vectors::mcols(counts)))
-    S4Vectors::mcols(counts)[order(test[, "PValue"]), ]
+  if(!is.null(S4Vectors::mcols(countsTrain)))
+    S4Vectors::mcols(countsTrain)[order(test[, "PValue"]), ]
   else
-    colnames(counts)[order(test[, "PValue"])]
+    colnames(countsTrain)[order(test[, "PValue"])]
 })
 
 # One or more omics data sets, possibly with sample information data.
@@ -117,11 +117,11 @@ setMethod("edgeRranking", "MultiAssayExperiment", function(countsTrain, targets 
     stop("The package 'edgeR' could not be found. Please install it.")
   if(is.null(targets))
     stop("'targets' must be specified but was not.")
-  if(length(setdiff(targets, names(counts))))
+  if(length(setdiff(targets, names(countsTrain))))
     stop("Some values of 'targets' are not names of 'counts' but all must be.")            
 
   tablesAndClasses <- .MAEtoWideTable(countsTrain, targets, "integer")
   countsTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
-  edgeRranking(countsTable, classes, ...)
+  classesTrain <- tablesAndClasses[["outcomes"]]
+  edgeRranking(countsTable, classesTrain, ...)
 })

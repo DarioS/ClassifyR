@@ -1,18 +1,17 @@
-setGeneric("selectMulti", function(measurements, classes, params, ...)
+setGeneric("selectMulti", function(measurementsTrain, classesTrain, params, ...)
     standardGeneric("selectMulti"))
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
 setMethod("selectMulti", "DataFrame",
-          function(measurements, classes, params, verbose = 0)
+          function(measurementsTrain, classesTrain, params, verbose = 0)
           {
               
-              assayTrain <- sapply(unique(mcols(measurements)[["dataset"]]), function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+              assayTrain <- sapply(unique(mcols(measurementsTrain)[["dataset"]]), function(x) measurementsTrain[,mcols(measurementsTrain)[["dataset"]]%in%x], simplify = FALSE)
               
               selectedFeatures <- mapply(.doSelection, 
                                          measurements = assayTrain,
                                          modellingParams = params[names(assayTrain)],
-                                         MoreArgs = list(classes = classes, 
-                                                         training = seq_len(nrow(assayTrain[[1]])),
+                                         MoreArgs = list(outcomesTrain = classesTrain, 
                                                          crossValParams = CrossValParams(permutations = 1, folds = 5), ###### Where to get this from?
                                                          verbose = 0)
               )

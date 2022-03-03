@@ -105,7 +105,7 @@ other class' density are used as the crossover points for that class.
 \examples{
 
   trainMatrix <- matrix(rnorm(1000, 8, 2), nrow = 10)
-  classes <- factor(rep(c("Poor", "Good"), each = 5))
+  classesTrain <- factor(rep(c("Poor", "Good"), each = 5))
   rownames(trainMatrix) <- paste("Sample", 1:10)
   
   # Make first 30 genes increased in value for poor samples.

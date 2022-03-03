@@ -80,13 +80,13 @@ setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of
 
   oneClassTraining <- which(classesTrain == levels(classesTrain)[1])
   otherClassTraining <- which(classesTrain == levels(classesTrain)[2])
-  varOneClass <- apply(measurements[oneClassTraining, ], 2, var)
-  varOtherClass <- apply(measurements[otherClassTraining, ], 2, var)
+  varOneClass <- apply(trainingMatrix[oneClassTraining, ], 2, var)
+  varOtherClass <- apply(trainingMatrix[otherClassTraining, ], 2, var)
   varAll <- ((length(varOneClass) - 1) * varOneClass + (length(varOtherClass) - 1)
              * varOtherClass) / (length(oneClassTraining) + length(otherClassTraining) - 2)
-  aT <- (apply(measurements[oneClassTraining, ], 2, mean) - apply(measurements[otherClassTraining, ], 2, mean)) / varAll
-  criticalValue <- 0.5 * aT %*% as.matrix(apply(measurements[oneClassTraining, ], 2, mean) +
-                                          apply(measurements[otherClassTraining, ], 2, mean))
+  aT <- (apply(trainingMatrix[oneClassTraining, ], 2, mean) - apply(trainingMatrix[otherClassTraining, ], 2, mean)) / varAll
+  criticalValue <- 0.5 * aT %*% as.matrix(apply(trainingMatrix[oneClassTraining, ], 2, mean) +
+                                          apply(trainingMatrix[otherClassTraining, ], 2, mean))
   
   if(verbose == 3)
     message("Critical value calculated.")

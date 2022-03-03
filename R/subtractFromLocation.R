@@ -30,7 +30,7 @@
 #' @examples
 #' 
 #'   aMatrix <- matrix(1:100, ncol = 10)
-#'   subtractFromLocation(aMatrix, training = 1:5, "median")
+#'   subtractFromLocation(aMatrix[1:5,], aMatrix[6:10, ], "median")
 #' 
 #' @importFrom MultiAssayExperiment ExperimentList colData experiments MultiAssayExperiment
 #' @export
@@ -46,7 +46,7 @@ setMethod("subtractFromLocation", c("matrix", "matrix"), function(measurementsTr
     featureTrainingLocations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
   
   transformedTrain <- t(apply(measurementsTrain, 1, '-', featureTrainingLocations))
-  transformedTest <- t(apply(measurementsTrain, 1, '-', featureTrainingLocations))
+  transformedTest <- t(apply(measurementsTest, 1, '-', featureTrainingLocations))
   if(absolute == TRUE)
   {
     transformedTrain <- abs(transformedTrain)

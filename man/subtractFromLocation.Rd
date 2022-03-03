@@ -46,7 +46,7 @@ the location.
 \examples{
 
   aMatrix <- matrix(1:100, ncol = 10)
-  subtractFromLocation(aMatrix, training = 1:5, "median")
+  subtractFromLocation(aMatrix[1:5,], aMatrix[6:10, ], "median")
 
 }
 \author{

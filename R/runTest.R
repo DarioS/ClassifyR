@@ -82,7 +82,7 @@ setMethod("runTest", "DataFrame", # Sample information data or one of the other 
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
-{ #if(!is.null(.iteration) && .iteration == "internal") browser()
+{ #if(!is.null(.iteration) && .iteration == "internal")
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -123,7 +123,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   {
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
-    
+
     topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, modellingParams, verbose = verbose, crossValParams = crossValParams),
                             error = function(error) error[["message"]]) 
 
@@ -157,7 +157,6 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   if(is.character(trained)) return(trained) # An error occurred.
     
   tuneDetailsTrain <- trained[[2]] # Second element is tuning results.
-  
   
   if(!is.null(modellingParams@trainParams@getFeatures)) # Features chosen inside classifier.
   {

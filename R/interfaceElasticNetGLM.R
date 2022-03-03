@@ -178,15 +178,13 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
 # Sample information data, for example.
 #' @rdname elasticNetGLM
 #' @export
-setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
+setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(model, measurementsTest, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
-  if(!is.null(classesColumnTest))
-  {
-    splitDataset <- .splitDataAndOutcomes(measurementsTest, classesColumnTest)  # Remove any classes, if present.
-    measurementsTest <- splitDataset[["measurements"]]
-  }
-  
   returnType <- match.arg(returnType)
+  
+  # Ensure that testing data has same columns names in same order as training data.
+  # Remove those annoying backquotes which glmnet adds if variables have spaces in names.
+  measurementsTest <- measurementsTest[, gsub('`', '', rownames(model[["beta"]][[1]]))]
   
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
@@ -196,7 +194,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "DataFrame"), function(m
   if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
 
-  testMatrix <- glmnet::makeX(as(test, "data.frame"))
+  testMatrix <- glmnet::makeX(as(measurementsTest, "data.frame"))
   testMatrix <- testMatrix[, rownames(model[["beta"]][[1]])]
   
   classPredictions <- factor(as.character(predict(model, testMatrix, s = lambda, type = "class")), levels = model[["classnames"]])

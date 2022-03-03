@@ -87,29 +87,23 @@ setMethod("previousSelection", "DataFrame",
 {
   if(verbose == 3)
     message("Choosing previous features.")
-  
+
   previousIDs <- features(classifyResult)[[.iteration]]
   if(is.character(previousIDs))
   {
     commonFeatures <- intersect(previousIDs, colnames(measurementsTrain))
     overlapPercent <- length(commonFeatures) / length(previousIDs) * 100
   } else { # A data.frame describing the data set and variable name of the chosen feature.
-    keepRows <- numeric()
-    varInfo <- S4Vectors::mcols(measurementsTrain) # mcols stores source information about variables.
-    variable <- varInfo[, "rowname"]
-    variable[is.na(variable)] <- varInfo[is.na(variable), "colname"]
-    for(index in 1:length(previousIDs))
-    {
-      if(any(previousIDs[index, "dataset"] == varInfo[, "sourceName"] & previousIDs[index, "variable"] == variable))
-        keepRows <- c(keepRows, index)
-    }
-    commonFeatures <- previousIDs[keepRows, ]
-    overlapPercent <- nrow(commonFeatures) / nrow(previousIDs) * 100
+    featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
+    selectedIDs <-  do.call(paste, previousIDs)
+    selectedColumns <- match(selectedIDs, featuresIDs)
+    commonFeatures <- sum(!is.na(selectedColumns))
+    overlapPercent <- commonFeatures / nrow(previousIDs) * 100
   }
   if(overlapPercent < minimumOverlapPercent)
     signalCondition(simpleError(paste("Number of features in common between previous and current data set is lower than", minimumOverlapPercent, "percent.")))
   
-  commonFeatures # Ranking isn't transferred across.
+  S4Vectors::mcols(measurementsTrain)[selectedColumns, ] # Each row is about one column.
 })
 
 setMethod("previousSelection", "MultiAssayExperiment", 

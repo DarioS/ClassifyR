@@ -266,7 +266,7 @@
 
 # Carries out one iteration of feature selection. Basically, a ranking function is used to rank
 # the features in the training set from best to worst and different top sets are used either for
-# predicting on the training set (resubstitution) or nested cross-valiation of the training set,
+# predicting on the training set (resubstitution) or nested cross-validation of the training set,
 # to find the set of top features which give the best (user-specified) performance measure.
 .doSelection <- function(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose)
 {
@@ -498,10 +498,9 @@
   {
     paramList <- list(trained, measurementsTest)
     if(length(predictParams@otherParams) > 0) paramList <- c(paramList, predictParams@otherParams)
-      paramList <- c(paramList, verbose = verbose)
-      prediction <- do.call(predictParams@predictor, paramList)
-    } else { prediction <- trained } # Trained is actually the predictions because only one function, not two.
-    
+    paramList <- c(paramList, verbose = verbose)
+    prediction <- do.call(predictParams@predictor, paramList)
+  } else { prediction <- trained } # Trained is actually the predictions because only one function, not two.
     if(verbose >= 2)
       message("Prediction completed.")    
     prediction

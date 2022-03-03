@@ -106,6 +106,6 @@ result <- crossValidate(measurements, classes, dataCombinations = list(c("clinic
 # Boxplot(resultMerge)
 
 
-Boxplot(c(result, resultMerge))
+# Boxplot(c(result, resultMerge))
 
 }

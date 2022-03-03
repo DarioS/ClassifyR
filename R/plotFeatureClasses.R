@@ -123,12 +123,13 @@
 #'   plotFeatureClasses(clinicalData, classes, targets = "Infection")
 #'   plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")
 #'   
+#'   genesMatrix <- t(genesMatrix) # MultiAssayExperiment needs features in rows.
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
-#'   plotFeatureClasses(dataContainer, targets = targetFeatures,
+#'   plotFeatureClasses(dataContainer, targets = targetFeatures, classColumn = "class",
 #'                      groupBy = c("sampleInfo", "Gender"),
-#'                      xAxisLabel = bquote(log[2]*'(expression)'))
+#'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #' 
 #' @importFrom dplyr mutate n
 #' @importFrom tidyr gather

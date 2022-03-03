@@ -127,7 +127,7 @@ setMethod("samplesMetricMap", "list",
   
   nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
   metricBinEnds <- seq(0, 1, 1/nColours)
-  knownClasses <- actualClasses(results[[1]])
+  knownClasses <- actualOutcomes(results[[1]])
 
   metricValues <- lapply(results, function(result)
   {

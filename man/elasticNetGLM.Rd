@@ -38,7 +38,6 @@ elasticNetGLMpredictInterface(model, measurementsTest, ...)
 \S4method{elasticNetGLMpredictInterface}{multnet,DataFrame}(
   model,
   measurementsTest,
-  classesColumnTest = NULL,
   lambda,
   ...,
   returnType = c("both", "class", "score"),

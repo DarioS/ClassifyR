@@ -50,7 +50,7 @@
 #'     colnames(measurements) <- paste("mRNA", 1:10)
 #'     
 #'     # Train with 9 samples, test with one.
-#'     kNNinterface(measurements[, 1:9], classes[1:9], measurements[, 10, drop = FALSE])
+#'     kNNinterface(measurements[1:9, ], classes[1:9], measurements[10, , drop = FALSE])
 #'   }
 #'   
 #' @export

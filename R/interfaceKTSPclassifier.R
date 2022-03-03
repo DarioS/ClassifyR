@@ -95,9 +95,9 @@ setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
             
-  kTSPclassifier(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+  kTSPclassifier(DataFrame(measurementsTrain, check.names = FALSE),
                  classesTrain,
-                 DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), featurePairs, ...)
+                 DataFrame(measurementsTest, check.names = FALSE), featurePairs, ...)
 })
 
 setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the other inputs, transformed.
@@ -114,7 +114,7 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
   classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- splitDataset[["measurements"]]
   isNumeric <- sapply(measurementsTest, is.numeric)
-  testingMatrix <- as.matrix(classesTrain[, isNumeric, drop = FALSE])
+  testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
   
