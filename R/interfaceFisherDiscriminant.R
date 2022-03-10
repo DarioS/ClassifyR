@@ -55,12 +55,11 @@
 #'   testMatrix[6:10, 1:30] <- testMatrix[6:10, 1:30] + 5
 #'   
 #'   fisherDiscriminant(trainMatrix, classes, testMatrix)
-#' 
-#' @rdname fisherDiscriminant
+#'
+#' @usage NULL
 #' @export
 setGeneric("fisherDiscriminant", function(measurementsTrain, ...) standardGeneric("fisherDiscriminant"))
 
-#' @rdname fisherDiscriminant
 #' @export
 setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTrain, measurementsTest, ...) # Matrix of numeric measurements.
 {
@@ -69,7 +68,6 @@ setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTra
                      DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
 })
 
-#' @rdname fisherDiscriminant
 #' @export
 setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
@@ -110,7 +108,6 @@ setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of
                      both = data.frame(class = classesPredicted, score = scores, check.names = FALSE))  
 })
 
-#' @rdname fisherDiscriminant
 #' @export
 # One or more omics data sets, possibly with sample information data.
 setMethod("fisherDiscriminant", "MultiAssayExperiment", function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)

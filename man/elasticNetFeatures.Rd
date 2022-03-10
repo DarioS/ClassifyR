@@ -6,8 +6,6 @@
 \title{Extract Vectors of Ranked and Selected Features From an Elastic Net GLM
 Object}
 \usage{
-elasticNetFeatures(model, ...)
-
 \S4method{elasticNetFeatures}{multnet}(model)
 }
 \arguments{

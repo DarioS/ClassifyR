@@ -270,6 +270,7 @@ setMethod("elasticNetGLMpredictInterface", c("multnet", "MultiAssayExperiment"),
 #'     }
 #' @rdname elasticNetFeatures
 #' @export
+#' @usage NULL
 setGeneric("elasticNetFeatures", function(model, ...)
   standardGeneric("elasticNetFeatures"))
 

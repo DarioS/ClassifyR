@@ -21,6 +21,7 @@
 #' @aliases dlda dlda-class
 #' @docType class
 #' @author Dario Strbenac
+#' @usage NULL
 dlda <- function(x, ...) {
   UseMethod("dlda")
 }
@@ -436,10 +437,11 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 #'   # Subtract all values from training set median, to obtain absolute deviations.
 #' 
 #' @export
+#' @usage NULL
 setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
 
-#' @exportMethod TransformParams
+#' @export
 setMethod("TransformParams", "function",
           function(transform, characteristics = DataFrame(), intermediate = character(0), ...)
           {
@@ -451,7 +453,7 @@ setMethod("TransformParams", "function",
                 intermediate = intermediate, otherParams = list(...))
           })
 
-#' @exportMethod show
+#' @export
 setMethod("show", "TransformParams",
           function(object)
           {
@@ -561,24 +563,25 @@ setClass("FeatureSetCollection", representation(sets = "list"))
 #'     networkSets
 #'     
 #' @export
+#' @usage NULL
 setGeneric("FeatureSetCollection", function(sets, ...)
 standardGeneric("FeatureSetCollection"))
 
-#' @exportMethod FeatureSetCollection
+#'
 setMethod("FeatureSetCollection", c("list"),
           function(sets)
           {
             new("FeatureSetCollection", sets = sets)
           })
 
-#' @exportMethod length
+#' @export
 setMethod("length", c("FeatureSetCollection"),
     function(x)
 {
     length(x@sets)
 })
 
-#' @exportMethod show
+#' @export
 setMethod("show", "FeatureSetCollection",
           function(object)
           {
@@ -650,14 +653,14 @@ setMethod("show", "FeatureSetCollection",
           }
 )
 
-#' @exportMethod [
+#' @export
 setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {
     new("FeatureSetCollection", sets = x@sets[i])
 })
 
-#' @exportMethod [[
+#' @export
 setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
     function(x, i, j, ...)
 {
@@ -784,7 +787,7 @@ setGeneric("SelectParams", function(featureRanking, ...)
 standardGeneric("SelectParams"))
 
 #' @rdname SelectParams-class
-#' @exportMethod SelectParams
+#' @export
 setMethod("SelectParams", "missing", function()
 {
   new("SelectParams", featureRanking = differentMeansRanking,
@@ -920,7 +923,7 @@ setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams
 
 #' @rdname TrainParams-class
 #' @usage NULL
-#' @exportMethod TrainParams
+#' @export
 setMethod("TrainParams", "missing", function()
 {
   new("TrainParams", classifier = DLDAtrainInterface,
@@ -942,7 +945,7 @@ setMethod("TrainParams", c("function"),
                 otherParams = list(...))
           })
 
-#' @exportMethod show
+#' @export
 setMethod("show", "TrainParams",
           function(object)
           {
@@ -1058,7 +1061,7 @@ setMethod("PredictParams", c("functionOrNULL"),
                 intermediate = intermediate, otherParams = others)
           })
 
-#' @exportMethod show
+#' @export
 setMethod("show", "PredictParams",
           function(object)
           {
@@ -1123,37 +1126,21 @@ setClass("ModellingParams", representation(
 #' prediction, this container also stores a setting for class imbalance
 #' rebalancing.
 #' 
-#' 
 #' @name ModellingParams
+#' @rdname ModellingParams-class
 #' @aliases ModellingParams ModellingParams-class
 #' @docType class
-#' @section Constructor:
-#' \describe{\item{}{\code{ModellingParams()} Creates a
-#' default \code{ModellingParams} object suitable for classification of
-#' homoscedastic numeric data.  This uses either an ordinary t-test or ANOVA
-#' (depending on the number of classes) and tries the top 10 to top 100
-#' features in increments of 10 during feature selection and diagonal LDA as
-#' the classifier. Also, the default class rebalancing scheme is downsampling
-#' to the smallest class. Users should create an appropriate
-#' \code{ModellingParams} object for the characteristics of their data.}
-#' \item{}{\preformatted{ModellingParams(balancing = c("downsample",
-#' "upsample", "none"), transformParams = NULL, selectParams = SelectParams(),
-#' trainParams = TrainParams(), predictParams = PredictParams())} Creates a
-#' \code{ModellingParams} object based on user-specified settings with default
-#' values of different classification stages geared at homoscedastic numeric
-#' data
-#' \describe{
-#'   \item{\code{balancing}}{Default: "downsample". A character value specifying\
-#'   what kind of class balancing to do, if any.}
-#'   \item{\code{transformParams}}{Parameters used for feature transformation
-#'   specified by a \code{\link{TransformParams}} instance. Optional, can be
-#'   \code{NULL}}.
-#'   \item{\code{selectParams}}{Parameters used during feature selection specified
+#' @param balancing Default: "downsample". A character value specifying what kind
+#' of class balancing to do, if any.
+#' @param transformParams Parameters used for feature transformation inside of C.V.
+#' specified by a \code{\link{TransformParams}} instance. Optional, can be \code{NULL}.
+#' @param selectParams Parameters used during feature selection specified
 #'   by a \code{\link{SelectParams}} instance.  By default, parameters for selection
-#'   based on differences in means of numeric data. Optional, can be \code{NULL}.}
-#'   \item{\code{trainParams}}{Parameters for model training specified by a \code{\link{TrainParams}} instance.
-#'   By default, uses diagonal LDA.} \item{\code{predictParams}}{Parameters for
-#'   model training specified by a \code{\link{PredictParams}} instance. By default, uses diagonal LDA.} } } }
+#'   based on differences in means of numeric data. Optional, can be \code{NULL}.
+#' @param trainParams Parameters for model training specified by a \code{\link{TrainParams}} instance.
+#'   By default, uses diagonal LDA.
+#' @param predictParams Parameters for model training specified by a \code{\link{PredictParams}} instance.
+#' By default, uses diagonal LDA.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -1214,7 +1201,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
 #'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)}
 #' \describe{
-#' \item{\code{characteristics}} {A \code{\link{DataFrame}} describing the
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of classification done. First column must be named
 #' \code{"charateristic"} and second column must be named \code{"value"}. If
 #' using wrapper functions for feature selection and classifiers in this
@@ -1224,9 +1211,9 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{originalFeatures}}{All feature names. Character vector
 #' or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
 #' of measurements on the same set of samples.}
-#' \item{\code{rankedFeatures}} {All features, from most to least important. Character vector
+#' \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
 #' or a data frame if data set has multiple kinds of measurements on the same set of samples.}
-#' \item{\code{chosenFeatures}} {Features selected at each fold. Character
+#' \item{\code{chosenFeatures}}{Features selected at each fold. Character
 #' vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 #' \item{\code{models}}{All of the models fitted to the training data.}
 #' \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}
@@ -1313,7 +1300,7 @@ setClass("ClassifyResult", representation(
 )
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod ClassifyResult
+#' @export
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           function(characteristics, originalNames, originalFeatures,
                    rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)
@@ -1326,7 +1313,7 @@ setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           })
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod show
+#' @export
 setMethod("show", "ClassifyResult", function(object)
           {
             cat("An object of class 'ClassifyResult'.\n")
@@ -1360,7 +1347,7 @@ standardGeneric("sampleNames"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod sampleNames
+#' @export
 setMethod("sampleNames", c("ClassifyResult"),
           function(object)
           {
@@ -1375,7 +1362,7 @@ standardGeneric("allFeatureNames"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod allFeatureNames
+#' @export
 setMethod("allFeatureNames", c("ClassifyResult"),
           function(object)
           {
@@ -1390,7 +1377,7 @@ standardGeneric("chosenFeatureNames"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod chosenFeatureNames
+#' @export
 setMethod("chosenFeatureNames", c("ClassifyResult"),
           function(object)
           {
@@ -1398,12 +1385,13 @@ setMethod("chosenFeatureNames", c("ClassifyResult"),
           })
 
 #' @export
+#' @usage NULL
 setGeneric("models", function(object, ...)
 standardGeneric("models"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod models
+#' @export
 setMethod("models", c("ClassifyResult"),
           function(object)
           {
@@ -1417,7 +1405,7 @@ standardGeneric("predictions"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod predictions
+#' @export
 setMethod("predictions", c("ClassifyResult"),
           function(object)
           {
@@ -1425,12 +1413,13 @@ setMethod("predictions", c("ClassifyResult"),
           })
 
 #' @export
+#' @usage NULL
 setGeneric("performance", function(object, ...)
 standardGeneric("performance"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod performance
+#' @export
 setMethod("performance", c("ClassifyResult"),
           function(object)
           {
@@ -1438,12 +1427,13 @@ setMethod("performance", c("ClassifyResult"),
           })
 
 #' @export
+#' @usage NULL
 setGeneric("actualOutcomes", function(object, ...)
 standardGeneric("actualOutcomes"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod actualOutcomes
+#' @export
 setMethod("actualOutcomes", c("ClassifyResult"),
           function(object)
           {
@@ -1456,7 +1446,7 @@ standardGeneric("tunedParameters"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod tunedParameters
+#' @export
 setMethod("tunedParameters", "ClassifyResult",
           function(object)
           {
@@ -1464,12 +1454,13 @@ setMethod("tunedParameters", "ClassifyResult",
           })
 
 #' @export
+#' @usage NULL
 setGeneric("totalPredictions", function(result, ...)
 standardGeneric("totalPredictions"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
-#' @exportMethod totalPredictions
+#' @export
 setMethod("totalPredictions", c("ClassifyResult"),
           function(result)
           {

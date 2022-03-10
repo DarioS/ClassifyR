@@ -7,8 +7,6 @@
 \alias{naiveBayesKernel,MultiAssayExperiment-method}
 \title{Classification Using A Bayes Classifier with Kernel Density Estimates}
 \usage{
-naiveBayesKernel(measurementsTrain, ...)
-
 \S4method{naiveBayesKernel}{matrix}(measurementsTrain, classesTrain, measurementsTest, ...)
 
 \S4method{naiveBayesKernel}{DataFrame}(

@@ -45,21 +45,19 @@
 #' 
 #'   ranked <- KolmogorovSmirnovRanking(genesMatrix, classes)
 #'   head(ranked)                           
-#' 
-#' @rdname KolmogorovSmirnovRanking
+#'
 #' @export
+#' @usage NULL
 setGeneric("KolmogorovSmirnovRanking", function(measurementsTrain, ...)
            standardGeneric("KolmogorovSmirnovRanking"))
 
 # Matrix of numeric measurements.
-#' @rdname KolmogorovSmirnovRanking
 #' @export
 setMethod("KolmogorovSmirnovRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
   KolmogorovSmirnovRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
-#' @rdname KolmogorovSmirnovRanking
 #' @export
 setMethod("KolmogorovSmirnovRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -82,7 +80,6 @@ setMethod("KolmogorovSmirnovRanking", "DataFrame", # Sample information data or 
 })
 
 # One or more omics data sets, possibly with sample information data.
-#' @rdname KolmogorovSmirnovRanking
 #' @export
 setMethod("KolmogorovSmirnovRanking", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)

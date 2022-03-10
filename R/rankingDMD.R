@@ -60,6 +60,7 @@
 #'   head(ranked)
 #' 
 #' @rdname DMDranking
+#' @usage NULL
 #' @export
 setGeneric("DMDranking", function(measurementsTrain, ...)
            standardGeneric("DMDranking"))

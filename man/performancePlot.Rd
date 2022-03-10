@@ -5,8 +5,6 @@
 \alias{performancePlot,list-method}
 \title{Plot Performance Measures for Various Classifications}
 \usage{
-performancePlot(results, ...)
-
 \S4method{performancePlot}{list}(
   results,
   performanceName = NULL,

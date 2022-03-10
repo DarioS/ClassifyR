@@ -6,27 +6,6 @@
 \alias{fisherDiscriminant,DataFrame-method}
 \alias{fisherDiscriminant,MultiAssayExperiment-method}
 \title{Classification Using Fisher's LDA}
-\usage{
-fisherDiscriminant(measurementsTrain, ...)
-
-\S4method{fisherDiscriminant}{matrix}(measurementsTrain, classesTrain, measurementsTest, ...)
-
-\S4method{fisherDiscriminant}{DataFrame}(
-  measurementsTrain,
-  classesTrain,
-  measurementsTest,
-  returnType = c("both", "class", "score"),
-  verbose = 3
-)
-
-\S4method{fisherDiscriminant}{MultiAssayExperiment}(
-  measurementsTrain,
-  measurementsTest,
-  targets = names(measurementsTrain),
-  classesTrain,
-  ...
-)
-}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
@@ -50,6 +29,11 @@ removed before training.}
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
+
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"}, or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, score for a sample belonging to the
@@ -59,11 +43,6 @@ in a \code{data.frame}.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give. This function only prints progress messages if
 the value is 3.}
-
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
 }
 \value{
 A vector or \code{data.frame} of class prediction information, as

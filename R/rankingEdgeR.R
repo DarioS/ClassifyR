@@ -69,6 +69,7 @@
 #'   }
 #' 
 #' @rdname edgeRranking
+#' @usage NULL
 #' @export
 setGeneric("edgeRranking", function(countsTrain, ...) standardGeneric("edgeRranking"))
 

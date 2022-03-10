@@ -6,22 +6,6 @@
 \alias{previousSelection,DataFrame-method}
 \alias{previousSelection,MultiAssayExperiment-method}
 \title{Automated Selection of Previously Selected Features}
-\usage{
-previousSelection(measurementsTrain, ...)
-
-\S4method{previousSelection}{matrix}(measurementsTrain, ...)
-
-\S4method{previousSelection}{DataFrame}(
-  measurementsTrain,
-  classesTrain,
-  classifyResult,
-  minimumOverlapPercent = 80,
-  .iteration,
-  verbose = 3
-)
-
-\S4method{previousSelection}{MultiAssayExperiment}(measurementsTrain, ...)
-}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a

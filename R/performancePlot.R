@@ -80,9 +80,9 @@
 #' 
 #' @importFrom rlang sym
 #' @rdname performancePlot
+#' @usage NULL
 #' @export
-setGeneric("performancePlot", function(results, ...)
-    standardGeneric("performancePlot"))
+setGeneric("performancePlot", function(results, ...) standardGeneric("performancePlot"))
 
 #' @rdname performancePlot
 #' @export

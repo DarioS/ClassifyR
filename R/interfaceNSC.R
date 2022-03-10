@@ -55,6 +55,7 @@
 #' 
 #' @rdname NSCinterface
 #' @export
+#' @usage NULL
 setGeneric("NSCtrainInterface", function(measurementsTrain, ...)
 standardGeneric("NSCtrainInterface"))
 
@@ -164,6 +165,7 @@ setMethod("NSCtrainInterface", "MultiAssayExperiment",
 #' 
 #' @rdname NSCinterface
 #' @export
+#' @usage NULL
 setGeneric("NSCpredictInterface", function(model, measurementsTest, ...)
   standardGeneric("NSCpredictInterface"))
 
@@ -260,6 +262,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #'   }
 #'
 #' @rdname NSCinterface
+#' @usage NULL
 #' @export
 setGeneric("NSCfeatures", function(model, measurementsTrain, classesTrain)
   standardGeneric("NSCfeatures"))

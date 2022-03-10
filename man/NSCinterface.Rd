@@ -13,8 +13,6 @@
 \alias{NSCfeatures,pamrtrained-method}
 \title{Interface for \code{pamr.train} Function from \code{pamr} CRAN Package}
 \usage{
-NSCtrainInterface(measurementsTrain, ...)
-
 \S4method{NSCtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
 
 \S4method{NSCtrainInterface}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -25,8 +23,6 @@ NSCtrainInterface(measurementsTrain, ...)
   classesTrain,
   ...
 )
-
-NSCpredictInterface(model, measurementsTest, ...)
 
 \S4method{NSCpredictInterface}{pamrtrained,DataFrame}(
   model,
@@ -43,8 +39,6 @@ NSCpredictInterface(model, measurementsTest, ...)
   targets = names(measurementsTest),
   ...
 )
-
-NSCfeatures(model, measurementsTrain, classesTrain)
 
 \S4method{NSCfeatures}{pamrtrained}(model, measurementsTrain, classesTrain)
 }

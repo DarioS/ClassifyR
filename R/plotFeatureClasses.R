@@ -25,6 +25,9 @@
 #' \code{DataFrame} of 2 columns must be specified. The first column contains
 #' the names of the tables and the second contains the names of the variables,
 #' thus each row unambiguously specifies a variable to be plotted.
+#' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
+#' that contains the samples' outcomes to use for prediction.
 #' @param groupBy If \code{measurements} is a \code{DataFrame}, then a
 #' character vector of length 1, which contains the name of a categorical
 #' feature, may be specified.  If \code{measurements} is a
@@ -127,18 +130,17 @@
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
-#'   plotFeatureClasses(dataContainer, targets = targetFeatures, classColumn = "class",
+#'   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
 #'                      groupBy = c("sampleInfo", "Gender"),
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #' 
 #' @importFrom dplyr mutate n
 #' @importFrom tidyr gather
-#' @rdname plotFeatureClasses
+#' @usage NULL
 #' @export
 setGeneric("plotFeatureClasses", function(measurements, ...)
   standardGeneric("plotFeatureClasses"))
 
-#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {
@@ -148,7 +150,6 @@ setMethod("plotFeatureClasses", "matrix", function(measurements, classes, target
   plotFeatureClasses(DataFrame(measurements, check.names = FALSE), classes, targets, ...)
 })
 
-#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
                                                       groupingName = NULL, whichNumericFeaturePlots = c("both", "density", "stripchart"),
@@ -357,10 +358,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   }
 })
 
-#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
-          function(measurements, targets, classColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
+          function(measurements, targets, classesColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
           {
             if(missing(targets))
               stop("'targets' must be specified by the user.")
@@ -370,7 +370,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
             assaysTargets <- targets[targets[, 1] != "sampleInfo", ]
             sampleInfoTargets <- targets[targets[, 1] == "sampleInfo", ]
             measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
-            classes <- MultiAssayExperiment::colData(measurements)[, classColumn]
+            classes <- MultiAssayExperiment::colData(measurements)[, classesColumn]
             
             if(!is.null(groupBy))
             {

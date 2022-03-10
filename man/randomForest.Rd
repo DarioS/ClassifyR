@@ -68,6 +68,8 @@ names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that integer variables from the sample information data table will be
 used.}
 
+\item{forest}{A trained random forest which was created by \code{\link{randomForest}}.}
+
 \item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}

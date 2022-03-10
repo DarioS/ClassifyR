@@ -6,26 +6,6 @@
 \alias{likelihoodRatioRanking,DataFrame-method}
 \alias{likelihoodRatioRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Distributions with Likelihood Ratio Statistic}
-\usage{
-likelihoodRatioRanking(measurementsTrain, ...)
-
-\S4method{likelihoodRatioRanking}{matrix}(measurementsTrain, classesTrain, ...)
-
-\S4method{likelihoodRatioRanking}{DataFrame}(
-  measurementsTrain,
-  classesTrain,
-  alternative = c(location = "different", scale = "different"),
-  ...,
-  verbose = 3
-)
-
-\S4method{likelihoodRatioRanking}{MultiAssayExperiment}(
-  measurementsTrain,
-  targets = names(measurementsTrain),
-  classesTrain,
-  ...
-)
-}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -44,6 +24,11 @@ measurements are of class \code{DataFrame} a character vector of length 1
 containing the column name in \code{measurement} is also permitted. Not used
 if \code{measurementsTrain} is a \code{MultiAssayExperiment} object.}
 
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
+
 \item{alternative}{Default: \code{c("different", "different")}. A vector of
 length 2.  The first element specifies the location of the alternate
 hypothesis.  The second element specifies the scale of the alternate
@@ -52,11 +37,6 @@ hypothesis.  Valid values in each element are "same" or "different".}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
-
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

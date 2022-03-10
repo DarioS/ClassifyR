@@ -6,28 +6,6 @@
 \alias{classifyInterface,DataFrame-method}
 \alias{classifyInterface,MultiAssayExperiment-method}
 \title{An Interface for PoiClaClu Package's Classify Function}
-\usage{
-classifyInterface(countsTrain, ...)
-
-\S4method{classifyInterface}{matrix}(countsTrain, classesTrain, countsTest, ...)
-
-\S4method{classifyInterface}{DataFrame}(
-  countsTrain,
-  classesTrain,
-  countsTest,
-  ...,
-  returnType = c("both", "class", "score"),
-  verbose = 3
-)
-
-\S4method{classifyInterface}{MultiAssayExperiment}(
-  countsTrain,
-  countsTest,
-  targets = names(countsTrain),
-  classesTrain,
-  ...
-)
-}
 \arguments{
 \item{countsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -52,6 +30,11 @@ removed before training.}
 samples in common with \code{countsTrain} and the same number of features
 as it.}
 
+\item{targets}{If \code{countsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information table will be
+used.}
+
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, matrix of scores for each class, or both
@@ -60,11 +43,6 @@ labels and scores in a \code{data.frame}.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
-
-\item{targets}{If \code{countsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that integer variables from the sample information table will be
-used.}
 }
 \value{
 Either a factor vector of predicted classes, a matrix of scores for

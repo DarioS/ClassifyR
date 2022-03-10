@@ -47,6 +47,7 @@
 #' to either a vector of class labels, score for a sample belonging to the
 #' second class, as determined by the factor levels, or both labels and scores
 #' in a \code{data.frame}.
+#' @param forest A trained random forest which was created by \code{\link{randomForest}}.
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
@@ -87,7 +88,7 @@ standardGeneric("randomForestTrainInterface"))
 setGeneric("randomForestPredictInterface", function(models, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
-#' @exportMethod randomForestTrainInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
@@ -97,7 +98,7 @@ setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measuremen
 })
 
 # Sample information data or one of the other inputs, transformed.
-#' @exportMethod randomForestTrainInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
@@ -113,7 +114,7 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain,
   randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcomes"]], keep.forest = TRUE, ...)
 })
 
-#' @exportMethod randomForestTrainInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestTrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
@@ -138,14 +139,14 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 setGeneric("randomForestPredictInterface", function(forest, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
-#' @exportMethod randomForestPredictInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(forest, measurementsTest, ...)
 {
   randomForestPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
-#' @exportMethod randomForestPredictInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "DataFrame"),
 function(forest, measurementsTest, ..., returnType = c("both", "class", "score"), verbose = 3)
@@ -162,7 +163,7 @@ function(forest, measurementsTest, ..., returnType = c("both", "class", "score")
 })
 
 # One or more omics data sets, possibly with sample information data.
-#' @exportMethod randomForestPredictInterface
+#' @export
 #' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperiment"),
           function(forest, measurementsTest, targets = names(measurementsTest), ...)
@@ -190,8 +191,7 @@ setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperimen
 #' one tree of the forest.
 #'
 #' @aliases forestFeatures forestFeatures,randomForest-method
-#' @param forest A trained random forest which was created by
-#' \code{\link{randomForest}}.
+#' @param forest A trained random forest which was created by \code{\link{randomForest}}.
 #' @return An \code{list} object. The first element is a vector or data frame
 #' of features, ranked from best to worst using the Gini index. The second
 #' element is a vector or data frame of features used in at least one tree.
@@ -218,6 +218,7 @@ setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperimen
 #'
 #' @importFrom randomForest importance varUsed
 #' @export
+#' @usage NULL
 setGeneric("forestFeatures", function(forest, ...)
   standardGeneric("forestFeatures"))
 

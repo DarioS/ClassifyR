@@ -11,8 +11,6 @@
 \alias{SVMpredictInterface,svm,MultiAssayExperiment-method}
 \title{An Interface for e1071 Package's Support Vector Machine Classifier.}
 \usage{
-SVMtrainInterface(measurementsTrain, ...)
-
 \S4method{SVMtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
 
 \S4method{SVMtrainInterface}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -23,8 +21,6 @@ SVMtrainInterface(measurementsTrain, ...)
   classesTrain,
   ...
 )
-
-SVMpredictInterface(model, measurementsTest, ...)
 
 \S4method{SVMpredictInterface}{svm,matrix}(model, measurementsTest, ...)
 

@@ -8,8 +8,6 @@
 \title{Ranking by Differential Distributions with Differences in Means or Medians
 and a Deviation Measure}
 \usage{
-DMDranking(measurementsTrain, ...)
-
 \S4method{DMDranking}{matrix}(measurementsTrain, classesTrain, ...)
 
 \S4method{DMDranking}{DataFrame}(

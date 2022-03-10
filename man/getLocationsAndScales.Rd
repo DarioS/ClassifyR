@@ -6,19 +6,6 @@
 \alias{getLocationsAndScales,DataFrame-method}
 \alias{getLocationsAndScales,MultiAssayExperiment-method}
 \title{Calculate Location and Scale}
-\usage{
-getLocationsAndScales(measurements, ...)
-
-\S4method{getLocationsAndScales}{matrix}(measurements, ...)
-
-\S4method{getLocationsAndScales}{DataFrame}(
-  measurements,
-  location = c("mean", "median"),
-  scale = c("SD", "MAD", "Qn")
-)
-
-\S4method{getLocationsAndScales}{MultiAssayExperiment}(measurements, targets = names(measurements), ...)
-}
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -30,14 +17,14 @@ to only those features of type \code{numeric}.}
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{location}{The type of location to be calculated.}
-
-\item{scale}{The type of scale to be calculated.}
-
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that numeric variables from the sample information data table will be
 used.}
+
+\item{location}{The type of location to be calculated.}
+
+\item{scale}{The type of scale to be calculated.}
 }
 \value{
 A \code{\link{list}} of length 2. The first element contains the

@@ -83,12 +83,11 @@
 #'                                   # selected internally by tuning of features selected.
 #'   kTSPclassifier(trainMatrix, classes[trainIndex], testMatrix, featurePairs)
 #' 
-#' @rdname kTSPclassifier
+#' @usage NULL
 #' @export
 setGeneric("kTSPclassifier", function(measurementsTrain, ...)
            standardGeneric("kTSPclassifier"))
 
-#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL, ...)
@@ -103,7 +102,6 @@ setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
                  DataFrame(measurementsTest, check.names = FALSE), featurePairs, ...)
 })
 
-#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL,
@@ -194,7 +192,6 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
   )
 })
 
-#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "MultiAssayExperiment", 
           function(measurementsTrain, classesTrain, target = names(measurementsTrain)[1], featurePairs = NULL, ...)

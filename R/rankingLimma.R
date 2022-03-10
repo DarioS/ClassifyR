@@ -47,14 +47,13 @@
 #'     ranked <- limmaRanking(genesMatrix, classes)
 #'     head(ranked)                           
 #'   #}
-#' 
-#' @rdname limmaRanking
+#'
+#' @usage NULL
 #' @export
 setGeneric("limmaRanking", function(measurementsTrain, ...)
            standardGeneric("limmaRanking"))
 
 # Matrix of numeric measurements.
-#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
@@ -62,7 +61,6 @@ setMethod("limmaRanking", "matrix", function(measurementsTrain, classesTrain, ..
 })
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
-#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "DataFrame",
           function(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -84,7 +82,6 @@ setMethod("limmaRanking", "DataFrame",
 })
 
 # One or more omics data sets, possibly with sample information data.
-#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "MultiAssayExperiment", 
           function(measurementsTrain, targets = NULL, classesTrain, ...)

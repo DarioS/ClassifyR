@@ -14,9 +14,7 @@
 #' @param classes If \code{results} is a matrix, this is a factor vector of the
 #' same length as the number of columns that \code{results} has.
 #' @param comparison Default: Classifier Name. The aspect of the experimental
-#' design to compare.  Can be any characteristic that all results share or
-#' special value "Cross-validation" to compare between cross-validation
-#' schemes.  to com.
+#' design to compare. Can be any characteristic that all results share.
 #' @param metric The sample-wise metric to plot.
 #' @param featureValues If not NULL, can be a named factor or named numeric
 #' vector specifying some variable of interest to plot underneath the class
@@ -78,12 +76,11 @@
 #'   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
 #'                                 featureValues = cholesterol, featureName = "Cholesterol")                                
 #'
-#' @rdname samplesMetricMap
 #' @export
+#' @usage NULL
 setGeneric("samplesMetricMap", function(results, ...)
 standardGeneric("samplesMetricMap"))
 
-#' @rdname samplesMetricMap
 #' @export
 setMethod("samplesMetricMap", "list", 
           function(results,
@@ -415,6 +412,7 @@ setMethod("samplesMetricMap", "list",
   wholePlot
 })
 
+#' @export
 setMethod("samplesMetricMap", "matrix", 
           function(results, classes,
                    metric = c("Sample Error", "Sample Accuracy"),

@@ -66,6 +66,7 @@
 #'   
 #' @include classes.R
 #' @rdname DLDAinterface
+#' @usage NULL
 #' @export
 setGeneric("DLDAtrainInterface", function(measurementsTrain, ...) standardGeneric("DLDAtrainInterface"))
 
@@ -109,6 +110,7 @@ setMethod("DLDAtrainInterface", "MultiAssayExperiment", function(measurementsTra
 
 
 #' @rdname DLDAinterface
+#' @usage NULL
 #' @export
 setGeneric("DLDApredictInterface", function(model, measurementsTest, ...) standardGeneric("DLDApredictInterface"))
 

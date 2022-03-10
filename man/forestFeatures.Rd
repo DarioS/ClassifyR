@@ -4,12 +4,8 @@
 \alias{forestFeatures}
 \alias{forestFeatures,randomForest-method}
 \title{Extract Vectors of Ranked and Selected Features From a Random Forest Object}
-\usage{
-forestFeatures(forest, ...)
-}
 \arguments{
-\item{forest}{A trained random forest which was created by
-\code{\link{randomForest}}.}
+\item{forest}{A trained random forest which was created by \code{\link{randomForest}}.}
 }
 \value{
 An \code{list} object. The first element is a vector or data frame

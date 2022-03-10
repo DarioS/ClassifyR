@@ -41,7 +41,7 @@ created by \code{\link{runTest}} or \code{\link{runTests}}.
 \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)}
 \describe{
-\item{\code{characteristics}} {A \code{\link{DataFrame}} describing the
+\item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 characteristics of classification done. First column must be named
 \code{"charateristic"} and second column must be named \code{"value"}. If
 using wrapper functions for feature selection and classifiers in this
@@ -51,9 +51,9 @@ is not necessary to specify them.}
 \item{\code{originalFeatures}}{All feature names. Character vector
 or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
 of measurements on the same set of samples.}
-\item{\code{rankedFeatures}} {All features, from most to least important. Character vector
+\item{\code{rankedFeatures}}{All features, from most to least important. Character vector
 or a data frame if data set has multiple kinds of measurements on the same set of samples.}
-\item{\code{chosenFeatures}} {Features selected at each fold. Character
+\item{\code{chosenFeatures}}{Features selected at each fold. Character
 vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{models}}{All of the models fitted to the training data.}
 \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}

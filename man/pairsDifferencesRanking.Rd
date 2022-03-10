@@ -6,31 +6,6 @@
 \alias{pairsDifferencesRanking,DataFrame-method}
 \alias{pairsDifferencesRanking,MultiAssayExperiment-method}
 \title{Ranking of Pairs of Features that are Different Between Classes}
-\usage{
-pairsDifferencesRanking(measurementsTrain, ...)
-
-\S4method{pairsDifferencesRanking}{matrix}(
-  measurementsTrain,
-  classesTrain,
-  featurePairs = NULL,
-  ...
-)
-
-\S4method{pairsDifferencesRanking}{DataFrame}(
-  measurementsTrain,
-  classesTrain,
-  featurePairs = NULL,
-  verbose = 3
-)
-
-\S4method{pairsDifferencesRanking}{MultiAssayExperiment}(
-  measurementsTrain,
-  target = names(measurementsTrain)[1],
-  classesTrain,
-  featurePairs = NULL,
-  ...
-)
-}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -51,12 +26,12 @@ containing the column name in \code{measurement} is also permitted.}
 feature identifiers to calculate the sum of differences within each class
 for.}
 
+\item{target}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+name of the data table to be used.}
+
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
-
-\item{target}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-name of the data table to be used.}
 }
 \value{
 A \code{\link{Pairs}} object, from the most promising feature pair

@@ -68,6 +68,7 @@
 #'   }
 #' 
 #' @rdname SVMinterface
+#' @usage NULL 
 #' @export
 setGeneric("SVMtrainInterface", function(measurementsTrain, ...)
 standardGeneric("SVMtrainInterface"))
@@ -114,6 +115,7 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 
 
 #' @rdname SVMinterface
+#' @usage NULL
 #' @export
 setGeneric("SVMpredictInterface", function(model, measurementsTest, ...)
 standardGeneric("SVMpredictInterface"))

@@ -119,12 +119,11 @@
 #'                 binsList = list(frequencies = seq(0, 100, 10), setSizes = seq(0, 25, 5))
 #'                 )
 #' @import grid               
-#' @rdname selectionPlot
+#' @usage NULL
 #' @export
 setGeneric("selectionPlot", function(results, ...)
 standardGeneric("selectionPlot"))
 
-#' @rdname selectionPlot
 #' @export
 setMethod("selectionPlot", "list", 
           function(results,

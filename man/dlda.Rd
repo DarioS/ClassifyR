@@ -5,9 +5,6 @@
 \alias{dlda}
 \alias{dlda-class}
 \title{Trained dlda Object}
-\usage{
-dlda(x, ...)
-}
 \description{
 Enables S4 method dispatching on it.
 }

@@ -4,11 +4,6 @@
 \alias{previousTrained}
 \alias{previousTrained,ClassifyResult-method}
 \title{Automated Usage of Previously Created Classifiers}
-\usage{
-previousTrained(classifyResult, ...)
-
-\S4method{previousTrained}{ClassifyResult}(classifyResult, .iteration, verbose = 3)
-}
 \arguments{
 \item{classifyResult}{A \code{\link{ClassifyResult}} object which stores the
 models fitted previously.}

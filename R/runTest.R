@@ -31,6 +31,9 @@
 #' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that numeric variables from the sample information data table will be
 #' used.
+#' @param outcomesColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+#' that contain(s) the samples' outcomes to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -66,12 +69,11 @@
 #'   #}
 #' 
 #' @importFrom S4Vectors do.call
-#' @rdname runTest
+#' @usage NULL
 #' @export
 setGeneric("runTest", function(measurementsTrain, ...)
            standardGeneric("runTest"))
 
-#' @rdname runTest
 #' @export
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
   function(measurementsTrain, ...)
@@ -81,7 +83,6 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
   runTest(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
-#' @rdname runTest
 #' @export
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
@@ -225,7 +226,6 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   }  
 })
 
-#' @rdname runTest
 #' @export
 setMethod("runTest", c("MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)

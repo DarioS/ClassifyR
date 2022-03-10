@@ -75,12 +75,11 @@
 #'                             list(sample(10, 10), sample(10, 10)), list(function(oracle){}),
 #'                             NULL, predicted, actual)
 #'   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
-#' 
-#' @rdname rankingPlot
+#'
+#' @usage NULL
 #' @export
 setGeneric("ROCplot", function(results, ...) standardGeneric("ROCplot"))
 
-#' @rdname rankingPlot
 #' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,

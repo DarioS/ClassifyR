@@ -6,15 +6,6 @@
 \alias{limmaRanking,DataFrame-method}
 \alias{limmaRanking,MultiAssayExperiment-method}
 \title{Ranking of Differentially Abundant Features}
-\usage{
-limmaRanking(measurementsTrain, ...)
-
-\S4method{limmaRanking}{matrix}(measurementsTrain, classesTrain, ...)
-
-\S4method{limmaRanking}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
-
-\S4method{limmaRanking}{MultiAssayExperiment}(measurementsTrain, targets = NULL, classesTrain, ...)
-}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -30,12 +21,12 @@ to only those features of type \code{numeric}.}
 \item{classesTrain}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements}.}
 
+\item{targets}{Names of data tables to be combined into a single table and
+used in the analysis.}
+
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
-
-\item{targets}{Names of data tables to be combined into a single table and
-used in the analysis.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

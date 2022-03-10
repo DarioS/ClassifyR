@@ -11,8 +11,6 @@
 \alias{DLDApredictInterface,dlda,MultiAssayExperiment-method}
 \title{An Interface for sparsediscrim Package's dlda Function}
 \usage{
-DLDAtrainInterface(measurementsTrain, ...)
-
 \S4method{DLDAtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
 
 \S4method{DLDAtrainInterface}{DataFrame}(measurementsTrain, classesTrain, verbose = 3)
@@ -23,8 +21,6 @@ DLDAtrainInterface(measurementsTrain, ...)
   classesTrain,
   ...
 )
-
-DLDApredictInterface(model, measurementsTest, ...)
 
 \S4method{DLDApredictInterface}{dlda,matrix}(model, measurementsTest, ...)
 

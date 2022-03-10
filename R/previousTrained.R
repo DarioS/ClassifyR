@@ -48,13 +48,12 @@
 #'     newerResult <- runTests(newDataset, classes, CVparams, previousParams)
 #'     models(newerResult)
 #'   #}  
-#' 
-#' @rdname previousTrained
+#'
+#' @usage NULL
 #' @export
 setGeneric("previousTrained", function(classifyResult, ...)
 standardGeneric("previousTrained"))
 
-#' @rdname previousTrained
 #' @export
 setMethod("previousTrained", "ClassifyResult", 
           function(classifyResult, .iteration, verbose = 3)

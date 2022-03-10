@@ -19,6 +19,9 @@
 #' returned.
 #' @param target If \code{measurements} is a \code{MultiAssayExperiment}, the
 #' name of the data table to be used.
+#' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
+#' that contains the samples' outcomes to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -52,12 +55,11 @@
 #'   
 #'   interactorDifferences(measurements, pairs)
 #'
-#' @rdname interactorDifferencess
 #' @export
+#' @usage NULL
 setGeneric("interactorDifferences", function(measurements, ...)
            standardGeneric("interactorDifferences"))
 
-#' @rdname interactorDifferencess
 #' @export
 setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
@@ -65,7 +67,6 @@ setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
   interactorDifferences(DataFrame(measurements, check.names = FALSE), ...)
 })
 
-#' @rdname interactorDifferencess
 #' @export
 setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
           function(measurements, featurePairs = NULL, absolute = FALSE, verbose = 3)
@@ -88,11 +89,10 @@ setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
   differences
 })
 
-#' @rdname interactorDifferencess
 #' @export
 setMethod("interactorDifferences", "MultiAssayExperiment", # Pick one numeric table from the data set.
-          function(measurements, target = NULL, classes, ...)
+          function(measurements, target = NULL, classesColumn, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, target, classes)
+  tablesAndClasses <- .MAEtoWideTable(measurements, target, classesColumn)
   interactorDifferences(tablesAndClasses[["dataTable"]], ...)
 })

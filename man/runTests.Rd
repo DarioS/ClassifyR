@@ -6,22 +6,6 @@
 \alias{runTests,DataFrame-method}
 \alias{runTests,MultiAssayExperiment-method}
 \title{Reproducibly Run Various Kinds of Cross-Validation}
-\usage{
-runTests(measurements, ...)
-
-\S4method{runTests}{matrix}(measurements, outcomes, ...)
-
-\S4method{runTests}{DataFrame}(
-  measurements,
-  outcomes,
-  crossValParams = CrossValParams(),
-  modellingParams = ModellingParams(),
-  characteristics = DataFrame(),
-  verbose = 1
-)
-
-\S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomes, ...)
-}
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing all of the data. For a
@@ -51,13 +35,17 @@ package.  Transformation, selection and prediction functions provided by
 this package will cause the characteristics to be automatically determined
 and this can be left blank.}
 
-\item{verbose}{Default: 1. A number between 0 and 3 for the amount of
-progress messages to give.  A higher number will produce more messages as
-more lower-level functions print messages.}
-
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"clinical"} is also a valid value
 and specifies that the clinical data table will be used.}
+
+\item{outcomesColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+that contain(s)s the samples' outcomes to use for prediction.}
+
+\item{verbose}{Default: 1. A number between 0 and 3 for the amount of
+progress messages to give.  A higher number will produce more messages as
+more lower-level functions print messages.}
 }
 \value{
 An object of class \code{\link{ClassifyResult}}.

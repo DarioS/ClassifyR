@@ -7,40 +7,16 @@
 \alias{featureSetSummary,MultiAssayExperiment-method}
 \title{Transform a Table of Feature Abundances into a Table of Feature Set
 Abundances.}
-\usage{
-featureSetSummary(measurements, ...)
-
-\S4method{featureSetSummary}{matrix}(
-  measurements,
-  location = c("median", "mean"),
-  featureSets,
-  minimumOverlapPercent = 80,
-  verbose = 3
-)
-
-\S4method{featureSetSummary}{DataFrame}(
-  measurements,
-  location = c("median", "mean"),
-  featureSets,
-  minimumOverlapPercent = 80,
-  verbose = 3
-)
-
-\S4method{featureSetSummary}{MultiAssayExperiment}(
-  measurements,
-  target = NULL,
-  location = c("median", "mean"),
-  featureSets,
-  minimumOverlapPercent = 80,
-  verbose = 3
-)
-}
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
 \code{matrix}, the rows are samples, and the columns are features.
 If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
 to only those features of type \code{numeric}.}
+
+\item{target}{If the input is a \code{\link{MultiAssayExperiment}}, this
+specifies which data set will be transformed. Can either be an integer index or a
+character string specifying the name of the table. Must have length 1.}
 
 \item{location}{Default: The median. The type of location to summarise a set
 of features belonging to a feature set by.}
@@ -55,10 +31,6 @@ that feature set to not be discarded from the anaylsis.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
-
-\item{target}{If the input is a \code{\link{MultiAssayExperiment}}, this
-specifies which data set will be transformed. Can either be an integer index or a
-character string specifying the name of the table. Must have length 1.}
 }
 \value{
 The same class of variable as the input variable \code{measurements}

@@ -7,8 +7,6 @@
 \alias{edgeRranking,MultiAssayExperiment-method}
 \title{Feature Ranking Based on Differential Expression for Count Data}
 \usage{
-edgeRranking(countsTrain, ...)
-
 \S4method{edgeRranking}{matrix}(countsTrain, classesTrain, ...)
 
 \S4method{edgeRranking}{DataFrame}(

@@ -42,12 +42,11 @@
 #'                                         plotType = "histogram", binwidth = 1)
 #'     print(head(featureDistribution))
 #'   #}
-#' @rdname distribution
+#' @usage NULL
 #' @export
 setGeneric("distribution", function(result, ...)
            standardGeneric("distribution"))
 
-#' @rdname distribution
 #' @export
 setMethod("distribution", "ClassifyResult", 
           function(result, dataType = c("features", "samples"),

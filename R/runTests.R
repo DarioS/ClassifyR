@@ -29,6 +29,9 @@
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
 #' names of the data tables to be used. \code{"clinical"} is also a valid value
 #' and specifies that the clinical data table will be used.
+#' @param outcomesColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+#' that contain(s)s the samples' outcomes to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -52,12 +55,11 @@
 #'                        value = c("Asthma", "Different Means"))
 #'              )
 #'   #}
-#' 
-#' @rdname runTests
+#'
 #' @export
+#' @usage NULL
 setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
-#' @rdname runTests
 #' @export
 setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matrix of numeric measurements.
 {
@@ -67,7 +69,6 @@ setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matri
 })
 
 # Clinical data or one of the other inputs, transformed.
-#' @rdname runTests
 #' @export
 setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = DataFrame(), verbose = 1)
@@ -153,11 +154,10 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes)
 })
 
-#' @rdname runTests
 #' @export
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), outcomes, ...)
+          function(measurements, targets = names(measurements), outcomesColumns, ...)
 {
-  tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
+  tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, outcomesColumns, restrict = NULL)
   runTests(tablesAndOutcomes[["dataTable"]], tablesAndOutcomes[["outcomes"]], ...)            
 })

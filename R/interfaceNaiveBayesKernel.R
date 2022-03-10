@@ -98,6 +98,7 @@
 #'   naiveBayesKernel(trainMatrix, classesTrain, testMatrix)
 #' 
 #' @rdname naiveBayesKernel
+#' @usage NULL
 #' @export
 setGeneric("naiveBayesKernel", function(measurementsTrain, ...)
            standardGeneric("naiveBayesKernel"))

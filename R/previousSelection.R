@@ -69,13 +69,12 @@
 #' 
 #' @importFrom MultiAssayExperiment colData wideFormat
 #' @importFrom S4Vectors mcols
-#' @rdname previousSelection
+#' @usage NULL
 #' @export
 setGeneric("previousSelection", function(measurementsTrain, ...)
 standardGeneric("previousSelection"))
 
-#' @rdname previousSelection
-#' @exportMethod previousSelection
+#' @export
 setMethod("previousSelection", "matrix", 
           function(measurementsTrain, ...)
 {
@@ -84,8 +83,7 @@ setMethod("previousSelection", "matrix",
 
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection but of course not used here.
-#' @rdname previousSelection
-#' @exportMethod previousSelection
+#' @export
 setMethod("previousSelection", "DataFrame", 
           function(measurementsTrain, classesTrain, classifyResult, minimumOverlapPercent = 80,
                    .iteration, verbose = 3)
@@ -111,8 +109,7 @@ setMethod("previousSelection", "DataFrame",
   S4Vectors::mcols(measurementsTrain)[selectedColumns, ] # Each row is about one column.
 })
 
-#' @rdname previousSelection
-#' @exportMethod previousSelection
+#' @export
 setMethod("previousSelection", "MultiAssayExperiment", 
           function(measurementsTrain, ...)
           {
