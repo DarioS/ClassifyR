@@ -10,9 +10,43 @@
 \alias{coxnetPredictInterface,multnet,matrix-method}
 \alias{coxnetPredictInterface,multnet,DataFrame-method}
 \alias{coxnetPredictInterface,multnet,MultiAssayExperiment-method}
+\alias{coxnetPredictInterface,coxnet,matrix-method}
+\alias{coxnetPredictInterface,coxnet,DataFrame-method}
+\alias{coxnetPredictInterface,coxnet,MultiAssayExperiment-method}
 \title{An Interface for glmnet Package's coxnet Function}
 \usage{
 coxnetTrainInterface(measurementsTrain, ...)
+
+\S4method{coxnetTrainInterface}{matrix}(measurementsTrain, survivalTrain, ...)
+
+\S4method{coxnetTrainInterface}{DataFrame}(
+  measurementsTrain,
+  survivalTrain,
+  lambda = NULL,
+  ...,
+  verbose = 3
+)
+
+coxnetPredictInterface(model, measurementsTest, ...)
+
+\S4method{coxnetPredictInterface}{coxnet,matrix}(model, measurementsTest, ...)
+
+\S4method{coxnetPredictInterface}{coxnet,DataFrame}(
+  model,
+  measurementsTest,
+  survivalTest = NULL,
+  lambda,
+  ...,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{coxnetPredictInterface}{coxnet,MultiAssayExperiment}(
+  model,
+  measurementsTest,
+  targets = names(measurementsTest),
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -40,26 +74,26 @@ removed before training.}
 \code{s} to \code{\link[glmnet]{predict.glmnet}} if the prediction function
 is used.}
 
-\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
-samples in common with \code{measurements} and the same number of features
-as it.}
-
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that integer variables from the clinical data table will be
-used.}
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
 
 \item{model}{A trained coxnet, as created by the \code{glmnet}
 function.}
+
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurements} and the same number of features
+as it.}
 
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, matrix of scores for each class, or both
 labels and scores in a \code{data.frame}.}
 
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
+\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"clinical"} is also a valid value
+and specifies that integer variables from the clinical data table will be
+used.}
 }
 \value{
 For \code{coxnetTrainInterface}, an object of type

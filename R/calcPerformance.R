@@ -27,37 +27,39 @@
 #' classifier predicts all samples as belonging to the majority class.
 #' 
 #' @aliases calcPerformance calcExternalPerformance calcCVperformance
-#' calcExternalPerformance,factor,factor-method
+#' calcExternalPerformance,factor,factor-method calcExternalPerformance,Surv,numeric-method
 #' calcCVperformance,ClassifyResult-method
 #' @param result An object of class \code{\link{ClassifyResult}}.
 #' @param performanceType A character vector of length 1. Default:
-#' \code{"Balanced Error"}.\cr Must be one of the following options:\cr
-#' \itemize{ \item\code{"Error"}: Ordinary error rate.  \item\code{"Accuracy"}:
-#' Ordinary accuracy.  \item\code{"Balanced Error"}: Balanced error rate.
-#' \item\code{"Balanced Accuracy"}: Balanced accuracy.  \item\code{"Sample
-#' Error"}: Error rate for each sample in the data set.  \item\code{"Sample
-#' Accuracy"}: Accuracy for each sample in the data set.
-#' 
-#' \item\code{"Micro Precision"}: Sum of the number of correct predictions in
-#' each class, divided by the sum of number of samples in each class.
-#' \item\code{"Micro Recall"}: Sum of the number of correct predictions in each
-#' class, divided by the sum of number of samples predicted as belonging to
-#' each class.  \item\code{"Micro F1"}: F1 score obtained by calculating the
-#' harmonic mean of micro precision and micro recall.  \item\code{"Macro
-#' Precision"}: Sum of the ratios of the number of correct predictions in each
-#' class to the number of samples in each class, divided by the number of
-#' classes.  \item\code{"Macro Recall"}: Sum of the ratios of the number of
-#' correct predictions in each class to the number of samples predicted to be
-#' in each class, divided by the number of classes.  \item\code{"Macro F1"}: F1
-#' score obtained by calculating the harmonic mean of macro precision and macro
-#' recall.  \item\code{"Matthews Correlation Coefficient"}: Matthews
-#' Correlation Coefficient (MCC). A score between -1 and 1 indicating how
-#' concordant the predicted classes are to the actual classes. Only defined if
+#' \code{"Balanced Error"}.
+#' Must be one of the following options:
+#' \itemize{
+#' \item{\code{"Error"}: Ordinary error rate.}
+#' \item{\code{"Accuracy"}: Ordinary accuracy.}
+#' \item{\code{"Balanced Error"}: Balanced error rate.}
+#' \item{\code{"Balanced Accuracy"}: Balanced accuracy.}
+#' \item{\code{"Sample Error"}: Error rate for each sample in the data set.}
+#' \item{\code{"Sample Accuracy"}: Accuracy for each sample in the data set.}
+#' \item{\code{"Micro Precision"}: Sum of the number of correct predictions in
+#'         each class, divided by the sum of number of samples in each class.}
+#' \item{\code{"Micro Recall"}: Sum of the number of correct predictions in each 
+#'         class, divided by the sum of number of samples predicted as
+#'         belonging to each class.}
+#' \item{\code{"Micro F1"}: F1 score obtained by calculating the
+#' harmonic mean of micro precision and micro recall.}
+#' \item{\code{"Macro Precision"}: Sum of the ratios of the number of correct predictions
+#' in each class to the number of samples in each class, divided by the number of classes.}
+#' \item{\code{"Macro Recall"}: Sum of the ratios of the number of correct predictions in each
+#' class to the number of samples predicted to be in each class, divided by the number of classes.}
+#' \item{\code{"Macro F1"}: F1 score obtained by calculating the harmonic mean of macro precision
+#' and macro recall.}
+#' \item{\code{"Matthews Correlation Coefficient"}: Matthews Correlation Coefficient (MCC). A score
+#' between -1 and 1 indicating how concordant the predicted classes are to the actual classes. Only defined if
 #' there are two classes.}
+#' }
 #' 
 #' @param actualOutcomes A factor vector specifying each sample's correct class.
-#' @param predictedOutcomes A factor vector of the same length as
-#' \code{actualOutcomes} specifying each sample's predicted class.
+#' @param predictedOutcomes A factor vector of the same length as \code{actualOutcomes} specifying each sample's predicted class.
 #' 
 #' @return If \code{calcCVperformance} was run, an updated
 #' \code{\linkS4class{ClassifyResult}} object, with new metric values in the
@@ -78,10 +80,14 @@
 #'   performance(result)
 #' 
 #' @include classes.R
+#' @rdname calcPerformance
+#' @usage NULL
 #' @export
 setGeneric("calcExternalPerformance", function(actualOutcomes, predictedOutcomes, ...)
 standardGeneric("calcExternalPerformance"))
 
+#' @rdname calcPerformance
+#' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualOutcomes, predictedOutcomes, # Both are classes.
                    performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
@@ -97,20 +103,23 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
   .calcPerformance(list(actualOutcomes), list(predictedOutcomes), performanceType = performanceType)[["values"]]
 })
 
+#' @rdname calcPerformance
+#' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("Surv", "numeric"),
-          function(actualOutcomes, predictedOutcomes,
-                   performanceType = "C index")
+          function(actualOutcomes, predictedOutcomes, performanceType = "C index")
           {
             performanceType <- match.arg(performanceType)
             .calcPerformance(actualOutcomes, predictedOutcomes, performanceType = performanceType)[["values"]]
           })
 
-
+#' @rdname calcPerformance
+#' @usage NULL
 #' @export
 setGeneric("calcCVperformance", function(result, ...)
     standardGeneric("calcCVperformance"))
 
-
+#' @rdname calcPerformance
+#' @exportMethod calcCVperformance
 setMethod("calcCVperformance", "ClassifyResult",
           function(result, performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
                                                "Sample Error", "Sample Accuracy",

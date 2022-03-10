@@ -7,6 +7,9 @@
 \title{Union of a Character and a DataFrame}
 \description{
 Allows a slot to be either a character or a DataFrame.
+
+Enables different functionality to be executed depending on whether
+input data dependent variable is survival or categorical classes.
 }
 \examples{
 
@@ -15,7 +18,15 @@ Allows a slot to be either a character or a DataFrame.
   featuresTable <- DataFrame(assay = c("RNA-seq", "Mass spectrometry"),
                              feature = c("PD-1", "MITF"))
   omicsSelections <- new("Selections", features = featuresTable)
+
+  setClass("Selections", representation(features = "characterOrDataFrame"))
+  selections <- new("Selections", features = c("BRAF", "NRAS"))
+  featuresTable <- DataFrame(assay = c("RNA-seq", "Mass spectrometry"),
+                             feature = c("PD-1", "MITF"))
+  omicsSelections <- new("Selections", features = featuresTable)
 }
 \author{
+Dario Strbenac
+
 Dario Strbenac
 }

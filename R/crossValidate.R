@@ -44,7 +44,6 @@
 #' @aliases crossValidate crossValidate,matrix-method crossValidate,DataFrame-method
 #' crossValidate,MultiAssayExperiment-method, crossValidate,data.frame-method
 #' @rdname crossValidate
-#' @name crossValidate
 #'
 #' @examples
 #' 
@@ -91,7 +90,8 @@ setGeneric("crossValidate", function(measurements,
                                      ...)
     standardGeneric("crossValidate"))
 
-
+#' @rdname crossValidate
+#' @export
 setMethod("crossValidate", "DataFrame", 
           function(measurements,
                    classes, 
@@ -286,10 +286,8 @@ setMethod("crossValidate", "DataFrame",
           })
 
 
-
-
-
-
+#' @rdname crossValidate
+#' @export
 # One or more omics data sets, possibly with clinical data.
 setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
@@ -324,7 +322,8 @@ setMethod("crossValidate", "MultiAssayExperiment",
                             characteristicsLabel = characteristicsLabel)
           })
 
-
+#' @rdname crossValidate
+#' @export
 setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           function(measurements,
                    classes, 
@@ -356,6 +355,8 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                             characteristicsLabel = characteristicsLabel)
           })
 
+#' @rdname crossValidate
+#' @export
 setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           function(measurements,
                    classes, 
@@ -906,13 +907,10 @@ simplifyResults <- function(results, values = c("dataset", "classifier", "select
     results[!duplicated(ch)]
 }
 
-
-
-
-
+#' @rdname crossValidate
+#' @export
 setMethod("predict", "ClassifyResult", 
-          function(object,
-                   newData)
+          function(object, newData)
           {
               object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
           })

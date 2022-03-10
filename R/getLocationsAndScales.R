@@ -36,16 +36,21 @@
 #'   mean(distributionInfo[["median"]]) # Typical median.
 #'   mean(distributionInfo[["MAD"]]) # Typical MAD.
 #' 
+#' @rdname getLocationsAndScales
 #' @export
 setGeneric("getLocationsAndScales", function(measurements, ...)
            standardGeneric("getLocationsAndScales"))
 
+#' @rdname getLocationsAndScales
+#' @export
 setMethod("getLocationsAndScales", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
   getLocationsAndScales(DataFrame(measurements, check.names = FALSE), ...)
 })
 
+#' @rdname getLocationsAndScales
+#' @export
 setMethod("getLocationsAndScales", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurements, location = c("mean", "median"), scale = c("SD", "MAD", "Qn"))
 {
@@ -70,6 +75,8 @@ setMethod("getLocationsAndScales", "DataFrame", # Sample information data or one
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname getLocationsAndScales
+#' @export
 setMethod("getLocationsAndScales", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {

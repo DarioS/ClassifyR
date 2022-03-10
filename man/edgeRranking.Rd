@@ -8,6 +8,19 @@
 \title{Feature Ranking Based on Differential Expression for Count Data}
 \usage{
 edgeRranking(countsTrain, ...)
+
+\S4method{edgeRranking}{matrix}(countsTrain, classesTrain, ...)
+
+\S4method{edgeRranking}{DataFrame}(
+  countsTrain,
+  classesTrain,
+  normFactorsOptions = NULL,
+  dispOptions = NULL,
+  fitOptions = NULL,
+  verbose = 3
+)
+
+\S4method{edgeRranking}{MultiAssayExperiment}(countsTrain, targets = NULL, ...)
 }
 \arguments{
 \item{countsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}} or
@@ -27,9 +40,6 @@ length 1 containing the column name in \code{countsTrain} if it is a
 \code{countsTrain} is a \code{\link{MultiAssayExperiment}}. If a column name,
 that column will be removed before training.}
 
-\item{targets}{If \code{countsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables of counts to be used.}
-
 \item{normFactorsOptions}{A named \code{list} of any options to be passed to
 \code{\link[edgeR]{calcNormFactors}}.}
 
@@ -42,6 +52,9 @@ names of the data tables of counts to be used.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{targets}{If \code{countsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables of counts to be used.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

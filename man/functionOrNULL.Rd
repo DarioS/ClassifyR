@@ -10,7 +10,7 @@ Allows a slot to be either a function or empty.
 }
 \examples{
 
-  PredictParams(NULL)
+  PredictParams(NULL) # Training function does both tasks.
   PredictParams(DLDApredictInterface)
 
 }

@@ -97,10 +97,13 @@
 #'   
 #'   naiveBayesKernel(trainMatrix, classesTrain, testMatrix)
 #' 
+#' @rdname naiveBayesKernel
 #' @export
 setGeneric("naiveBayesKernel", function(measurementsTrain, ...)
            standardGeneric("naiveBayesKernel"))
 
+#' @rdname naiveBayesKernel
+#' @export
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
@@ -109,6 +112,8 @@ setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
                    DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname naiveBayesKernel
+#' @export
 setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest,
                    densityFunction = density, densityParameters = list(bw = "nrd0", n = 1024, from = expression(min(featureValues)), to = expression(max(featureValues))),
@@ -233,10 +238,12 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
 
   switch(returnType, class = predictions[, "class"],
          score = predictions[, colnames(predictions) %in% levels(classesTrain)],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain)], check.names = FALSE)
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain), drop = FALSE], check.names = FALSE)
         )
 })
 
+#' @rdname naiveBayesKernel
+#' @export
 setMethod("naiveBayesKernel", "MultiAssayExperiment",
           function(measurementsTrain, measurementsTest, targets = names(measurements), classesTrain, ...)
 {

@@ -67,10 +67,13 @@
 #'     SVMpredictInterface(classifier, genesMatrix[testingSamples, ])
 #'   }
 #' 
+#' @rdname SVMinterface
 #' @export
 setGeneric("SVMtrainInterface", function(measurementsTrain, ...)
 standardGeneric("SVMtrainInterface"))
 
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
@@ -78,6 +81,8 @@ setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
 })
 
 # Sample information data or one of the other inputs, transformed.
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
@@ -92,6 +97,8 @@ setMethod("SVMtrainInterface", "DataFrame", function(measurementsTrain, classesT
   e1071::svm(trainingMatrix, classesTrain, probability = TRUE, ...)
 })
 
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMtrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
@@ -106,16 +113,21 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 })
 
 
+#' @rdname SVMinterface
 #' @export
 setGeneric("SVMpredictInterface", function(model, measurementsTest, ...)
 standardGeneric("SVMpredictInterface"))
 
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMpredictInterface", c("svm", "matrix"),
           function(model, measurementsTest, ...)
 {
   SVMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
   returnType <- match.arg(returnType)
@@ -139,6 +151,8 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurem
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
+#' @rdname SVMinterface
+#' @export
 setMethod("SVMpredictInterface", c("svm", "MultiAssayExperiment"),
           function(model, measurementsTest, targets = names(measurementsTest), ...)
 {

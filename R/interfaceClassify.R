@@ -56,10 +56,13 @@
 #'     setNames(table(paste("Class", readCounts[["yte"]]) == classified), c("Incorrect", "Correct"))
 #'   }
 #'   
+#' @rdname classifyInterface
 #' @export
 setGeneric("classifyInterface", function(countsTrain, ...)
 standardGeneric("classifyInterface"))
 
+#' @rdname classifyInterface
+#' @export
 setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
           function(countsTrain, classesTrain, countsTest, ...)
 {
@@ -69,6 +72,8 @@ setMethod("classifyInterface", "matrix", # Matrix of integer measurements.
 })
 
 # Sample information data or one of the other inputs, transformed.
+#' @rdname classifyInterface
+#' @export
 setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, countsTest, ...,
                                 returnType = c("both", "class", "score"), verbose = 3)
 {
@@ -96,6 +101,8 @@ setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, 
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
+#' @rdname classifyInterface
+#' @export
 setMethod("classifyInterface", "MultiAssayExperiment",
 function(countsTrain, countsTest, targets = names(countsTrain), classesTrain, ...)
 {

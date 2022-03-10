@@ -10,9 +10,6 @@
 \alias{[,FeatureSetCollection,numeric,missing,ANY-method}
 \alias{[[,FeatureSetCollection,ANY,missing-method}
 \title{Container for Storing A Collection of Sets}
-\usage{
-FeatureSetCollection(sets, ...)
-}
 \description{
 This container is the required storage format for a collection of sets.
 Typically, the elements of a set will either be a set of proteins (i.e.
@@ -20,10 +17,48 @@ character vector) which perform a particular biological process or a set of
 binary interactions (i.e. Two-column matrix of feature identifiers).
 }
 \section{Constructor}{
- \describe{ \item{}{ \code{FeatureSetCollection(sets)}}
-} \describe{ \item{list("sets")}{A named list. The names of the list
+
+\describe{\item{}{
+\code{FeatureSetCollection(sets)}}
+}
+\describe{
+\item{\code{sets}}{A named list. The names of the list
 describe the sets and the elements of the list specify the features which
-comprise the sets.} }
+comprise the sets.}
+}
+}
+
+\section{Summary}{
+
+\code{featureSets} is a \code{FeatureSetCollection} object.
+
+\describe{
+  \item{}{
+    \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.
+   }
+  \item{}{
+    \code{length(featureSets)}: Prints how many sets of features there are.
+   }  
+}
+}
+
+\section{Subsetting}{
+
+The \code{FeatureSetCollection} may be subsetted to a smaller set of elements or a single set
+may be extracted as a vector.
+ \code{featureSets} is a \code{FeatureSetCollection} object.
+ \describe{
+ \item{}{
+   \code{featureSets[i:j]}:
+     Reduces the object to a subset of the feature sets between elements \code{i} and \code{j}
+     of the collection.
+ }
+ \item{}{
+   \code{featureSets[[i]]}:
+     Extract the feature set identified by \code{i}. \code{i} may be a numeric index
+     or the character name of a feature set.
+   }    
+ }
 }
 
 \examples{

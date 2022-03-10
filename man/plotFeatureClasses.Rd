@@ -8,6 +8,40 @@
 \title{Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class}
 \usage{
 plotFeatureClasses(measurements, ...)
+
+\S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
+
+\S4method{plotFeatureClasses}{DataFrame}(
+  measurements,
+  classes,
+  targets,
+  groupBy = NULL,
+  groupingName = NULL,
+  whichNumericFeaturePlots = c("both", "density", "stripchart"),
+  measurementLimits = NULL,
+  lineWidth = 1,
+  dotBinWidth = 1,
+  xAxisLabel = NULL,
+  yAxisLabels = c("Density", "Classes"),
+  showXtickLabels = TRUE,
+  showYtickLabels = TRUE,
+  xLabelPositions = "auto",
+  yLabelPositions = "auto",
+  fontSizes = c(24, 16, 12, 12, 12),
+  colours = c("#3F48CC", "#880015"),
+  showDatasetName = TRUE,
+  plot = TRUE
+)
+
+\S4method{plotFeatureClasses}{MultiAssayExperiment}(
+  measurements,
+  targets,
+  classColumn,
+  groupBy = NULL,
+  groupingName = NULL,
+  showDatasetName = TRUE,
+  ...
+)
 }
 \arguments{
 \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a

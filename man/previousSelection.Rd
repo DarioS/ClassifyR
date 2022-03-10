@@ -8,6 +8,19 @@
 \title{Automated Selection of Previously Selected Features}
 \usage{
 previousSelection(measurementsTrain, ...)
+
+\S4method{previousSelection}{matrix}(measurementsTrain, ...)
+
+\S4method{previousSelection}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  classifyResult,
+  minimumOverlapPercent = 80,
+  .iteration,
+  verbose = 3
+)
+
+\S4method{previousSelection}{MultiAssayExperiment}(measurementsTrain, ...)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -60,7 +73,7 @@ previous classification for the current classification task.
 
     CVparams <- CrossValParams(permutations = 2, folds = 2)
     result <- runTests(genesMatrix, classes, CVparams, ModellingParams())
-    features(result)
+    chosenFeatureNames(result)
                        
     # Genes 50 to 74 have differential expression in new data set.
     
@@ -78,7 +91,7 @@ previous classification for the current classification task.
                                      
     # However, only genes 76 to 100 are chosen, because the feature selections are
     # carried over from the first cross-validated classification.
-    features(newerResult)
+    chosenFeatureNames(newerResult)
   #}  
 
 

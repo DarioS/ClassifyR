@@ -52,16 +52,21 @@
 #'   
 #'   interactorDifferences(measurements, pairs)
 #'
-#' @export 
+#' @rdname interactorDifferencess
+#' @export
 setGeneric("interactorDifferences", function(measurements, ...)
            standardGeneric("interactorDifferences"))
 
+#' @rdname interactorDifferencess
+#' @export
 setMethod("interactorDifferences", "matrix", # Matrix of numeric measurements.
           function(measurements, ...)
 {
   interactorDifferences(DataFrame(measurements, check.names = FALSE), ...)
 })
 
+#' @rdname interactorDifferencess
+#' @export
 setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
           function(measurements, featurePairs = NULL, absolute = FALSE, verbose = 3)
 {
@@ -83,6 +88,8 @@ setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
   differences
 })
 
+#' @rdname interactorDifferencess
+#' @export
 setMethod("interactorDifferences", "MultiAssayExperiment", # Pick one numeric table from the data set.
           function(measurements, target = NULL, classes, ...)
 {

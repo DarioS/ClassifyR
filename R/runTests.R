@@ -53,9 +53,12 @@
 #'              )
 #'   #}
 #' 
+#' @rdname runTests
 #' @export
 setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
+#' @rdname runTests
+#' @export
 setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matrix of numeric measurements.
 {
   if(is.null(rownames(measurements)))
@@ -64,6 +67,8 @@ setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matri
 })
 
 # Clinical data or one of the other inputs, transformed.
+#' @rdname runTests
+#' @export
 setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = DataFrame(), verbose = 1)
 {
@@ -134,7 +139,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   characteristics <- rbind(characteristics,
                              S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
 
-  if(is.factor(results[[1]][["predictions"]]) | is.numeric(results[[1]][["predictions"]]))
+  if(is.factor(results[[1]][["predictions"]]) || is.numeric(results[[1]][["predictions"]]))
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, class = unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
   else # data frame
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
@@ -148,6 +153,8 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes)
 })
 
+#' @rdname runTests
+#' @export
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomes, ...)
 {

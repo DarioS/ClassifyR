@@ -77,11 +77,14 @@
 #'                                 featureValues = groups, featureName = "Gender")
 #'   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
 #'                                 featureValues = cholesterol, featureName = "Cholesterol")                                
-#' 
+#'
+#' @rdname samplesMetricMap
 #' @export
 setGeneric("samplesMetricMap", function(results, ...)
 standardGeneric("samplesMetricMap"))
 
+#' @rdname samplesMetricMap
+#' @export
 setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = "Classifier Name",

@@ -58,10 +58,13 @@
 #'   
 #'   pairsDifferencesRanking(measurements, classes, featurePairs = featurePairs)
 #' 
+#' @rdname pairsDifferencesRanking
 #' @export
 setGeneric("pairsDifferencesRanking", function(measurementsTrain, ...)
            standardGeneric("pairsDifferencesRanking"))
 
+#' @rdname pairsDifferencesRanking
+#' @export
 setMethod("pairsDifferencesRanking", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, featurePairs = NULL, ...)
 {
@@ -73,6 +76,8 @@ setMethod("pairsDifferencesRanking", "matrix", # Matrix of numeric measurements.
   pairsDifferencesRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, featurePairs, ...)
 })
 
+#' @rdname pairsDifferencesRanking
+#' @export
 setMethod("pairsDifferencesRanking", "DataFrame",
           function(measurementsTrain, classesTrain, featurePairs = NULL, verbose = 3)
 {
@@ -113,6 +118,8 @@ setMethod("pairsDifferencesRanking", "DataFrame",
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname pairsDifferencesRanking
+#' @export
 setMethod("pairsDifferencesRanking", "MultiAssayExperiment",
           function(measurementsTrain, target = names(measurementsTrain)[1], classesTrain, featurePairs = NULL, ...)
 {

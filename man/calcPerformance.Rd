@@ -5,44 +5,67 @@
 \alias{calcPerformance}
 \alias{calcCVperformance}
 \alias{calcExternalPerformance,factor,factor-method}
+\alias{calcExternalPerformance,Surv,numeric-method}
 \alias{calcCVperformance,ClassifyResult-method}
 \title{Add Performance Calculations to a ClassifyResult Object or Calculate for a
 Pair of Factor Vectors}
 \usage{
-calcExternalPerformance(actualOutcomes, predictedOutcomes, ...)
+\S4method{calcExternalPerformance}{factor,factor}(
+  actualOutcomes,
+  predictedOutcomes,
+  performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+    "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
+    "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient")
+)
+
+\S4method{calcExternalPerformance}{Surv,numeric}(
+  actualOutcomes,
+  predictedOutcomes,
+  performanceType = "C index"
+)
+
+\S4method{calcCVperformance}{ClassifyResult}(
+  result,
+  performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+    "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
+    "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
+    "C index")
+)
 }
 \arguments{
 \item{actualOutcomes}{A factor vector specifying each sample's correct class.}
 
-\item{predictedOutcomes}{A factor vector of the same length as
-\code{actualOutcomes} specifying each sample's predicted class.}
-
-\item{result}{An object of class \code{\link{ClassifyResult}}.}
+\item{predictedOutcomes}{A factor vector of the same length as \code{actualOutcomes} specifying each sample's predicted class.}
 
 \item{performanceType}{A character vector of length 1. Default:
-\code{"Balanced Error"}.\cr Must be one of the following options:\cr
-\itemize{ \item\code{"Error"}: Ordinary error rate.  \item\code{"Accuracy"}:
-Ordinary accuracy.  \item\code{"Balanced Error"}: Balanced error rate.
-\item\code{"Balanced Accuracy"}: Balanced accuracy.  \item\code{"Sample
-Error"}: Error rate for each sample in the data set.  \item\code{"Sample
-Accuracy"}: Accuracy for each sample in the data set.
+\code{"Balanced Error"}.
+Must be one of the following options:
+\itemize{
+\item{\code{"Error"}: Ordinary error rate.}
+\item{\code{"Accuracy"}: Ordinary accuracy.}
+\item{\code{"Balanced Error"}: Balanced error rate.}
+\item{\code{"Balanced Accuracy"}: Balanced accuracy.}
+\item{\code{"Sample Error"}: Error rate for each sample in the data set.}
+\item{\code{"Sample Accuracy"}: Accuracy for each sample in the data set.}
+\item{\code{"Micro Precision"}: Sum of the number of correct predictions in
+        each class, divided by the sum of number of samples in each class.}
+\item{\code{"Micro Recall"}: Sum of the number of correct predictions in each 
+        class, divided by the sum of number of samples predicted as
+        belonging to each class.}
+\item{\code{"Micro F1"}: F1 score obtained by calculating the
+harmonic mean of micro precision and micro recall.}
+\item{\code{"Macro Precision"}: Sum of the ratios of the number of correct predictions
+in each class to the number of samples in each class, divided by the number of classes.}
+\item{\code{"Macro Recall"}: Sum of the ratios of the number of correct predictions in each
+class to the number of samples predicted to be in each class, divided by the number of classes.}
+\item{\code{"Macro F1"}: F1 score obtained by calculating the harmonic mean of macro precision
+and macro recall.}
+\item{\code{"Matthews Correlation Coefficient"}: Matthews Correlation Coefficient (MCC). A score
+between -1 and 1 indicating how concordant the predicted classes are to the actual classes. Only defined if
+there are two classes.}
+}}
 
-\item\code{"Micro Precision"}: Sum of the number of correct predictions in
-each class, divided by the sum of number of samples in each class.
-\item\code{"Micro Recall"}: Sum of the number of correct predictions in each
-class, divided by the sum of number of samples predicted as belonging to
-each class.  \item\code{"Micro F1"}: F1 score obtained by calculating the
-harmonic mean of micro precision and micro recall.  \item\code{"Macro
-Precision"}: Sum of the ratios of the number of correct predictions in each
-class to the number of samples in each class, divided by the number of
-classes.  \item\code{"Macro Recall"}: Sum of the ratios of the number of
-correct predictions in each class to the number of samples predicted to be
-in each class, divided by the number of classes.  \item\code{"Macro F1"}: F1
-score obtained by calculating the harmonic mean of macro precision and macro
-recall.  \item\code{"Matthews Correlation Coefficient"}: Matthews
-Correlation Coefficient (MCC). A score between -1 and 1 indicating how
-concordant the predicted classes are to the actual classes. Only defined if
-there are two classes.}}
+\item{result}{An object of class \code{\link{ClassifyResult}}.}
 }
 \value{
 If \code{calcCVperformance} was run, an updated

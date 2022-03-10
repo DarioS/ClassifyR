@@ -65,14 +65,19 @@
 #'   #}
 #'   
 #' @include classes.R
+#' @rdname DLDAinterface
 #' @export
 setGeneric("DLDAtrainInterface", function(measurementsTrain, ...) standardGeneric("DLDAtrainInterface"))
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDAtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...) # Matrix of numeric measurements.
 {
   DLDAtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDAtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, verbose = 3)
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
@@ -88,6 +93,8 @@ setMethod("DLDAtrainInterface", "DataFrame", function(measurementsTrain, classes
   .dlda(as.matrix(measurementsTrain), classesTrain)
 })
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDAtrainInterface", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
@@ -101,19 +108,27 @@ setMethod("DLDAtrainInterface", "MultiAssayExperiment", function(measurementsTra
 })
 
 
+#' @rdname DLDAinterface
 #' @export
 setGeneric("DLDApredictInterface", function(model, measurementsTest, ...) standardGeneric("DLDApredictInterface"))
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDApredictInterface", c("dlda", "matrix"), function(model, measurementsTest, ...)
 {
   DLDApredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
   isNumeric <- sapply(measurementsTest, is.numeric)
   measurementsTest <- measurementsTest[, isNumeric, drop = FALSE]
   returnType <- match.arg(returnType)
+  
+  # sparsediscrim doesn't match feature names to those inside trained model. Calculations could go wrong.
+  measurementsTest <- measurementsTest[, names(model[["var_pool"]])]
   
   #if(!requireNamespace("sparsediscrim", quietly = TRUE)) # Removed from CRAN, sadly.
   #stop("The package 'sparsediscrim' could not be found. Please install it.")
@@ -122,12 +137,14 @@ setMethod("DLDApredictInterface", c("dlda", "DataFrame"), function(model, measur
   
   #predict(model, as.matrix(test))
   predictions <- .predict(model, as.matrix(measurementsTest)) # Copy in utilities.R.
-  
+
   switch(returnType, class = predictions[["class"]], # Factor vector.
          score = predictions[["posterior"]][, model[["groups"]]], # Numeric matrix.
-         both = data.frame(class = predictions[["class"]], predictions[["posterior"]][, model[["groups"]]], check.names = FALSE))
+         both = data.frame(class = predictions[["class"]], predictions[["posterior"]], check.names = FALSE))
 })
 
+#' @rdname DLDAinterface
+#' @export
 setMethod("DLDApredictInterface", c("dlda", "MultiAssayExperiment"), function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTest, targets)

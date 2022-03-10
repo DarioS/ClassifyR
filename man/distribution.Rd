@@ -6,6 +6,17 @@
 \title{Get Frequencies of Feature Selection and Sample-wise Classification Errors}
 \usage{
 distribution(result, ...)
+
+\S4method{distribution}{ClassifyResult}(
+  result,
+  dataType = c("features", "samples"),
+  plotType = c("density", "histogram"),
+  summaryType = c("percentage", "count"),
+  plot = TRUE,
+  xMax = NULL,
+  fontSizes = c(24, 16, 12),
+  ...
+)
 }
 \arguments{
 \item{result}{An object of class \code{\link{ClassifyResult}}.}

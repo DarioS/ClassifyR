@@ -9,6 +9,23 @@
 and a Deviation Measure}
 \usage{
 DMDranking(measurementsTrain, ...)
+
+\S4method{DMDranking}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{DMDranking}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  differences = c("both", "location", "scale"),
+  ...,
+  verbose = 3
+)
+
+\S4method{DMDranking}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -30,11 +47,6 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
-
 \item{differences}{Default: \code{"both"}. Either \code{"both"},
 \code{"location"}, or \code{"scale"}.  The type of differences to consider.
 If both are considered then the absolute difference in location and the
@@ -43,6 +55,11 @@ absolute difference in scale are summed.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
 }
 \value{
 A vector of feature indices, from the most promising features in the

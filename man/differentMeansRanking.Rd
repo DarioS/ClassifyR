@@ -8,6 +8,12 @@
 \title{Ranking of Differentially Abundant Features}
 \usage{
 differentMeansRanking(measurementsTrain, ...)
+
+\S4method{differentMeansRanking}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{differentMeansRanking}{DataFrame}(measurementsTrain, classesTrain, verbose = 3)
+
+\S4method{differentMeansRanking}{MultiAssayExperiment}(measurementsTrain, targets = NULL, classesTrain, ...)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -28,12 +34,12 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
-\item{targets}{Names of data tables to be combined into a single table and
-used in the analysis.}
-
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{targets}{Names of data tables to be combined into a single table and
+used in the analysis.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

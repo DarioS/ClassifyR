@@ -12,6 +12,35 @@
 \title{An Interface for sparsediscrim Package's dlda Function}
 \usage{
 DLDAtrainInterface(measurementsTrain, ...)
+
+\S4method{DLDAtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{DLDAtrainInterface}{DataFrame}(measurementsTrain, classesTrain, verbose = 3)
+
+\S4method{DLDAtrainInterface}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+
+DLDApredictInterface(model, measurementsTest, ...)
+
+\S4method{DLDApredictInterface}{dlda,matrix}(model, measurementsTest, ...)
+
+\S4method{DLDApredictInterface}{dlda,DataFrame}(
+  model,
+  measurementsTest,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{DLDApredictInterface}{dlda,MultiAssayExperiment}(
+  model,
+  measurementsTest,
+  targets = names(measurementsTest),
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -32,25 +61,25 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
-\item{model}{A fitted model as returned by \code{DLDAtrainInterface}.}
-
-\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
-samples in common with \code{measurementsTrain} and the same number of features
-as it. Also, if a \code{DataFrame}, the \code{class} column must be absent.}
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
 
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that integer variables from the sample information data table will be
 used.}
 
+\item{model}{A fitted model as returned by \code{DLDAtrainInterface}.}
+
+\item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
+samples in common with \code{measurementsTrain} and the same number of features
+as it. Also, if a \code{DataFrame}, the \code{class} column must be absent.}
+
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, matrix of scores for each class, or both
 labels and scores in a \code{data.frame}.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 For \code{DLDAtrainInterface}, a trained DLDA classifier.  For

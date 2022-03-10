@@ -9,6 +9,33 @@
 Classes}
 \usage{
 kTSPclassifier(measurementsTrain, ...)
+
+\S4method{kTSPclassifier}{matrix}(
+  measurementsTrain,
+  classesTrain,
+  measurementsTest,
+  featurePairs = NULL,
+  ...
+)
+
+\S4method{kTSPclassifier}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  measurementsTest,
+  featurePairs = NULL,
+  difference = c("unweighted", "weighted"),
+  minDifference = 0,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{kTSPclassifier}{MultiAssayExperiment}(
+  measurementsTrain,
+  classesTrain,
+  target = names(measurementsTrain)[1],
+  featurePairs = NULL,
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -48,11 +75,6 @@ feature to be allowed to vote. Can be a vector of cutoffs. If no features
 for a particular sample have a difference large enough, the class predicted
 is simply the largest class.}
 
-\item{target}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-name of the data table to be used. \code{"sampleInfo"} is also a valid value
-and specifies that integer variables from the sample information data table will be
-used.}
-
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, score for a sample belonging to the
@@ -62,6 +84,11 @@ in a \code{data.frame}.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{target}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+name of the data table to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
+used.}
 }
 \value{
 A vector or data frame of class prediction information, as long as

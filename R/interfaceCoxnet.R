@@ -70,10 +70,13 @@
 #' @examples
 #' 
 #'   
+#' @rdname coxnetInterface
 #' @export
 setGeneric("coxnetTrainInterface", function(measurementsTrain, ...)
   standardGeneric("coxnetTrainInterface"))
 
+#' @rdname coxnetInterface
+#' @export
 setMethod("coxnetTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, survivalTrain, ...)
           {
@@ -81,6 +84,8 @@ setMethod("coxnetTrainInterface", "matrix", # Matrix of numeric measurements.
           })
 
 # Clinical data or one of the other inputs, transformed.
+#' @rdname coxnetInterface
+#' @export
 setMethod("coxnetTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, lambda = NULL, ..., verbose = 3)
 {
   if(!requireNamespace("glmnet", quietly = TRUE))
@@ -103,6 +108,8 @@ setMethod("coxnetTrainInterface", "DataFrame", function(measurementsTrain, survi
 })
 
 # One or more omics datasets, possibly with clinical data.
+#' @rdname coxnetTrainInterface
+#' @export
 setMethod("coxnetTrainInterface", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
           {
@@ -124,20 +131,22 @@ setMethod("coxnetTrainInterface", "MultiAssayExperiment",
 #
 ################################################################################
 
-
-
-
 # Matrix of numeric measurements.
+#' @rdname coxnetInterface
+#' @export
 setGeneric("coxnetPredictInterface", function(model, measurementsTest, ...)
   standardGeneric("coxnetPredictInterface"))
 
+#' @rdname coxnetInterface
+#' @export
 setMethod("coxnetPredictInterface", c("coxnet", "matrix"),
           function(model, measurementsTest, ...)
           {
             coxnetPredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
           })
 
-# Clinical data only.
+#' @rdname coxnetInterface
+#' @export
 setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, measurementsTest, survivalTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(survivalTest))
@@ -168,7 +177,9 @@ setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, me
   data.frame(link = survPredictions[, 1], relativeRisk = survScores[, 1], check.names = FALSE)
 })
 
-# One or more omics data sets, possibly with clinical data.
+# One or more omics data sets, possibly with sample information data.
+#' @rdname coxnetInterface
+#' @export
 setMethod("coxnetPredictInterface", c("coxnet", "MultiAssayExperiment"),
           function(model, measurementsTest, targets = names(measurementsTest), ...)
           {

@@ -119,10 +119,13 @@
 #'                 binsList = list(frequencies = seq(0, 100, 10), setSizes = seq(0, 25, 5))
 #'                 )
 #' @import grid               
+#' @rdname selectionPlot
 #' @export
 setGeneric("selectionPlot", function(results, ...)
 standardGeneric("selectionPlot"))
 
+#' @rdname selectionPlot
+#' @export
 setMethod("selectionPlot", "list", 
           function(results,
                    comparison = "within", referenceLevel = NULL,
@@ -142,7 +145,7 @@ setMethod("selectionPlot", "list",
   
   allFeaturesList <- lapply(results, function(result)
   {
-    .getFeaturesStrings(features(result))
+    .getFeaturesStrings(chosenFeatureNames(result))
   })
 
   if(!is.null(characteristicsList[['x']]))

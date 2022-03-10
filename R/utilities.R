@@ -287,8 +287,7 @@
   if(is.function(featureRanking)) # Not a list for ensemble selection.
   {
     paramList <- list(measurementsTrain, outcomesTrain, verbose = verbose)
-    # Needs training and prediction functions for resubstitution or nested CV performance calculation.
-    paramList <- append(paramList, otherParams) # Used directly by a feature selection function for rankings of features.
+    paramList <- append(paramList, otherParams) # Used directly by a feature ranking function for rankings of features.
     if(length(tuneParams) == 0) tuneParams <- list(None = "none")
     tuneCombosSelect <- expand.grid(tuneParams, stringsAsFactors = FALSE)
 
@@ -362,7 +361,7 @@
         bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
         c(bestOne, performances[bestOne])
       })
-    
+
       tunePick <- ifelse(betterValues == "lower", which.min(bestPerformers[2, ])[1], which.max(bestPerformers[2, ])[1])
       
       if(verbose == 3)
@@ -758,7 +757,7 @@
 
 .posterior_probs <- function(x, means, covs, priors) { # Remove once sparsediscrim is reinstated to CRAN.
   if (is.vector(x)) {
-    x <- matrix(x, nrow=1)
+    x <- matrix(x, nrow = 1)
   }
   x <- as.matrix(x)
 
@@ -775,10 +774,11 @@
 
   if (is.vector(posterior)) {
     posterior <- posterior / sum(posterior)
+    posterior <- matrix(posterior, nrow = 1) # Ensure it's always matrix, like just below.
+    colnames(posterior) <- names(priors)
   } else {
     posterior <- posterior / rowSums(posterior)
   }
-
   posterior
 }
 

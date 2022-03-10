@@ -133,10 +133,13 @@
 #' 
 #' @importFrom dplyr mutate n
 #' @importFrom tidyr gather
+#' @rdname plotFeatureClasses
 #' @export
 setGeneric("plotFeatureClasses", function(measurements, ...)
   standardGeneric("plotFeatureClasses"))
 
+#' @rdname plotFeatureClasses
+#' @export
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {
   if(missing(targets))
@@ -145,6 +148,8 @@ setMethod("plotFeatureClasses", "matrix", function(measurements, classes, target
   plotFeatureClasses(DataFrame(measurements, check.names = FALSE), classes, targets, ...)
 })
 
+#' @rdname plotFeatureClasses
+#' @export
 setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
                                                       groupingName = NULL, whichNumericFeaturePlots = c("both", "density", "stripchart"),
                                                       measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
@@ -352,6 +357,8 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   }
 })
 
+#' @rdname plotFeatureClasses
+#' @export
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
           function(measurements, targets, classColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
           {

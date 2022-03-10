@@ -53,15 +53,20 @@
 #'     NSCtrainInterface(genesMatrix, classes)
 #'   }
 #' 
+#' @rdname NSCinterface
 #' @export
 setGeneric("NSCtrainInterface", function(measurementsTrain, ...)
 standardGeneric("NSCtrainInterface"))
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...)
 {
   NSCtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCtrainInterface", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
@@ -81,6 +86,8 @@ setMethod("NSCtrainInterface", "DataFrame", # Sample information data or one of 
   trainedModel  
 })
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCtrainInterface", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 { 
@@ -155,6 +162,7 @@ setMethod("NSCtrainInterface", "MultiAssayExperiment",
 #'     NSCpredictInterface(fit, genesMatrix[c(21:25, 46:50), ])
 #'   }
 #' 
+#' @rdname NSCinterface
 #' @export
 setGeneric("NSCpredictInterface", function(model, measurementsTest, ...)
   standardGeneric("NSCpredictInterface"))
@@ -164,6 +172,8 @@ setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(model, mea
   NSCpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(model, measurementsTest, classesColumnTest = NULL, ..., returnType = c("both", "class", "score"), verbose = 3)
 {
   if(!requireNamespace("pamr", quietly = TRUE))
@@ -193,6 +203,8 @@ setMethod("NSCpredictInterface", c("pamrtrained", "DataFrame"), function(model, 
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 })
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), function(model, measurementsTest, targets = names(measurementsTest), ...)
 {
   measurementsTest <- .MAEtoWideTable(measurementsTest, targets)[["dataTable"]] # Remove any classes, if present.
@@ -247,11 +259,13 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #'     selected[[2]]                                                       
 #'   }
 #'
+#' @rdname NSCinterface
 #' @export
-
 setGeneric("NSCfeatures", function(model, measurementsTrain, classesTrain)
   standardGeneric("NSCfeatures"))
 
+#' @rdname NSCinterface
+#' @export
 setMethod("NSCfeatures", "pamrtrained",
           function(model, measurementsTrain, classesTrain)
           {

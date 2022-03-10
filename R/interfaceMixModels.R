@@ -305,7 +305,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample info
 
   switch(returnType, class = predictions[, "class"],
          score = predictions[, colnames(predictions) %in% classesNames],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% classesNames], check.names = FALSE)
+         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% classesNames, drop = FALSE], check.names = FALSE)
   )
 })
 

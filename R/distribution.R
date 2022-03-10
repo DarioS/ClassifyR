@@ -42,10 +42,13 @@
 #'                                         plotType = "histogram", binwidth = 1)
 #'     print(head(featureDistribution))
 #'   #}
+#' @rdname distribution
 #' @export
 setGeneric("distribution", function(result, ...)
            standardGeneric("distribution"))
 
+#' @rdname distribution
+#' @export
 setMethod("distribution", "ClassifyResult", 
           function(result, dataType = c("features", "samples"),
                    plotType = c("density", "histogram"), summaryType = c("percentage", "count"),
@@ -94,8 +97,7 @@ setMethod("distribution", "ClassifyResult",
     names(scores) <- sampleNames(result)
     scores <- round(scores * 100)
   } else { # features
-    chosenFeatures <- features(result)
-    
+    chosenFeatures <- chosenFeatureNames(result)
     if(is.vector(chosenFeatures[[1]]))
     {
       allFeatures <- unlist(chosenFeatures)
@@ -107,7 +109,7 @@ setMethod("distribution", "ClassifyResult",
       allFeatures <- do.call(c, unname(chosenFeatures))
       allFeaturesText <- paste(first(allFeatures), second(allFeatures), sep = ', ')
     } else {
-      stop("features(result) must be a list of vector, Pairs or DataFrame elements.")
+      stop("chosenFeatureNames(result) must be a list of vector, Pairs or DataFrame elements.")
     }
     scores <- table(allFeaturesText)
     if(summaryType == "percentage")

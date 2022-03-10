@@ -49,17 +49,22 @@
 #'     ranked <- differentMeansRanking(genesMatrix, classes)
 #'     head(ranked)
 #' 
+#' @rdname differentMeansRanking
 #' @export
 setGeneric("differentMeansRanking", function(measurementsTrain, ...)
            standardGeneric("differentMeansRanking"))
 
 # Matrix of numeric measurements.
+#' @rdname differentMeansRanking
+#' @export
 setMethod("differentMeansRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
   differentMeansRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
+#' @rdname differentMeansRanking
+#' @export
 setMethod("differentMeansRanking", "DataFrame",
           function(measurementsTrain, classesTrain, verbose = 3)
 {
@@ -90,6 +95,8 @@ setMethod("differentMeansRanking", "DataFrame",
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname differentMeansRanking
+#' @export
 setMethod("differentMeansRanking", "MultiAssayExperiment", 
           function(measurementsTrain, targets = NULL, classesTrain, ...)
 {

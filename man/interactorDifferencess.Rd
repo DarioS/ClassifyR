@@ -9,6 +9,17 @@
 Based on Known Sub-networks}
 \usage{
 interactorDifferences(measurements, ...)
+
+\S4method{interactorDifferences}{matrix}(measurements, ...)
+
+\S4method{interactorDifferences}{DataFrame}(
+  measurements,
+  featurePairs = NULL,
+  absolute = FALSE,
+  verbose = 3
+)
+
+\S4method{interactorDifferences}{MultiAssayExperiment}(measurements, target = NULL, classes, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -24,12 +35,12 @@ or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 \item{absolute}{If TRUE, then the absolute values of the differences are
 returned.}
 
-\item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-name of the data table to be used.}
-
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the
+name of the data table to be used.}
 }
 \value{
 An object of class \code{\link{DataFrame}} with one column for each

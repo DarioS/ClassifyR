@@ -12,6 +12,35 @@
 \title{An Interface for e1071 Package's Support Vector Machine Classifier.}
 \usage{
 SVMtrainInterface(measurementsTrain, ...)
+
+\S4method{SVMtrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{SVMtrainInterface}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
+
+\S4method{SVMtrainInterface}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+
+SVMpredictInterface(model, measurementsTest, ...)
+
+\S4method{SVMpredictInterface}{svm,matrix}(model, measurementsTest, ...)
+
+\S4method{SVMpredictInterface}{svm,DataFrame}(
+  model,
+  measurementsTest,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{SVMpredictInterface}{svm,MultiAssayExperiment}(
+  model,
+  measurementsTest,
+  targets = names(measurementsTest),
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -33,6 +62,17 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
+\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
+
+\item{model}{A fitted model as returned by \code{SVMtrainInterface}.}
+
 \item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
@@ -42,17 +82,6 @@ as it.}
 to either a vector of class labels, score for a sample belonging to the
 second class, as determined by the factor levels, or both labels and scores
 in a \code{data.frame}.}
-
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
-
-\item{model}{A fitted model as returned by \code{SVMtrainInterface}.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 For \code{SVMtrainInterface}, a trained SVM classifier of type

@@ -11,7 +11,8 @@
 #' predictions of the trees to determine a single prediction for each test
 #' sample.
 #' 
-#' @aliases randomForestInterface randomForestTrainInterface
+#' @name randomForestInterfaces
+#' @aliases randomForestTrainInterface
 #' randomForestTrainInterface,matrix-method
 #' randomForestTrainInterface,DataFrame-method
 #' randomForestTrainInterface,MultiAssayExperiment-method
@@ -53,7 +54,10 @@
 #' For \code{randomForestPredictInterface}, either a factor vector of predicted
 #' classes, a matrix of scores for each class, or a table of both the class
 #' labels and class scores, depending on the setting of \code{returnType}.
+#' @rdname randomForest
 #' @author Dario Strbenac
+#' @seealso \code{\link{forestFeatures}} for a function to extract the features used
+#' to build the trees.
 #' @examples
 #' 
 #'   if(require(randomForest))
@@ -74,13 +78,17 @@
 #'   }
 #' 
 #' @export
+#' @usage NULL
 setGeneric("randomForestTrainInterface", function(measurementsTrain, ...)
 standardGeneric("randomForestTrainInterface"))
 
 #' @export
+#' @usage NULL
 setGeneric("randomForestPredictInterface", function(models, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
+#' @exportMethod randomForestTrainInterface
+#' @rdname randomForest
 setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
@@ -89,6 +97,8 @@ setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measuremen
 })
 
 # Sample information data or one of the other inputs, transformed.
+#' @exportMethod randomForestTrainInterface
+#' @rdname randomForest
 setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
@@ -103,6 +113,8 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain,
   randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcomes"]], keep.forest = TRUE, ...)
 })
 
+#' @exportMethod randomForestTrainInterface
+#' @rdname randomForest
 setMethod("randomForestTrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
@@ -122,15 +134,19 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 ################################################################################
 
 
-
+#' @export
 setGeneric("randomForestPredictInterface", function(forest, measurementsTest, ...)
            standardGeneric("randomForestPredictInterface"))
 
+#' @exportMethod randomForestPredictInterface
+#' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(forest, measurementsTest, ...)
 {
   randomForestPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @exportMethod randomForestPredictInterface
+#' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "DataFrame"),
 function(forest, measurementsTest, ..., returnType = c("both", "class", "score"), verbose = 3)
 {
@@ -146,6 +162,8 @@ function(forest, measurementsTest, ..., returnType = c("both", "class", "score")
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @exportMethod randomForestPredictInterface
+#' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperiment"),
           function(forest, measurementsTest, targets = names(measurementsTest), ...)
 {
@@ -170,7 +188,6 @@ setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperimen
 #' impurities from splitting on the variable, averaged over all trees. Also
 #' provides the selected features which are those that were used in at least
 #' one tree of the forest.
-#'
 #'
 #' @aliases forestFeatures forestFeatures,randomForest-method
 #' @param forest A trained random forest which was created by
@@ -204,6 +221,7 @@ setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperimen
 setGeneric("forestFeatures", function(forest, ...)
   standardGeneric("forestFeatures"))
 
+#' @exportMethod forestFeatures
 setMethod("forestFeatures", "randomForest",
           function(forest)
           {

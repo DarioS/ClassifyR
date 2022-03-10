@@ -47,16 +47,21 @@
 #'   ranked <- leveneRanking(genesMatrix, classes)
 #'   head(ranked)
 #' 
+#' @rdname leveneRanking
 #' @export
 setGeneric("leveneRanking", function(measurementsTrain, ...)
            standardGeneric("leveneRanking"))
 
 # Matrix of numeric measurements.
+#' @rdname leveneRanking
+#' @export
 setMethod("leveneRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
   leveneRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname leveneRanking
+#' @export
 setMethod("leveneRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, verbose = 3)
 {
@@ -78,6 +83,8 @@ setMethod("leveneRanking", "DataFrame", # Sample information data or one of the 
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname leveneRanking
+#' @export
 setMethod("leveneRanking", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {

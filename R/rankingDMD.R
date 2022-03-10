@@ -59,16 +59,21 @@
 #'   ranked <- DMDranking(genesMatrix, classes)
 #'   head(ranked)
 #' 
+#' @rdname DMDranking
 #' @export
 setGeneric("DMDranking", function(measurementsTrain, ...)
            standardGeneric("DMDranking"))
 
+#' @rdname DMDranking
+#' @export
 setMethod("DMDranking", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
   DMDranking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname DMDranking
+#' @export
 setMethod("DMDranking", "DataFrame", # sampleInfo data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, differences = c("both", "location", "scale"),
                    ..., verbose = 3)
@@ -99,6 +104,8 @@ setMethod("DMDranking", "DataFrame", # sampleInfo data or one of the other input
   order(divergence, decreasing = TRUE)
 })
 
+#' @rdname DMDranking
+#' @export
 # One or more omics data sets, possibly with sample information data.
 setMethod("DMDranking", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)

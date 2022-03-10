@@ -8,6 +8,30 @@
 \title{Classification Using A Bayes Classifier with Kernel Density Estimates}
 \usage{
 naiveBayesKernel(measurementsTrain, ...)
+
+\S4method{naiveBayesKernel}{matrix}(measurementsTrain, classesTrain, measurementsTest, ...)
+
+\S4method{naiveBayesKernel}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  measurementsTest,
+  densityFunction = density,
+  densityParameters = list(bw = "nrd0", n = 1024, from =
+    expression(min(featureValues)), to = expression(max(featureValues))),
+  difference = c("unweighted", "weighted"),
+  weighting = c("height difference", "crossover distance"),
+  minDifference = 0,
+  returnType = c("both", "class", "score"),
+  verbose = 3
+)
+
+\S4method{naiveBayesKernel}{MultiAssayExperiment}(
+  measurementsTrain,
+  measurementsTest,
+  targets = names(measurements),
+  classesTrain,
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -30,11 +54,6 @@ removed before training.}
 \item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
-
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
 
 \item{densityFunction}{Default: \code{\link{density}}. A function which will
 return a probability density, which is essentially a list with x and y
@@ -73,6 +92,11 @@ scores in a \code{data.frame}.}
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
 }
 \value{
 A vector or data frame of class prediction information (i.e. classes

@@ -68,15 +68,20 @@
 #'                        dotBinWidth = 500, xAxisLabel = "Unnormalised Counts")
 #'   }
 #' 
+#' @rdname edgeRranking
 #' @export
 setGeneric("edgeRranking", function(countsTrain, ...) standardGeneric("edgeRranking"))
 
+#' @rdname edgeRranking
+#' @export
 setMethod("edgeRranking", "matrix", function(countsTrain, classesTrain, ...) # Matrix of integer counts. 
 {
   edgeRranking(DataFrame(countsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of counts, likely created by runTests or runTest.
+#' @rdname edgeRranking
+#' @export
 setMethod("edgeRranking", "DataFrame", function(countsTrain, classesTrain, normFactorsOptions = NULL, dispOptions = NULL, fitOptions = NULL, verbose = 3)
 {
   if(verbose == 3)
@@ -111,6 +116,8 @@ setMethod("edgeRranking", "DataFrame", function(countsTrain, classesTrain, normF
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname edgeRranking
+#' @export
 setMethod("edgeRranking", "MultiAssayExperiment", function(countsTrain, targets = NULL, ...)
 {
   if(!requireNamespace("edgeR", quietly = TRUE))

@@ -56,10 +56,13 @@
 #'   
 #'   featureSetSummary(genesMatrix, featureSets = featureSets)
 #' 
+#' @rdname featureSetSummary
 #' @export
 setGeneric("featureSetSummary", function(measurements, ...)
            standardGeneric("featureSetSummary"))
 
+#' @rdname featureSetSummary
+#' @export
 setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
           function(measurements, location = c("median", "mean"),
                    featureSets, minimumOverlapPercent = 80, verbose = 3)
@@ -101,6 +104,8 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   })) # Columns are sets, rows are samples.
 })
 
+#' @rdname featureSetSummary
+#' @export
 setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
           function(measurements, location = c("median", "mean"),
                    featureSets, minimumOverlapPercent = 80, verbose = 3)
@@ -149,6 +154,8 @@ setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
   DataFrame(measurementsCollapsed, check.names = FALSE)
 })
 
+#' @rdname featureSetSummary
+#' @export
 setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table from the data set.
           function(measurements, target = NULL, location = c("median", "mean"),
                    featureSets, minimumOverlapPercent = 80, verbose = 3)

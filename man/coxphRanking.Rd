@@ -8,6 +8,17 @@
 \title{Ranking of Differential Variability with coxph Statistic}
 \usage{
 coxphRanking(measurementsTrain, ...)
+
+\S4method{coxphRanking}{matrix}(measurementsTrain, survivalTrain, ...)
+
+\S4method{coxphRanking}{DataFrame}(measurementsTrain, survivalTrain, verbose = 3)
+
+\S4method{coxphRanking}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  survivalTrain,
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -26,14 +37,14 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
 removed before training.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"clinical"} is also a valid value
 and specifies that numeric variables from the clinical data table will be
 used.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

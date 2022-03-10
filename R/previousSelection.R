@@ -45,7 +45,7 @@
 #' 
 #'     CVparams <- CrossValParams(permutations = 2, folds = 2)
 #'     result <- runTests(genesMatrix, classes, CVparams, ModellingParams())
-#'     features(result)
+#'     chosenFeatureNames(result)
 #'                        
 #'     # Genes 50 to 74 have differential expression in new data set.
 #'     
@@ -63,16 +63,19 @@
 #'                                      
 #'     # However, only genes 76 to 100 are chosen, because the feature selections are
 #'     # carried over from the first cross-validated classification.
-#'     features(newerResult)
+#'     chosenFeatureNames(newerResult)
 #'   #}  
 #' 
 #' 
 #' @importFrom MultiAssayExperiment colData wideFormat
 #' @importFrom S4Vectors mcols
+#' @rdname previousSelection
 #' @export
 setGeneric("previousSelection", function(measurementsTrain, ...)
 standardGeneric("previousSelection"))
 
+#' @rdname previousSelection
+#' @exportMethod previousSelection
 setMethod("previousSelection", "matrix", 
           function(measurementsTrain, ...)
 {
@@ -81,6 +84,8 @@ setMethod("previousSelection", "matrix",
 
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection but of course not used here.
+#' @rdname previousSelection
+#' @exportMethod previousSelection
 setMethod("previousSelection", "DataFrame", 
           function(measurementsTrain, classesTrain, classifyResult, minimumOverlapPercent = 80,
                    .iteration, verbose = 3)
@@ -88,7 +93,7 @@ setMethod("previousSelection", "DataFrame",
   if(verbose == 3)
     message("Choosing previous features.")
 
-  previousIDs <- features(classifyResult)[[.iteration]]
+  previousIDs <- chosenFeatureNames(classifyResult)[[.iteration]]
   if(is.character(previousIDs))
   {
     commonFeatures <- intersect(previousIDs, colnames(measurementsTrain))
@@ -106,6 +111,8 @@ setMethod("previousSelection", "DataFrame",
   S4Vectors::mcols(measurementsTrain)[selectedColumns, ] # Each row is about one column.
 })
 
+#' @rdname previousSelection
+#' @exportMethod previousSelection
 setMethod("previousSelection", "MultiAssayExperiment", 
           function(measurementsTrain, ...)
           {

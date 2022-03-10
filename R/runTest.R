@@ -66,10 +66,13 @@
 #'   #}
 #' 
 #' @importFrom S4Vectors do.call
+#' @rdname runTest
 #' @export
 setGeneric("runTest", function(measurementsTrain, ...)
            standardGeneric("runTest"))
 
+#' @rdname runTest
+#' @export
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
   function(measurementsTrain, ...)
 {
@@ -78,11 +81,13 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
   runTest(DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
+#' @rdname runTest
+#' @export
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
-{ #if(!is.null(.iteration) && .iteration == "internal")
+{
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -119,19 +124,20 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   rankedFeatures <- NULL
   selectedFeatures <- NULL
   tuneDetailsSelect <- NULL
+  
   if(!is.null(modellingParams@selectParams))
   {
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
-
-    topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, modellingParams, verbose = verbose, crossValParams = crossValParams),
+    
+    topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose),
                             error = function(error) error[["message"]]) 
-
+    #if(!is.null(.iteration) && .iteration != "internal") browser()
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
     rankedFeatures <- topFeatures[[1]] # Extract for result object.
     selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
     tuneDetailsSelect <- topFeatures[[3]]
-  
+
     if(modellingParams@selectParams@subsetToSelections == TRUE)
     { # Subset the the data table to only the selected features.
       if(is.null(S4Vectors::mcols(measurementsTrain)))
@@ -153,7 +159,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
   trained <- tryCatch(.doTrain(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
                       error = function(error) error[["message"]])
-
+  #if(!is.null(.iteration) && .iteration != "internal") browser()
   if(is.character(trained)) return(trained) # An error occurred.
     
   tuneDetailsTrain <- trained[[2]] # Second element is tuning results.
@@ -174,10 +180,11 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   {
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
-                             
+                           
     predictedOutcomes <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
+    #if(!is.null(.iteration) && .iteration != "internal") browser()
     if(is.character(predictedOutcomes)) # An error occurred.
       return(predictedOutcomes) # Return early.
     
@@ -218,6 +225,8 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   }  
 })
 
+#' @rdname runTest
+#' @export
 setMethod("runTest", c("MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)
 {

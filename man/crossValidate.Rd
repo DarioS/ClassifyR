@@ -6,6 +6,8 @@
 \alias{crossValidate,DataFrame-method}
 \alias{crossValidate,MultiAssayExperiment-method,}
 \alias{crossValidate,data.frame-method}
+\alias{crossValidate,MultiAssayExperiment-method}
+\alias{predict,ClassifyResult-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
 crossValidate(
@@ -23,6 +25,68 @@ crossValidate(
   characteristicsLabel = NULL,
   ...
 )
+
+\S4method{crossValidate}{DataFrame}(
+  measurements,
+  classes,
+  nFeatures = 20,
+  selectionMethod = "t_test",
+  selectionOptimisation = "Resubstitution",
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  dataCombinations = NULL,
+  nFolds = 5,
+  nRepeats = 20,
+  nCores = 1,
+  characteristicsLabel = NULL
+)
+
+\S4method{crossValidate}{MultiAssayExperiment}(
+  measurements,
+  classes,
+  nFeatures = 20,
+  selectionMethod = "t_test",
+  selectionOptimisation = "Resubstitution",
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  dataCombinations = NULL,
+  nFolds = 5,
+  nRepeats = 20,
+  nCores = 1,
+  characteristicsLabel = NULL
+)
+
+\S4method{crossValidate}{data.frame}(
+  measurements,
+  classes,
+  nFeatures = 20,
+  selectionMethod = "t_test",
+  selectionOptimisation = "Resubstitution",
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  dataCombinations = NULL,
+  nFolds = 5,
+  nRepeats = 20,
+  nCores = 1,
+  characteristicsLabel = NULL
+)
+
+\S4method{crossValidate}{matrix}(
+  measurements,
+  classes,
+  nFeatures = 20,
+  selectionMethod = "t_test",
+  selectionOptimisation = "Resubstitution",
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  dataCombinations = NULL,
+  nFolds = 5,
+  nRepeats = 20,
+  nCores = 1,
+  characteristicsLabel = NULL
+)
+
+\S4method{predict}{ClassifyResult}(object, newData)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 

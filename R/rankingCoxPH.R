@@ -33,14 +33,19 @@
 #' features, from the most promising features in the first position to the
 #' least promising feature in the last position.
 #' @importFrom survival coxph
+#' @rdname coxphRanking
 #' @export
 setGeneric("coxphRanking", function(measurementsTrain, ...) standardGeneric("coxphRanking"))
 
+#' @rdname coxphRanking
+#' @export
 setMethod("coxphRanking", "matrix", function(measurementsTrain, survivalTrain, ...) # Matrix of numeric measurements.
 {
   coxphRanking(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
+#' @rdname coxphRanking
+#' @export
 setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
@@ -60,6 +65,8 @@ setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain
 })
 
 # One or more omics data sets, possibly with clinical data.
+#' @rdname coxphRanking
+#' @export
 setMethod("coxphRanking", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)

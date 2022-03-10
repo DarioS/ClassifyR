@@ -1,6 +1,3 @@
-setGeneric("ROCplot", function(results, ...)
-standardGeneric("ROCplot"))
-
 #' Plot Receiver Operating Curve Graphs for Classification Results
 #' 
 #' Creates one ROC plot or multiple ROC plots for a list of ClassifyResult
@@ -79,8 +76,12 @@ standardGeneric("ROCplot"))
 #'                             NULL, predicted, actual)
 #'   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
 #' 
+#' @rdname rankingPlot
 #' @export
+setGeneric("ROCplot", function(results, ...) standardGeneric("ROCplot"))
 
+#' @rdname rankingPlot
+#' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "Classifier Name", lineColours = NULL,

@@ -103,10 +103,13 @@
 #'                             
 #'   rankingPlot(list(result1, result2), characteristicsList = list(pointType = "Classifier Name"))
 #' 
+#' @rdname rankingPlot
 #' @export
 setGeneric("rankingPlot", function(results, ...)
 standardGeneric("rankingPlot"))
 
+#' @rdname rankingPlot
+#' @export
 setMethod("rankingPlot", "list",
           function(results, topRanked = seq(10, 100, 10),
                    comparison = "within", referenceLevel = NULL,

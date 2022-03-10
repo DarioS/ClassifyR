@@ -6,14 +6,25 @@
 \title{Plot Performance Measures for Various Classifications}
 \usage{
 performancePlot(results, ...)
+
+\S4method{performancePlot}{list}(
+  results,
+  performanceName = NULL,
+  characteristicsList = list(x = "Classifier Name"),
+  aggregate = character(),
+  coloursList = list(),
+  orderingList = list(),
+  yLimits = c(0, 1),
+  fontSizes = c(24, 16, 12, 12),
+  title = NULL,
+  margin = grid::unit(c(1, 1, 1, 1), "lines"),
+  rotate90 = FALSE,
+  showLegend = TRUE,
+  plot = TRUE
+)
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
-
-\item{aggregate}{A character vector of the levels of
-\code{characteristicsList['x']} to aggregate to a single number by taking
-the mean. This is particularly meaningful when the cross-validation is
-leave-k-out, when k is small.}
 
 \item{performanceName}{The name of the performance measure to make
 comparisons of. This is one of the names printed in the Performance Measures
@@ -24,6 +35,11 @@ name must be one of \code{"x"}, \code{"row"}, \code{"column"},
 \code{fillColour}, or \code{fillLine}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
 results' characteristics table. Only \code{"x"} is mandatory.}
+
+\item{aggregate}{A character vector of the levels of
+\code{characteristicsList['x']} to aggregate to a single number by taking
+the mean. This is particularly meaningful when the cross-validation is
+leave-k-out, when k is small.}
 
 \item{coloursList}{A named list of plot aspects and colours for the aspects.
 No elements are mandatory. If specified, each list element's name must be

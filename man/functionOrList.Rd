@@ -11,7 +11,7 @@ Allows a slot to be either a function or a list of functions.
 \examples{
 
   SelectParams(limmaRanking)
-  SelectParams(list(limmaRanking, limmaRanking))
+  SelectParams(list(limmaRanking, differentMeansRanking)) # Ensemble selection.
 
 }
 \author{

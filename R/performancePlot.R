@@ -79,9 +79,13 @@
 #'                   title = "Comparison")
 #' 
 #' @importFrom rlang sym
+#' @rdname performancePlot
 #' @export
 setGeneric("performancePlot", function(results, ...)
     standardGeneric("performancePlot"))
+
+#' @rdname performancePlot
+#' @export
 setMethod("performancePlot", "list", 
           function(results, performanceName = NULL,
                    characteristicsList = list(x = "Classifier Name"), aggregate = character(), coloursList = list(), orderingList = list(),
