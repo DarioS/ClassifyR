@@ -1204,8 +1204,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @aliases ClassifyResult ClassifyResult-class
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
-#' featureNames featureNames,ClassifyResult-method predictions
-#' predictions,ClassifyResult-method actualOutcomes
+#' allFeatureNames allFeatureNames,ClassifyResult-method
+#' predictions predictions,ClassifyResult-method actualOutcomes
 #' actualOutcomes,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
 #' performance,ClassifyResult-method tunedParameters

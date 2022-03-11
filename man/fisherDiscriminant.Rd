@@ -7,6 +7,8 @@
 \alias{fisherDiscriminant,MultiAssayExperiment-method}
 \title{Classification Using Fisher's LDA}
 \usage{
+\S4method{fisherDiscriminant}{matrix}(measurementsTrain, classesTrain, measurementsTest, ...)
+
 \S4method{fisherDiscriminant}{DataFrame}(
   measurementsTrain,
   classesTrain,

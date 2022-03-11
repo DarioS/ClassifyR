@@ -535,7 +535,7 @@
 .getFeaturesStrings <- function(importantFeatures)
 {
   # Do nothing if only a simple vector of feature IDs.
-  if(is.data.frame(importantFeatures[[1]])) # Data set and feature ID columns.
+  if(!is.null(ncol(importantFeatures[[1]]))) # Data set and feature ID columns.
     importantFeatures <- lapply(importantFeatures, function(features) paste(features[, 1], features[, 2]))
   else if("Pairs" %in% class(importantFeatures[[1]]))
     importantFeatures <- lapply(importantFeatures, function(features) paste(first(features), second(features), sep = '-'))

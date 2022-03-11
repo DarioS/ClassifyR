@@ -254,9 +254,9 @@ grid.draw(errorPlot)
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 50 different features were for the differential distribution classifier for all 5 folds in the 20 cross-validations.
+The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 100 different features were for the differential distribution classifier for all 5 folds in the 20 cross-validations.
 
-```{r eval = FALSE}
+```{r}
 rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:100,
                             xLabelPositions = c(1, seq(10, 100, 10)),
                             plot = FALSE)
@@ -273,7 +273,7 @@ Some classifiers can output scores or probabilities representing how likely a sa
 
 By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is 95% interval.
 
-```{r, fig.height = 5, fig.width = 6, eval = FALSE}
+```{r, fig.height = 5, fig.width = 6}
 ROCcurves <- ROCplot(list(DMresults, DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
@@ -297,7 +297,7 @@ Some feature ranking methods or classifiers allow the choosing of tuning paramet
 
 Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
-```{r, eval = FALSE}
+```{r}
 tuneList <- list(cost = c(0.01, 0.1, 1, 10))
 SVMparams <- ModellingParams(trainParams = TrainParams(SVMtrainInterface, kernel = "linear", tuneParams = tuneList),
                              predictParams = PredictParams(SVMpredictInterface))
@@ -306,7 +306,7 @@ SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
 
 The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
 
-```{r, eval = FALSE}
+```{r}
 length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[1:5]
 ```
