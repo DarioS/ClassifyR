@@ -6,6 +6,41 @@
 \alias{plotFeatureClasses,DataFrame-method}
 \alias{plotFeatureClasses,MultiAssayExperiment-method}
 \title{Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class}
+\usage{
+\S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
+
+\S4method{plotFeatureClasses}{DataFrame}(
+  measurements,
+  classes,
+  targets,
+  groupBy = NULL,
+  groupingName = NULL,
+  whichNumericFeaturePlots = c("both", "density", "stripchart"),
+  measurementLimits = NULL,
+  lineWidth = 1,
+  dotBinWidth = 1,
+  xAxisLabel = NULL,
+  yAxisLabels = c("Density", "Classes"),
+  showXtickLabels = TRUE,
+  showYtickLabels = TRUE,
+  xLabelPositions = "auto",
+  yLabelPositions = "auto",
+  fontSizes = c(24, 16, 12, 12, 12),
+  colours = c("#3F48CC", "#880015"),
+  showDatasetName = TRUE,
+  plot = TRUE
+)
+
+\S4method{plotFeatureClasses}{MultiAssayExperiment}(
+  measurements,
+  targets,
+  classesColumn,
+  groupBy = NULL,
+  groupingName = NULL,
+  showDatasetName = TRUE,
+  ...
+)
+}
 \arguments{
 \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
 \code{\link{MultiAssayExperiment}} object containing the data.  For a
@@ -28,10 +63,6 @@ feature identifiers corresponding to the feature(s) to be plotted. If
 \code{DataFrame} of 2 columns must be specified. The first column contains
 the names of the tables and the second contains the names of the variables,
 thus each row unambiguously specifies a variable to be plotted.}
-
-\item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-that contains the samples' outcomes to use for prediction.}
 
 \item{groupBy}{If \code{measurements} is a \code{DataFrame}, then a
 character vector of length 1, which contains the name of a categorical
@@ -105,6 +136,10 @@ in which the feature is stored in is added to the plot title.}
 
 \item{plot}{Logical. Default: \code{TRUE}. If \code{TRUE}, a plot is
 produced on the current graphics device.}
+
+\item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
+that contains the samples' outcomes to use for prediction.}
 }
 \value{
 Plots are created on the current graphics device and a list of plot

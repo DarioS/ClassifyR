@@ -17,7 +17,7 @@
 #' Enables S4 method dispatching on it.
 #' 
 #' 
-#' @name dlda
+#' @name dlda-class
 #' @aliases dlda dlda-class
 #' @docType class
 #' @author Dario Strbenac
@@ -115,7 +115,7 @@ setOldClass("Surv")
 #' Allows a slot to be either a function or empty.
 #' 
 #' 
-#' @name functionOrNULL
+#' @name functionOrNULL-class
 #' @aliases functionOrNULL functionOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -131,7 +131,7 @@ setClassUnion("functionOrNULL", c("function", "NULL"))
 #' Allows a slot to be either a function or a list of functions.
 #' 
 #' 
-#' @name functionOrList
+#' @name functionOrList-class
 #' @aliases functionOrList functionOrList-class
 #' @docType class
 #' @author Dario Strbenac
@@ -148,7 +148,7 @@ setClassUnion("functionOrList", c("function", "list"))
 #' Allows a slot to be either a numeric value or empty. No constructor.
 #' 
 #' 
-#' @name numericOrNULL
+#' @name numericOrNULL-class
 #' @aliases numericOrNULL numericOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -160,7 +160,7 @@ setClassUnion("numericOrNULL", c("numeric", "NULL"))
 #' Allows a slot to be either a character or a DataFrame.
 #' 
 #' 
-#' @name characterOrDataFrame
+#' @name characterOrDataFrame-class
 #' @aliases characterOrDataFrame characterOrDataFrame-class
 #' @docType class
 #' @author Dario Strbenac
@@ -179,7 +179,7 @@ setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 #' input data dependent variable is survival or categorical classes.
 #' 
 #' 
-#' @name characterOrDataFrame
+#' @name characterOrDataFrame-class
 #' @aliases characterOrDataFrame characterOrDataFrame-class
 #' @docType class
 #' @author Dario Strbenac
@@ -199,7 +199,7 @@ setClassUnion("factorOrSurv", c("factor", "Surv"))
 #' Allows a slot to be either a list or a NULL.
 #' 
 #' 
-#' @name listOrNULL
+#' @name listOrNULL-class
 #' @aliases listOrNULL listOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -218,7 +218,7 @@ setClassUnion("listOrNULL", c("list", "NULL"))
 #' same kind of measurements). No constructor.
 #' 
 #' 
-#' @name DataFrameOrDataFrameList
+#' @name DataFrameOrDataFrameList-class
 #' @aliases DataFrameOrDataFrameList DataFrameOrDataFrameList-class
 #' @docType class
 #' @author Dario Strbenac
@@ -334,14 +334,14 @@ CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percenta
 #' parameter objects specifying any stage of cross-validation.
 #' 
 #' 
-#' @name StageParams
+#' @name StageParams-class
 #' @aliases StageParams StageParams-class
 #' @author Dario Strbenac
 setClass("StageParams", representation("VIRTUAL"))
 
 
 #' Union of A StageParams Object and NULL
-#' @name StageParamsOrMissing
+#' @name StageParamsOrMissing-class
 #' @rdname StageParamsOrElse
 #' @aliases StageParamsOrMissing StageParamsOrMissing-class
 #' @author Dario Strbenac
@@ -355,7 +355,7 @@ setClassUnion("StageParamsOrMissing", c("StageParams", "missing"))
 #' StageParamsOrMissingOrNULL: Allows a slot to be either a class that has StageParams as its virtual
 #' parent class or empty or NULL. No constructor.
 #' 
-#' @name StageParamsOrMissingOrNULL
+#' @name StageParamsOrMissingOrNULL-class
 #' @rdname StageParamsOrElse
 #' @aliases StageParamsOrMissingOrNULL StageParamsOrMissingOrNULL-class
 setClassUnion("StageParamsOrMissingOrNULL", c("StageParams", "missing", "NULL"))
@@ -376,7 +376,7 @@ setClass("TransformParams", representation(
 #' constructor.
 #' 
 #' 
-#' @name TransformParamsOrNULL
+#' @name TransformParamsOrNULL-class
 #' @aliases TransformParamsOrNULL TransformParamsOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -441,9 +441,11 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
 
+#' @rdname TransformParams-class
+#' @usage NULL
 #' @export
 setMethod("TransformParams", "function",
-          function(transform, characteristics = DataFrame(), intermediate = character(0), ...)
+          function(transform, characteristics = S4Vectors::DataFrame(), intermediate = character(0), ...)
           {
             if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
             {
@@ -453,6 +455,8 @@ setMethod("TransformParams", "function",
                 intermediate = intermediate, otherParams = list(...))
           })
 
+#' @usage NULL
+#' @rdname TransformParams-class
 #' @export
 setMethod("show", "TransformParams",
           function(object)
@@ -476,7 +480,7 @@ setMethod("show", "TransformParams",
 #' @docType class
 #' @exportClass FeatureSetCollection
 setClass("FeatureSetCollection", representation(sets = "list"))
-
+#'
 #' Container for Storing A Collection of Sets
 #' 
 #' This container is the required storage format for a collection of sets.
@@ -567,13 +571,15 @@ setClass("FeatureSetCollection", representation(sets = "list"))
 setGeneric("FeatureSetCollection", function(sets, ...)
 standardGeneric("FeatureSetCollection"))
 
-#'
+#' @usage NULL
+#' @export
 setMethod("FeatureSetCollection", c("list"),
           function(sets)
           {
             new("FeatureSetCollection", sets = sets)
           })
 
+#' @usage NULL
 #' @export
 setMethod("length", c("FeatureSetCollection"),
     function(x)
@@ -581,6 +587,7 @@ setMethod("length", c("FeatureSetCollection"),
     length(x@sets)
 })
 
+#' @usage NULL
 #' @export
 setMethod("show", "FeatureSetCollection",
           function(object)
@@ -653,6 +660,7 @@ setMethod("show", "FeatureSetCollection",
           }
 )
 
+#' @usage NULL
 #' @export
 setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     function(x, i, j, ..., drop = TRUE)
@@ -660,6 +668,7 @@ setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     new("FeatureSetCollection", sets = x@sets[i])
 })
 
+#' @usage NULL
 #' @export
 setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
     function(x, i, j, ...)
@@ -673,7 +682,7 @@ setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
 #' Allows a slot to be either a FeatureSetCollectionOrNULL object or empty.
 #' 
 #' 
-#' @name FeatureSetCollectionOrNULL
+#' @name FeatureSetCollectionOrNULL-class
 #' @aliases FeatureSetCollectionOrNULL FeatureSetCollectionOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -707,7 +716,7 @@ setClass("SelectParams", representation(
 #' constructor.
 #' 
 #' 
-#' @name SelectParamsOrNULL
+#' @name SelectParamsOrNULL-class
 #' @aliases SelectParamsOrNULL SelectParamsOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
@@ -787,16 +796,18 @@ setGeneric("SelectParams", function(featureRanking, ...)
 standardGeneric("SelectParams"))
 
 #' @rdname SelectParams-class
+#' @usage NULL
 #' @export
 setMethod("SelectParams", "missing", function()
 {
   new("SelectParams", featureRanking = differentMeansRanking,
-      characteristics = DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
+      characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
       minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
       tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
 })
 #' @rdname SelectParams-class
 #' @usage NULL
+#' @export
 setMethod("SelectParams", c("functionOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
                    intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
@@ -818,7 +829,6 @@ setMethod("SelectParams", c("functionOrList"),
                 tuneParams = tuneParams, otherParams = others)
           })
 
-#' @rdname SelectParams-class
 #' @usage NULL
 setMethod("show", "SelectParams",
           function(object)
@@ -921,8 +931,8 @@ setClass("TrainParams", representation(
 #' @export
 setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams"))
 
-#' @rdname TrainParams-class
 #' @usage NULL
+#' @rdname TrainParams-class
 #' @export
 setMethod("TrainParams", "missing", function()
 {
@@ -931,8 +941,9 @@ setMethod("TrainParams", "missing", function()
       intermediate = character(0), getFeatures = NULL)
 })
 
-#' @rdname TrainParams-class
 #' @usage NULL
+#' @rdname TrainParams-class
+#' @export
 setMethod("TrainParams", c("function"),
           function(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(), intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)
           {
@@ -945,6 +956,7 @@ setMethod("TrainParams", c("function"),
                 otherParams = list(...))
           })
 
+#' @usage NULL
 #' @export
 setMethod("show", "TrainParams",
           function(object)
@@ -993,6 +1005,7 @@ setClass("PredictParams", representation(
 #' 
 #' 
 #' @name PredictParams
+#' @rdname PredictParams-class
 #' @aliases PredictParams PredictParams-class PredictParams,missing-method
 #' PredictParams,functionOrNULL-method show,PredictParams-method
 #' @docType class
@@ -1021,7 +1034,6 @@ setClass("PredictParams", representation(
 #'   \code{show(predictParams)}: Prints a short summary of what \code{predictParams} contains.
 #' }}
 #' @author Dario Strbenac
-#' @rdname PredictParams-class
 #' @examples
 #' 
 #' predictParams <- PredictParams(predictor = DLDApredictInterface)
@@ -1035,8 +1047,9 @@ setClass("PredictParams", representation(
 setGeneric("PredictParams", function(predictor, ...)
 standardGeneric("PredictParams"))
 
-#' @rdname PredictParams-class
 #' @usage NULL
+#' @rdname PredictParams-class
+#' @export
 setMethod("PredictParams", "missing", function()
 {
   new("PredictParams", predictor = DLDApredictInterface,
@@ -1044,8 +1057,9 @@ setMethod("PredictParams", "missing", function()
       intermediate = character(0), otherParams = NULL)
 })
 
-#' @rdname PredictParams-class
 #' @usage NULL
+#' @rdname PredictParams-class
+#' @export
 setMethod("PredictParams", c("functionOrNULL"),
           function(predictor, characteristics = DataFrame(), intermediate = character(0), ...)
           {
@@ -1061,6 +1075,7 @@ setMethod("PredictParams", c("functionOrNULL"),
                 intermediate = intermediate, otherParams = others)
           })
 
+#' @usage NULL
 #' @export
 setMethod("show", "PredictParams",
           function(object)
@@ -1168,7 +1183,7 @@ ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
 #' constructor.
 #' 
 #' 
-#' @name ModellingParamsOrNULL
+#' @name ModellingParamsOrNULL-class
 #' @aliases ModellingParamsOrNULL ModellingParamsOrNULL-class
 #' @docType class
 setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
@@ -1185,6 +1200,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' created by \code{\link{runTest}} or \code{\link{runTests}}.
 #' 
 #' @name ClassifyResult
+#' @rdname ClassifyResult-class
 #' @aliases ClassifyResult ClassifyResult-class
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
@@ -1275,8 +1291,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #'     class(classified)
 #'   #}
 #'   
-#' @importFrom S4Vectors as.data.frame  
-#' @rdname ClassifyResult-class
+#' @importFrom S4Vectors as.data.frame
 #' @usage NULL
 #' @export
 setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
@@ -1311,7 +1326,7 @@ setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
                 models = models, tune = tunedParameters,
                 predictions = predictions, actualOutcomes = actualOutcomes, modellingParams = modellingParams, finalModel = finalModel)
           })
-#' @rdname ClassifyResult-class
+
 #' @usage NULL
 #' @export
 setMethod("show", "ClassifyResult", function(object)

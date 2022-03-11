@@ -17,5 +17,5 @@ setMethod("selectMulti", "DataFrame",
               )
               
               do.call("rbind", selectedFeatures[2,])
-              #DataFrame(dataset = rep(names(selectedFeatures[2,]), unlist(lapply(selectedFeatures[2,], length))), feature = unlist(selectedFeatures[2,]))
+              #S4Vectors::DataFrame(dataset = rep(names(selectedFeatures[2,]), unlist(lapply(selectedFeatures[2,], length))), feature = unlist(selectedFeatures[2,]))
           })

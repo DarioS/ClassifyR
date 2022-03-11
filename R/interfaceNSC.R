@@ -63,7 +63,7 @@ standardGeneric("NSCtrainInterface"))
 #' @export
 setMethod("NSCtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  NSCtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  NSCtrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 #' @rdname NSCinterface
@@ -171,7 +171,7 @@ setGeneric("NSCpredictInterface", function(model, measurementsTest, ...)
 
 setMethod("NSCpredictInterface", c("pamrtrained", "matrix"), function(model, measurementsTest, ...)
 {
-  NSCpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  NSCpredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname NSCinterface

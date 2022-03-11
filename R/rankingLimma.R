@@ -54,13 +54,15 @@ setGeneric("limmaRanking", function(measurementsTrain, ...)
            standardGeneric("limmaRanking"))
 
 # Matrix of numeric measurements.
+#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  limmaRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  limmaRanking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of numeric measurements, likely created by runTests or runTest.
+#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "DataFrame",
           function(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -82,6 +84,7 @@ setMethod("limmaRanking", "DataFrame",
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname limmaRanking
 #' @export
 setMethod("limmaRanking", "MultiAssayExperiment", 
           function(measurementsTrain, targets = NULL, classesTrain, ...)

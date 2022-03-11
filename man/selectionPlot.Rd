@@ -4,6 +4,29 @@
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
 \title{Plot Pair-wise Overlap or Selection Size Distribution of Selected Features}
+\usage{
+\S4method{selectionPlot}{list}(
+  results,
+  comparison = "within",
+  referenceLevel = NULL,
+  characteristicsList = list(x = "Classifier Name"),
+  coloursList = list(),
+  orderingList = list(),
+  binsList = list(),
+  yMax = 100,
+  fontSizes = c(24, 16, 12, 16),
+  title = if (comparison[1] == "within") "Feature Selection Stability" else if
+    (comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
+  yLabel = if (is.null(referenceLevel) && comparison != "size") "Common Features (\%)"
+    else if (comparison == "size") "Set Size" else paste("Common Features with",
+    referenceLevel, "(\%)"),
+  margin = grid::unit(c(1, 1, 1, 1), "lines"),
+  rotate90 = FALSE,
+  showLegend = TRUE,
+  plot = TRUE,
+  parallelParams = bpparam()
+)
+}
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
 

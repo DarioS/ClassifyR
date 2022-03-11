@@ -124,6 +124,7 @@
 setGeneric("selectionPlot", function(results, ...)
 standardGeneric("selectionPlot"))
 
+#' @rdname selectionPlot
 #' @export
 setMethod("selectionPlot", "list", 
           function(results,

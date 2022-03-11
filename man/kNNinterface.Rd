@@ -6,6 +6,26 @@
 \alias{kNNinterface,DataFrame-method}
 \alias{kNNinterface,MultiAssayExperiment-method}
 \title{An Interface for class Package's knn Function}
+\usage{
+\S4method{kNNinterface}{matrix}(measurementsTrain, classesTrain, measurementsTest, ...)
+
+\S4method{kNNinterface}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  measurementsTest,
+  ...,
+  classifierName = "k Nearest Neighbours",
+  verbose = 3
+)
+
+\S4method{kNNinterface}{MultiAssayExperiment}(
+  measurementsTrain,
+  measurementsTest,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
@@ -30,17 +50,17 @@ removed before training.}
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
 
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that integer variables from the sample information data table will be
-used.}
-
 \item{classifierName}{Default: k Nearest Neighbours. Useful for automated
 plot annotation by plotting functions within this package.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
+
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the sample information data table will be
+used.}
 }
 \value{
 A factor vector, the same as is returned by \code{\link[class]{knn}}.

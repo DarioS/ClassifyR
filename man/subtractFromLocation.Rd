@@ -6,6 +6,32 @@
 \alias{subtractFromLocation,DataFrame,DataFrame-method}
 \alias{subtractFromLocation,MultiAssayExperiment,MultiAssayExperiment-method}
 \title{Subtract Numeric Feature Measurements from a Location}
+\usage{
+\S4method{subtractFromLocation}{matrix,matrix}(
+  measurementsTrain,
+  measurementsTest,
+  location = c("mean", "median"),
+  absolute = TRUE,
+  verbose = 3
+)
+
+\S4method{subtractFromLocation}{DataFrame,DataFrame}(
+  measurementsTrain,
+  measurementsTest,
+  location = c("mean", "median"),
+  absolute = TRUE,
+  verbose = 3
+)
+
+\S4method{subtractFromLocation}{MultiAssayExperiment,MultiAssayExperiment}(
+  measurementsTrain,
+  measurementsTest,
+  targets = names(measurementsTrain),
+  location = c("mean", "median"),
+  absolute = TRUE,
+  verbose = 3
+)
+}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -21,12 +47,12 @@ The subtraction will also be performed to it.}
 \item{absolute}{Logical. Default: \code{TRUE}. If \code{TRUE}, then absolute
 values of the differences are returned. Otherwise, they are signed.}
 
+\item{verbose}{Default: 3. A progress message is shown if this value is 3.}
+
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that numeric variables from the sample information data table will be
 used.}
-
-\item{verbose}{Default: 3. A progress message is shown if this value is 3.}
 }
 \value{
 The same class of variable as the input variable \code{measurements}

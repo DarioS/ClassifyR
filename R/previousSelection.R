@@ -74,15 +74,17 @@
 setGeneric("previousSelection", function(measurementsTrain, ...)
 standardGeneric("previousSelection"))
 
+#' @rdname previousSelection
 #' @export
 setMethod("previousSelection", "matrix", 
           function(measurementsTrain, ...)
 {
-  previousSelection(DataFrame(measurementsTrain, check.names = FALSE), ...)
+  previousSelection(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
 # Classes is passed around because most other selection functions need it, so it is sent from
 # .doSelection but of course not used here.
+#' @rdname previousSelection
 #' @export
 setMethod("previousSelection", "DataFrame", 
           function(measurementsTrain, classesTrain, classifyResult, minimumOverlapPercent = 80,
@@ -109,6 +111,7 @@ setMethod("previousSelection", "DataFrame",
   S4Vectors::mcols(measurementsTrain)[selectedColumns, ] # Each row is about one column.
 })
 
+#' @rdname previousSelection
 #' @export
 setMethod("previousSelection", "MultiAssayExperiment", 
           function(measurementsTrain, ...)

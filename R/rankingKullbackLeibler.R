@@ -60,12 +60,14 @@ setGeneric("KullbackLeiblerRanking", function(measurementsTrain, ...)
            standardGeneric("KullbackLeiblerRanking"))
 
 # Matrix of numeric measurements.
+#' @rdname KullbackLeiblerRanking
 #' @export
 setMethod("KullbackLeiblerRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  KullbackLeiblerRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  KullbackLeiblerRanking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname KullbackLeiblerRanking
 #' @export
 setMethod("KullbackLeiblerRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, ..., verbose = 3)
@@ -94,6 +96,7 @@ setMethod("KullbackLeiblerRanking", "DataFrame", # Sample information data or on
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname KullbackLeiblerRanking
 #' @export
 setMethod("KullbackLeiblerRanking", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)

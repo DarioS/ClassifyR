@@ -57,15 +57,17 @@
 #' @export
 setGeneric("kNNinterface", function(measurementsTrain, ...) standardGeneric("kNNinterface"))
 
+#' @rdname kNNinterface
 #' @export
 setMethod("kNNinterface", "matrix",
           function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  kNNinterface(DataFrame(measurementsTrain, check.names = FALSE),
+  kNNinterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
                classesTrain,
-               DataFrame(measurementsTest, check.names = FALSE), ...)
+               S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname kNNinterface
 #' @export
 setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain, measurementsTest, ..., classifierName = "k Nearest Neighbours", verbose = 3)
 {
@@ -83,6 +85,7 @@ setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain,
   class::knn(as.matrix(measurementsTrain), as.matrix(measurementsTest), classesTrain, ...)
 })
 
+#' @rdname kNNinterface
 #' @export
 setMethod("kNNinterface", "MultiAssayExperiment",
 function(measurementsTrain, measurementsTest, targets = names(measurementsTrain), classesTrain, ...)

@@ -80,6 +80,7 @@
 #' @export
 setGeneric("ROCplot", function(results, ...) standardGeneric("ROCplot"))
 
+#' @rdname ROCplot
 #' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,

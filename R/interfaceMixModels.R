@@ -114,7 +114,7 @@ setGeneric("mixModelsTrain", function(measurementsTrain, ...) standardGeneric("m
 #' @export
 setMethod("mixModelsTrain", "matrix", function(measurementsTrain, ...) # Matrix of numeric measurements.
 {
-  mixModelsTrain(DataFrame(measurementsTrain, check.names = FALSE), ...)
+  mixModelsTrain(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
 #' @rdname mixModels
@@ -175,7 +175,7 @@ setGeneric("mixModelsPredict", function(models, measurementsTest, ...) standardG
 #' @export
 setMethod("mixModelsPredict", c("MixModelsListsSet", "matrix"), function(models, measurementsTest, ...)
 {
-  mixModelsPredict(models, DataFrame(measurementsTest, check.names = FALSE), ...)
+  mixModelsPredict(models, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname mixModels

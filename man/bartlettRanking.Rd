@@ -6,6 +6,18 @@
 \alias{bartlettRanking,DataFrame-method}
 \alias{bartlettRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Variability with Bartlett Statistic}
+\usage{
+\S4method{bartlettRanking}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{bartlettRanking}{DataFrame}(measurementsTrain, classesTrain, verbose = 3)
+
+\S4method{bartlettRanking}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
@@ -25,14 +37,14 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
 \item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that numeric variables from the sample information table will be
 used.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

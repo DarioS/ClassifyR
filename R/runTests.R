@@ -60,18 +60,20 @@
 #' @usage NULL
 setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
+#' @rdname runTests
 #' @export
 setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matrix of numeric measurements.
 {
   if(is.null(rownames(measurements)))
     stop("'measurements' matrix must have sample identifiers as its row names.")
-  runTests(DataFrame(measurements, check.names = FALSE), outcomes, ...)
+  runTests(S4Vectors::DataFrame(measurements, check.names = FALSE), outcomes, ...)
 })
 
 # Clinical data or one of the other inputs, transformed.
+#' @rdname runTests
 #' @export
 setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
-           characteristics = DataFrame(), verbose = 1)
+           characteristics = S4Vectors::DataFrame(), verbose = 1)
 {
   # Get out the outcomes if inside of data table.           
   if(is.null(rownames(measurements)))
@@ -94,6 +96,8 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, outcomes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
+  modellingParams <- modellingParams # Necessary hack for parallel processing on Windows.
+  
   
   results <- bpmapply(function(trainingSamples, testSamples, setNumber)
   #results <- mapply(function(trainingSamples, testSamples, setNumber)
@@ -134,7 +138,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
   if(length(extras) > 0)
     extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
-  extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+  extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unlist(extras))
   characteristics <- rbind(characteristics, extrasDF)
   characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
   characteristics <- rbind(characteristics,
@@ -154,6 +158,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes)
 })
 
+#' @rdname runTests
 #' @export
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomesColumns, ...)

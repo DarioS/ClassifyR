@@ -34,6 +34,7 @@
 #' @usage NULL
 setGeneric("subtractFromLocation", function(measurementsTrain, measurementsTest, ...) standardGeneric("subtractFromLocation"))
 
+#' @rdname subtractFromLocation
 #' @export
 setMethod("subtractFromLocation", c("matrix", "matrix"), function(measurementsTrain, measurementsTest, location = c("mean", "median"),
            absolute = TRUE, verbose = 3)
@@ -60,6 +61,7 @@ setMethod("subtractFromLocation", c("matrix", "matrix"), function(measurementsTr
 })
 
 # Sample information data or one of the other inputs, transformed.
+#' @rdname subtractFromLocation
 #' @export
 setMethod("subtractFromLocation", c("DataFrame", "DataFrame"), function(measurementsTrain, measurementsTest, location = c("mean", "median"),
            absolute = TRUE, verbose = 3)
@@ -80,12 +82,12 @@ setMethod("subtractFromLocation", c("DataFrame", "DataFrame"), function(measurem
   else # median.
     locations <- apply(measurementsTrain, 2, median, na.rm = TRUE)
   
-  transformedTrain <- DataFrame(t(apply(measurementsTrain, 1, '-', locations)))
-  transformedTest <- DataFrame(t(apply(measurementsTest, 1, '-', locations)))
+  transformedTrain <- S4Vectors::DataFrame(t(apply(measurementsTrain, 1, '-', locations)))
+  transformedTest <- S4Vectors::DataFrame(t(apply(measurementsTest, 1, '-', locations)))
   if(absolute == TRUE)
   {
-    transformedTrain <- DataFrame(lapply(transformedTrain, abs))
-    transformedTest <- DataFrame(lapply(transformedTest, abs))
+    transformedTrain <- S4Vectors::DataFrame(lapply(transformedTrain, abs))
+    transformedTest <- S4Vectors::DataFrame(lapply(transformedTest, abs))
   }
   
   if(verbose == 3)
@@ -95,8 +97,9 @@ setMethod("subtractFromLocation", c("DataFrame", "DataFrame"), function(measurem
   list(transformedTrain, transformedTest)
 })
 
+#' @rdname subtractFromLocation
 #' @export
-setMethod("subtractFromLocation", "MultiAssayExperiment",
+setMethod("subtractFromLocation", c("MultiAssayExperiment", "MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurementsTrain),
            location = c("mean", "median"), absolute = TRUE, verbose = 3)
 {
@@ -113,12 +116,12 @@ setMethod("subtractFromLocation", "MultiAssayExperiment",
       locations <- apply(sampleInfoTrain, 2, mean, na.rm = TRUE)
     else # median.
       locations <- apply(sampleInfoTrain, 2, median, na.rm = TRUE)
-    transformedSampleInfoTrain <- DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTrain), 1, '-', locations)))
-    transformedSampleInfoTest <- DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTest), 1, '-', locations)))
+    transformedSampleInfoTrain <- S4Vectors::DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTrain), 1, '-', locations)))
+    transformedSampleInfoTest <- S4Vectors::DataFrame(t(apply(MultiAssayExperiment::colData(measurementsTest), 1, '-', locations)))
     if(absolute == TRUE)
     {
-      transformedSampleInfoTrain <- DataFrame(lapply(transformedSampleInfoTrain, abs))
-      transformedSampleInfoTest <- DataFrame(lapply(transformedSampleInfoTest, abs))
+      transformedSampleInfoTrain <- S4Vectors::DataFrame(lapply(transformedSampleInfoTrain, abs))
+      transformedSampleInfoTest <- S4Vectors::DataFrame(lapply(transformedSampleInfoTest, abs))
     }
     MultiAssayExperiment::colData(measurementsTrain)[, isNumeric] <- transformedSampleInfoTrain
     MultiAssayExperiment::colData(measurementsTest)[, isNumeric] <- transformedSampleInfoTest

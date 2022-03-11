@@ -80,7 +80,7 @@ setGeneric("coxnetTrainInterface", function(measurementsTrain, ...)
 setMethod("coxnetTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, survivalTrain, ...)
           {
-            coxnetTrainInterface(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
+            coxnetTrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
           })
 
 # Clinical data or one of the other inputs, transformed.
@@ -142,7 +142,7 @@ setGeneric("coxnetPredictInterface", function(model, measurementsTest, ...)
 setMethod("coxnetPredictInterface", c("coxnet", "matrix"),
           function(model, measurementsTest, ...)
           {
-            coxnetPredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+            coxnetPredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
           })
 
 #' @rdname coxnetInterface

@@ -74,20 +74,22 @@
 setGeneric("runTest", function(measurementsTrain, ...)
            standardGeneric("runTest"))
 
+#' @rdname runTest
 #' @export
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
   function(measurementsTrain, ...)
 {
   if(is.null(rownames(measurementsTrain)))
     stop("'measurementsTrain' matrix must have sample identifiers as its row names.")    
-  runTest(DataFrame(measurementsTrain, check.names = FALSE), ...)
+  runTest(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), ...)
 })
 
+#' @rdname runTest
 #' @export
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
-         modellingParams = ModellingParams(), characteristics = DataFrame(), verbose = 1, .iteration = NULL)
+         modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), verbose = 1, .iteration = NULL)
 {
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
@@ -209,7 +211,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
 
     extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
-    extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+    extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unlist(extras))
     characteristics <- rbind(characteristics, extrasDF)
     
     allSamples <- c(rownames(measurementsTrain), rownames(measurementsTest))
@@ -226,6 +228,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   }  
 })
 
+#' @rdname runTest
 #' @export
 setMethod("runTest", c("MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)

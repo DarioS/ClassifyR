@@ -6,6 +6,29 @@
 \alias{runTest,DataFrame-method}
 \alias{runTest,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
+\usage{
+\S4method{runTest}{matrix}(measurementsTrain, ...)
+
+\S4method{runTest}{DataFrame}(
+  measurementsTrain,
+  outcomesTrain,
+  measurementsTest,
+  outcomesTest,
+  crossValParams = CrossValParams(),
+  modellingParams = ModellingParams(),
+  characteristics = S4Vectors::DataFrame(),
+  verbose = 1,
+  .iteration = NULL
+)
+
+\S4method{runTest}{MultiAssayExperiment}(
+  measurementsTrain,
+  measurementsTest,
+  targets = names(measurements),
+  outcomesColumns,
+  ...
+)
+}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -33,15 +56,6 @@ cross-validation is used to tune any parameters.}
 specifying the class rebalancing, transformation (if any), feature selection
 (if any), training and prediction to be done on the data set.}
 
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
-used.}
-
-\item{outcomesColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-that contain(s) the samples' outcomes to use for prediction.}
-
 \item{characteristics}{A \code{\link{DataFrame}} describing the
 characteristics of the classification used. First column must be named
 \code{"charateristic"} and second column must be named \code{"value"}.
@@ -56,6 +70,15 @@ more lower-level functions print messages.}
 
 \item{.iteration}{Not to be set by a user. This value is used to keep track
 of the cross-validation iteration, if called by \code{\link{runTests}}.}
+
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that numeric variables from the sample information data table will be
+used.}
+
+\item{outcomesColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+that contain(s) the samples' outcomes to use for prediction.}
 }
 \value{
 If called directly by the user rather than being used internally by

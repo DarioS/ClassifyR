@@ -78,7 +78,7 @@ standardGeneric("SVMtrainInterface"))
 setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
-  SVMtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  SVMtrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # Sample information data or one of the other inputs, transformed.
@@ -125,7 +125,7 @@ standardGeneric("SVMpredictInterface"))
 setMethod("SVMpredictInterface", c("svm", "matrix"),
           function(model, measurementsTest, ...)
 {
-  SVMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  SVMpredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname SVMinterface

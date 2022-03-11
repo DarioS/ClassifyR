@@ -5,12 +5,54 @@
 \alias{samplesMetricMap,list-method}
 \alias{samplesMetricMap,matrix-method}
 \title{Plot a Grid of Sample Error Rates or Accuracies}
+\usage{
+\S4method{samplesMetricMap}{list}(
+  results,
+  comparison = "Classifier Name",
+  metric = c("Sample Error", "Sample Accuracy"),
+  featureValues = NULL,
+  featureName = NULL,
+  metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
+    c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
+  classColours = c("#3F48CC", "#880015"),
+  groupColours = c("darkgreen", "yellow2"),
+  fontSizes = c(24, 16, 12, 12, 12),
+  mapHeight = 4,
+  title = "Error Comparison",
+  showLegends = TRUE,
+  xAxisLabel = "Sample Name",
+  showXtickLabels = TRUE,
+  yAxisLabel = "Analysis",
+  showYtickLabels = TRUE,
+  legendSize = grid::unit(1, "lines"),
+  plot = TRUE
+)
+
+\S4method{samplesMetricMap}{matrix}(
+  results,
+  classes,
+  metric = c("Sample Error", "Sample Accuracy"),
+  featureValues = NULL,
+  featureName = NULL,
+  metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
+    c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
+  classColours = c("#3F48CC", "#880015"),
+  groupColours = c("darkgreen", "yellow2"),
+  fontSizes = c(24, 16, 12, 12, 12),
+  mapHeight = 4,
+  title = "Error Comparison",
+  showLegends = TRUE,
+  xAxisLabel = "Sample Name",
+  showXtickLabels = TRUE,
+  yAxisLabel = "Analysis",
+  showYtickLabels = TRUE,
+  legendSize = grid::unit(1, "lines"),
+  plot = TRUE
+)
+}
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be
 a matrix of pre-calculated metrics, for backwards compatibility.}
-
-\item{classes}{If \code{results} is a matrix, this is a factor vector of the
-same length as the number of columns that \code{results} has.}
 
 \item{comparison}{Default: Classifier Name. The aspect of the experimental
 design to compare. Can be any characteristic that all results share.}
@@ -50,14 +92,17 @@ colour bar.}
 
 \item{showXtickLabels}{Logical. IF FALSE, the x-axis labels are hidden.}
 
-\item{showYtickLabels}{Logical. IF FALSE, the y-axis labels are hidden.}
-
 \item{yAxisLabel}{The name plotted for the y-axis. NULL suppresses label.}
+
+\item{showYtickLabels}{Logical. IF FALSE, the y-axis labels are hidden.}
 
 \item{legendSize}{The size of the boxes in the legends.}
 
 \item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current
 graphics device.}
+
+\item{classes}{If \code{results} is a matrix, this is a factor vector of the
+same length as the number of columns that \code{results} has.}
 }
 \value{
 A plot is produced and a grob is returned that can be saved to a

@@ -93,7 +93,7 @@ setGeneric("randomForestPredictInterface", function(models, measurementsTest, ..
 setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
-  randomForestTrainInterface(DataFrame(measurementsTrain, check.names = FALSE),
+  randomForestTrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
                              classesTrain, ...)
 })
 
@@ -143,7 +143,7 @@ setGeneric("randomForestPredictInterface", function(forest, measurementsTest, ..
 #' @rdname randomForest
 setMethod("randomForestPredictInterface", c("randomForest", "matrix"), function(forest, measurementsTest, ...)
 {
-  randomForestPredictInterface(forest, DataFrame(measurementsTest, check.names = FALSE), ...)
+  randomForestPredictInterface(forest, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @export

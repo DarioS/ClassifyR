@@ -6,11 +6,7 @@
 \alias{SelectParams-class}
 \alias{SelectParams,missing-method}
 \alias{SelectParams,functionOrList-method}
-\alias{show,SelectParams-method}
 \title{Parameters for Feature Selection}
-\usage{
-\S4method{SelectParams}{missing}()
-}
 \description{
 Collects and checks necessary parameters required for feature selection.
 Either one function is specified or a list of functions to perform ensemble

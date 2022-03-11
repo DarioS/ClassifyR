@@ -88,6 +88,7 @@
 setGeneric("kTSPclassifier", function(measurementsTrain, ...)
            standardGeneric("kTSPclassifier"))
 
+#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL, ...)
@@ -97,11 +98,12 @@ setMethod("kTSPclassifier", "matrix", # Matrix of numeric measurements.
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
             
-  kTSPclassifier(DataFrame(measurementsTrain, check.names = FALSE),
+  kTSPclassifier(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
                  classesTrain,
-                 DataFrame(measurementsTest, check.names = FALSE), featurePairs, ...)
+                 S4Vectors::DataFrame(measurementsTest, check.names = FALSE), featurePairs, ...)
 })
 
+#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest, featurePairs = NULL,
@@ -192,6 +194,7 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
   )
 })
 
+#' @rdname kTSPclassifier
 #' @export
 setMethod("kTSPclassifier", "MultiAssayExperiment", 
           function(measurementsTrain, classesTrain, target = names(measurementsTrain)[1], featurePairs = NULL, ...)

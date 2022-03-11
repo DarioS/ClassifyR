@@ -108,9 +108,9 @@ setGeneric("naiveBayesKernel", function(measurementsTrain, ...)
 setMethod("naiveBayesKernel", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, measurementsTest, ...)
 {
-  naiveBayesKernel(DataFrame(measurementsTrain, check.names = FALSE),
+  naiveBayesKernel(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
                    classesTrain,
-                   DataFrame(measurementsTest, check.names = FALSE), ...)
+                   S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname naiveBayesKernel

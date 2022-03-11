@@ -41,7 +41,7 @@ setGeneric("coxphRanking", function(measurementsTrain, ...) standardGeneric("cox
 #' @export
 setMethod("coxphRanking", "matrix", function(measurementsTrain, survivalTrain, ...) # Matrix of numeric measurements.
 {
-  coxphRanking(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
+  coxphRanking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
 #' @rdname coxphRanking

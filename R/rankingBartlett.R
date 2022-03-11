@@ -61,13 +61,15 @@
 setGeneric("bartlettRanking", function(measurementsTrain, ...)
 standardGeneric("bartlettRanking"))
 
+#' @rdname bartlettRanking
 #' @export
 setMethod("bartlettRanking", "matrix", # Matrix of numeric measurements.
 function(measurementsTrain, classesTrain, ...)
 {
-  bartlettRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  bartlettRanking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname bartlettRanking
 #' @export
 setMethod("bartlettRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, verbose = 3)
@@ -89,6 +91,7 @@ setMethod("bartlettRanking", "DataFrame", # Sample information data or one of th
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname bartlettRanking
 #' @export
 setMethod("bartlettRanking", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)

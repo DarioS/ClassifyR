@@ -74,7 +74,7 @@ setGeneric("DLDAtrainInterface", function(measurementsTrain, ...) standardGeneri
 #' @export
 setMethod("DLDAtrainInterface", "matrix", function(measurementsTrain, classesTrain, ...) # Matrix of numeric measurements.
 {
-  DLDAtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  DLDAtrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 #' @rdname DLDAinterface
@@ -118,7 +118,7 @@ setGeneric("DLDApredictInterface", function(model, measurementsTest, ...) standa
 #' @export
 setMethod("DLDApredictInterface", c("dlda", "matrix"), function(model, measurementsTest, ...)
 {
-  DLDApredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  DLDApredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname DLDAinterface

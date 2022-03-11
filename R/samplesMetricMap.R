@@ -81,6 +81,7 @@
 setGeneric("samplesMetricMap", function(results, ...)
 standardGeneric("samplesMetricMap"))
 
+#' @rdname samplesMetricMap
 #' @export
 setMethod("samplesMetricMap", "list", 
           function(results,
@@ -412,6 +413,7 @@ setMethod("samplesMetricMap", "list",
   wholePlot
 })
 
+#' @rdname samplesMetricMap
 #' @export
 setMethod("samplesMetricMap", "matrix", 
           function(results, classes,

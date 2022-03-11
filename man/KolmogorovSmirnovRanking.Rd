@@ -6,6 +6,18 @@
 \alias{KolmogorovSmirnovRanking,DataFrame-method}
 \alias{KolmogorovSmirnovRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Distributions with Kolmogorov-Smirnov Distance}
+\usage{
+\S4method{KolmogorovSmirnovRanking}{matrix}(measurementsTrain, classesTrain, ...)
+
+\S4method{KolmogorovSmirnovRanking}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
+
+\S4method{KolmogorovSmirnovRanking}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  classesTrain,
+  ...
+)
+}
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
@@ -23,14 +35,14 @@ of the same length as the number of samples in \code{measurementsTrain} or if th
 measurements are of class \code{DataFrame} a character vector of length 1
 containing the column name in \code{measurement} is also permitted.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
 \item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that numeric variables from the sample information data table will be
 used.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 A vector or data frame (if \code{MultiAssayExperiment} input) of

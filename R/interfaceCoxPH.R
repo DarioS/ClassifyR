@@ -79,7 +79,7 @@ setGeneric("coxphTrainInterface", function(measurementsTrain, ...) standardGener
 
 setMethod("coxphTrainInterface", "matrix", function(measurementsTrain, survivalTrain, ...)
 {
-  coxphTrainInterface(DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
+  coxphTrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
 # Clinical data or one of the other inputs, transformed.
@@ -124,7 +124,7 @@ setGeneric("coxphPredictInterface", function(model, measurementsTest, ...)
 setMethod("coxphPredictInterface", c("coxph", "matrix"), # Matrix of numeric measurements.
           function(model, measurementsTest, ...)
 {
-  coxphPredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  coxphPredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 setMethod("coxphPredictInterface", c("coxph", "DataFrame"),

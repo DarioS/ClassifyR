@@ -97,7 +97,7 @@ setMethod("prevalTrainInterface", "DFrame",
              
               #fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
-              prevalidationTrain <- DataFrame(prevalidationTrain)
+              prevalidationTrain <- S4Vectors::DataFrame(prevalidationTrain)
               mcols(prevalidationTrain)$dataset = "pca"
               mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
               
@@ -190,7 +190,7 @@ setMethod("prevalPredictInterface", c("prevalModel", "DFrame"),
                   prediction}, simplify = FALSE) |>
                   extractPrevalidation()
               
-              prevalidationPredict <- DataFrame(prevalidationPredict)
+              prevalidationPredict <- S4Vectors::DataFrame(prevalidationPredict)
               mcols(prevalidationPredict)$dataset = "pca"
               mcols(prevalidationPredict)$feature = colnames(prevalidationPredict)
               

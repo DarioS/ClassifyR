@@ -108,6 +108,7 @@
 setGeneric("rankingPlot", function(results, ...)
 standardGeneric("rankingPlot"))
 
+#' @rdname rankingPlot
 #' @export
 setMethod("rankingPlot", "list",
           function(results, topRanked = seq(10, 100, 10),

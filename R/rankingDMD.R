@@ -70,7 +70,7 @@ setGeneric("DMDranking", function(measurementsTrain, ...)
 setMethod("DMDranking", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
-  DMDranking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  DMDranking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 #' @rdname DMDranking

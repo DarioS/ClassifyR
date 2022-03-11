@@ -104,7 +104,7 @@ standardGeneric("elasticNetGLMtrainInterface"))
 setMethod("elasticNetGLMtrainInterface", "matrix", # Matrix of numeric measurements.
           function(measurementsTrain, classesTrain, ...)
 {
-  elasticNetGLMtrainInterface(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  elasticNetGLMtrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # Sample information data or one of the other inputs, transformed.

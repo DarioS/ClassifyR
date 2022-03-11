@@ -49,7 +49,7 @@ setMethod("pcaTrainInterface", "DFrame",
               # Bind the PCA components to the clinical data
               ###
               
-              pcaVar <- DataFrame(pcaVar)
+              pcaVar <- S4Vectors::DataFrame(pcaVar)
               mcols(pcaVar)$dataset = "pca"
               mcols(pcaVar)$feature = colnames(pcaVar)
             
@@ -130,7 +130,7 @@ setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
               
               pcaVar <- do.call(cbind, pcaVar)
               
-              pcaVar <- DataFrame(pcaVar)
+              pcaVar <- S4Vectors::DataFrame(pcaVar)
               mcols(pcaVar)$dataset = "pca"
               mcols(pcaVar)$feature = colnames(pcaVar)
               

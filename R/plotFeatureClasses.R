@@ -141,15 +141,17 @@
 setGeneric("plotFeatureClasses", function(measurements, ...)
   standardGeneric("plotFeatureClasses"))
 
+#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
 {
   if(missing(targets))
     stop("'targets' must be specified.")
   
-  plotFeatureClasses(DataFrame(measurements, check.names = FALSE), classes, targets, ...)
+  plotFeatureClasses(S4Vectors::DataFrame(measurements, check.names = FALSE), classes, targets, ...)
 })
 
+#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
                                                       groupingName = NULL, whichNumericFeaturePlots = c("both", "density", "stripchart"),
@@ -358,6 +360,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   }
 })
 
+#' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
           function(measurements, targets, classesColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)

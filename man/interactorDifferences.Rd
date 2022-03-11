@@ -7,6 +7,18 @@
 \alias{interactorDifferences,MultiAssayExperiment-method}
 \title{Convert Individual Features into Differences Between Binary Interactors
 Based on Known Sub-networks}
+\usage{
+\S4method{interactorDifferences}{matrix}(measurements, ...)
+
+\S4method{interactorDifferences}{DataFrame}(
+  measurements,
+  featurePairs = NULL,
+  absolute = FALSE,
+  verbose = 3
+)
+
+\S4method{interactorDifferences}{MultiAssayExperiment}(measurements, target = NULL, classesColumn, ...)
+}
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data.  For a
@@ -21,16 +33,16 @@ or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 \item{absolute}{If TRUE, then the absolute values of the differences are
 returned.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
 \item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 name of the data table to be used.}
 
 \item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
 that contains the samples' outcomes to use for prediction.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
 An object of class \code{\link{DataFrame}} with one column for each

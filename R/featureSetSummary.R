@@ -61,6 +61,7 @@
 setGeneric("featureSetSummary", function(measurements, ...)
            standardGeneric("featureSetSummary"))
 
+#' @rdname featureSetSummary
 #' @export
 setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
           function(measurements, location = c("median", "mean"),
@@ -103,6 +104,7 @@ setMethod("featureSetSummary", "matrix", # Matrix of numeric measurements.
   })) # Columns are sets, rows are samples.
 })
 
+#' @rdname featureSetSummary
 #' @export
 setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
           function(measurements, location = c("median", "mean"),
@@ -149,9 +151,10 @@ setMethod("featureSetSummary", "DataFrame", # Possibly mixed data types.
     sapply(featureSets, function(featureSet) locationFunction(sampleMeasurements[featureSet]))
   }))
 
-  DataFrame(measurementsCollapsed, check.names = FALSE)
+  S4Vectors::DataFrame(measurementsCollapsed, check.names = FALSE)
 })
 
+#' @rdname featureSetSummary
 #' @export
 setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table from the data set.
           function(measurements, target = NULL, location = c("median", "mean"),

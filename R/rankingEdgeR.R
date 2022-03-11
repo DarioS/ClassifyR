@@ -77,7 +77,7 @@ setGeneric("edgeRranking", function(countsTrain, ...) standardGeneric("edgeRrank
 #' @export
 setMethod("edgeRranking", "matrix", function(countsTrain, classesTrain, ...) # Matrix of integer counts. 
 {
-  edgeRranking(DataFrame(countsTrain, check.names = FALSE), classesTrain, ...)
+  edgeRranking(S4Vectors::DataFrame(countsTrain, check.names = FALSE), classesTrain, ...)
 })
 
 # DataFrame of counts, likely created by runTests or runTest.

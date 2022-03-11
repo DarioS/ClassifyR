@@ -54,6 +54,7 @@
 setGeneric("previousTrained", function(classifyResult, ...)
 standardGeneric("previousTrained"))
 
+#' @rdname previousTrained
 #' @export
 setMethod("previousTrained", "ClassifyResult", 
           function(classifyResult, .iteration, verbose = 3)

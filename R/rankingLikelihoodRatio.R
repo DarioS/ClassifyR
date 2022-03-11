@@ -64,12 +64,14 @@ setGeneric("likelihoodRatioRanking", function(measurementsTrain, ...)
            standardGeneric("likelihoodRatioRanking"))
 
 # Matrix of numeric measurements.
+#' @rdname likelihoodRatioRanking
 #' @export
 setMethod("likelihoodRatioRanking", "matrix", function(measurementsTrain, classesTrain, ...)
 {
-  likelihoodRatioRanking(DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
+  likelihoodRatioRanking(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), classesTrain, ...)
 })
 
+#' @rdname likelihoodRatioRanking
 #' @export
 setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, alternative = c(location = "different", scale = "different"),
@@ -104,6 +106,7 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or on
 })
 
 # One or more omics data sets, possibly with sample information data.
+#' @rdname likelihoodRatioRanking
 #' @export
 setMethod("likelihoodRatioRanking", "MultiAssayExperiment",
           function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
