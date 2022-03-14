@@ -8,8 +8,8 @@
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}
-\alias{featureNames}
-\alias{featureNames,ClassifyResult-method}
+\alias{allFeatureNames}
+\alias{allFeatureNames,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
 \alias{actualOutcomes}
@@ -24,8 +24,6 @@
 \alias{tunedParameters,ClassifyResult-method}
 \alias{totalPredictions}
 \alias{totalPredictions,ClassifyResult-method}
-\alias{allFeatureNames}
-\alias{allFeatureNames,ClassifyResult-method}
 \alias{chosenFeatureNames}
 \alias{chosenFeatureNames,ClassifyResult-method}
 \title{Container for Storing Classification Results}

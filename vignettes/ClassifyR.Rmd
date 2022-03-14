@@ -99,7 +99,7 @@ Although being a cross-validation framework, a number of popular feature selecti
 
 #### Provided Methods for Feature Selection and Classification
 
-In the following tables, a function that is used when no function is explicity specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
+In the following tables, a function that is used when no function is explicitly specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
 
 The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features, based on a criterion such as balanced error rate, for example.
 

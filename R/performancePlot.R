@@ -15,9 +15,10 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName The name of the performance measure to make
-#' comparisons of. This is one of the names printed in the Performance Measures
-#' field when a \code{\link{ClassifyResult}} object is printed.
+#' @param performanceName Default: "Balanced Error". The name of the
+#' performance measure to make comparisons of. This is one of the names printed
+#' in the Performance Measures field when a \code{\link{ClassifyResult}} object is
+#' printed, or if none are stored, the performance metric will be calculated.
 #' @param characteristicsList A named list of characteristics. Each element's
 #' name must be one of \code{"x"}, \code{"row"}, \code{"column"},
 #' \code{fillColour}, or \code{fillLine}. The value of each element must be a
@@ -34,7 +35,9 @@
 #' presented in, in case alphabetical sorting is undesirable.
 #' @param yLimits The minimum and maximum value of the performance metric to
 #' plot.
-#' @param fontSizes A vector of length 4. The first number is the size of the
+#' @param densityStyle Default: "violin". Either \code{"violin"} for violin plot or
+#' \code{"box"} for box plot.
+#' @param fontSizes A vector of len gth 4. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the font size of the
 #' titles of grouped plots, if any are produced. In other words, when
@@ -87,26 +90,28 @@ setGeneric("performancePlot", function(results, ...) standardGeneric("performanc
 #' @rdname performancePlot
 #' @export
 setMethod("performancePlot", "list", 
-          function(results, performanceName = NULL,
+          function(results, performanceName = "Balanced Error",
                    characteristicsList = list(x = "Classifier Name"), aggregate = character(), coloursList = list(), orderingList = list(),
-                   yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
+                   densityStyle = c("violin", "box"), yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
-  
+  densityStyle <- match.arg(densityStyle)
+  densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
+            
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   
   performanceNames <- lapply(results, function(result)
     if(!is.null(result@performance)) names(result@performance))
   namesCounts <- table(performanceNames)
   commonNames <- names(namesCounts)[namesCounts == length(results)]
-  if(is.null(performanceName))
+  if(!performanceName %in% commonNames)
   {
-    stop("Please specify a performance measure to plot.",
-         "Calculated ones for all results are: ", paste(commonNames, collapse = ", "))
+    warning(paste(performanceName, "not found in all elements of results. Calculating it now."))
+    results <- lapply(results, function(result) calcCVperformance(result, performanceName))
   }
   
   plotData <- do.call(rbind, mapply(function(result, index)
@@ -150,7 +155,7 @@ setMethod("performancePlot", "list",
   if(any(analysisGroupSizes > 1))
   {
     multiPlotData <- do.call(rbind, analysisGrouped[analysisGroupSizes > 1])
-    performancePlot <- performancePlot + ggplot2::geom_violin(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!characteristicsList[["fillColour"]], colour = !!characteristicsList[["lineColour"]]))
+    performancePlot <- performancePlot + densityStyle(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!characteristicsList[["fillColour"]], colour = !!characteristicsList[["lineColour"]]))
   }
   if(any(analysisGroupSizes == 1))
   {

@@ -7,11 +7,12 @@
 \usage{
 \S4method{performancePlot}{list}(
   results,
-  performanceName = NULL,
+  performanceName = "Balanced Error",
   characteristicsList = list(x = "Classifier Name"),
   aggregate = character(),
   coloursList = list(),
   orderingList = list(),
+  densityStyle = c("violin", "box"),
   yLimits = c(0, 1),
   fontSizes = c(24, 16, 12, 12),
   title = NULL,
@@ -24,9 +25,10 @@
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
 
-\item{performanceName}{The name of the performance measure to make
-comparisons of. This is one of the names printed in the Performance Measures
-field when a \code{\link{ClassifyResult}} object is printed.}
+\item{performanceName}{Default: "Balanced Error". The name of the
+performance measure to make comparisons of. This is one of the names printed
+in the Performance Measures field when a \code{\link{ClassifyResult}} object is
+printed, or if none are stored, the performance metric will be calculated.}
 
 \item{characteristicsList}{A named list of characteristics. Each element's
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
@@ -50,10 +52,13 @@ to \code{characteristicsList} can be the name of an element of this list and
 the value of the element is the order in which the factors should be
 presented in, in case alphabetical sorting is undesirable.}
 
+\item{densityStyle}{Default: "violin". Either \code{"violin"} for violin plot or
+\code{"box"} for box plot.}
+
 \item{yLimits}{The minimum and maximum value of the performance metric to
 plot.}
 
-\item{fontSizes}{A vector of length 4. The first number is the size of the
+\item{fontSizes}{A vector of len gth 4. The first number is the size of the
 title.  The second number is the size of the axes titles. The third number
 is the size of the axes values. The fourth number is the font size of the
 titles of grouped plots, if any are produced. In other words, when
