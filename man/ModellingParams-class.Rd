@@ -11,7 +11,8 @@ ModellingParams(
   transformParams = NULL,
   selectParams = SelectParams(),
   trainParams = TrainParams(),
-  predictParams = PredictParams()
+  predictParams = PredictParams(),
+  doImportance = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,10 @@ By default, uses diagonal LDA.}
 
 \item{predictParams}{Parameters for model training specified by a \code{\link{PredictParams}} instance.
 By default, uses diagonal LDA.}
+
+\item{doImportance}{Default: \code{TRUE}. Whether or not to carry out permutation of every feature which
+was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
+also be set to FALSE if not of interest to reduce the modelling run time.}
 }
 \description{
 Collects and checks necessary parameters required for data modelling. Apart

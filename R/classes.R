@@ -742,14 +742,13 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' @docType class
 #' @section Constructor:
 #' \describe{ \item{}{
-#' \code{SelectParams()} Creates a default SelectParams object. This uses either
+#' \code{SelectParams()} Creates a default \code{SelectParams} object. This uses either
 #' an ordinary t-test or ANOVA (depending on the number of classes) and tries the
 #' top 10 to top 100 features in increments of 10, and picks the number of features
 #' with the best resubstitution balanced error rate. Users should create an appropriate
 #' \code{SelectParams} object for the characteristics of their data.}
-#' \item{}{\preformatted{SelectParams(featureSelection, characteristics =
-#' DataFrame(), minPresence = 1,
-#' intermediate = character(0), subsetToSelections = TRUE, ...)} Creates a \code{SelectParams}
+#' \item{}{\preformatted{SelectParams(featureSelection, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
+#' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
 #' object which stores the function(s) which will do the selection and parameters that the
 #' function will use.
 #' \describe{\item{\code{featureRanking}}{Either a function which will rank the features
@@ -768,8 +767,11 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' \item{\code{intermediate}}{Character vector. Names of any variables created
 #' in prior stages by \code{\link{runTest}} that need to be passed to a feature
 #' selection function.}
-#' \item{\code{subsetToSelections}}{Whether to subset the
-#' data table(s), after feature selection has been done.}
+#' \item{\code{subsetToSelections}}{Whether to subset the data table(s), after feature selection has been done.}
+#' \item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of
+#' the list are the names of the parameters and the vectors are the values of the parameters to try. All possible
+#' combinations are generated. Two elements named \code{nFeatures} and \code{performanceType} are mandatory, to
+#' define the performance metric which will be used to select features and how many top-ranked features to try.}
 #' \item{\code{...}}{Other named parameters which will be used by the
 #' selection function. If \code{featureSelection} was a list of functions,
 #' this must be a list of lists, as long as \code{featureSelection}.} } } }
@@ -803,14 +805,15 @@ setMethod("SelectParams", "missing", function()
   new("SelectParams", featureRanking = differentMeansRanking,
       characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
       minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
-      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
+      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"),
+      doImportance = TRUE)
 })
 #' @rdname SelectParams-class
 #' @usage NULL
 #' @export
 setMethod("SelectParams", c("functionOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
-                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
+                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), doImportance = TRUE, ...)
           {
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
@@ -1128,7 +1131,8 @@ setClass("ModellingParams", representation(
   transformParams = "TransformParamsOrNULL",
   selectParams = "SelectParamsOrNULL",
   trainParams = "TrainParams",
-  predictParams = "PredictParamsOrNULL"
+  predictParams = "PredictParamsOrNULL",
+  doImportance = "logical"
 ))
 
 ##### ModellingParams #####
@@ -1156,6 +1160,9 @@ setClass("ModellingParams", representation(
 #'   By default, uses diagonal LDA.
 #' @param predictParams Parameters for model training specified by a \code{\link{PredictParams}} instance.
 #' By default, uses diagonal LDA.
+#' @param doImportance Default: \code{TRUE}. Whether or not to carry out permutation of every feature which
+#' was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
+#' also be set to FALSE if not of interest to reduce the modelling run time.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -1169,7 +1176,8 @@ setClass("ModellingParams", representation(
 #' @export
 ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
                             transformParams = NULL, selectParams = SelectParams(),
-                            trainParams = TrainParams(), predictParams = PredictParams())
+                            trainParams = TrainParams(), predictParams = PredictParams(),
+                            doImportance = TRUE)
 {
   balancing <- match.arg(balancing)
   new("ModellingParams", balancing = balancing, transformParams = transformParams,

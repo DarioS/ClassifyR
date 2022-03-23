@@ -15,14 +15,13 @@ feature selection. The empty constructor is provided for convenience.
 \section{Constructor}{
 
 \describe{ \item{}{
-\code{SelectParams()} Creates a default SelectParams object. This uses either
+\code{SelectParams()} Creates a default \code{SelectParams} object. This uses either
 an ordinary t-test or ANOVA (depending on the number of classes) and tries the
 top 10 to top 100 features in increments of 10, and picks the number of features
 with the best resubstitution balanced error rate. Users should create an appropriate
 \code{SelectParams} object for the characteristics of their data.}
-\item{}{\preformatted{SelectParams(featureSelection, characteristics =
-DataFrame(), minPresence = 1,
-intermediate = character(0), subsetToSelections = TRUE, ...)} Creates a \code{SelectParams}
+\item{}{\preformatted{SelectParams(featureSelection, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
+subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
 object which stores the function(s) which will do the selection and parameters that the
 function will use.
 \describe{\item{\code{featureRanking}}{Either a function which will rank the features
@@ -41,8 +40,11 @@ is equivalent to a set union and a number the same length as
 \item{\code{intermediate}}{Character vector. Names of any variables created
 in prior stages by \code{\link{runTest}} that need to be passed to a feature
 selection function.}
-\item{\code{subsetToSelections}}{Whether to subset the
-data table(s), after feature selection has been done.}
+\item{\code{subsetToSelections}}{Whether to subset the data table(s), after feature selection has been done.}
+\item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of
+the list are the names of the parameters and the vectors are the values of the parameters to try. All possible
+combinations are generated. Two elements named \code{nFeatures} and \code{performanceType} are mandatory, to
+define the performance metric which will be used to select features and how many top-ranked features to try.}
 \item{\code{...}}{Other named parameters which will be used by the
 selection function. If \code{featureSelection} was a list of functions,
 this must be a list of lists, as long as \code{featureSelection}.} } } }

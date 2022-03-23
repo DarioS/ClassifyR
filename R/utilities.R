@@ -525,7 +525,16 @@
     areaSum <- 0
     for(index in 2:nrow(classTable))
     {
-      areaSum <- areaSum + (classTable[index, "FPR"] - classTable[index - 1, "FPR"]) * classTable[index, "TPR"]
+      
+      # Some samples had identical predictions but belong to different classes.
+      if(classTable[index, "FPR"] != classTable[index - 1, "FPR"] && classTable[index, "TPR"] != classTable[index - 1, "TPR"])
+      {
+        newArea <- (classTable[index, "FPR"] - classTable[index - 1, "FPR"]) * classTable[index - 1, "TPR"] + # Rectangle part
+         0.5 * (classTable[index, "FPR"] - classTable[index - 1, "FPR"]) * (classTable[index, "TPR"] - classTable[index - 1, "TPR"]) # Triangle part on top.
+      } else { # Only one sample with predicted score. Line went either up or right, but not both.
+        newArea <- (classTable[index, "FPR"] - classTable[index - 1, "FPR"]) * classTable[index, "TPR"]
+      }
+      areaSum <- areaSum + newArea
     }
     data.frame(classTable, AUC = round(areaSum, 2), check.names = FALSE)
   }))
