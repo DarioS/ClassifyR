@@ -3,7 +3,7 @@
 \name{selectionPlot}
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
-\title{Plot Pair-wise Overlap or Selection Size Distribution of Selected Features}
+\title{Plot Pair-wise Overlap, Variable Importance or Selection Size Distribution of Selected Features}
 \usage{
 \S4method{selectionPlot}{list}(
   results,
@@ -15,11 +15,13 @@
   binsList = list(),
   yMax = 100,
   fontSizes = c(24, 16, 12, 16),
-  title = if (comparison[1] == "within") "Feature Selection Stability" else if
-    (comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
-  yLabel = if (is.null(referenceLevel) && comparison != "size") "Common Features (\%)"
-    else if (comparison == "size") "Set Size" else paste("Common Features with",
-    referenceLevel, "(\%)"),
+  title = if (comparison == "within") "Feature Selection Stability" else if (comparison
+    == "size") "Feature Selection Size" else if (comparison == "importance")
+    "Variable Importance" else "Feature Selection Commonality",
+  yLabel = if (is.null(referenceLevel) && !comparison \%in\% c("size", "importance"))
+    "Common Features (\%)" else if (comparison == "size") "Set Size" else if (comparison
+    == "importance") tail(names(results[[1]]@importance), 1) else
+    paste("Common Features with", referenceLevel, "(\%)"),
   margin = grid::unit(c(1, 1, 1, 1), "lines"),
   rotate90 = FALSE,
   showLegend = TRUE,
@@ -34,7 +36,9 @@
 compare. Can be any characteristic that all results share or either one of
 the special values \code{"within"} to compare between all pairwise
 iterations of cross-validation. or \code{"size"}, to draw a bar chart of the
-frequency of selected set sizes.}
+frequency of selected set sizes, or \code{"importance"} to plot the variable importance
+scores of selected variables. \code{"importance"} only usable if \code{doImportance} was
+\code{TRUE} during cross-validation.}
 
 \item{referenceLevel}{The level of the comparison factor to use as the
 reference to compare each non-reference level to. If \code{NULL}, then each
@@ -111,6 +115,10 @@ converted to percentages and plotted as lineplots.
 \details{
 Additionally, a heatmap of selection size frequencies can be made by
 specifying size as the comparison to make.
+
+Lastly, a plot showing the distribution of performance metric changes when
+features are excluded from training can be made if variable importance
+calculation was turned on during cross-validation.
 
 If \code{comparison} is \code{"within"}, then the feature selection overlaps
 are compared within a particular analysis. The result will inform how stable

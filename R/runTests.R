@@ -87,7 +87,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   outcomes <- splitDataset[["outcomes"]]
   
   # Element names of the list returned by runTest, in order.
-  resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
+  resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
   
   featureInfo <- .summaryFeatures(measurements)
   allFeatures <- featureInfo[[1]]
@@ -97,7 +97,6 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   samplesSplits <- .samplesSplits(crossValParams, outcomes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
   modellingParams <- modellingParams # Necessary hack for parallel processing on Windows.
-  
   
   results <- bpmapply(function(trainingSamples, testSamples, setNumber)
   #results <- mapply(function(trainingSamples, testSamples, setNumber)
@@ -152,10 +151,13 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   tuneList <- lapply(results, "[[", "tune")
   if(length(unlist(tuneList)) == 0)
     tuneList <- NULL
+  importance <- NULL
+  if(!is.null(results[[1]][["importance"]]))
+    importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
   ClassifyResult(characteristics, rownames(measurements), allFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance)
 })
 
 #' @rdname runTests

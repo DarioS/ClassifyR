@@ -145,12 +145,12 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     { # Subset the the data table to only the selected features.
       if(is.null(S4Vectors::mcols(measurementsTrain)))
       { # Input was ordinary matrix or DataFrame.
-          measurementsTrain <- measurementsTrain[, selectedFeatures, drop = FALSE]
+        measurementsTrain <- measurementsTrain[, selectedFeatures, drop = FALSE]
       } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
-          selectedIDs <-  do.call(paste, selectedFeatures)
-          featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
-          selectedColumns <- match(selectedIDs, featuresIDs)
-          measurementsTrain <- measurementsTrain[, selectedColumns, drop = FALSE]
+        selectedIDs <-  do.call(paste, selectedFeatures)
+        featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
+        selectedColumns <- match(selectedIDs, featuresIDs)
+        measurementsTrain <- measurementsTrain[, selectedColumns, drop = FALSE]
       }
     }
   } 
@@ -196,11 +196,51 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     predictedOutcomes <- trained[[1]]
   }
   
+  # Exclude one feature at a time, build model, predict test samples.
+  importanceTable <- NULL
+  if(is.numeric(.iteration) && modellingParams@doImportance == TRUE)
+  {
+    nSelected <- ifelse(is.null(ncol(selectedFeatures)), length(selectedFeatures), nrow(selectedFeatures))
+    performanceMP <- modellingParams@selectParams@tuneParams[["performanceType"]]
+    performanceType <- ifelse(!is.null(performanceMP), performanceMP, "Balanced Error")
+    performancesWithoutEach <- sapply(1:nSelected, function(selectedIndex)
+    {
+      if(is.null(S4Vectors::mcols(measurementsTrain)))
+      { # Input was ordinary matrix or DataFrame.
+        measurementsTrainLess1 <- measurementsTrain[, selectedFeatures[-selectedIndex], drop = FALSE]
+      } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
+        selectedIDs <-  do.call(paste, selectedFeatures[-selectedIndex, ])
+        featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
+        useColumns <- match(selectedIDs, featuresIDs)
+        measurementsTrainLess1 <- measurementsTrain[, useColumns, drop = FALSE]
+      }
+         
+      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
+                                  error = function(error) error[["message"]])
+      if(!is.null(modellingParams@predictParams))
+      predictedOutcomesWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTest, modellingParams@predictParams, verbose),
+                                              error = function(error) error[["message"]])
+      else predictedOutcomesWithoutOne <- modelWithoutOne[["model"]]
+
+      if(!is.null(ncol(predictedOutcomesWithoutOne)))
+        predictedOutcomesWithoutOne <- predictedOutcomesWithoutOne[, na.omit(match(c("class", "risk"), colnames(predictedOutcomesWithoutOne)))]
+      calcExternalPerformance(outcomesTest, predictedOutcomesWithoutOne, performanceType)
+    })
+    
+    if(!is.null(ncol(predictedOutcomes)))
+        predictedOutcomes <- predictedOutcomes[, na.omit(match(c("class", "risk"), colnames(predictedOutcomes)))]
+    performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType), 2)
+      
+    importanceTable <- DataFrame(selectedFeatures, performanceChanges)
+    if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
+    colnames(importanceTable)[ncol(importanceTable)] <- paste("Change in", performanceType)
+  }
+  
   if(is.null(modellingParams@predictParams)) models <- NULL else models <- trained[[1]] # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
   if(!is.null(.iteration)) # This function was not called by the end user.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcomes, tune = tuneDetails)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcomes, tune = tuneDetails, importance = importanceTable)
   } else { # runTest executed by the end user. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
     modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
@@ -224,7 +264,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
       names(allOutcomes) <- allSamples
     }
     ClassifyResult(characteristics, rownames(measurementsTrain), allFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), outcome = predictedOutcomes), allOutcomes)
+                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), outcome = predictedOutcomes), allOutcomes, importanceTable)
   }  
 })
 

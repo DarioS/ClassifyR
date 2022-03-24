@@ -90,7 +90,7 @@ standardGeneric("calcExternalPerformance"))
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualOutcomes, predictedOutcomes, # Both are classes.
-                   performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+                   performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
                                        "Sample Error", "Sample Accuracy",
                                        "Micro Precision", "Micro Recall",
                                        "Micro F1", "Macro Precision",
@@ -121,7 +121,7 @@ setGeneric("calcCVperformance", function(result, ...)
 #' @rdname calcPerformance
 #' @exportMethod calcCVperformance
 setMethod("calcCVperformance", "ClassifyResult",
-          function(result, performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+          function(result, performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
                                                "Sample Error", "Sample Accuracy",
                                                "Micro Precision", "Micro Recall",
                                                "Micro F1", "Macro Precision",

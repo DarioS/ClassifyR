@@ -140,7 +140,6 @@ setMethod("performancePlot", "list",
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
-
   performancePlot <- ggplot2::ggplot() + ggplot2::coord_cartesian(ylim = yLimits) +
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
 

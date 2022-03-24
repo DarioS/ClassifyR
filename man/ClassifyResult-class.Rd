@@ -37,7 +37,7 @@ created by \code{\link{runTest}} or \code{\link{runTests}}.
 \section{Constructor}{
 
 \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)}
+              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 \describe{
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 characteristics of classification done. First column must be named
@@ -58,6 +58,7 @@ vector or a data frame if data set has multiple kinds of measurements on the sam
 \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 cross-validation iteration in which the prediction was made.}
 \item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+\item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
 most popular value of the parameter in cross-validation is used.}
@@ -87,7 +88,7 @@ most popular value of the parameter in cross-validation is used.}
 \describe{
 \item{\code{chosenFeatureNames(result)}}{A \code{list} of the features selected for each training.}}
 \describe{
-\item{\code{predictions(result)}}{Returns a \code{data.frame} which has columns with test sample,
+\item{\code{predictions(result)}}{Returns a \code{DataFrame} which has columns with test sample,
 cross-validation and prediction information.}}
 \describe{
 \item{\code{performance(result)}}{Returns a \code{list} of performance measures. This is

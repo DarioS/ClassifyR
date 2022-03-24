@@ -13,7 +13,7 @@ Pair of Factor Vectors}
 \S4method{calcExternalPerformance}{factor,factor}(
   actualOutcomes,
   predictedOutcomes,
-  performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient")
 )
@@ -26,7 +26,7 @@ Pair of Factor Vectors}
 
 \S4method{calcCVperformance}{ClassifyResult}(
   result,
-  performanceType = c("Error", "Accuracy", "Balanced Error", "Balanced Accuracy",
+  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
     "C index")

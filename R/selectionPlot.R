@@ -1,4 +1,4 @@
-#' Plot Pair-wise Overlap or Selection Size Distribution of Selected Features
+#' Plot Pair-wise Overlap, Variable Importance or Selection Size Distribution of Selected Features
 #' 
 #' Pair-wise overlaps can be done for two types of analyses. Firstly, each
 #' cross-validation iteration can be considered within a single classification.
@@ -13,6 +13,10 @@
 #' 
 #' Additionally, a heatmap of selection size frequencies can be made by
 #' specifying size as the comparison to make.
+#' 
+#' Lastly, a plot showing the distribution of performance metric changes when
+#' features are excluded from training can be made if variable importance
+#' calculation was turned on during cross-validation.
 #' 
 #' If \code{comparison} is \code{"within"}, then the feature selection overlaps
 #' are compared within a particular analysis. The result will inform how stable
@@ -36,7 +40,9 @@
 #' compare. Can be any characteristic that all results share or either one of
 #' the special values \code{"within"} to compare between all pairwise
 #' iterations of cross-validation. or \code{"size"}, to draw a bar chart of the
-#' frequency of selected set sizes.
+#' frequency of selected set sizes, or \code{"importance"} to plot the variable importance
+#' scores of selected variables. \code{"importance"} only usable if \code{doImportance} was
+#' \code{TRUE} during cross-validation.
 #' @param referenceLevel The level of the comparison factor to use as the
 #' reference to compare each non-reference level to. If \code{NULL}, then each
 #' level has the average pairwise overlap calculated to all other levels.
@@ -130,8 +136,8 @@ setMethod("selectionPlot", "list",
           function(results,
                    comparison = "within", referenceLevel = NULL,
                    characteristicsList = list(x = "Classifier Name"), coloursList = list(), orderingList = list(), binsList = list(),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison[1] == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else "Feature Selection Commonality",
-                   yLabel = if(is.null(referenceLevel) && comparison != "size") "Common Features (%)" else if(comparison == "size") "Set Size" else paste("Common Features with", referenceLevel, "(%)"),
+                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else if(comparison == "importance") "Variable Importance" else "Feature Selection Commonality",
+                   yLabel = if(is.null(referenceLevel) && !comparison %in% c("size", "importance")) "Common Features (%)" else if(comparison == "size") "Set Size" else if(comparison == "importance") tail(names(results[[1]]@importance), 1) else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -140,7 +146,7 @@ setMethod("selectionPlot", "list",
     stop("The package 'scales' could not be found. Please install it.")
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")              
-
+            
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
   
   allFeaturesList <- lapply(results, function(result)
@@ -154,11 +160,11 @@ setMethod("selectionPlot", "list",
     rowValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList[["row"]], "value"])
   if(!is.null(characteristicsList[["column"]]))
     columnValues <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == characteristicsList[["column"]], "value"])
-  if(comparison != "within")
+  if(!comparison %in% c("within", "importance"))
     referenceVar <- sapply(results, function(result) result@characteristics[result@characteristics[, "characteristic"] == comparison, "value"])
   
   allCharacteristics <- c(unlist(characteristicsList), comparison)
-  allCharacteristics <- setdiff(allCharacteristics, c("within", "size"))
+  allCharacteristics <- setdiff(allCharacteristics, c("within", "size", "importance"))
 
   if(!is.null(referenceLevel) && !(referenceLevel %in% referenceVar))
     stop("Reference level is neither a level of the comparison factor nor is it NULL.")
@@ -182,8 +188,7 @@ setMethod("selectionPlot", "list",
       colnames(summaryTable)[1:length(allCharacteristics)] <- allCharacteristics
       summaryTable
     }, results, allFeaturesList, BPPARAM = parallelParams, SIMPLIFY = FALSE))
-  } else if(comparison == "size")
-  {
+  } else if(comparison == "size") {
     plotData <- do.call(rbind, mapply(function(result, featuresList)
                 {
                   setSizes <- sapply(featuresList, length)
@@ -212,6 +217,29 @@ setMethod("selectionPlot", "list",
       plotData[is.na(plotData[, "Freq"]), "Freq"] <- 0
       plotData[, "Freq"] <- factor(plotData[, "Freq"], levels = c(0, levelsRestore))
     }
+  } else if(comparison == "importance") {
+    plotData <- do.call(rbind, lapply(results, function(result)
+                {
+                  if(length(allCharacteristics) > 0)
+                  {
+                  characteristicsOrder <- match(allCharacteristics, result@characteristics[["characteristic"]])
+                  characteristicsList <- as.list(result@characteristics[["value"]])[characteristicsOrder]
+                  summaryTable <- data.frame(characteristicsList, result@importance, check.names = FALSE)
+                  colnames(summaryTable)[1:length(allCharacteristics)] <- allCharacteristics
+                  
+                  } else {
+                      summaryTable <- result@importance
+                  }
+                 if("dataset" %in% colnames(summaryTable) && all(summaryTable[, "dataset"] == "dataset"))
+                   summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
+                 if("dataset" %in% colnames(summaryTable))
+                 {
+                    summaryTable[, "feature"] <- paste(summaryTable[, "dataset"], summaryTable[, "feature"])
+                    summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
+                  }
+                  summaryTable
+                }))
+    plotData <- as.data.frame(plotData, optional = TRUE)
   } else { # Commonality analysis.
     groupingFactor <- paste(if('x' %in% names(characteristicsList) && characteristicsList[['x']] != comparison) xValues,
                             if("row" %in% names(characteristicsList) && characteristicsList[["row"]] != comparison) rowValues,
@@ -290,23 +318,84 @@ setMethod("selectionPlot", "list",
   if(!"lineColours" %in% names(coloursList) && "lineColour" %in% names(characteristicsList))
     coloursList[["lineColours"]] <- scales::hue_pal(direction = -1)(length(unique(plotData[, characteristicsList[["lineColour"]]])))
   
-  xLabel <- characteristicsList[['x']]
-  xData <- plotData[, xLabel]
-  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
-  if(rotate90 == TRUE) plotData[, xLabel] <- factor(plotData[, xLabel], levels = rev(levels(plotData[, xLabel])))
-
-  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
-  characteristicsList <- lapply(characteristicsList, rlang::sym)
-  
-  if(comparison != "size")
+  if(comparison == "importance")
   {
+      xLabel <- "Feature"
+      xData <- plotData[, "feature"]
+  } else {
+      xLabel <- characteristicsList[['x']]
+      xData <- plotData[, xLabel]
+  }
+  
+  if(rotate90 == TRUE) plotData[, xLabel] <- factor(plotData[, xLabel], levels = rev(levels(plotData[, xLabel])))
+  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
+  
+  if(!comparison %in% c("size", "importance"))
+  {
+    characteristicsList <- lapply(characteristicsList, rlang::sym)
     legendPosition <- ifelse(showLegend == TRUE, "right", "none")
     selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!characteristicsList[['x']], y = overlap, fill = !!characteristicsList[["fillColour"]], colour = !!characteristicsList[["lineColour"]])) +
                             ggplot2::coord_cartesian(ylim = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                             ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
     if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_violin()
+  } else if(comparison == "importance") {
+    changeName <- tail(colnames(plotData), 1)
+    performanceName <- gsub("Change in ", '', changeName)
+    better <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceName, "better"]
+
+    if(any(c("row", "column") %in% names(characteristicsList)))
+    {
+      grouping <- unique(plotData[, c(characteristicsList[["row"]], characteristicsList[["column"]]), drop = FALSE])
+      plotDataList <- list()
+      for(groupIndex in 1:nrow(grouping))
+      {
+        for(characteristic in colnames(grouping))
+        {
+          plotDataGroup <- plotData[plotData[, characteristic] == grouping[groupIndex, characteristic], ]
+          featureCounts <- table(plotDataGroup[, "feature"])
+          keepFeatures <- names(featureCounts)[featureCounts >= 3]
+          plotDataGroup <- plotDataGroup[plotDataGroup[, "feature"] %in% keepFeatures, ]
+          featuresRanked <- sort(by(plotDataGroup[, ncol(plotDataGroup)], plotDataGroup[, "feature"], median), decreasing = ifelse(better == "lower", TRUE, FALSE))
+          featuresTop <- names(featuresRanked)[1:min(length(featuresRanked), 10)]
+          plotDataGroup <- plotDataGroup[plotDataGroup[, "feature"] %in% featuresTop, ]
+          plotDataGroup[, "feature"] <- factor(plotDataGroup[, "feature"], levels = featuresTop)
+          plotDataList <- append(plotDataList, list(plotDataGroup))
+        }
+      }
+      
+      characteristicsListSym <- lapply(characteristicsList, rlang::sym)
+      plotList <- lapply(plotDataList, function(plotDataGroup)
+      {
+        aPlot <- ggplot2::ggplot(plotDataGroup, ggplot2::aes(x = feature, y = !!rlang::sym(changeName), fill = !!characteristicsListSym[["fillColour"]], colour = !!characteristicsList[["lineColour"]])) + ggplot2::labs(x = NULL, y = NULL) +
+                 ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+        aPlot <- aPlot + ggplot2::geom_hline(yintercept = 0, colour = "red", linetype = "dashed") + ggplot2::geom_violin()
+        if("row" %in% names(characteristicsList))
+          aPlot <- aPlot + ggplot2::facet_grid(rows = ggplot2::vars(!!characteristicsListSym[["row"]]))
+        if("column" %in% names(characteristicsList))
+          aPlot <- aPlot + ggplot2::facet_grid(cols = ggplot2::vars(!!characteristicsListSym[["column"]]))
+        aPlot
+      })
+      nRows <- ifelse("row" %in% names(characteristicsList), length(unique(plotData[, characteristicsList[["row"]]])), 1)
+      nColumns <- ifelse("column" %in% names(characteristicsList), length(unique(plotData[, characteristicsList[["column"]]])), 1)
+      g <- gridExtra::arrangeGrob(grobs = plotList, layout_matrix = matrix(seq_along(plotList), nrow = nRows, ncol = nColumns, byrow = TRUE),
+                                  top = textGrob("Variable Importance", gp = grid::gpar(vjust = 0.6)),
+                                  left = textGrob(yLabel, rot = 90),
+                                  bottom = textGrob("Feature"))
+      
+      if(plot == TRUE)
+        grid::grid.draw(g)
+      return(g)
+    } else {
+    legendPosition <- ifelse(showLegend == TRUE, "right", "none")
+    featureCounts <- table(plotData[, "feature"])
+    keepFeatures <- featureCounts[featureCounts >= 2]
+    plotData <- plotData[plotData[, "feature"] %in% keepFeatures, ]
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = feature, y = !!changeName, fill = {if(is.null(characteristicsList[["fillColour"]])) NULL else !!rlang::sym(characteristicsList[["fillColour"]])}, colour = if(is.null(characteristicsList[["lineColour"]])) NULL else !!rlang::sym(characteristicsList[["lineColour"]]))) +
+      ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
+      ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) + ggplot2::geom_violin()
+    }
   } else {
-    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!characteristicsList[['x']], y = size)) +
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!rlang::sym(characteristicsList[['x']]), y = size)) +
                      ggplot2::geom_tile(ggplot2::aes(fill = Freq)) + ggplot2::ggtitle(title) + ggplot2::labs(x = xLabel, y = yLabel) + ggplot2::scale_x_discrete(expand = c(0, 0)) + ggplot2::scale_y_discrete(expand = c(0, 0)) + ggplot2::theme(axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5)) + ggplot2::guides(fill = ggplot2::guide_legend(title = "Frequency (%)"))
   }
   
@@ -318,7 +407,8 @@ setMethod("selectionPlot", "list",
   if(rotate90 == TRUE)
     selectionPlot <- selectionPlot + ggplot2::coord_flip(ylim = c(0, yMax))
   
-  selectionPlot <- selectionPlot + ggplot2::facet_grid(ggplot2::vars(!!characteristicsList[["row"]]), ggplot2::vars(!!characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
+  if(any(c("row", "column") %in% names(characteristicsList)))
+    selectionPlot <- selectionPlot + ggplot2::facet_grid(ggplot2::vars(characteristicsList[["row"]]), ggplot2::vars(characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
   if(plot == TRUE)
     print(selectionPlot)

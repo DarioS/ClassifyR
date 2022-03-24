@@ -210,7 +210,7 @@ setClassUnion("factorOrSurv", c("factor", "Surv"))
 #' 
 setClassUnion("listOrNULL", c("list", "NULL"))
 
-#' Union of A DataFrame and DataFrameList Class
+#' Union of NULL and DataFrame Class
 #' 
 #' Allows cross-validation to accept data as either a \code{DataFrame} (for a
 #' single data set) or \code{DataFrameList} (for a list of tables of related
@@ -218,11 +218,11 @@ setClassUnion("listOrNULL", c("list", "NULL"))
 #' same kind of measurements). No constructor.
 #' 
 #' 
-#' @name DataFrameOrDataFrameList-class
-#' @aliases DataFrameOrDataFrameList DataFrameOrDataFrameList-class
+#' @name DataFrameOrNULL-class
+#' @aliases DataFrameOrNULL DataFrameOrNULL-class
 #' @docType class
 #' @author Dario Strbenac
-setClassUnion("DataFrameOrDataFrameList", c("DataFrame", "DataFrameList"))
+setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 
 
 
@@ -1159,9 +1159,9 @@ setClass("ModellingParams", representation(
 #'   By default, uses diagonal LDA.
 #' @param predictParams Parameters for model training specified by a \code{\link{PredictParams}} instance.
 #' By default, uses diagonal LDA.
-#' @param doImportance Default: \code{TRUE}. Whether or not to carry out removal of each feature, one at a time, which
+#' @param doImportance Default: \code{FALSE}. Whether or not to carry out removal of each feature, one at a time, which
 #' was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
-#' also be set to FALSE if not of interest to reduce the modelling run time.
+#' also be set to TRUE, if required. Modelling run time will be noticeably longer.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -1176,7 +1176,7 @@ setClass("ModellingParams", representation(
 ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
                             transformParams = NULL, selectParams = SelectParams(),
                             trainParams = TrainParams(), predictParams = PredictParams(),
-                            doImportance = TRUE)
+                            doImportance = FALSE)
 {
   balancing <- match.arg(balancing)
   new("ModellingParams", balancing = balancing, transformParams = transformParams,
@@ -1223,7 +1223,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' 
 #' @section Constructor:
 #' \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)}
+#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 #' \describe{
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of classification done. First column must be named
@@ -1244,6 +1244,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 #' cross-validation iteration in which the prediction was made.}
 #' \item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+#' \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 #' \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 #' \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
 #' most popular value of the parameter in cross-validation is used.}
@@ -1269,7 +1270,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \describe{
 #' \item{\code{chosenFeatureNames(result)}}{A \code{list} of the features selected for each training.}}
 #' \describe{
-#' \item{\code{predictions(result)}}{Returns a \code{data.frame} which has columns with test sample,
+#' \item{\code{predictions(result)}}{Returns a \code{DataFrame} which has columns with test sample,
 #' cross-validation and prediction information.}}
 #' \describe{
 #' \item{\code{performance(result)}}{Returns a \code{list} of performance measures. This is
@@ -1318,6 +1319,7 @@ setClass("ClassifyResult", representation(
   tune = "listOrNULL",
   predictions = "data.frame",
   performance = "listOrNULL",
+  importance = "DataFrameOrNULL",
   modellingParams = "ModellingParamsOrNULL",
   finalModel = "listOrNULL")
 )
@@ -1326,13 +1328,13 @@ setClass("ClassifyResult", representation(
 #' @export
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           function(characteristics, originalNames, originalFeatures,
-                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, modellingParams = NULL, finalModel = NULL)
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)
           {
             new("ClassifyResult", characteristics = characteristics,
                 originalNames = originalNames, originalFeatures = originalFeatures,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
-                predictions = predictions, actualOutcomes = actualOutcomes, modellingParams = modellingParams, finalModel = finalModel)
+                predictions = predictions, actualOutcomes = actualOutcomes, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
           })
 
 #' @usage NULL
@@ -1350,10 +1352,6 @@ setMethod("show", "ClassifyResult", function(object)
             else
               cat("Performance Measures: None calculated yet.\n", sep = '')
           })
-
-
-
-
 
 
 ################################################################################
