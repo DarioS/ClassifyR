@@ -51,7 +51,7 @@ mcols(measurements)$feature <- colnames(measurements)
 modellingParams <- generateModellingParams(datasetIDs = c("clinical", "gene", "protein"),
                                           measurements = measurements, 
                                           nFeatures = list(clinical = 10, gene = 10, protein = 10),
-                                          selectionMethod = list(clinical = "t_test", gene = "t_test", protein = "t_test"),
+                                          selectionMethod = list(clinical = "t-test", gene = "t-test", protein = "t-test"),
                                           selectionOptimisation = "none",
                                           classifier = "randomForest",
                                           multiViewMethod = "merge")

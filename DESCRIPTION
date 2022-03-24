@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 2.15.21
-Date: 2022-03-23
+Version: 2.15.22
+Date: 2022-03-24
 Author: Dario Strbenac, Ellis Patrick, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -36,7 +36,6 @@ Collate:
     'data.R'
     'distribution.R'
     'edgesToHubNetworks.R'
-    'extraPlots.R'
     'featureSetSummary.R'
     'getLocationsAndScales.R'
     'interactorDifferences.R'
@@ -61,7 +60,6 @@ Collate:
     'plotFeatureClasses.R'
     'previousSelection.R'
     'previousTrained.R'
-    'quickClassify.R'
     'rankingBartlett.R'
     'rankingCoxPH.R'
     'rankingDMD.R'

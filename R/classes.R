@@ -805,15 +805,14 @@ setMethod("SelectParams", "missing", function()
   new("SelectParams", featureRanking = differentMeansRanking,
       characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
       minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
-      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"),
-      doImportance = TRUE)
+      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
 })
 #' @rdname SelectParams-class
 #' @usage NULL
 #' @export
 setMethod("SelectParams", c("functionOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
-                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), doImportance = TRUE, ...)
+                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
           {
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
@@ -1160,7 +1159,7 @@ setClass("ModellingParams", representation(
 #'   By default, uses diagonal LDA.
 #' @param predictParams Parameters for model training specified by a \code{\link{PredictParams}} instance.
 #' By default, uses diagonal LDA.
-#' @param doImportance Default: \code{TRUE}. Whether or not to carry out permutation of every feature which
+#' @param doImportance Default: \code{TRUE}. Whether or not to carry out removal of each feature, one at a time, which
 #' was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
 #' also be set to FALSE if not of interest to reduce the modelling run time.
 #' @author Dario Strbenac
@@ -1181,7 +1180,8 @@ ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
 {
   balancing <- match.arg(balancing)
   new("ModellingParams", balancing = balancing, transformParams = transformParams,
-      selectParams = selectParams, trainParams = trainParams, predictParams = predictParams)
+      selectParams = selectParams, trainParams = trainParams, predictParams = predictParams,
+      doImportance = doImportance)
 }
 
 

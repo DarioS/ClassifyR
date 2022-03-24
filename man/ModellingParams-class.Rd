@@ -32,7 +32,7 @@ By default, uses diagonal LDA.}
 \item{predictParams}{Parameters for model training specified by a \code{\link{PredictParams}} instance.
 By default, uses diagonal LDA.}
 
-\item{doImportance}{Default: \code{TRUE}. Whether or not to carry out permutation of every feature which
+\item{doImportance}{Default: \code{TRUE}. Whether or not to carry out removal of each feature, one at a time, which
 was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
 also be set to FALSE if not of interest to reduce the modelling run time.}
 }

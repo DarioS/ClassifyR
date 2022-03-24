@@ -56,6 +56,12 @@ naiveBayesParams = function() {
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
+mixModelsParams = function() {
+    trainParams = TrainParams(mixModelsTrain)
+    predictParams = PredictParams(mixModelsPredict)
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
 elasticNetPreval = function() {
     trainParams = TrainParams(elasticNetGLMtrainInterfacePreval)
     

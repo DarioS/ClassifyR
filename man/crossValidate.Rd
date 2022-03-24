@@ -14,7 +14,7 @@ crossValidate(
   measurements,
   classes,
   nFeatures = 20,
-  selectionMethod = "t_test",
+  selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
@@ -30,7 +30,7 @@ crossValidate(
   measurements,
   classes,
   nFeatures = 20,
-  selectionMethod = "t_test",
+  selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
@@ -45,7 +45,7 @@ crossValidate(
   measurements,
   classes,
   nFeatures = 20,
-  selectionMethod = "t_test",
+  selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
@@ -60,7 +60,7 @@ crossValidate(
   measurements,
   classes,
   nFeatures = 20,
-  selectionMethod = "t_test",
+  selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
@@ -75,7 +75,7 @@ crossValidate(
   measurements,
   classes,
   nFeatures = 20,
-  selectionMethod = "t_test",
+  selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
@@ -135,9 +135,9 @@ This function has been designed to facilitate the comparison of classification
 comparisons are implemented.
 }
 \details{
-\code{selectionMethod} can be any of the following implemented approaches - randomForest, elasticNet, logistic, svm, dlda or naiveBayes. 
+\code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
 
-\code{classifier} can be any of the following implemented approaches -  none, t_test, limma, edgeR, NSC, bartlette, levene, DMD, likelihood, KS or KL.
+\code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
 
 \code{multiViewMethod} can take a few different values. Using \code{merge} will merge or bind the datasets after feature selection. 
  Using \code{prevlidation} will build prevalidated vectors on all the datasets except the clinical data. There must be a dataset called clinical.
@@ -147,8 +147,8 @@ comparisons are implemented.
 
 data(asthma)
 
-# Compare randomForest and svm classifiers.
-result <- crossValidate(measurements, classes, classifier = c("randomForest", "svm"))
+# Compare randomForest and SVM classifiers.
+result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
 # Boxplot(result)
 
 

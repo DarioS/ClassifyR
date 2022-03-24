@@ -31,9 +31,9 @@
 #' @param characteristicsLabel A character specifying an additional label for the cross-validation run.
 #'
 #' @details
-#' \code{selectionMethod} can be any of the following implemented approaches - randomForest, elasticNet, logistic, svm, dlda or naiveBayes. 
+#' \code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
 #' 
-#' \code{classifier} can be any of the following implemented approaches -  none, t_test, limma, edgeR, NSC, bartlette, levene, DMD, likelihood, KS or KL.
+#' \code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
 #' 
 #' \code{multiViewMethod} can take a few different values. Using \code{merge} will merge or bind the datasets after feature selection. 
 #'  Using \code{prevlidation} will build prevalidated vectors on all the datasets except the clinical data. There must be a dataset called clinical.
@@ -49,8 +49,8 @@
 #' 
 #' data(asthma)
 #' 
-#' # Compare randomForest and svm classifiers.
-#' result <- crossValidate(measurements, classes, classifier = c("randomForest", "svm"))
+#' # Compare randomForest and SVM classifiers.
+#' result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
 #' # Boxplot(result)
 #' 
 #' 
@@ -78,7 +78,7 @@
 setGeneric("crossValidate", function(measurements,
                                      classes,
                                      nFeatures = 20,
-                                     selectionMethod = "t_test",
+                                     selectionMethod = "t-test",
                                      selectionOptimisation = "Resubstitution",
                                      classifier = "randomForest",
                                      multiViewMethod = "none",
@@ -96,7 +96,7 @@ setMethod("crossValidate", "DataFrame",
           function(measurements,
                    classes, 
                    nFeatures = 20,
-                   selectionMethod = "t_test",
+                   selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
                    classifier = "randomForest",
                    multiViewMethod = "none",
@@ -293,7 +293,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
                    classes, 
                    nFeatures = 20,
-                   selectionMethod = "t_test",
+                   selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
                    classifier = "randomForest",
                    multiViewMethod = "none",
@@ -328,7 +328,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           function(measurements,
                    classes, 
                    nFeatures = 20,
-                   selectionMethod = "t_test",
+                   selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
                    classifier = "randomForest",
                    multiViewMethod = "none",
@@ -361,7 +361,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           function(measurements,
                    classes, 
                    nFeatures = 20,
-                   selectionMethod = "t_test",
+                   selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
                    classifier = "randomForest",
                    multiViewMethod = "none",
@@ -395,7 +395,7 @@ setMethod("crossValidate", "list", # data.frame of numeric measurements.
           function(measurements,
                    classes, 
                    nFeatures = 20,
-                   selectionMethod = "t_test",
+                   selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
                    classifier = "randomForest",
                    multiViewMethod = "none",
@@ -577,7 +577,7 @@ checkData <- function(measurements, classes){
 #' modellingParams <- generateModellingParams(datasetIDs = c("clinical", "gene", "protein"),
 #'                                           measurements = measurements, 
 #'                                           nFeatures = list(clinical = 10, gene = 10, protein = 10),
-#'                                           selectionMethod = list(clinical = "t_test", gene = "t_test", protein = "t_test"),
+#'                                           selectionMethod = list(clinical = "t-test", gene = "t-test", protein = "t-test"),
 #'                                           selectionOptimisation = "none",
 #'                                           classifier = "randomForest",
 #'                                           multiViewMethod = "merge")
@@ -623,29 +623,25 @@ generateModellingParams <- function(datasetIDs,
     performanceType <- ifelse(classifier %in% c("coxph", "coxnet"), "C index", "Balanced Accuracy")
     
     
-    classifiers <- c("randomForest", 
-                     "elasticNet",
-                     "logistic",
-                     "svm",
-                     "dlda",
-                     "naiveBayes",
-                     "elasticNetPreval",
-                     "coxph",
-                     "coxnet")
+    classifiers <- c("randomForest", "elasticNet", "SVM", "DLDA",
+                     "naiveBayes", "mixturesNormals", "kNN",
+                     "elasticNetPreval", "CoxPH", "CoxNet")
     # Check classifier
-    if(!classifier %in% classifiers)stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
+    if(!classifier %in% classifiers)
+        stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
     
     classifier = switch(
         classifier,
         "randomForest" = rfParams(),
         "elasticNet" = elasticParams(),
-        "logistic" = logisticParams(),
-        "svm" = svmParams(),
-         "dlda" = DLDAParams(),
+        "SVM" = svmParams(),
+        "DLDA" = DLDAParams(),
         "naiveBayes" = naiveBayesParams(),
+        "mixturesNormals" = mixModelsParams(),
+        "kNN" = kNNparams(),
         "elasticNetPreval" = elasticNetPreval(),
-        "coxph" = coxphParams(),
-        "coxnet" = coxnetParams()
+        "CoxPH" = coxphParams(),
+        "CoxNet" = coxnetParams()
     )
 
 
@@ -658,17 +654,16 @@ generateModellingParams <- function(datasetIDs,
     selectionMethodParam = switch(
         selectionMethod,
         "none" = differentMeansRanking,
-        "t_test" = differentMeansRanking,
-        "limma" = limmaSelection,
-        "edgeR" = edgeRselection,
-        "NSC" = NSCselectionInterface,
-        "bartlett" = bartlettSelection,
-        "levene" = leveneSelection,
-        "DMD" = DMDselection,
-        "liklihood" = likelihoodRatioSelection,
-        "KS" = KolmogorovSmirnovSelection,
-        "KL" = KullbackLeiblerSelection,
-         "coxph" = coxphRanking
+        "t-test" = differentMeansRanking,
+        "limma" = limmaRanking,
+        "edgeR" = edgeRranking,
+        "Bartlett" = bartlettRanking,
+        "Levene" = leveneRanking,
+        "DMD" = DMDranking,
+        "likelihoodRatio" = likelihoodRatioRanking,
+        "KS" = KolmogorovSmirnovRanking,
+        "KL" = KullbackLeiblerRanking,
+        "CoxPH" = coxphRanking
     )
 
     selectParams = SelectParams(
@@ -839,7 +834,7 @@ generateMultiviewParams <- function(datasetIDs,
 CV <- function(measurements,
                classes,
                nFeatures = NULL,
-               selectionMethod = "t_test",
+               selectionMethod = "t-test",
                selectionOptimisation = "Resubstitution",
                classifier = "elasticNet",
                multiViewMethod = "none",

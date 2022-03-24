@@ -103,9 +103,8 @@ setMethod("performancePlot", "list",
   densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
-  
-  performanceNames <- lapply(results, function(result)
-    if(!is.null(result@performance)) names(result@performance))
+  performanceNames <- unlist(lapply(results, function(result)
+    if(!is.null(result@performance)) names(result@performance)))
   namesCounts <- table(performanceNames)
   commonNames <- names(namesCounts)[namesCounts == length(results)]
   if(!performanceName %in% commonNames)
