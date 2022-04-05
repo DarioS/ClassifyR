@@ -30,8 +30,7 @@
 #' calcExternalPerformance,factor,factor-method calcExternalPerformance,Surv,numeric-method
 #' calcCVperformance,ClassifyResult-method
 #' @param result An object of class \code{\link{ClassifyResult}}.
-#' @param performanceType A character vector of length 1. Default:
-#' \code{"Balanced Error"}.
+#' @param performanceType A character vector of length 1. Default: \code{"Balanced Error"}.
 #' Must be one of the following options:
 #' \itemize{
 #' \item{\code{"Error"}: Ordinary error rate.}
@@ -56,10 +55,12 @@
 #' \item{\code{"Matthews Correlation Coefficient"}: Matthews Correlation Coefficient (MCC). A score
 #' between -1 and 1 indicating how concordant the predicted classes are to the actual classes. Only defined if
 #' there are two classes.}
+#' \item{\code{"AUC"}: Area Under the Curve. An area ranging from 0 to 1, under the ROC.}
+#' \item{\code{"C-index"}: For survival data, the concordance index, for models which produce risk scores. Ranges from 0 to 1.}
 #' }
 #' 
-#' @param actualOutcomes A factor vector specifying each sample's correct class.
-#' @param predictedOutcomes A factor vector of the same length as \code{actualOutcomes} specifying each sample's predicted class.
+#' @param actualOutcomes A factor vector or survival information specifying each sample's known outcome.
+#' @param predictedOutcomes A factor vector or survival information of the same length as \code{actualOutcomes} specifying each sample's predicted outcome.
 #' 
 #' @return If \code{calcCVperformance} was run, an updated
 #' \code{\linkS4class{ClassifyResult}} object, with new metric values in the
@@ -106,7 +107,7 @@ setMethod("calcExternalPerformance", c("factor", "factor"),
 #' @rdname calcPerformance
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("Surv", "numeric"),
-          function(actualOutcomes, predictedOutcomes, performanceType = "C index")
+          function(actualOutcomes, predictedOutcomes, performanceType = "C-index")
           {
             performanceType <- match.arg(performanceType)
             .calcPerformance(actualOutcomes, predictedOutcomes, performanceType = performanceType)[["values"]]
@@ -125,11 +126,11 @@ setMethod("calcCVperformance", "ClassifyResult",
                                                "Sample Error", "Sample Accuracy",
                                                "Micro Precision", "Micro Recall",
                                                "Micro F1", "Macro Precision",
-                                               "Macro Recall", "Macro F1", "Matthews Correlation Coefficient", 
-                                               "C index"))
+                                               "Macro Recall", "Macro F1", "Matthews Correlation Coefficient", "AUC", 
+                                               "C-index"))
 {
   performanceType <- match.arg(performanceType)
-  
+  actualOutcomes <- actualOutcomes(result) # Extract the known outcomes of all samples.
   
   ### Group by permutation
   if(!performanceType %in% c("Sample Error", "Sample Accuracy"))
@@ -141,9 +142,9 @@ setMethod("calcCVperformance", "ClassifyResult",
   }
   
   ### Performance for survival data
-  if(performanceType == "C index"){
+  if(performanceType == "C-index") {
     samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-    performance <- .calcPerformance(actualOutcomes = actualOutcomes(result)[match(result@predictions[, "sample"], sampleNames(result))],
+    performance <- .calcPerformance(actualOutcomes = actualOutcomes[match(result@predictions[, "sample"], sampleNames(result))],
                                     predictedOutcomes = result@predictions[, "class"], 
                                     samples = samples,
                                     performanceType = performanceType, 
@@ -152,15 +153,22 @@ setMethod("calcCVperformance", "ClassifyResult",
     return(result)
   }
   
+  if(performanceType == "AUC") {
+    performance <- .calcPerformance(actualOutcomes[match(result@predictions[, "sample"], sampleNames(result))],
+                                    result@predictions[, levels(actualOutcomes)],
+                                    performanceType = performanceType, grouping = grouping)
+    result@performance[[performance[["name"]]]] <- performance[["values"]]
+    return(result)
+  }
   
   ### Performance for data with classes
   if(length(levels(actualOutcomes)) > 2 && performanceType == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
 
-  classLevels <- levels(actualOutcomes(result))
+  classLevels <- levels(actualOutcomes)
   samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
   predictedOutcomes <- factor(result@predictions[, "class"], levels = classLevels)
-  actualOutcomes <- factor(actualOutcomes(result)[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
+  actualOutcomes <- factor(actualOutcomes[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
   performance <- .calcPerformance(actualOutcomes, predictedOutcomes, samples, performanceType, grouping)
   result@performance[[performance[["name"]]]] <- performance[["values"]]
   result
@@ -175,6 +183,7 @@ setMethod("calcCVperformance", "ClassifyResult",
                               actual = actualOutcomes,
                               predicted = predictedOutcomes)
     allIDs <- levels(resultTable[, "sample"])
+    
     sampleMetricValues <- sapply(allIDs, function(sampleID)
     {
       sampleResult <- subset(resultTable, sample == sampleID)
@@ -190,16 +199,14 @@ setMethod("calcCVperformance", "ClassifyResult",
     return(list(name = performanceType, values = performanceValues))
   }
   
-
-  
   if(!is.null(grouping))
   {
     actualOutcomes <- split(actualOutcomes, grouping)
     predictedOutcomes <- split(predictedOutcomes, grouping)
   }
   
-  if(!is(actualOutcomes,"list")) actualOutcomes <- list(actualOutcomes)
-  if(!is(predictedOutcomes,"list")) predictedOutcomes <- list(predictedOutcomes)
+  if(!is(actualOutcomes, "list")) actualOutcomes <- list(actualOutcomes)
+  if(!is(predictedOutcomes, "list")) predictedOutcomes <- list(predictedOutcomes)
   
 
   if(performanceType %in% c("Accuracy", "Error")) {
@@ -228,13 +235,36 @@ setMethod("calcCVperformance", "ClassifyResult",
       else
         mean(classErrors / classSizes)
     }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
-  } else if(performanceType %in% c("C index")){
-    performanceValues <- unlist(mapply(function(x,y){
+  } else if(performanceType %in% c("AUC")) {
+    performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
+    {
+      classesTable <- do.call(rbind, lapply(levels(iterationClasses), function(class)
+      {
+        totalPositives <- sum(iterationClasses == class)
+        totalNegatives <- sum(iterationClasses != class)
+        uniquePredictions <- sort(unique(iterationPredictions[, class]), decreasing = TRUE)
+        rates <- do.call(rbind, lapply(uniquePredictions, function(uniquePrediction)
+        {
+          consideredSamples <- iterationPredictions[, class] >= uniquePrediction
+          truePositives <- sum(iterationClasses[consideredSamples] == class)
+          falsePositives <- sum(iterationClasses[consideredSamples] != class)
+          TPR <- truePositives / totalPositives
+          FPR <- falsePositives / totalNegatives
+          data.frame(FPR = FPR, TPR = TPR, class = class)
+        }))
+        rates <- rbind(data.frame(FPR = 0, TPR = 0, class = class), rates)
+        rates
+      }))
+      classesAUC <- .calcArea(classesTable, levels(actualOutcomes[[1]]))
+      mean(classesAUC[!duplicated(classesAUC[, c("class", "AUC")]), "AUC"]) # Average AUC in iteration.
+    }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
+  } else if(performanceType %in% c("C-index")) {
+    performanceValues <- unlist(mapply(function(x, y){
       y <- -y
       survival::concordance(x ~ y)$concordance
-    },actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
+    }, actualOutcomes, predictedOutcomes, SIMPLIFY = FALSE))
 
-    }else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
+    } else { # Metrics for which true positives, true negatives, false positives, false negatives must be calculated.
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       confusionMatrix <- table(iterationClasses, iterationPredictions)

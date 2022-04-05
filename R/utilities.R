@@ -517,6 +517,8 @@
 }
 
 # Used for ROC area under curve calculation.
+# PRtable is a data frame with columns FPR, TPR and class.
+# distinctClasses is a vector of all of the class names.
 .calcArea <- function(PRtable, distinctClasses)
 {
   do.call(rbind, lapply(distinctClasses, function(aClass)
@@ -525,7 +527,6 @@
     areaSum <- 0
     for(index in 2:nrow(classTable))
     {
-      
       # Some samples had identical predictions but belong to different classes.
       if(classTable[index, "FPR"] != classTable[index - 1, "FPR"] && classTable[index, "TPR"] != classTable[index - 1, "TPR"])
       {

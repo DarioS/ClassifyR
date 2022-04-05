@@ -22,8 +22,7 @@ or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method (e.g. \code{verbose}) or options which are accepted
-by the \code{\link[survival]{coxph}} or
-\code{\link[survival]{predict}} functions.}
+by the \code{\link[survival]{coxph}} or \code{\link[survival]{predict}} functions.}
 
 \item{survivalTrain}{A tabular data type of survival information of the
 same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a

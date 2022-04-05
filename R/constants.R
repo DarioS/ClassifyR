@@ -12,6 +12,7 @@
                                                       "Macro Recall", "higher",
                                                       "Macro F1", "higher",
                                                       "Matthews Correlation Coefficient", "higher",
+                                                      "AUC", "higer",
                                                       "C-index", "higher"),
                                                     ncol = 2, byrow = TRUE, dimnames = list(NULL, c("type", "better"))
 ) |> as.data.frame()

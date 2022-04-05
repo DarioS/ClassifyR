@@ -21,7 +21,7 @@ Pair of Factor Vectors}
 \S4method{calcExternalPerformance}{Surv,numeric}(
   actualOutcomes,
   predictedOutcomes,
-  performanceType = "C index"
+  performanceType = "C-index"
 )
 
 \S4method{calcCVperformance}{ClassifyResult}(
@@ -29,16 +29,15 @@ Pair of Factor Vectors}
   performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
-    "C index")
+    "AUC", "C-index")
 )
 }
 \arguments{
-\item{actualOutcomes}{A factor vector specifying each sample's correct class.}
+\item{actualOutcomes}{A factor vector or survival information specifying each sample's known outcome.}
 
-\item{predictedOutcomes}{A factor vector of the same length as \code{actualOutcomes} specifying each sample's predicted class.}
+\item{predictedOutcomes}{A factor vector or survival information of the same length as \code{actualOutcomes} specifying each sample's predicted outcome.}
 
-\item{performanceType}{A character vector of length 1. Default:
-\code{"Balanced Error"}.
+\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Error"}.
 Must be one of the following options:
 \itemize{
 \item{\code{"Error"}: Ordinary error rate.}
@@ -63,6 +62,8 @@ and macro recall.}
 \item{\code{"Matthews Correlation Coefficient"}: Matthews Correlation Coefficient (MCC). A score
 between -1 and 1 indicating how concordant the predicted classes are to the actual classes. Only defined if
 there are two classes.}
+\item{\code{"AUC"}: Area Under the Curve. An area ranging from 0 to 1, under the ROC.}
+\item{\code{"C-index"}: For survival data, the concordance index, for models which produce risk scores. Ranges from 0 to 1.}
 }}
 
 \item{result}{An object of class \code{\link{ClassifyResult}}.}
