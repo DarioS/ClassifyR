@@ -157,7 +157,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   
   ClassifyResult(characteristics, rownames(measurements), allFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance, modellingParams)
 })
 
 #' @rdname runTests
