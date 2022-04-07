@@ -1,6 +1,6 @@
 ---
 title: "An Introduction to **ClassifyR**"
-author: Dario Strbenac, Graham Mann, Jean Yang, John Ormerod <br>
+author: Dario Strbenac, Ellis Patrick, Graham Mann, Jean Yang, John Ormerod <br>
         The University of Sydney, Australia.
 output: 
   BiocStyle::html_document:
@@ -36,16 +36,14 @@ options(width = 130)
 
 ## Overview
 
-**ClassifyR** provides a structured pipeline for cross-validated classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The stages can be run in any order that is sensible.
+**ClassifyR** provides a structured pipeline for cross-validated classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The driver functions *crossValidate* and *runTests* implements varieties of cross-validation. They are:
 
-Each step can be provided with custom functions that follow some rules about parameters. The driver function *runTests* implements different varieties of cross-validation. They are:
-
-* Ordinary k-fold cross-validation
-* Permutation of the order of samples followed by k-fold cross-validation
+* Ordinary k-fold cross-validation (runTests only)
+* Permutation of the order of samples followed by k-fold cross-validation (runTests only)
 * Repeated x% test set cross-validation
 * leave-k-out cross-validation
 
-*runTests* can use parallel processing capabilities in R to speed up cross-validations when many CPUs are available. The output of *runTests* is a *ClassifyResult* object which can be directly used by the performance evaluation functions. The process of classification is summarised by a flowchart.
+Driver functions can use parallel processing capabilities in R to speed up cross-validations when many CPUs are available. The output of the driver functions is a *ClassifyResult* object which can be directly used by the performance evaluation functions. The process of classification is summarised by a flowchart.
 
 
 ```{r, echo = FALSE}
@@ -55,27 +53,84 @@ htmltools::img(src = knitr::image_uri("ClassifyRprocedure.png"),
 
 Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential variability (DV; changes in scale) and differential distribution (DD; changes in location and/or scale).
 
+### Case Study: Diagnosing Asthma
+
+To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).
+
 Load the package.
 
 ```{r, message = FALSE}
 library(ClassifyR)
 ```
 
-## Quick Start
+A glimpse at the RNA measurements and sample classes.
 
-If the intention is to quickly apply a few different algorithms and compare their results without going into much of the detail, a convenience function is provided for the most common cross-validation setting and classifiers by the function *quickClassify*. For example, the code below will carry out a standard cross-validation for differences in means using 100 permutations and five folds.
-
-```{r, eval = FALSE}
-result <- quickClassify(measurements, classes, "100 permutations, 5 folds", classifier = "DLDA", cores = 16)
+```{r, message = FALSE}
+data(asthma) # Contains measurements and classes variables.
+measurements[1:5, 1:5]
+head(classes)
 ```
 
-Similarly, leave-one-out cross-validation with the naive Bayes classifier for a differential distribution style of classification could be done by the example below.
+The numeric matrix variable *measurements* stores the normalised values of the RNA gene abundances for each sample and the factor vector *classes* identifies which class the samples belong to. The measurements were normalised using **DESeq2**'s *varianceStabilizingTransformation* function, which produces $log_2$-like data.
 
-```{r, eval = FALSE}
-result <- quickClassify(measurements, classes, "leave-1-out", classifier = "naiveBayes", cores = 16)
+For more complex data sets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
+
+## Quick Start: *crossValidate* Function
+
+The *crossValidate* function offers a quick and simple way to start analysing a dataset in ClassifyR. It is a wrapper for *runTests*, the core model building and testing function of ClassifyR. *crossValidate* must be supplied with *measurements*, a simple tabular data container or a list-like structure of such related tabular data on common samples. The classes of it may be *matrix*, *data.frame*, *DataFrame*,  *MultiAssayExperiment* or *list* of *data.frames*. For a dataset with $n$ observations and $p$ variables, the *crossValidate* function will accept inputs of the following shapes:
+
+Data Type | $n \times p$ | $p \times n$
+----|:----:|:----:
+<span style="font-family: 'Courier New', monospace;">matrix</span> |  | ✔
+<span style="font-family: 'Courier New', monospace;">data.frame</span> | ✔ | 
+<span style="font-family: 'Courier New', monospace;">DataFrame</span> | ✔ |
+<span style="font-family: 'Courier New', monospace;">MultiAssayExperiment</span> |  | ✔
+<span style="font-family: 'Courier New', monospace;">list</span> of <span style="font-family: 'Courier New', monospace;">data.frame</span>s | ✔ | 
+
+*crossValidate* must also be supplied with *outcomes*, which represents the prediction to be made in a variety of possible ways.
+
+* A *factor* that contains the class label for each observation. *classes* must be of length $n$.
+* A *character* of length 1 that matches a column name in a data frame which holds the classes. The classes will automatically be removed before training is done.
+* A *Surv* object of the same length as the number of samples in the data which contains information about the time and censoring of the samples.
+* A *character* vector of length 2 or 3 that each match a column name in a data frame which holds information about the time and censoring of the samples. The time-to-event columns will automatically be removed before training is done.
+
+The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
+
+```{r}
+result <- crossValidate(measurements, classes, classifier = "SVM", nFolds = 5, nRepeats = 2)
+result
 ```
 
-For a full list of available shortcuts, please view *?quickClassify*.
+### Data Integration with crossValidate
+
+*crossValidate* also allows data from multiple sources to be integrated into a single model. The integration method can be specified with *multiViewMethod* argument. In this example, suppose the first 10 variables in the asthma data set are from a certain source and the remaining 1990 variables are from a second source. To integrate multiple data sets, each variable must be labeled with the data set it came from. This is done in a different manner depending on the data type of *measurements*.
+
+If using Bioconductor's *DataFrame*, this can be specified using *mcols*. In the column metadata, each column must have a *dataset* and a *feature* name.
+
+```{r}
+measurementsDF <- DataFrame(measurements)
+mcols(measurementsDF) <- data.frame(
+  dataset = rep(c("dataset_1", "dataset_2"), times = c(10, 1990)),
+  feature = colnames(measurementsDF)
+)
+
+result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
+                        nRepeats = 2, multiViewMethod = "merge")
+```
+
+If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
+
+```{r}
+# Assigns first 10 variables to dataset_1, and the rest to dataset_2
+measurementsList <- list(
+  (measurements |> as.data.frame())[1:10],
+  (measurements |> as.data.frame())[11:2000]
+)
+names(measurementsList) <- c("dataset_1", "dataset_2")
+
+result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
+                        nRepeats = 2, multiViewMethod = "merge")
+```
 
 ## A More Detailed Look at ClassifyR
 
@@ -99,7 +154,7 @@ Although being a cross-validation framework, a number of popular feature selecti
 
 #### Provided Methods for Feature Selection and Classification
 
-In the following tables, a function that is used when no function is explicity specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
+In the following tables, a function that is used when no function is explicitly specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
 
 The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features, based on a criterion such as balanced error rate, for example.
 
@@ -144,65 +199,40 @@ Function | Description | Before&nbsp;CV | During&nbsp;CV
 <span style="font-family: 'Courier New', monospace;">pairsDifferencesSelection</span> | Finds a set of pairs of features whose measurement inequalities can be used for predicting with | | ✔    
 <span style="font-family: 'Courier New', monospace;">kTSPclassifier</span> | Voting classifier that uses inequalities between pairs of features to vote for one of two classes | | ✔   
  
-### Cross-validation and Modelling
+### Fine-grained Cross-validation and Modelling Using *runTests*
 
-For cross-validation, all of the parameters are specified by a *CrossValParams* object. The default setting are for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that work on all operating systems, but intended for Windows is:
+For more control over the finer aspects of cross-validation of a single data set, *runTests* may be employed in place of *crossValidate*. For the variety of cross-validation, the parameters are specified by a *CrossValParams* object. The default setting is for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that works on all operating systems, but is best-suited to Windows is:
 
 ```{r, eval = FALSE}
 CVparams <- CrossValParams(parallelParams = SnowParam(16, RNGseed = 123))
 CVparams
 ```
 
-For the actual operations to do to the data to build a model of it, each of the stages should be specified by an object of class *ModellingParams*. This controls how class imbalance is handled (default is to downsample to the smallest class), any transformation that needs to be done inside of cross-validation, any feature selection and the training and prediction functions to be used. The default is to do an ordinary t-test (two groups) or ANOVA (three or more group) and classification using diagonal LDA.
+For the actual operations to do to the data to build a model of it, each of the stages should be specified by an object of class *ModellingParams*. This controls how class imbalance is handled (default is to downsample to the smallest class), any transformation that needs to be done inside of cross-validation (i.e. involving a computed value from the training set), any feature selection and the training and prediction functions to be used. The default is to do an ordinary t-test (two groups) or ANOVA (three or more groups) and classification using diagonal LDA.
 
 ```{r}
 ModellingParams()
 ```
-
-### Pre-validation
-
-Pre-validation is an approach to provide a fairer way to compare the benefit of omics data to traditional, freely-available clinical data. For each omics technology considered, training and testing is done on all of the various partitions of the data and the predictions of each sample are simply added as a column to the clinical data table. Then, cross-validation is done as usual. If an omics data set is important, it will often be included as a selected feature.
-
-Pre-validation is activated by specifying a list of *ModellingParams* objects with one of them named *"prevaliated"*, which specifies the kind of classification to do on the resultant augmented clinical data table. The classification procedure is typically a logistic regression type, such as Elastic net regularised regression. Other lists must be named with each name matching an assay in the measurements object, which must be of type [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html). For example, if a data object had two assays named RNA and protein, as well as some clinical data about the patients, then a suitable specification of *modellingParams* for the function *runTests* would be:
-
-```{r, message = FALSE, eval = FALSE}
-# Coming soon.
-```
-
-*elasticNetFeatures* is a function that enables selected features to be extracted from the trained models, which are simply the variables with a beta coefficient that is not zero. Unlike most classifiers, for elastic net GLM, the feature selection happens during model training - not independently before it.
-
-### Case Study : Diagnosing Asthma
-
-To demonstrate some key features of ClassifyR, a data set consisting of the 2000 most variably expressed genes and 190 people will be used to quickly obtain results. The journal article corresponding to the data set was published in *Scientific Reports* in 2018 and is titled [A Nasal Brush-based Classifier of Asthma Identified by Machine Learning Analysis of Nasal RNA Sequence Data](http://www.nature.com/articles/s41598-018-27189-4).
-
-```{r, message = FALSE}
-data(asthma) # Contains measurements and classes variables.
-measurements[1:5, 1:5]
-head(classes)
-```
-
-The numeric matrix variable *measurements* stores the normalised values of the RNA gene abundances for each sample and the factor vector *classes* identifies which class the samples belong to. The measurements were normalised using **DESeq2**'s *varianceStabilizingTransformation* function, which produces $log_2$-like data.
-
-For more complex data sets with multiple kinds of experiments (e.g. DNA methylation, copy number, gene expression on the same set of samples) a [*MultiAssayExperiment*](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) is recommended for data storage and supported by **ClassifyR**'s methods.
 
 ### runTests Driver Function of Cross-validated Classification
 
 *runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature ranking and DLDA for classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*. By default, the number of features is tuned by resubstitution on the training set.
 
 ```{r, tidy = FALSE}
-crossValParams <- CrossValParams(permutations = 20)
+crossValParams <- CrossValParams(permutations = 5)
 DMresults <- runTests(measurements, classes, crossValParams, verbose = 1)
 DMresults
 ```
 
-Here, 20 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing paralle processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
+Here, 5 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing parallel processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
 
-## Evalulation of a Classification
+## Evaluation of a Classification
 
 The most frequently selected gene can be identified using the *distribution* function and its relative abundance values for all samples can be displayed visually by *plotFeatureClasses*.
 
 ```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
 selectionPercentages <- distribution(DMresults, plot = FALSE)
+head(selectionPercentages)
 sortedPercentages <- sort(selectionPercentages, decreasing = TRUE)
 head(sortedPercentages)
 mostChosen <- names(sortedPercentages)[1]
@@ -240,19 +270,28 @@ The naive Bayes kernel classifier by default uses the vertical distance between 
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
-```{r, fig.width = 10, fig.height = 7}
+```{r, fig.width = 10, fig.height = 7, eval = FALSE}
 library(grid)
 DMresults <- calcCVperformance(DMresults, "Sample Error")
 DDresults <- calcCVperformance(DDresults, "Sample Error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
 errorPlot <- samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
                               showXtickLabels = FALSE, plot = FALSE)
+grid.newpage()
 grid.draw(errorPlot)
 ```
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 50 different features were for the differential distribution classifier for all 5 folds in the 20 cross-validations.
+More traditionally, the distirubition of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw violin plot, but box plots could also be made. The default performance metric to plot is balanced error. If it's not already calculcated for all classifications, as in this case for DD, it will be done automatically.
+
+```{r}
+performancePlot(list(DMresults, DDresults))
+```
+
+We can observe that the spread of balanced error rates is small, but slightly wider for the differential distribution classifier.
+
+The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 100 different features were for the differential distribution classifier for all 5 folds in the 5 cross-validations.
 
 ```{r}
 rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:100,
@@ -269,13 +308,13 @@ For a large cross-validation scheme, such as leave-2-out cross-validation, or wh
 
 Some classifiers can output scores or probabilities representing how likely a sample is to be from one of the classes, instead of, or as well as, class labels. This enables different score thresholds to be tried, to generate pairs of false positive and false negative rates. The naive Bayes classifier used previously by default has its *returnType* parameter set to *"both"*, so class predictions and scores are both stored in the classification result. So does diagonal LDA. In this case, a data frame with class predictions and scores for each class is returned by the classifier to the cross-validation framework. Setting *returnType* to *"score"* for a classifier which has such an option is also sufficient to generate a ROC plot. Many existing classifiers in other R packages also have an option that allows a score or probability to be calculated.
 
-By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is 95% interval.
+By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is a 95% interval and is customisable by setting *interval*.
 
 ```{r, fig.height = 5, fig.width = 6}
 ROCcurves <- ROCplot(list(DMresults, DDresults), fontSizes = c(24, 12, 12, 12, 12))
 ```
 
-This ROC plot shows the classifiability of the asthma data set is high. Examples of other included functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
+This ROC plot shows the classifiability of the asthma data set is high. Some examples of functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
 
 ## Other Use Cases
 
@@ -309,7 +348,7 @@ length(tunedParameters(SVMresults))
 tunedParameters(SVMresults)[1:5]
 ```
 
-The cost value of 1 or 10 is often chosen.
+The cost value of 1 or 10 appears to often be chosen.
 
 ## Summary
 

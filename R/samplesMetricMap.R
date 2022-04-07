@@ -1,6 +1,88 @@
+#' Plot a Grid of Sample Error Rates or Accuracies
+#' 
+#' A grid of coloured tiles is drawn. There is one column for each sample and
+#' one row for each classification result.
+#' 
+#' The names of \code{results} determine the row names that will be in the
+#' plot. The length of \code{metricColours} determines how many bins the metric
+#' values will be discretised to.
+#' 
+#' @aliases samplesMetricMap samplesMetricMap,list-method
+#' samplesMetricMap,matrix-method
+#' @param results A list of \code{\link{ClassifyResult}} objects. Could also be
+#' a matrix of pre-calculated metrics, for backwards compatibility.
+#' @param classes If \code{results} is a matrix, this is a factor vector of the
+#' same length as the number of columns that \code{results} has.
+#' @param comparison Default: Classifier Name. The aspect of the experimental
+#' design to compare. Can be any characteristic that all results share.
+#' @param metric The sample-wise metric to plot.
+#' @param featureValues If not NULL, can be a named factor or named numeric
+#' vector specifying some variable of interest to plot underneath the class
+#' bar.
+#' @param featureName A label describing the information in
+#' \code{featureValues}. It must be specified if \code{featureValues} is.
+#' @param metricColours A vector of colours for metric levels.
+#' @param classColours Either a vector of colours for class levels if both
+#' classes should have same colour, or a list of length 2, with each component
+#' being a vector of the same length. The vector has the colour gradient for
+#' each class.
+#' @param groupColours A vector of colours for group levels. Only useful if
+#' \code{groups} is not NULL.
+#' @param fontSizes A vector of length 5. The first number is the size of the
+#' title.  The second number is the size of the axes titles. The third number
+#' is the size of the axes values. The fourth number is the size of the
+#' legends' titles. The fifth number is the font size of the legend labels.
+#' @param mapHeight Height of the map, relative to the height of the class
+#' colour bar.
+#' @param title The title to place above the plot.
+#' @param showLegends Logical. IF FALSE, the legend is not drawn.
+#' @param xAxisLabel The name plotted for the x-axis. NULL suppresses label.
+#' @param showXtickLabels Logical. IF FALSE, the x-axis labels are hidden.
+#' @param showYtickLabels Logical. IF FALSE, the y-axis labels are hidden.
+#' @param yAxisLabel The name plotted for the y-axis. NULL suppresses label.
+#' @param legendSize The size of the boxes in the legends.
+#' @param plot Logical. IF \code{TRUE}, a plot is produced on the current
+#' graphics device.
+#' @return A plot is produced and a grob is returned that can be saved to a
+#' graphics device.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   predicted <- data.frame(sample = LETTERS[sample(10, 100, replace = TRUE)],
+#'                           class = rep(c("Healthy", "Cancer"), each = 50))
+#'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5), levels = c("Healthy", "Cancer"))
+#'   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
+#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+#'                                                          "Cross-validation"),
+#'                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
+#'                             LETTERS[1:10], features, list(1:100), list(sample(10, 10)),
+#'                             list(function(oracle){}), NULL, predicted, actual)
+#'   predicted[, "class"] <- sample(predicted[, "class"])
+#'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
+#'                                                          "Cross-validation"),
+#'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
+#'                             LETTERS[1:10], features, list(1:100), list(sample(10, 10)),
+#'                             list(function(oracle){}), NULL, predicted, actual)
+#'   result1 <- calcCVperformance(result1, "Sample Error")
+#'   result2 <- calcCVperformance(result2, "Sample Error")
+#'   groups <- factor(rep(c("Male", "Female"), length.out = 10))
+#'   names(groups) <- LETTERS[1:10]
+#'   cholesterol <- c(4.0, 5.5, 3.9, 4.9, 5.7, 7.1, 7.9, 8.0, 8.5, 7.2)
+#'   names(cholesterol) <- LETTERS[1:10]
+#'   
+#'   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2))
+#'   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
+#'                                 featureValues = groups, featureName = "Gender")
+#'   wholePlot <- samplesMetricMap(list(Gene = result1, Protein = result2),
+#'                                 featureValues = cholesterol, featureName = "Cholesterol")                                
+#'
+#' @export
+#' @usage NULL
 setGeneric("samplesMetricMap", function(results, ...)
 standardGeneric("samplesMetricMap"))
 
+#' @rdname samplesMetricMap
+#' @export
 setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = "Classifier Name",
@@ -46,7 +128,7 @@ setMethod("samplesMetricMap", "list",
   
   nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
   metricBinEnds <- seq(0, 1, 1/nColours)
-  knownClasses <- actualClasses(results[[1]])
+  knownClasses <- actualOutcomes(results[[1]])
 
   metricValues <- lapply(results, function(result)
   {
@@ -331,6 +413,8 @@ setMethod("samplesMetricMap", "list",
   wholePlot
 })
 
+#' @rdname samplesMetricMap
+#' @export
 setMethod("samplesMetricMap", "matrix", 
           function(results, classes,
                    metric = c("Sample Error", "Sample Accuracy"),

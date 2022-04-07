@@ -1,50 +1,108 @@
-setGeneric("runTests", function(measurements, ...)
-           standardGeneric("runTests"))
+#' Reproducibly Run Various Kinds of Cross-Validation
+#' 
+#' Enables doing classification schemes such as ordinary 10-fold, 100
+#' permutations 5-fold, and leave one out cross-validation. Processing in
+#' parallel is possible by leveraging the package \code{\link{BiocParallel}}.
+#' 
+#' 
+#' @aliases runTests runTests,matrix-method runTests,DataFrame-method
+#' runTests,MultiAssayExperiment-method
+#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
+#' or \code{\link{MultiAssayExperiment}} containing all of the data. For a
+#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
+#' are features.
+#' @param outcomes Either a factor vector of classes, a \code{\link{Surv}} object, or
+#' a character string, or vector of such strings, containing column name(s) of column(s)
+#' containing either classes or time and event information about survival.
+#' @param crossValParams An object of class \code{\link{CrossValParams}},
+#' specifying the kind of cross-validation to be done.
+#' @param modellingParams An object of class \code{\link{ModellingParams}},
+#' specifying the class rebalancing, transformation (if any), feature selection
+#' (if any), training and prediction to be done on the data set.
+#' @param characteristics A \code{\link{DataFrame}} describing the
+#' characteristics of the classification used. First column must be named
+#' \code{"charateristic"} and second column must be named \code{"value"}.
+#' Useful for automated plot annotation by plotting functions within this
+#' package.  Transformation, selection and prediction functions provided by
+#' this package will cause the characteristics to be automatically determined
+#' and this can be left blank.
+#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
+#' names of the data tables to be used. \code{"clinical"} is also a valid value
+#' and specifies that the clinical data table will be used.
+#' @param outcomesColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+#' that contain(s)s the samples' outcomes to use for prediction.
+#' @param ... Variables not used by the \code{matrix} nor the
+#' \code{MultiAssayExperiment} method which are passed into and used by the
+#' \code{DataFrame} method.
+#' @param verbose Default: 1. A number between 0 and 3 for the amount of
+#' progress messages to give.  A higher number will produce more messages as
+#' more lower-level functions print messages.
+#' @return An object of class \code{\link{ClassifyResult}}.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   #if(require(sparsediscrim))
+#'   #{
+#'     data(asthma)
+#'     
+#'     CVparams <- CrossValParams(permutations = 5)
+#'     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
+#'     selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
+#'     modellingParams <- ModellingParams(selectParams = selectParams)
+#'     runTests(measurements, classes, CVparams, modellingParams,
+#'              DataFrame(characteristic = c("Dataset Name", "Classifier Name"),
+#'                        value = c("Asthma", "Different Means"))
+#'              )
+#'   #}
+#'
+#' @export
+#' @usage NULL
+setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
-setMethod("runTests", c("matrix"), # Matrix of numeric measurements.
-          function(measurements, classes, ...)
+#' @rdname runTests
+#' @export
+setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matrix of numeric measurements.
 {
-  if(is.null(colnames(measurements)))
-    stop("'measurements' matrix must have sample identifiers as its column names.")
-  runTests(DataFrame(t(measurements), check.names = FALSE), classes, ...)
+  if(is.null(rownames(measurements)))
+    stop("'measurements' matrix must have sample identifiers as its row names.")
+  runTests(S4Vectors::DataFrame(measurements, check.names = FALSE), outcomes, ...)
 })
 
-setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, transformed.
-          function(measurements, classes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
-                   characteristics = DataFrame(), verbose = 1)
+# Clinical data or one of the other inputs, transformed.
+#' @rdname runTests
+#' @export
+setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
+           characteristics = S4Vectors::DataFrame(), verbose = 1)
 {
-  # Get out the classes if inside of data table.           
+  # Get out the outcomes if inside of data table.           
   if(is.null(rownames(measurements)))
     stop("'measurements' DataFrame must have sample identifiers as its row names.")
   
   if(any(is.na(measurements)))
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
             
-  splitDataset <- .splitDataAndClasses(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurements, outcomes)
   measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["classes"]]
+  outcomes <- splitDataset[["outcomes"]]
   
-  # Elements of list returned by runTest, in order.
-  resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune")
+  # Element names of the list returned by runTest, in order.
+  resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
   
-  if("prevalidated" %in% names(modellingParams@trainParams))
-  { # Check that all assays have a specification of how to classify them.
-    prevalidate <- TRUE
-    assaysWithoutParams <- setdiff(S4Vectors::mcols(measurements)[, "dataset"], c(names(modellingParams@trainParams), "clinical"))
-    if(length(assaysWithoutParams) > 0)
-      stop(paste("'trainParams' lacks a list for", paste(assaysWithoutParams, collapse = ", "), "assay."))
-    return("To do.")
-  } else {
-    prevalidate <- FALSE
-  }  # Re-implement pre-validation the right way later.
-  
-  featureInfo <- .summaryFeatures(measurements, prevalidate)
+  featureInfo <- .summaryFeatures(measurements)
   allFeatures <- featureInfo[[1]]
   featureNames <- featureInfo[[2]]
   consideredFeatures <- featureInfo[[3]]
-  # Create all partitions of training, testing and optionally validation sets.
-  samplesSplits <- .samplesSplits(crossValParams, classes)
+  # Create all partitions of training and testing sets.
+  samplesSplits <- .samplesSplits(crossValParams, outcomes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
+  
+  # Necessary hack for parallel processing on Windows.
+  modellingParams <- modellingParams
+  crossValParams <- crossValParams
+  characteristics <- characteristics
+  verbose <- verbose
+  # Make them all local variables, so they are passed to workers.
   
   results <- bpmapply(function(trainingSamples, testSamples, setNumber)
   #results <- mapply(function(trainingSamples, testSamples, setNumber)
@@ -53,7 +111,8 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
       message("Processing sample set ", setNumber, '.')
     
     # crossValParams is needed at least for nested feature tuning.
-    runTest(measurements, classes, trainingSamples, testSamples,
+    runTest(measurements[trainingSamples, ], outcomes[trainingSamples],
+            measurements[testSamples, , drop = FALSE], outcomes[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
             .iteration = setNumber)
   }, samplesSplits[["train"]], samplesSplits[["test"]], (1:length(samplesSplits[["train"]])),
@@ -84,13 +143,13 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
   if(length(extras) > 0)
     extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
-  extrasDF <- DataFrame(characteristic = names(extras), value = unlist(extras))
+  extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unlist(extras))
   characteristics <- rbind(characteristics, extrasDF)
   characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
   characteristics <- rbind(characteristics,
                              S4Vectors::DataFrame(characteristic = "Cross-validation", value = validationText))
 
-  if(is.factor(results[[1]][["predictions"]]))
+  if(is.factor(results[[1]][["predictions"]]) || is.numeric(results[[1]][["predictions"]]))
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, class = unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
   else # data frame
     predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
@@ -98,15 +157,20 @@ setMethod("runTests", "DataFrame", # Clinical data or one of the other inputs, t
   tuneList <- lapply(results, "[[", "tune")
   if(length(unlist(tuneList)) == 0)
     tuneList <- NULL
+  importance <- NULL
+  if(!is.null(results[[1]][["importance"]]))
+    importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
   ClassifyResult(characteristics, rownames(measurements), allFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, classes)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance, modellingParams)
 })
 
+#' @rdname runTests
+#' @export
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), classes, ...)
+          function(measurements, targets = names(measurements), outcomesColumns, ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
-  runTests(tablesAndClasses[["dataTable"]], tablesAndClasses[["classes"]], ...)            
+  tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, outcomesColumns, restrict = NULL)
+  runTests(tablesAndOutcomes[["dataTable"]], tablesAndOutcomes[["outcomes"]], ...)            
 })
