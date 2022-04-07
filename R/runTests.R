@@ -96,7 +96,13 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, outcomes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
-  modellingParams <- modellingParams # Necessary hack for parallel processing on Windows.
+  
+  # Necessary hack for parallel processing on Windows.
+  modellingParams <- modellingParams
+  crossValParams <- crossValParams
+  characteristics <- characteristics
+  verbose <- verbose
+  # Make them all local variables, so they are passed to workers.
   
   results <- bpmapply(function(trainingSamples, testSamples, setNumber)
   #results <- mapply(function(trainingSamples, testSamples, setNumber)
