@@ -29,6 +29,8 @@
 #' @param nRepeats A numeric specifying the the number of repeats or permutations to use for cross-validation.
 #' @param nCores A numeric specifying the number of cores used if the user wants to use parallelisation. 
 #' @param characteristicsLabel A character specifying an additional label for the cross-validation run.
+#' @param object A trained model to predict with.
+#' @param newData The data to use to make predictions with.
 #'
 #' @details
 #' \code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
@@ -86,8 +88,7 @@ setGeneric("crossValidate", function(measurements,
                                      nFolds = 5,
                                      nRepeats = 20,
                                      nCores = 1,
-                                     characteristicsLabel = NULL,
-                                     ...)
+                                     characteristicsLabel = NULL)
     standardGeneric("crossValidate"))
 
 #' @rdname crossValidate
@@ -391,6 +392,8 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
 
 
 ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#' @rdname crossValidate
+#' @export
 setMethod("crossValidate", "list", # data.frame of numeric measurements.
           function(measurements,
                    classes, 
@@ -405,28 +408,30 @@ setMethod("crossValidate", "list", # data.frame of numeric measurements.
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
+              return("crossValidate of list of data sets") # Stub. Remove when working.
+              
               # Check if the list only contains one data type
-              if (measurements %>% sapply(class) %>% unique() %>% length() != 1) {
+              if (measurements |> sapply(class) |> unique() |> length() != 1) {
                   stop("All datasets must be of the same type (e.g. data.frame, matrix)")
               }
               
               # Check data type is valid
-              if (!(measurements[[1]] %>% class() %in% c("data.frame", "DataFrame", "matrix"))) {
+              if (!(measurements[[1]] |> class() %in% c("data.frame", "DataFrame", "matrix"))) {
                   stop("Datasets must be of type data.frame, DataFrame or matrix")
               }
               
               # Check the list is named
-              if (names(measurements) %>% is.null()) {
+              if (names(measurements) |> is.null()) {
                   stop("Measurements must be a named list")
               }
               
               # Check same number of samples for all datasets
-              if ((df_list %>% sapply(dim))[2,] %>% unique() %>% length() != 1) {
+              if ((df_list |> sapply(dim))[2,] |> unique() |> length() != 1) {
                   stop("All datasets must have the same number of samples")
               }
               
               # Check the number of classes is the same
-              if ((df_list[[1]] %>% dim())[2] != classes %>% length()) {
+              if ((df_list[[1]] |> dim())[2] != classes |> length()) {
                   stop("Classes must have same number of samples as measurements")
               }
               
@@ -563,6 +568,7 @@ checkData <- function(measurements, classes){
 #' A function to generate a ModellingParams object
 #'
 #' @inheritParams crossValidate
+#' @param datasetIDs A vector of data set identifiers as long at the number of data sets.
 #'
 #' @return ModellingParams object
 #' @export

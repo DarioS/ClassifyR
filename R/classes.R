@@ -832,6 +832,8 @@ setMethod("SelectParams", c("functionOrList"),
           })
 
 #' @usage NULL
+#' @rdname SelectParams-class
+#' @export
 setMethod("show", "SelectParams",
           function(object)
           {

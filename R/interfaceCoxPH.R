@@ -9,7 +9,7 @@
 #' 
 #' Cox proportional hazards.
 #' 
-#' @aliases coxphInterface coxphTrainInterface
+#' @aliases coxphInterface coxphTrainInterface coxphPredictInterface
 #' coxphInterface,matrix-method
 #' coxphInterface,DataFrame-method
 #' coxphInterface,MultiAssayExperiment-method
@@ -40,19 +40,12 @@
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method (e.g. \code{verbose}) or options which are accepted
-#' by the \code{\link[survival]{coxph}} or \code{\link[survival]{predict}} functions.
-#' @param returnType Default: \code{"both"}. Either \code{"class"},
-#' \code{"score"} or \code{"both"}.  Sets the return value from the prediction
-#' to either a vector of class labels, score for a sample belonging to the
-#' second class, as determined by the factor levels, or both labels and scores
-#' in a \code{data.frame}.
+#' by the \code{\link[survival]{coxph}} or \code{\link[survival]{predict.coxph}} functions.
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
-#' @return For \code{coxphTrainInterface}, the trained coxph.
-#' For \code{coxphPredictInterface}, either a factor vector of predicted
-#' classes, a matrix of scores for each class, or a table of both the class
-#' labels and class scores, depending on the setting of \code{returnType}.
+#' @return For \code{coxphTrainInterface}, the trained Cox proportional hazards model.
+#' For \code{coxphPredictInterface}, a risk score prediction (natural log scale) for each sample.
 #' @examples
 #' #' 
 #'   # if(require(randomForest))
@@ -73,15 +66,21 @@
 #'   # }
 #' 
 #' @importFrom survival coxph concordance
+#' @rdname coxphInterface
+#' @usage NULL
 #' @export
 setGeneric("coxphTrainInterface", function(measurementsTrain, ...) standardGeneric("coxphTrainInterface"))
 
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphTrainInterface", "matrix", function(measurementsTrain, survivalTrain, ...)
 {
   coxphTrainInterface(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), survivalTrain, ...)
 })
 
 # Clinical data or one of the other inputs, transformed.
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, ..., verbose = 3)
 {
   if(!requireNamespace("survival", quietly = TRUE))
@@ -97,6 +96,8 @@ setMethod("coxphTrainInterface", "DataFrame", function(measurementsTrain, surviv
   survival::coxph(survivalTrain ~ ., measurementsTrain)
 })
 
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphTrainInterface", "MultiAssayExperiment", function(measurementsTrain, targets = names(measurementsTrain), survivalTrain, ...)
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain, restrict = NULL)
@@ -115,17 +116,22 @@ setMethod("coxphTrainInterface", "MultiAssayExperiment", function(measurementsTr
 ################################################################################
 
 
-
+#' @rdname coxphInterface
+#' @usage NULL
 #' @export
 setGeneric("coxphPredictInterface", function(model, measurementsTest, ...)
   standardGeneric("coxphPredictInterface"))
 
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphPredictInterface", c("coxph", "matrix"), # Matrix of numeric measurements.
           function(model, measurementsTest, ...)
 {
   coxphPredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphPredictInterface", c("coxph", "DataFrame"),
 function(model, measurementsTest, ..., verbose = 3)
 {
@@ -134,6 +140,8 @@ function(model, measurementsTest, ..., verbose = 3)
 })
 
 # One or more omics data sets, possibly with clinical data.
+#' @rdname coxphInterface
+#' @export
 setMethod("coxphPredictInterface", c("coxph", "MultiAssayExperiment"),
           function(model, measurementsTest, targets = names(measurementsTest), ...)
 {

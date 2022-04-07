@@ -7,6 +7,7 @@
 \alias{crossValidate,MultiAssayExperiment-method,}
 \alias{crossValidate,data.frame-method}
 \alias{crossValidate,MultiAssayExperiment-method}
+\alias{crossValidate,list-method}
 \alias{predict,ClassifyResult-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
@@ -22,8 +23,7 @@ crossValidate(
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL,
-  ...
+  characteristicsLabel = NULL
 )
 
 \S4method{crossValidate}{DataFrame}(
@@ -86,6 +86,21 @@ crossValidate(
   characteristicsLabel = NULL
 )
 
+\S4method{crossValidate}{list}(
+  measurements,
+  classes,
+  nFeatures = 20,
+  selectionMethod = "t-test",
+  selectionOptimisation = "Resubstitution",
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  dataCombinations = NULL,
+  nFolds = 5,
+  nRepeats = 20,
+  nCores = 1,
+  characteristicsLabel = NULL
+)
+
 \S4method{predict}{ClassifyResult}(object, newData)
 }
 \arguments{
@@ -125,6 +140,10 @@ with each element being a vector of datasets to combine.}
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
 
 \item{characteristicsLabel}{A character specifying an additional label for the cross-validation run.}
+
+\item{object}{A trained model to predict with.}
+
+\item{newData}{The data to use to make predictions with.}
 }
 \value{
 An object of class \code{\link{ClassifyResult}}

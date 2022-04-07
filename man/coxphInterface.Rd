@@ -3,16 +3,39 @@
 \name{coxphTrainInterface}
 \alias{coxphTrainInterface}
 \alias{coxphInterface}
+\alias{coxphPredictInterface}
 \alias{coxphInterface,matrix-method}
 \alias{coxphInterface,DataFrame-method}
 \alias{coxphInterface,MultiAssayExperiment-method}
-\alias{coxphPredictInterface}
 \alias{coxphPredictInterface,coxph,matrix-method}
 \alias{coxphPredictInterface,coxph,DataFrame-method}
 \alias{coxphPredictInterface,coxph,MultiAssayExperiment-method}
+\alias{coxphTrainInterface,matrix-method}
+\alias{coxphTrainInterface,DataFrame-method}
+\alias{coxphTrainInterface,MultiAssayExperiment-method}
 \title{An Interface for survival Package's coxph Function}
 \usage{
-coxphTrainInterface(measurementsTrain, ...)
+\S4method{coxphTrainInterface}{matrix}(measurementsTrain, survivalTrain, ...)
+
+\S4method{coxphTrainInterface}{DataFrame}(measurementsTrain, survivalTrain, ..., verbose = 3)
+
+\S4method{coxphTrainInterface}{MultiAssayExperiment}(
+  measurementsTrain,
+  targets = names(measurementsTrain),
+  survivalTrain,
+  ...
+)
+
+\S4method{coxphPredictInterface}{coxph,matrix}(model, measurementsTest, ...)
+
+\S4method{coxphPredictInterface}{coxph,DataFrame}(model, measurementsTest, ..., verbose = 3)
+
+\S4method{coxphPredictInterface}{coxph,MultiAssayExperiment}(
+  model,
+  measurementsTest,
+  targets = names(measurementsTest),
+  ...
+)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -22,7 +45,7 @@ or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 \item{...}{Variables not used by the \code{matrix} nor the
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method (e.g. \code{verbose}) or options which are accepted
-by the \code{\link[survival]{coxph}} or \code{\link[survival]{predict}} functions.}
+by the \code{\link[survival]{coxph}} or \code{\link[survival]{predict.coxph}} functions.}
 
 \item{survivalTrain}{A tabular data type of survival information of the
 same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
@@ -32,6 +55,15 @@ column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is 
 \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
 removed before training.}
 
+\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
+progress messages to give.  This function only prints progress messages if
+the value is 3.}
+
+\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+names of the data tables to be used. \code{"sampleInfo"} is also a valid value
+and specifies that integer variables from the clinical data table will be
+used.}
+
 \item{model}{A trained coxph classifier, as created by
 \code{coxphTrainInterface}, which has the same form as the output of
 \code{\link[survival]{coxph}}.}
@@ -39,27 +71,10 @@ removed before training.}
 \item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
 samples in common with \code{measurementsTrain} and the same number of features
 as it.}
-
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that integer variables from the clinical data table will be
-used.}
-
-\item{returnType}{Default: \code{"both"}. Either \code{"class"},
-\code{"score"} or \code{"both"}.  Sets the return value from the prediction
-to either a vector of class labels, score for a sample belonging to the
-second class, as determined by the factor levels, or both labels and scores
-in a \code{data.frame}.}
-
-\item{verbose}{Default: 3. A number between 0 and 3 for the amount of
-progress messages to give.  This function only prints progress messages if
-the value is 3.}
 }
 \value{
-For \code{coxphTrainInterface}, the trained coxph.
-For \code{coxphPredictInterface}, either a factor vector of predicted
-classes, a matrix of scores for each class, or a table of both the class
-labels and class scores, depending on the setting of \code{returnType}.
+For \code{coxphTrainInterface}, the trained Cox proportional hazards model.
+For \code{coxphPredictInterface}, a risk score prediction (natural log scale) for each sample.
 }
 \description{
 Cox proportional hazards.

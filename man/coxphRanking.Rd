@@ -7,8 +7,6 @@
 \alias{coxphRanking,MultiAssayExperiment-method}
 \title{Ranking of Differential Variability with coxph Statistic}
 \usage{
-coxphRanking(measurementsTrain, ...)
-
 \S4method{coxphRanking}{matrix}(measurementsTrain, survivalTrain, ...)
 
 \S4method{coxphRanking}{DataFrame}(measurementsTrain, survivalTrain, verbose = 3)
@@ -56,7 +54,7 @@ Ranks all features from largest coxph statistic to smallest.
 }
 \details{
 The calculation of the test statistic is performed by the
-\code{\link{coxph.test}} function from the \code{\link{stats}} package.
+coxph.test function from the stats package EllisCheckExists.
 
 Data tables which consist entirely of non-numeric data cannot be ranked.
 }

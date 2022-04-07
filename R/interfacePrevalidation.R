@@ -9,7 +9,7 @@ extractPrevalidation = function(assayPreval){ #}, startingCol) {
     #     ) |>
     #     # Taking all prevalidation class vectors except the last one (needed for multiple classes)
     #     lapply(function(x)
-    #         x[, c(startingCol:(ncol(x) - 1)), drop = FALSE] %>% tibble::rownames_to_column("row_names")) |>
+    #         x[, c(startingCol:(ncol(x) - 1)), drop = FALSE] |> tibble::rownames_to_column("row_names")) |>
     #     purrr::reduce(merge, by = "row_names") |>
     #     janitor::clean_names() |>
     #     tibble::column_to_rownames("row_names")

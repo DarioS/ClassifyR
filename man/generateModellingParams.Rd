@@ -15,6 +15,8 @@ generateModellingParams(
 )
 }
 \arguments{
+\item{datasetIDs}{A vector of data set identifiers as long at the number of data sets.}
+
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
 or a list of these objects containing the training data.  For a
 \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay

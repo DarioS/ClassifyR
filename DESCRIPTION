@@ -10,11 +10,11 @@ Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
 Encoding: UTF-8
 biocViews: Classification, Survival
-Depends: R (>= 3.5.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 1.6.0), BiocParallel, survival
-Imports: locfit, grid, utils, dplyr, tidyr, rlang, randomForest, rlist, purrr
+Depends: R (>= 4.1.0), methods, S4Vectors (>= 0.18.0), MultiAssayExperiment (>= 1.6.0), BiocParallel, survival
+Imports: grid, utils, dplyr, tidyr, rlang, randomForest
 Suggests: limma, genefilter, edgeR, car, Rmixmod, ggplot2 (>= 3.0.0), gridExtra (>= 2.0.0), cowplot,
         BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
-        scales, e1071, rmarkdown, IRanges, robustbase, glmnet, class, NEMoE
+        scales, e1071, rmarkdown, IRanges, robustbase, glmnet, class
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
              and prediction. The requirements of variable types and names are
@@ -49,7 +49,6 @@ Collate:
     'interfaceKTSPclassifier.R'
     'interfaceMerge.R'
     'interfaceMixModels.R'
-    'interfaceNEMoE.R'
     'interfaceNSC.R'
     'interfaceNaiveBayesKernel.R'
     'interfacePCA.R'

@@ -3,6 +3,7 @@
 #' \code{DLDAtrainInterface} generates a trained diagonal LDA classifier and
 #' \code{DLDApredictInterface} uses it to make predictions on a test data set.
 #' 
+#' @name DLDA Interface
 #' @aliases DLDAtrainInterface DLDAtrainInterface,matrix-method
 #' DLDAtrainInterface,DataFrame-method
 #' DLDAtrainInterface,MultiAssayExperiment-method DLDApredictInterface

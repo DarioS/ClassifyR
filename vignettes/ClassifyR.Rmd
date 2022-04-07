@@ -123,10 +123,10 @@ If using a list of *data.frame*s, the name of each element in the list will be u
 ```{r}
 # Assigns first 10 variables to dataset_1, and the rest to dataset_2
 measurementsList <- list(
-  (measurements %>% as.data.frame())[1:10],
-  (measurements %>% as.data.frame())[11:2000]
+  (measurements |> as.data.frame())[1:10],
+  (measurements |> as.data.frame())[11:2000]
 )
-names(measurements.ls) <- c("dataset_1", "dataset_2")
+names(measurementsList) <- c("dataset_1", "dataset_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")

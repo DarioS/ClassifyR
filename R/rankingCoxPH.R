@@ -3,7 +3,7 @@
 #' Ranks all features from largest coxph statistic to smallest.
 #' 
 #' The calculation of the test statistic is performed by the
-#' \code{\link{coxph.test}} function from the \code{\link{stats}} package.
+#' coxph.test function from the stats package EllisCheckExists.
 #' 
 #' Data tables which consist entirely of non-numeric data cannot be ranked.
 #' 
@@ -34,6 +34,7 @@
 #' least promising feature in the last position.
 #' @importFrom survival coxph
 #' @rdname coxphRanking
+#' @usage NULL
 #' @export
 setGeneric("coxphRanking", function(measurementsTrain, ...) standardGeneric("coxphRanking"))
 

@@ -6,6 +6,7 @@
 \alias{SelectParams-class}
 \alias{SelectParams,missing-method}
 \alias{SelectParams,functionOrList-method}
+\alias{show,SelectParams-method}
 \title{Parameters for Feature Selection}
 \description{
 Collects and checks necessary parameters required for feature selection.

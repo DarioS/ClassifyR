@@ -85,6 +85,9 @@ function.}
 samples in common with \code{measurements} and the same number of features
 as it.}
 
+\item{survivalTest}{A \code{\link{Surv}} object or columns from the \code{measurementsTest} table
+which contains the follow-up time and status information.}
+
 \item{returnType}{Default: \code{"both"}. Either \code{"class"},
 \code{"score"} or \code{"both"}.  Sets the return value from the prediction
 to either a vector of class labels, matrix of scores for each class, or both
@@ -114,6 +117,6 @@ value of NULL, then the chosen value is determined based on classifier
 resubstitution error rate.
 }
 \examples{
-
+1 + 2 # Ellis to create.
   
 }
