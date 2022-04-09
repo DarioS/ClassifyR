@@ -37,7 +37,7 @@
 #' plot.
 #' @param densityStyle Default: "box". Either \code{"violin"} for violin plot or
 #' \code{"box"} for box plot.
-#' @param fontSizes A vector of len gth 4. The first number is the size of the
+#' @param fontSizes A vector of length 4. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the font size of the
 #' titles of grouped plots, if any are produced. In other words, when
@@ -157,7 +157,7 @@ setMethod("performancePlot", "list",
 
   performancePlot <- ggplot2::ggplot() + 
                           ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) +
-    geom_hline(yintercept = 0.5, linetype = 2)
+    ggplot2::geom_hline(yintercept = 0.5, linetype = 2)
 
   if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
