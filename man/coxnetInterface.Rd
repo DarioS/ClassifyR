@@ -117,6 +117,17 @@ value of NULL, then the chosen value is determined based on classifier
 resubstitution error rate.
 }
 \examples{
-1 + 2 # Ellis to create.
-  
+ if(require(glmnet))
+  {
+    set.seed(51773)
+    proteinMatrix <- matrix(rnorm(20*10), nrow = 20, ncol = 10)
+    survivalOutcome <- Surv(time = rpois(20,20), event = rbinom(20, 1, 0.2)) 
+    
+    trained <- coxnetTrainInterface(proteinMatrix,
+                                          survivalOutcome)
+    
+    # Resubstituting training data                                     
+    predicted <- coxnetPredictInterface(trained, proteinMatrix)
+    
+  }   
 }

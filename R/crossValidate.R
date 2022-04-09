@@ -53,7 +53,7 @@
 #' 
 #' # Compare randomForest and SVM classifiers.
 #' result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
-#' # Boxplot(result)
+#' # performancePlot(result)
 #' 
 #' 
 #' # Compare performance of different datasets. 
@@ -66,15 +66,15 @@
 #' # We'll use different nFeatures for each dataset. We'll also use repeated cross-validation with 5 repeats for speed in the example.
 #' set.seed(51773)
 #' result <- crossValidate(measurements, classes, nFeatures = c(clinical = 5, gene = 20, protein = 30), classifier = "randomForest", nRepeats = 5)
-#' # Boxplot(result)
+#' # performancePlot(result)
 #' 
 #' # Merge different datasets. But we will only do this for two combinations. If dataCombinations is not specified it would attempt all combinations.
 #' set.seed(51773)
-#' result <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
-#' # Boxplot(resultMerge)
+#' resultMerge <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
+#' # performancePlot(resultMerge)
 #' 
 #' 
-#' # Boxplot(c(result, resultMerge))
+#' # performancePlot(c(result, resultMerge))
 #' 
 #' @importFrom survival Surv
 setGeneric("crossValidate", function(measurements,
@@ -471,7 +471,7 @@ cleanNFeatures <- function(nFeatures, measurements){
     obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
     if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
-    if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(obsFeatures, nFeatures), simplify = FALSE)
+    if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(x, nFeatures), simplify = FALSE)
     #if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
     if(!all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
     if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
