@@ -94,10 +94,10 @@ Data Type | $n \times p$ | $p \times n$
 * A *Surv* object of the same length as the number of samples in the data which contains information about the time and censoring of the samples.
 * A *character* vector of length 2 or 3 that each match a column name in a data frame which holds information about the time and censoring of the samples. The time-to-event columns will automatically be removed before training is done.
 
-The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
+The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. A feature selection step can be performed before classification using *nFeatures* and *selectionMethod*, which is a t-test by default. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. If wanted, *nCores* can be specified to run the cross validation in parallel. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
 
 ```{r}
-result <- crossValidate(measurements, classes, classifier = "SVM", nFolds = 5, nRepeats = 2)
+result <- crossValidate(measurements, classes, classifier = "SVM", nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
 result
 ```
 
@@ -283,13 +283,13 @@ grid.draw(errorPlot)
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-More traditionally, the distirubition of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw violin plot, but box plots could also be made. The default performance metric to plot is balanced error. If it's not already calculcated for all classifications, as in this case for DD, it will be done automatically.
+More traditionally, the distirubition of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
 
 ```{r}
 performancePlot(list(DMresults, DDresults))
 ```
 
-We can observe that the spread of balanced error rates is small, but slightly wider for the differential distribution classifier.
+We can observe that the spread of balanced accuracy rates is small, but slightly wider for the differential distribution classifier.
 
 The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 100 different features were for the differential distribution classifier for all 5 folds in the 5 cross-validations.
 
