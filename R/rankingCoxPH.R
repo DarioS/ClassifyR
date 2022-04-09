@@ -3,7 +3,7 @@
 #' Ranks all features from largest coxph statistic to smallest.
 #' 
 #' The calculation of the test statistic is performed by the
-#' coxph.test function from the stats package EllisCheckExists.
+#' coxph function from the survival package.
 #' 
 #' Data tables which consist entirely of non-numeric data cannot be ranked.
 #' 

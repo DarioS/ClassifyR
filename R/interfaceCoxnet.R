@@ -70,8 +70,19 @@
 #' \code{glmnet}. For \code{coxnetPredictInterface}, a matrix of containing the link and risk functions.
 #' \code{returnType}.
 #' @examples
-#' 1 + 2 # Ellis to create.
-#'   
+#'  if(require(glmnet))
+#'   {
+#'     set.seed(51773)
+#'     proteinMatrix <- matrix(rnorm(20*10), nrow = 20, ncol = 10)
+#'     survivalOutcome <- Surv(time = rpois(20,20), event = rbinom(20, 1, 0.2)) 
+#'     
+#'     trained <- coxnetTrainInterface(proteinMatrix,
+#'                                           survivalOutcome)
+#'     
+#'     # Resubstituting training data                                     
+#'     predicted <- coxnetPredictInterface(trained, proteinMatrix)
+#'     
+#'   }   
 #' @rdname coxnetInterface
 #' @export
 setGeneric("coxnetTrainInterface", function(measurementsTrain, ...)

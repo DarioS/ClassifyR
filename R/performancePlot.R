@@ -15,7 +15,7 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName Default: "Balanced Error". The name of the
+#' @param performanceName Default: "Balanced Accuracy". The name of the
 #' performance measure to make comparisons of. This is one of the names printed
 #' in the Performance Measures field when a \code{\link{ClassifyResult}} object is
 #' printed, or if none are stored, the performance metric will be calculated.
@@ -35,9 +35,9 @@
 #' presented in, in case alphabetical sorting is undesirable.
 #' @param yLimits The minimum and maximum value of the performance metric to
 #' plot.
-#' @param densityStyle Default: "violin". Either \code{"violin"} for violin plot or
+#' @param densityStyle Default: "box". Either \code{"violin"} for violin plot or
 #' \code{"box"} for box plot.
-#' @param fontSizes A vector of len gth 4. The first number is the size of the
+#' @param fontSizes A vector of length 4. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the font size of the
 #' titles of grouped plots, if any are produced. In other words, when
@@ -90,9 +90,9 @@ setGeneric("performancePlot", function(results, ...) standardGeneric("performanc
 #' @rdname performancePlot
 #' @export
 setMethod("performancePlot", "list", 
-          function(results, performanceName = "Balanced Error",
+          function(results, performanceName = "Balanced Accuracy",
                    characteristicsList = list(x = "Classifier Name"), aggregate = character(), coloursList = list(), orderingList = list(),
-                   densityStyle = c("violin", "box"), yLimits = c(0, 1), fontSizes = c(24, 16, 12, 12), title = NULL,
+                   densityStyle = c("box", "violin"), yLimits = NULL, fontSizes = c(24, 16, 12, 12), title = NULL,
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -113,6 +113,10 @@ setMethod("performancePlot", "list",
     results <- lapply(results, function(result) calcCVperformance(result, performanceName))
   }
   
+  if("dataset"%in%results[[1]]@characteristics$characteristic&!"dataset"%in%unlist(characteristicsList)){
+    characteristicsList[["dataset"]] <- "dataset"
+  }
+ 
   plotData <- do.call(rbind, mapply(function(result, index)
                     {
                       if(!performanceName %in% names(result@performance))
@@ -127,11 +131,22 @@ setMethod("performancePlot", "list",
                       colnames(summaryTable) <- c(characteristicsList, performanceName)
                       summaryTable
                     }, results, 1:length(results), SIMPLIFY = FALSE))
+  
+  plotData <- plotData[,!duplicated(colnames(plotData))]
+  
+  if("dataset"%in%colnames(plotData)&!"dataset"%in%unlist(characteristicsList[names(characteristicsList)!="dataset"])){
+    if(length(unique(plotData$dataset))>1&!"fillColour"%in%names(characteristicsList)){
+      characteristicsList[["fillColour"]] <- "dataset"
+    }
+    if(length(unique(plotData$dataset))>1&!"lineColour"%in%names(characteristicsList)&!"dataset"%in%unlist(characteristicsList[names(characteristicsList)!="dataset"])){
+      characteristicsList[["lineColour"]] <- "dataset"
+    }
+  }  
 
   if("fillColour" %in% names(characteristicsList))
-    if(!"fillColours" %in% names(coloursList)) coloursList[["fillColours"]] <- scales::hue_pal()(length(unique(plotData[, xLabel])))
+    if(!"fillColours" %in% names(coloursList)) coloursList[["fillColours"]] <- scales::hue_pal()(length(unique(plotData[, characteristicsList[["fillColour"]]])))
   if("lineColour" %in% names(characteristicsList))
-    if(!"lineColours" %in% names(coloursList)) coloursList[["lineColours"]] <- scales::hue_pal(direction = -1)(length(unique(plotData[, xLabel])))
+    if(!"lineColours" %in% names(coloursList)) coloursList[["lineColours"]] <- scales::hue_pal(direction = -1)(length(unique(plotData[, characteristicsList[["lineColour"]]])))
   
   allCharacteristics <- unlist(characteristicsList)
   xLabel <- allCharacteristics['x']
@@ -140,13 +155,15 @@ setMethod("performancePlot", "list",
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
-  performancePlot <- ggplot2::ggplot() + ggplot2::coord_cartesian(ylim = yLimits) +
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
+  performancePlot <- ggplot2::ggplot() + 
+                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) +
+    ggplot2::geom_hline(yintercept = 0.5, linetype = 2)
 
+  if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
     performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = coloursList[["fillColours"]])
   if("lineColour" %in% names(characteristicsList))
-    performancePlot <- performancePlot + ggplot2::scale_fill_manual(values = coloursList[["lineColours"]])
+    performancePlot <- performancePlot + ggplot2::scale_colour_manual(values = coloursList[["lineColours"]])
 
   analysisGrouped <- split(plotData, plotData[, allCharacteristics])
   analysisGroupSizes <- sapply(analysisGrouped, nrow)
@@ -162,6 +179,7 @@ setMethod("performancePlot", "list",
                                                            colour = !!characteristicsList[['lineColour']])
   }
   
+  if(!is.null(yLimits)) yLimits = c(0, 1)
   if(rotate90 == TRUE)
     performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
   
