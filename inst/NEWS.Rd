@@ -2,6 +2,29 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 3.0.0}{\itemize{
+  \item
+  Now supports survival models and their evaluation, in addition to existing classification functionality.
+  \item
+  Cross-validation no longer requires specific annotations like data set name and classifier name. Now, the user can specify any characteristics they want and use these as variables to group by or change line appearances. Also, characteristics like feature selection name and classifier name are automatically filled in from an internal table.
+  \item
+  Ease of use greatly inproved by \code{crossValidate} function which allows specification of classifiers by a single keyword. Previously, parameter objects such as \code{SelectParams} and \code{TrainParams} had to be explicitly specified, making it challenging for users not familar with S4 object-oriented programming.
+  \item
+  Basic multi-omics data integration functionality available via \code{crossValidate} which allows combination of different tables. Pre-validation and PCA dimensionality techniques provide a fair way to compare high-dimensional omics data with low-dimensional clinical data. Also, it is possible to simply concatenate all data tables.
+  \item
+  Model-agnostic variable importance calculated by training when leaving out one selected variable at a time. Turned off by default as it substantially increases run time. See \code{doImportance} parameter of \code{ModellingParams} for more details.
+  \item
+  Parameters specifying the cross-validation procedure and data modelling formalised as \code{CrossValParams} and \code{ModellingParams} classes.
+  \item
+  Feature selection can now be done either based a on resubstitution metric (i.e. train and test on the training data) or a cross-validation metric (i.e. split the training data into training and testing partitions to tune the selected features). all feature selection functions have been converted into feature ranking functions, because the selection procedure is a feature of cross-validation.
+  \item
+  All function and class documentation coverted from manually written Rd files to Roxygen format.
+  \item
+  Human Reference Interactome (binary experimental PPI) included in bundled data for pairs-based classification. See \code{?HuRI} for more details.
+  \item
+  Performance plots can now do either box plots or violin plots. Box plot remains the default style.  
+}}
+
 \section{Version 2.14.0}{\itemize{
   \item
   Upsampling and downsampling to equalise class sizes added.
