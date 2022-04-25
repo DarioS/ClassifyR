@@ -58,19 +58,19 @@
 #' 
 #' # Compare performance of different datasets. 
 #' # First make a toy example dataset with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
-#' set.seed(51773)
-#' measurements <- DataFrame(measurements, check.names = FALSE)
-#' mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
-#' mcols(measurements)$feature <- colnames(measurements)
+#' # set.seed(51773)
+#' # measurements <- DataFrame(measurements, check.names = FALSE)
+#' # mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
+#' # mcols(measurements)$feature <- colnames(measurements)
 #' 
 #' # We'll use different nFeatures for each dataset. We'll also use repeated cross-validation with 5 repeats for speed in the example.
-#' set.seed(51773)
-#' result <- crossValidate(measurements, classes, nFeatures = c(clinical = 5, gene = 20, protein = 30), classifier = "randomForest", nRepeats = 5)
+#' # set.seed(51773)
+#' #result <- crossValidate(measurements, classes, nFeatures = c(clinical = 5, gene = 20, protein = 30), classifier = "randomForest", nRepeats = 5)
 #' # performancePlot(result)
 #' 
 #' # Merge different datasets. But we will only do this for two combinations. If dataCombinations is not specified it would attempt all combinations.
-#' set.seed(51773)
-#' resultMerge <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
+#' # set.seed(51773)
+#' # resultMerge <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
 #' # performancePlot(resultMerge)
 #' 
 #' 
