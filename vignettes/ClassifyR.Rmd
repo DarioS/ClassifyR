@@ -98,7 +98,8 @@ The type of classifier used can be changed with the *classifier* argument. The d
 
 ```{r}
 result <- crossValidate(measurements, classes, classifier = "SVM", nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
-result
+
+performancePlot(result)
 ```
 
 ### Data Integration with crossValidate
@@ -116,6 +117,8 @@ mcols(measurementsDF) <- data.frame(
 
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
+
+performancePlot(result)
 ```
 
 If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
@@ -130,6 +133,8 @@ names(measurementsList) <- c("dataset_1", "dataset_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
+
+performancePlot(result)
 ```
 
 ## A More Detailed Look at ClassifyR
