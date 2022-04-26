@@ -3,7 +3,7 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 3.0.0
+Version: 3.1.0
 Date: 2022-04-21
 Author: Dario Strbenac, Ellis Patrick, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
