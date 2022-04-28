@@ -270,7 +270,7 @@ The naive Bayes kernel classifier by default uses the vertical distance between 
 
 Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
 
-```{r, fig.width = 10, fig.height = 7, eval = FALSE}
+```{r, fig.width = 10, fig.height = 7}
 library(grid)
 DMresults <- calcCVperformance(DMresults, "Sample Error")
 DDresults <- calcCVperformance(DDresults, "Sample Error")
