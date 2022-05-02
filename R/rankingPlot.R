@@ -163,6 +163,12 @@ setMethod("rankingPlot", "list",
     .getFeaturesStrings(result@rankedFeatures)
   })
   
+  # Fill in any missing variables needed for ggplot2 code.
+  if(is.null(characteristicsList[["pointType"]])) pointTypeVariable <- NULL else pointTypeVariable <- rlang::sym(characteristicsList[["pointType"]])
+  if(is.null(characteristicsList[["lineColour"]])) lineVariable <- NULL else lineVariable <- rlang::sym(characteristicsList[["lineColour"]])
+  if(is.null(characteristicsList[["row"]])) rowVariable <- NULL else rowVariable <- rlang::sym(characteristicsList[["row"]])
+  if(is.null(characteristicsList[["column"]])) columnVariable <- NULL else columnVariable <- rlang::sym(characteristicsList[["column"]])
+  
   if(comparison == "within")
   {
     plotData <- do.call(rbind, bpmapply(function(result, rankedList)
@@ -269,14 +275,14 @@ setMethod("rankingPlot", "list",
   if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
   if(length(characteristicsList) > 0) characteristicsList <- lapply(characteristicsList, rlang::sym)
   
-  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap, colour = !!characteristicsList[["lineColour"]], shape = !!characteristicsList[["pointType"]])) +
+  overlapPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = top, y = overlap, colour = !!lineVariable, shape = !!pointTypeVariable)) +
                           ggplot2::geom_line(size = sizesList[["lineWidth"]]) + ggplot2::geom_point(size = sizesList[["pointSize"]]) + ggplot2::scale_x_continuous(breaks = xLabelPositions, limits = range(xLabelPositions)) + ggplot2::coord_cartesian(ylim = c(0, yMax)) +
                           ggplot2::xlab("Top Features") + ggplot2::ylab(yLabel) + ggplot2::ggtitle(title) + ggplot2::scale_colour_manual(values = lineColours) +
                           ggplot2::theme(axis.title = ggplot2::element_text(size = sizesList[["fontSizes"]][2]), axis.text = ggplot2::element_text(colour = "black", size = sizesList[["fontSizes"]][3]), legend.position = legendPosition, legend.title = ggplot2::element_text(size = sizesList[["fontSizes"]][4]), legend.text = ggplot2::element_text(size = sizesList[["fontSizes"]][5]), plot.title = ggplot2::element_text(size = sizesList[["fontSizes"]][1], hjust = 0.5), plot.margin = margin) +
                           ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = sizesList[["legendLinesPointsSize"]])),
                                           shape = ggplot2::guide_legend(override.aes = list(size = sizesList[["legendLinesPointsSize"]])))
   
-  overlapPlot <- overlapPlot + ggplot2::facet_grid(ggplot2::vars(!!characteristicsList[["row"]]), ggplot2::vars(!!characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = sizesList[["fontSizes"]][6]))
+  overlapPlot <- overlapPlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = sizesList[["fontSizes"]][6]))
   
   if(plot == TRUE)
     print(overlapPlot)
