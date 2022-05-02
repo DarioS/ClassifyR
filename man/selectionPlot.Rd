@@ -46,7 +46,7 @@ level has the average pairwise overlap calculated to all other levels.}
 
 \item{characteristicsList}{A named list of characteristics. Each element's
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-\code{fillColour}, or \code{fillLine}. The value of each element must be a
+\code{"fillColour"}, or \code{"lineColour"}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
 results' characteristics table. Only \code{"x"} is mandatory.}
 
