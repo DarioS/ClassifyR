@@ -48,7 +48,7 @@
 #' level has the average pairwise overlap calculated to all other levels.
 #' @param characteristicsList A named list of characteristics. Each element's
 #' name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-#' \code{fillColour}, or \code{fillLine}. The value of each element must be a
+#' \code{"fillColour"}, or \code{"lineColour"}. The value of each element must be a
 #' characteristic name, as stored in the \code{"characteristic"} column of the
 #' results' characteristics table. Only \code{"x"} is mandatory.
 #' @param coloursList A named list of plot aspects and colours for the aspects.
@@ -168,6 +168,12 @@ setMethod("selectionPlot", "list",
 
   if(!is.null(referenceLevel) && !(referenceLevel %in% referenceVar))
     stop("Reference level is neither a level of the comparison factor nor is it NULL.")
+  
+  # Fill in any missing variables needed for ggplot2 code.
+  if(is.null(characteristicsList[["fillColour"]])) fillVariable <- NULL else fillVariable <- rlang::sym(characteristicsList[["fillColour"]])
+  if(is.null(characteristicsList[["lineColour"]])) lineVariable <- NULL else lineVariable <- rlang::sym(characteristicsList[["lineColour"]])
+  if(is.null(characteristicsList[["row"]])) rowVariable <- NULL else rowVariable <- rlang::sym(characteristicsList[["row"]])
+  if(is.null(characteristicsList[["column"]])) columnVariable <- NULL else columnVariable <- rlang::sym(characteristicsList[["column"]])
   
   if(comparison == "within")
   {
@@ -334,7 +340,7 @@ setMethod("selectionPlot", "list",
   {
     characteristicsList <- lapply(characteristicsList, rlang::sym)
     legendPosition <- ifelse(showLegend == TRUE, "right", "none")
-    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!characteristicsList[['x']], y = overlap, fill = !!characteristicsList[["fillColour"]], colour = !!characteristicsList[["lineColour"]])) +
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!characteristicsList[['x']], y = overlap, fill = !!fillVariable, colour = !!lineVariable)) +
                             ggplot2::coord_cartesian(ylim = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                             ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
     if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_violin()
@@ -366,13 +372,13 @@ setMethod("selectionPlot", "list",
       characteristicsListSym <- lapply(characteristicsList, rlang::sym)
       plotList <- lapply(plotDataList, function(plotDataGroup)
       {
-        aPlot <- ggplot2::ggplot(plotDataGroup, ggplot2::aes(x = feature, y = !!rlang::sym(changeName), fill = !!characteristicsListSym[["fillColour"]], colour = !!characteristicsList[["lineColour"]])) + ggplot2::labs(x = NULL, y = NULL) +
+        aPlot <- ggplot2::ggplot(plotDataGroup, ggplot2::aes(x = feature, y = !!rlang::sym(changeName), fill = !!fillVariable, colour = !!lineVariable)) + ggplot2::labs(x = NULL, y = NULL) +
                  ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
         aPlot <- aPlot + ggplot2::geom_hline(yintercept = 0, colour = "red", linetype = "dashed") + ggplot2::geom_violin()
         if("row" %in% names(characteristicsList))
-          aPlot <- aPlot + ggplot2::facet_grid(rows = ggplot2::vars(!!characteristicsListSym[["row"]]))
+          aPlot <- aPlot + ggplot2::facet_grid(rows = ggplot2::vars(!!rowVariable))
         if("column" %in% names(characteristicsList))
-          aPlot <- aPlot + ggplot2::facet_grid(cols = ggplot2::vars(!!characteristicsListSym[["column"]]))
+          aPlot <- aPlot + ggplot2::facet_grid(cols = ggplot2::vars(!!columnVariable))
         aPlot
       })
       nRows <- ifelse("row" %in% names(characteristicsList), length(unique(plotData[, characteristicsList[["row"]]])), 1)
@@ -390,7 +396,7 @@ setMethod("selectionPlot", "list",
     featureCounts <- table(plotData[, "feature"])
     keepFeatures <- featureCounts[featureCounts >= 2]
     plotData <- plotData[plotData[, "feature"] %in% keepFeatures, ]
-    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = feature, y = !!changeName, fill = {if(is.null(characteristicsList[["fillColour"]])) NULL else !!rlang::sym(characteristicsList[["fillColour"]])}, colour = if(is.null(characteristicsList[["lineColour"]])) NULL else !!rlang::sym(characteristicsList[["lineColour"]]))) +
+    selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = feature, y = !!changeName, fill = !!fillVariable, colour = !!colourVariable)) +
       ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
       ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) + ggplot2::geom_violin()
     }

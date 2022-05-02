@@ -112,10 +112,6 @@ setMethod("performancePlot", "list",
     warning(paste(performanceName, "not found in all elements of results. Calculating it now."))
     results <- lapply(results, function(result) calcCVperformance(result, performanceName))
   }
-  
-  if("dataset"%in%results[[1]]@characteristics$characteristic&!"dataset"%in%unlist(characteristicsList)){
-    characteristicsList[["dataset"]] <- "dataset"
-  }
  
   plotData <- do.call(rbind, mapply(function(result, index)
                     {
@@ -133,20 +129,16 @@ setMethod("performancePlot", "list",
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
   plotData <- plotData[,!duplicated(colnames(plotData))]
-  
-  if("dataset"%in%colnames(plotData)&!"dataset"%in%unlist(characteristicsList[names(characteristicsList)!="dataset"])){
-    if(length(unique(plotData$dataset))>1&!"fillColour"%in%names(characteristicsList)){
-      characteristicsList[["fillColour"]] <- "dataset"
-    }
-    if(length(unique(plotData$dataset))>1&!"lineColour"%in%names(characteristicsList)&!"dataset"%in%unlist(characteristicsList[names(characteristicsList)!="dataset"])){
-      characteristicsList[["lineColour"]] <- "dataset"
-    }
-  }  
 
+  # Fill in any missing variables needed for ggplot2 code.
   if("fillColour" %in% names(characteristicsList))
     if(!"fillColours" %in% names(coloursList)) coloursList[["fillColours"]] <- scales::hue_pal()(length(unique(plotData[, characteristicsList[["fillColour"]]])))
   if("lineColour" %in% names(characteristicsList))
     if(!"lineColours" %in% names(coloursList)) coloursList[["lineColours"]] <- scales::hue_pal(direction = -1)(length(unique(plotData[, characteristicsList[["lineColour"]]])))
+  if(is.null(characteristicsList[["fillColour"]])) fillVariable <- NULL else fillVariable <- rlang::sym(characteristicsList[["fillColour"]])
+  if(is.null(characteristicsList[["lineColour"]])) lineVariable <- NULL else lineVariable <- rlang::sym(characteristicsList[["lineColour"]])
+  if(is.null(characteristicsList[["row"]])) rowVariable <- NULL else rowVariable <- rlang::sym(characteristicsList[["row"]])
+  if(is.null(characteristicsList[["column"]])) columnVariable <- NULL else columnVariable <- rlang::sym(characteristicsList[["column"]])
   
   allCharacteristics <- unlist(characteristicsList)
   xLabel <- allCharacteristics['x']
@@ -156,8 +148,7 @@ setMethod("performancePlot", "list",
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
   performancePlot <- ggplot2::ggplot() + 
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) +
-    ggplot2::geom_hline(yintercept = 0.5, linetype = 2)
+                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
 
   if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
@@ -170,20 +161,18 @@ setMethod("performancePlot", "list",
   if(any(analysisGroupSizes > 1))
   {
     multiPlotData <- do.call(rbind, analysisGrouped[analysisGroupSizes > 1])
-    performancePlot <- performancePlot + densityStyle(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!characteristicsList[["fillColour"]], colour = !!characteristicsList[["lineColour"]]))
+    performancePlot <- performancePlot + densityStyle(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!fillVariable, colour = !!lineVariable))
   }
   if(any(analysisGroupSizes == 1))
   {
     singlePlotData <- do.call(rbind, analysisGrouped[analysisGroupSizes == 1])
-    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes(x = !!characteristicsList[['x']], fill = !!characteristicsList[['fillColour']]),
-                                                           colour = !!characteristicsList[['lineColour']])
+    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!fillVariable, colour = !!lineVariable))
   }
   
   if(!is.null(yLimits)) yLimits = c(0, 1)
-  if(rotate90 == TRUE)
-    performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
+  if(rotate90 == TRUE) performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
   
-  performancePlot <- performancePlot + ggplot2::facet_grid(ggplot2::vars(!!characteristicsList[["row"]]), ggplot2::vars(!!characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
+  performancePlot <- performancePlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
   if(plot == TRUE)
     print(performancePlot)
