@@ -657,7 +657,7 @@ generateModellingParams <- function(datasetIDs,
                               "none",
                               selectionMethod)
 
-    selectionMethodParam = switch(
+    selectionMethodParam <- switch(
         selectionMethod,
         "none" = differentMeansRanking,
         "t-test" = differentMeansRanking,
