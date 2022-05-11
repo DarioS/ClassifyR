@@ -97,8 +97,9 @@ Data Type | $n \times p$ | $p \times n$
 The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. A feature selection step can be performed before classification using *nFeatures* and *selectionMethod*, which is a t-test by default. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. If wanted, *nCores* can be specified to run the cross validation in parallel. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
 
 ```{r}
-result <- crossValidate(measurements, classes, classifier = "SVM", nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
-result
+result <- crossValidate(measurements, classes, classifier = "SVM",
+                        nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
+performancePlot(result)
 ```
 
 ### Data Integration with crossValidate
@@ -116,11 +117,13 @@ mcols(measurementsDF) <- data.frame(
 
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
+
+performancePlot(result)
 ```
 
 If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
 
-```{r}
+```{r, eval = FALSE}
 # Assigns first 10 variables to dataset_1, and the rest to dataset_2
 measurementsList <- list(
   (measurements |> as.data.frame())[1:10],
@@ -130,6 +133,8 @@ names(measurementsList) <- c("dataset_1", "dataset_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
+
+performancePlot(result)
 ```
 
 ## A More Detailed Look at ClassifyR

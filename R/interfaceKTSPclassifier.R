@@ -114,7 +114,7 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
     stop("No feature pairs provided but some must be.")
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
-          
+        
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- splitDataset[["measurements"]]
@@ -135,7 +135,6 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
 
   # Order pairs so that first < second is the rule for predicting the second class, based on factor levels.
   # Effectively the classifier training.
-  
   featurePairs <- do.call(c, lapply(featurePairs, function(pair)
   {
     isSmaller <- trainingMatrix[secondClass, S4Vectors::first(pair)] < trainingMatrix[secondClass, S4Vectors::second(pair)]
@@ -185,13 +184,13 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
         class <- levels(classesTrain)[(sum(measureDifferences) > 0) + 1]
       }
     }
-    data.frame(class = factor(class, levels = levels(classesTrain)), score = score, check.names = FALSE)
+    data.frame(class = factor(class, levels = levels(classesTrain)), score, check.names = FALSE)
   }))
+  colnames(predictions)[2] <- levels(classesTrain)[2]
 
   switch(returnType, class = predictions[, "class"],
-         score = predictions[, colnames(predictions) %in% levels(classesTrain)],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain), drop = FALSE], check.names = FALSE)
-  )
+         score = predictions[, 2],
+         both = predictions)
 })
 
 #' @rdname kTSPclassifier

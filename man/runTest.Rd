@@ -7,7 +7,7 @@
 \alias{runTest,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
 \usage{
-\S4method{runTest}{matrix}(measurementsTrain, ...)
+\S4method{runTest}{matrix}(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, ...)
 
 \S4method{runTest}{DataFrame}(
   measurementsTrain,

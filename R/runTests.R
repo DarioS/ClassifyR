@@ -139,11 +139,11 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   autoCharacteristics <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics)
   autoCharacteristics <- do.call(rbind, autoCharacteristics)
 
-  # Add extra settings which don't create varieties.
-  extras <- do.call(c, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams))
+  # Add extra settings.
+  extras <- unlist(lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams), recursive = FALSE)
   if(length(extras) > 0)
     extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
-  extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unlist(extras))
+  extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unname(unlist(extras)))
   characteristics <- rbind(characteristics, extrasDF)
   characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
   characteristics <- rbind(characteristics,

@@ -137,7 +137,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   {
     if("permutation" %in% colnames(result@predictions))
       grouping <- result@predictions[, "permutation"]
-    else # A set of folds or all leave-k-out predictions.
+    else # A set of folds or all leave-k-out predictions or independent train and test sets.
       grouping <- rep(1, nrow(result@predictions))
   }
   
