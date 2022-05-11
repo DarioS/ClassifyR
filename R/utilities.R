@@ -3,12 +3,12 @@
 # The outcomes need to be removed from the data table before predictor training!
 .splitDataAndOutcomes <- function(measurements, outcomes, restrict = "numeric")
 { # DataFrame's outcomes variable can be character or factor, so it's a bit involved.
-  if(class(outcomes) == "character" && length(outcomes) > 3 && length(outcomes) != nrow(measurements))
+  if(is.character(outcomes) && length(outcomes) > 3 && length(outcomes) != nrow(measurements))
     stop("'outcomes' is a character variable but has more than one element. Either provide a\n",
          "       one to three column names or a factor of the same length as the number of samples.")
 
   ## String specifies the name of a single outcome column, typically a class.
-  if(class(outcomes) == "character" && length(outcomes) == 1)
+  if(is.character(outcomes) && length(outcomes) == 1)
   {
     outcomesColumn <- match(outcomes, colnames(measurements))
     if(is.na(outcomesColumn))
@@ -23,7 +23,7 @@
   
   # survival's Surv constructor has two inputs for the popular right-censored data and
   # three inputs for less-common interval data.
-  if(class(outcomes) == "character" && length(outcomes) %in% 2:3)
+  if(is.character(outcomes) && length(outcomes) %in% 2:3)
   {
     outcomesColumns <- match(outcomes, colnames(measurements))
     if(any(is.na(outcomesColumns)))
@@ -36,7 +36,7 @@
     stop("The length of outcomes is not equal to the number of samples.")
   
   ## A vector of characters was input by the user. Ensure that it is a factor.
-  if(class(outcomes) == "character" & length(outcomes) == nrow(measurements))
+  if(is.character(outcomes) & length(outcomes) == nrow(measurements))
     outcomes <- factor(outcomes)
   
   # Outcomes has columns, so it is tabular. It is inferred to represent survival data.
@@ -311,14 +311,14 @@
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
     bestPerformers <- sapply(rankings, function(rankingsVariety)
-    {
+    {      
       # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
       performances <- sapply(1:nrow(tuneCombosTrain), function(rowIndex)
       {
         whichTry <- 1:tuneCombosTrain[rowIndex, "topN"]
         if(doSubset)
         {
-          if(is.null(S4Vectors::mcols(measurementsTrain))) # There are no different data sets.
+          if(is.null(S4Vectors::mcols(measurementsTrain)) ) # There are no different data sets.
           {
             topFeatures <- rankingsVariety[whichTry]
             measurementsTrain <- measurementsTrain[, topFeatures, drop = FALSE] # Features in columns
@@ -357,7 +357,7 @@
            median(performance(result)[[performanceType]])
          }
        })
-      
+
         bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
         c(bestOne, performances[bestOne])
       })
@@ -482,7 +482,6 @@
   if(length(modellingParams@trainParams@otherParams) > 0)
     paramList <- c(paramList, modellingParams@trainParams@otherParams)
   paramList <- c(paramList, verbose = verbose)
-  
   trained <- do.call(modellingParams@trainParams@classifier, paramList)
   if(verbose >= 2)
     message("Training completed.")  

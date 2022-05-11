@@ -77,11 +77,13 @@ setGeneric("runTest", function(measurementsTrain, ...)
 #' @rdname runTest
 #' @export
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
-  function(measurementsTrain, ...)
+  function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, ...)
 {
-  if(is.null(rownames(measurementsTrain)))
-    stop("'measurementsTrain' matrix must have sample identifiers as its row names.")    
-  runTest(S4Vectors::DataFrame(measurementsTrain, check.names = FALSE), ...)
+  runTest(measurementsTrain = S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
+          outcomesTrain = outcomesTrain,
+          measurementsTest = S4Vectors::DataFrame(measurementsTest, check.names = FALSE),
+          outcomesTest = outcomesTest,
+          ...)
 })
 
 #' @rdname runTest
@@ -135,7 +137,6 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     
     topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose),
                             error = function(error) error[["message"]]) 
-    #if(!is.null(.iteration) && .iteration != "internal") browser()
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
     rankedFeatures <- topFeatures[[1]] # Extract for result object.
     selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
@@ -158,13 +159,13 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   # Training stage.
   if(length(modellingParams@trainParams@intermediate) > 0)
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
-  
+
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
+  
   trained <- tryCatch(.doTrain(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
                       error = function(error) error[["message"]])
-  #if(!is.null(.iteration) && .iteration != "internal") browser()
   if(is.character(trained)) return(trained) # An error occurred.
-    
+  
   tuneDetailsTrain <- trained[[2]] # Second element is tuning results.
   
   if(!is.null(modellingParams@trainParams@getFeatures)) # Features chosen inside classifier.
@@ -187,7 +188,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     predictedOutcomes <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
-    #if(!is.null(.iteration) && .iteration != "internal") browser()
+
     if(is.character(predictedOutcomes)) # An error occurred.
       return(predictedOutcomes) # Return early.
     
@@ -249,9 +250,11 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     autoCharacteristics <- do.call(rbind, lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))
-
-    extras <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams))stageParams@otherParams)
-    extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unlist(extras))
+    
+    extras <- unlist(lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@otherParams), recursive = FALSE)
+    if(length(extras) > 0)
+        extras <- extras[sapply(extras, is.atomic)] # Store basic variables, not complex ones.
+    extrasDF <- S4Vectors::DataFrame(characteristic = names(extras), value = unname(unlist(extras)))
     characteristics <- rbind(characteristics, extrasDF)
     
     allSamples <- c(rownames(measurementsTrain), rownames(measurementsTest))
@@ -263,8 +266,9 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
       allOutcomes <- c(outcomesTrain, outcomesTest)
       names(allOutcomes) <- allSamples
     }
-    ClassifyResult(characteristics, rownames(measurementsTrain), allFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), outcome = predictedOutcomes), allOutcomes, importanceTable)
+    
+    ClassifyResult(characteristics, allSamples, allFeatures, list(rankedFeatures), list(selectedFeatures),
+                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), predictedOutcomes, check.names = FALSE), allOutcomes, importanceTable)
   }  
 })
 

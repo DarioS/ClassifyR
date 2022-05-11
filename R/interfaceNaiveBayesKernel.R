@@ -238,9 +238,8 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
   }))
 
   switch(returnType, class = predictions[, "class"],
-         score = predictions[, colnames(predictions) %in% levels(classesTrain)],
-         both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% levels(classesTrain), drop = FALSE], check.names = FALSE)
-        )
+         score = predictions[, 2:ncol(predictions)],
+         both = predictions)
 })
 
 #' @rdname naiveBayesKernel
