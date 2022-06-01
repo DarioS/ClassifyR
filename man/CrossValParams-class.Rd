@@ -14,6 +14,7 @@ CrossValParams(
   folds = 5,
   leave = 2,
   tuneMode = c("Resubstitution", "Nested CV", "none"),
+  adaptiveResamplingDelta = NULL,
   parallelParams = bpparam()
 )
 }
@@ -41,6 +42,11 @@ combination of and use as the test set.  Only relevant if \code{samplesSplits} i
 sometimes written as LOOCV.}
 
 \item{tuneMode}{Default: Resubstitution. The scheme to use for selecting any tuning parameters.}
+
+\item{adaptiveResamplingDelta}{Default: \code{NULL}. If not null, adaptive resampling of training
+samples is performed and this number is the difference in consecutive iterations that the
+class probability of all samples must change less than for the iterative process to stop. 0.01
+was used in the original publication.}
 
 \item{parallelParams}{An instance of \code{\link{BiocParallelParam}} specifying
 the kind of parallelisation to use. Default is to use two cores less than the total number of

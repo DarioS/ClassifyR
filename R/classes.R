@@ -263,6 +263,10 @@ setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 #' \code{"Leave-k-Out"}. If set to 1, it is the traditional leave-one-out cross-validation,
 #' sometimes written as LOOCV.
 #' @param tuneMode Default: Resubstitution. The scheme to use for selecting any tuning parameters.
+#' @param adaptiveResamplingDelta Default: \code{NULL}. If not null, adaptive resampling of training
+#' samples is performed and this number is the difference in consecutive iterations that the
+#' class probability or risk of all samples must change less than for the iterative process to stop. 0.01
+#' was used in the original publication.
 #' @param parallelParams An instance of \code{\link{BiocParallelParam}} specifying
 #' the kind of parallelisation to use. Default is to use two cores less than the total number of
 #' cores the computer has, if it has four or more cores, otherwise one core, as is the
@@ -287,6 +291,7 @@ setClass("CrossValParams", representation(
     folds = "numericOrNULL",
     leave = "numericOrNULL",
     tuneMode = "character",
+    adaptiveResamplingDelta = "numericOrNULL",
     parallelParams = "BiocParallelParam"
 )
 )
@@ -296,7 +301,7 @@ setClass("CrossValParams", representation(
 #' @rdname CrossValParams-class
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
-                           tuneMode = c("Resubstitution", "Nested CV", "none"), parallelParams = bpparam())
+                           tuneMode = c("Resubstitution", "Nested CV", "none"), adaptiveResamplingDelta = NULL, parallelParams = bpparam())
 {
   samplesSplits <- match.arg(samplesSplits)
   tuneMode <- match.arg(tuneMode)
@@ -319,10 +324,8 @@ CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percenta
 
   new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
       percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
-      parallelParams = parallelParams)
+      adaptiveResamplingDelta = adaptiveResamplingDelta, parallelParams = parallelParams)
 }
-
-
 
 ##### StageParams #####
 

@@ -117,6 +117,32 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   else
     allFeatures <- colnames(measurementsTrain)
   
+  if(!is.null(crossValParams) && !is.null(crossValParams@adaptiveResamplingDelta))
+  { # Iteratively resample training samples until their class probability or risk changes, on average, less than delta.
+    delta <- crossValParams@adaptiveResamplingDelta
+    crossValParams@adaptiveResamplingDelta <- NULL
+    scoresPrevious <- rep(1, nrow(measurementsTrain))
+    repeat{
+      newSamples <- sample(nrow(measurementsTrain), replace = TRUE, prob = scoresPrevious)
+      measurementsTrainResampled <- measurementsTrain[newSamples, ]
+      outcomesResampled <- outcomesTrain[newSamples]
+      ASpredictions <- runTest(measurementsTrainResampled, outcomesResampled,
+              measurementsTrain, outcomesTrain, crossValParams, modellingParams,
+              .iteration = "internal")[["predictions"]]
+      if(is.factor(outcomesResampled))
+          scoresNew <- mapply(function(rowIndex, class) ASpredictions[rowIndex, class], 1:nrow(ASpredictions), as.character(outcomesTrain))
+      else
+          scoresNew <- ASpredictions[, "risk"]
+
+      if(mean(abs(scoresNew - scoresPrevious)) < delta)
+      {
+        measurementsTrain <- measurementsTrainResampled
+        break;
+      }
+      scoresPrevious <- scoresNew
+    }
+  }
+  
   if(!is.null(modellingParams@transformParams))
   {
     if(length(modellingParams@transformParams@intermediate) != 0)
