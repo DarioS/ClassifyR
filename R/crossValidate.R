@@ -1,8 +1,7 @@
 #' Cross-validation to evaluate classification performance.
 #' 
 #' This function has been designed to facilitate the comparison of classification
-#'  methods using cross-validation. A selection of typical 
-#' comparisons are implemented.
+#' methods using cross-validation. A selection of typical  comparisons are implemented.
 #'
 #' @param measurements Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
 #' or a list of these objects containing the training data.  For a
@@ -33,7 +32,7 @@
 #' @param newData The data to use to make predictions with.
 #'
 #' @details
-#' \code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
+#' \code{classifier} can be any of the following implemented approaches - randomForest, GLM, elasticNetGLM, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals.
 #' 
 #' \code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
 #' 
@@ -119,6 +118,13 @@ setMethod("crossValidate", "DataFrame",
                                           measurements = measurements)
               selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod,
                                                       measurements = measurements)
+              if(nFeatures == 1 && classifier == "elasticNetGLM")
+              {
+                  options(warn = 1)
+                  warning("Elastic Net GLM requires two or more features as input but there is only one.
+  Using an ordinary GLM instead.")
+                  classifier <- "GLM"
+              }
               classifier <- cleanClassifier(classifier = classifier,
                                             measurements = measurements)
 
@@ -154,7 +160,6 @@ setMethod("crossValidate", "DataFrame",
                               # Loop over classifiers
                               sapply(selectionMethod[[dataIndex]], function(selectionIndex) {
                                   # Loop over classifiers
-
                                   set.seed(seed)
                                   CV(
                                       measurements = measurements[, mcols(measurements)$dataset == dataIndex],
@@ -629,19 +634,20 @@ generateModellingParams <- function(datasetIDs,
     performanceType <- ifelse(classifier %in% c("coxph", "coxnet"), "C index", "Balanced Accuracy")
     
     
-    classifiers <- c("randomForest", "elasticNet", "SVM", "DLDA",
+    classifiers <- c("randomForest", "GLM", "elasticNetGLM", "SVM", "DLDA",
                      "naiveBayes", "mixturesNormals", "kNN",
                      "elasticNetPreval", "CoxPH", "CoxNet")
     # Check classifier
     if(!classifier %in% classifiers)
         stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
     
-    classifier = switch(
+    classifier <- switch(
         classifier,
-        "randomForest" = rfParams(),
-        "elasticNet" = elasticParams(),
-        "SVM" = svmParams(),
-        "DLDA" = DLDAParams(),
+        "randomForest" = RFparams(),
+        "GLM" = GLMparams(),
+        "elasticNetGLM" = elasticNetGLMparams(),
+        "SVM" = SVMparams(),
+        "DLDA" = DLDAparams(),
         "naiveBayes" = naiveBayesParams(),
         "mixturesNormals" = mixModelsParams(),
         "kNN" = kNNparams(),
@@ -649,7 +655,6 @@ generateModellingParams <- function(datasetIDs,
         "CoxPH" = coxphParams(),
         "CoxNet" = coxnetParams()
     )
-
 
     selectionMethod <- unlist(selectionMethod)
 
@@ -674,13 +679,12 @@ generateModellingParams <- function(datasetIDs,
 
     selectParams = SelectParams(
         selectionMethodParam,
-        tuneParams = list(nFeatures = nFeatures,
-                          performanceType = performanceType
-    ))
+        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType)
+        )
     
-    if(selectionMethod == "none" | is.null(selectionMethod)) selectParams <- NULL
+    if(selectionMethod == "none" || is.null(selectionMethod)) selectParams <- NULL
 
-    params = ModellingParams(
+    params <- ModellingParams(
         balancing = "none",
         selectParams = selectParams,
         trainParams = classifier$trainParams,
@@ -842,7 +846,7 @@ CV <- function(measurements,
                nFeatures = NULL,
                selectionMethod = "t-test",
                selectionOptimisation = "Resubstitution",
-               classifier = "elasticNet",
+               classifier = "elasticNetGLM",
                multiViewMethod = "none",
                dataCombinations = NULL,
                nFolds = 5,
@@ -852,8 +856,7 @@ CV <- function(measurements,
 
 {
     # Check that data is in the right format
-    checkData(measurements,
-              classes)
+    checkData(measurements, classes)
     
     # Check that other variables are in the right format and fix
     nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -891,7 +894,7 @@ CV <- function(measurements,
     classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
     
     fullResult <- runTest(measurements, classes, measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
-    
+
     classifyResults@finalModel <- list(fullResult$models)
     classifyResults
 

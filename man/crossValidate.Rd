@@ -150,11 +150,10 @@ An object of class \code{\link{ClassifyResult}}
 }
 \description{
 This function has been designed to facilitate the comparison of classification
- methods using cross-validation. A selection of typical 
-comparisons are implemented.
+methods using cross-validation. A selection of typical  comparisons are implemented.
 }
 \details{
-\code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
+\code{classifier} can be any of the following implemented approaches - randomForest, GLM, elasticNetGLM, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals.
 
 \code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
 

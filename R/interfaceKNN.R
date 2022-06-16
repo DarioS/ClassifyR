@@ -74,8 +74,7 @@ setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain,
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   classesTrain <- splitDataset[["outcomes"]]
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  isNumeric <- sapply(measurementsTest, is.numeric)
-  measurementsTest <- measurementsTest[, isNumeric, drop = FALSE]
+  measurementsTest <- measurementsTest[, colnames(measurementsTrain), drop = FALSE]
   
   if(!requireNamespace("class", quietly = TRUE))
     stop("The package 'class' could not be found. Please install it.")

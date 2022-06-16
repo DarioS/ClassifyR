@@ -86,16 +86,21 @@ setMethod("SVMtrainInterface", "matrix", # Matrix of numeric measurements.
 #' @export
 setMethod("SVMtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
+  if(!requireNamespace("e1071", quietly = TRUE))
+    stop("The package 'e1071' could not be found. Please install it.")
+    
   splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
   # Classifier requires matrix input data type.
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-
-  if(!requireNamespace("e1071", quietly = TRUE))
-    stop("The package 'e1071' could not be found. Please install it.")
+  
   if(verbose == 3)
     message("Fitting SVM classifier to data.")
-
-  e1071::svm(trainingMatrix, classesTrain, probability = TRUE, ...)
+  trained <- e1071::svm(trainingMatrix, classesTrain, probability = TRUE, ...)
+  
+  if(ncol(trainingMatrix) == 1) # Handle inconsistency by e1071 to not always name columns.
+      colnames(trained[["SV"]]) <- colnames(trainingMatrix)
+  
+  trained
 })
 
 #' @rdname SVMinterface

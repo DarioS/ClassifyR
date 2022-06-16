@@ -27,6 +27,8 @@
     "DLDApredictInterface", "Diagonal LDA",
     "DMDranking", "Differences of Medians and Deviations",
     "edgeRranking", "edgeR LRT",
+    "GLMtrainInterface", "Logistic Regression",
+    "GLMpredictInterface", "Logistic Regression",
     "elasticNetGLMtrainInterface", "Elastic Net GLM",
     "elasticNetGLMpredictInterface", "Elastic Net GLM",
     "fisherDiscriminant", "Fisher's LDA",

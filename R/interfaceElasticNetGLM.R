@@ -11,9 +11,7 @@
 #' linear model to the data.
 #' 
 #' The value of the \code{family} parameter is fixed to \code{"multinomial"} so
-#' that classification with more than 2 classes is possible and
-#' \code{type.multinomial} is fixed to \code{"grouped"} so that a grouped lasso
-#' penalty is used. During classifier training, if more than one lambda value
+#' that classification with more than 2 classes is possible. During classifier training, if more than one lambda value
 #' is considered by specifying a vector of them as input or leaving the default
 #' value of NULL, then the chosen value is determined based on classifier
 #' resubstitution error rate.
@@ -54,7 +52,7 @@
 #' options that are used by the \code{glmnet} function. For the testing
 #' function, this variable simply contains any parameters passed from the
 #' classification framework to it which aren't used by glmnet's \code{predict}
-#' fuction.
+#' function.
 #' @param model A trained elastic net GLM, as created by the \code{glmnet}
 #' function.
 #' @param returnType Default: \code{"both"}. Either \code{"class"},

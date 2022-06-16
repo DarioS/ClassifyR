@@ -187,7 +187,6 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
 
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
-  
   trained <- tryCatch(.doTrain(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
                       error = function(error) error[["message"]])
   if(is.character(trained)) return(trained) # An error occurred.
@@ -210,7 +209,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
   {
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
-                           
+    
     predictedOutcomes <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )

@@ -27,6 +27,4 @@ input data dependent variable is survival or categorical classes.
 }
 \author{
 Dario Strbenac
-
-Dario Strbenac
 }

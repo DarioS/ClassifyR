@@ -187,10 +187,7 @@ setMethod("mixModelsPredict", c("MixModelsListsSet", "DataFrame"), # Sample info
                    returnType = c("both", "class", "score"), verbose = 3)
 {
   models <- models@set
-  isNumeric <- sapply(measurementsTest, is.numeric)
-  measurementsTest <- measurementsTest[, isNumeric, drop = FALSE]
-  if(sum(isNumeric) == 0)
-    stop("No features are numeric but at least one must be.")
+  measurementsTest <- measurementsTest[, names(models[[1]]), drop = FALSE]
 
   difference <- match.arg(difference)
   weighting <- match.arg(weighting)

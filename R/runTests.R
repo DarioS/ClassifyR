@@ -111,7 +111,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
       message("Processing sample set ", setNumber, '.')
     
     # crossValParams is needed at least for nested feature tuning.
-    runTest(measurements[trainingSamples, ], outcomes[trainingSamples],
+    runTest(measurements[trainingSamples, , drop = FALSE], outcomes[trainingSamples],
             measurements[testSamples, , drop = FALSE], outcomes[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
             .iteration = setNumber)
