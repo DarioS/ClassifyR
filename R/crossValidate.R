@@ -344,6 +344,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
+              measurements <- DataFrame(measurements)
               message(paste("You have", ncol(measurements), "features and", nrow(measurements), "samples and only one data-type."))
               mcols(measurements)$dataset <- "dataset"
               mcols(measurements)$feature <- colnames(measurements)
