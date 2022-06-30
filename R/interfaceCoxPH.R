@@ -45,7 +45,7 @@
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
 #' @return For \code{coxphTrainInterface}, the trained Cox proportional hazards model.
-#' For \code{coxphPredictInterface}, a risk score prediction (natural log scale) for each sample.
+#' For \code{coxphPredictInterface}, a risk score prediction for each sample.
 #' @examples
 #' #' 
 #'   # if(require(randomForest))
@@ -135,8 +135,7 @@ setMethod("coxphPredictInterface", c("coxph", "matrix"), # Matrix of numeric mea
 setMethod("coxphPredictInterface", c("coxph", "DataFrame"),
 function(model, measurementsTest, ..., verbose = 3)
 {
-  # Linear predictor ("lp") is default prediction format.
-  predict(model, as.data.frame(measurementsTest))
+  predict(model, as.data.frame(measurementsTest), type = "risk")
 })
 
 # One or more omics data sets, possibly with clinical data.

@@ -37,7 +37,6 @@ coxnetPredictInterface(model, measurementsTest, ...)
   survivalTest = NULL,
   lambda,
   ...,
-  returnType = c("both", "class", "score"),
   verbose = 3
 )
 
@@ -88,11 +87,6 @@ as it.}
 \item{survivalTest}{A \code{\link{Surv}} object or columns from the \code{measurementsTest} table
 which contains the follow-up time and status information.}
 
-\item{returnType}{Default: \code{"both"}. Either \code{"class"},
-\code{"score"} or \code{"both"}.  Sets the return value from the prediction
-to either a vector of class labels, matrix of scores for each class, or both
-labels and scores in a \code{data.frame}.}
-
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the data tables to be used. \code{"clinical"} is also a valid value
 and specifies that integer variables from the clinical data table will be
@@ -100,8 +94,7 @@ used.}
 }
 \value{
 For \code{coxnetTrainInterface}, an object of type
-\code{glmnet}. For \code{coxnetPredictInterface}, a matrix of containing the link and risk functions.
-\code{returnType}.
+\code{glmnet}. For \code{coxnetPredictInterface}, a vector of relative risks.
 }
 \description{
 An elastic net GLM classifier uses a penalty which is a combination of a

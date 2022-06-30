@@ -59,16 +59,11 @@
 #' function.
 #' @param survivalTest A \code{\link{Surv}} object or columns from the \code{measurementsTest} table
 #' which contains the follow-up time and status information.
-#' @param returnType Default: \code{"both"}. Either \code{"class"},
-#' \code{"score"} or \code{"both"}.  Sets the return value from the prediction
-#' to either a vector of class labels, matrix of scores for each class, or both
-#' labels and scores in a \code{data.frame}.
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
 #' @return For \code{coxnetTrainInterface}, an object of type
-#' \code{glmnet}. For \code{coxnetPredictInterface}, a matrix of containing the link and risk functions.
-#' \code{returnType}.
+#' \code{glmnet}. For \code{coxnetPredictInterface}, a vector of relative risks.
 #' @examples
 #'  if(require(glmnet))
 #'   {
@@ -160,15 +155,13 @@ setMethod("coxnetPredictInterface", c("coxnet", "matrix"),
 
 #' @rdname coxnetInterface
 #' @export
-setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, measurementsTest, survivalTest = NULL, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
+setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, measurementsTest, survivalTest = NULL, lambda, ..., verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(survivalTest))
   {
     splitDataset <- .splitDataAndOutcomes(measurementsTest, survivalTest)  # Remove any classes, if present.
     measurementsTest <- splitDataset[["measurements"]]
   }
-  
-  returnType <- match.arg(returnType)
   
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
@@ -184,10 +177,9 @@ setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, me
   offset <- attr(model, "tune")[["offset"]]
   model$offset <- TRUE
   
-  survPredictions <- predict(model, testMatrix, s = lambda, type = "link", newoffset = offset)
   survScores <- predict(model, testMatrix, s = lambda, type = "response", newoffset = offset)
   
-  data.frame(link = survPredictions[, 1], relativeRisk = survScores[, 1], check.names = FALSE)
+  survScores[, 1]
 })
 
 # One or more omics data sets, possibly with sample information data.

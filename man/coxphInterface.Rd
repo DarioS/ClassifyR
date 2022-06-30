@@ -74,7 +74,7 @@ as it.}
 }
 \value{
 For \code{coxphTrainInterface}, the trained Cox proportional hazards model.
-For \code{coxphPredictInterface}, a risk score prediction (natural log scale) for each sample.
+For \code{coxphPredictInterface}, a risk score prediction for each sample.
 }
 \description{
 Cox proportional hazards.
