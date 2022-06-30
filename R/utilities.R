@@ -440,11 +440,14 @@
   tuneChosen <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
   {
+    performanceType <- modellingParams@trainParams@tuneParams[["performanceType"]]
+    modellingParams@trainParams@tuneParams <- modellingParams@trainParams@tuneParams[-match("performanceType", names(modellingParams@trainParams@tuneParams))]
     tuneCombos <- expand.grid(modellingParams@trainParams@tuneParams, stringsAsFactors = FALSE)
     modellingParams@trainParams@tuneParams <- NULL
     
     performances <- sapply(1:nrow(tuneCombos), function(rowIndex)
     {
+      modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, as.list(tuneCombos[rowIndex, ]))
       if(crossValParams@tuneMode == "Resubstitution")
       {
         result <- runTest(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
@@ -456,13 +459,13 @@
           predictedOutcomes <- predictions[, "outcome"]
         else
           predictedOutcomes <- predictions
-        calcExternalPerformance(outcomesTest, predictedOutcomes, performanceName)
+        calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType)
       } else {
         result <- runTests(measurementsTrain, outcomesTrain,
                            crossValParams, modellingParams,
                            verbose = verbose, .iteration = "internal")
-        result <- calcCVperformance(result, performanceName)
-        median(predictions(result)["performanceType"])
+        result <- calcCVperformance(result, performanceType)
+        median(performances(result)[[performanceType]])
       }
     })
     betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]

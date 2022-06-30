@@ -162,7 +162,7 @@ setMethod("crossValidate", "DataFrame",
                                   # Loop over classifiers
                                   set.seed(seed)
                                   CV(
-                                      measurements = measurements[, mcols(measurements)$dataset == dataIndex],
+                                      measurements = measurements[, mcols(measurements)$dataset == dataIndex, drop = FALSE],
                                       classes = classes,
                                       nFeatures = nFeatures[dataIndex],
                                       selectionMethod = selectionIndex,
