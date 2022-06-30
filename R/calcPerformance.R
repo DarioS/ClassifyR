@@ -145,7 +145,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   if(performanceType == "C-index") {
     samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
     performance <- .calcPerformance(actualOutcomes = actualOutcomes[match(result@predictions[, "sample"], sampleNames(result))],
-                                    predictedOutcomes = result@predictions[, "class"], 
+                                    predictedOutcomes = result@predictions, 
                                     samples = samples,
                                     performanceType = performanceType, 
                                     grouping = grouping)
