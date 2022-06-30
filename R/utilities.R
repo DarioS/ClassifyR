@@ -13,8 +13,8 @@
     outcomesColumn <- match(outcomes, colnames(measurements))
     if(is.na(outcomesColumn))
       stop("Specified column name of outcomes is not present in the data table.")
-    outcomes <- measurements[, classColumn]
-    measurements <- measurements[, -classColumn]
+    outcomes <- measurements[, outcomesColumn]
+    measurements <- measurements[, -outcomesColumn, drop = FALSE]
     # R version 4 and greater no longer automatically casts character columns to factors because stringsAsFactors
     # is FALSE by default, so it is more likely to be character format these days. Handle it.
     if(class(outcomes) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
@@ -29,7 +29,7 @@
     if(any(is.na(outcomesColumns)))
       stop("Specified column names of outcomes is not present in the data table.")
     outcomes <- measurements[, outcomesColumns]
-    measurements <- measurements[, -outcomesColumns]
+    measurements <- measurements[, -outcomesColumns, drop = FALSE]
   }
   
   if(is(outcomes, "factor") && length(outcomes) > 3 & length(outcomes) < nrow(measurements))
