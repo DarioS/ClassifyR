@@ -310,6 +310,9 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    characteristicsLabel = NULL)
           {
               targets = names(measurements)
+              if(any(anyReplicated(measurements[, , targets])))
+                  stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
+              
               tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
               measurements <- tablesAndClasses[["dataTable"]]
               classes <- tablesAndClasses[["outcomes"]]

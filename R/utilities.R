@@ -92,7 +92,7 @@
 {
   if(is.null(targets))
     stop("'targets' is not specified but must be.")
-  if(is.null(targets))
+  if(is.null(outcomesColumns))
     stop("'outcomesColumns' is not specified but must be.")    
   if(!all(targets %in% c(names(measurements), "sampleInfo")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")

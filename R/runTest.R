@@ -110,6 +110,13 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
       outcomesTrain <- rebalancedTrain[["classesTrain"]]
     }
   }
+    
+  if(!is.null(modellingParams@selectParams) && max(modellingParams@selectParams@tuneParams[["nFeatures"]]) > ncol(measurementsTrain))
+  {
+    warning("Attempting to evaluate more features for feature selection than in
+input data. Autmomatically reducing to smaller number.")
+    modellingParams@selectParams@tuneParams[["nFeatures"]] <- 1:min(10, ncol(measurementsTrain))
+  }
   
   # All input features.
   if(!is.null(S4Vectors::mcols(measurementsTrain)))
@@ -302,6 +309,8 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
 setMethod("runTest", c("MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)
 {
+  if(any(anyReplicated(measurementsTrain[, , targets])))
+    stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")              
   tablesAndClassesTrain <- .MAEtoWideTable(measurementsTrain, targets, outcomesColumns, restrict = NULL)
   tablesAndClassesTest <- .MAEtoWideTable(measurementsTest, targets, outcomesColumns, restrict = NULL)
   runTest(tablesAndClassesTrain[["dataTable"]], tablesAndClassesTrain[["outcomes"]],

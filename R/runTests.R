@@ -86,6 +86,13 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
   measurements <- splitDataset[["measurements"]]
   outcomes <- splitDataset[["outcomes"]]
   
+  if(!is.null(modellingParams@selectParams) && max(modellingParams@selectParams@tuneParams[["nFeatures"]]) > ncol(measurements))
+  {
+      warning("Attempting to evaluate more features for feature selection than in
+input data. Autmomatically reducing to smaller number.")
+      modellingParams@selectParams@tuneParams[["nFeatures"]] <- 1:min(10, ncol(measurements))
+  }
+  
   # Element names of the list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
   
@@ -171,6 +178,8 @@ setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValPara
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomesColumns, ...)
 {
+  if(any(anyReplicated(measurements[, , targets])))
+      stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
   tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, outcomesColumns, restrict = NULL)
   runTests(tablesAndOutcomes[["dataTable"]], tablesAndOutcomes[["outcomes"]], ...)            
 })
