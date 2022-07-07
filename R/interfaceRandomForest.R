@@ -102,7 +102,7 @@ setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measuremen
 #' @rdname randomForest
 setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain, restrict = NULL)
 
   if(!requireNamespace("randomForest", quietly = TRUE))
     stop("The package 'randomForest' could not be found. Please install it.")
