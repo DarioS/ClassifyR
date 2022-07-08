@@ -309,9 +309,13 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
-              targets = names(measurements)
-              if(any(anyReplicated(measurements[, , targets])))
-                  stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
+              targets <- c(names(measurements), "sampleInfo")
+              omicsTargets <- setdiff("sampleInfo", targets)              
+              if(length(omicsTargets) > 0)
+              {
+                  if(any(anyReplicated(measurements[, , omicsTargets])))
+                      stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
+              }
               
               tablesAndClasses <- .MAEtoWideTable(measurements, targets, classes, restrict = NULL)
               measurements <- tablesAndClasses[["dataTable"]]

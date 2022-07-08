@@ -185,8 +185,13 @@ input data. Autmomatically reducing to smaller number.")
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomesColumns, ...)
 {
-  if(any(anyReplicated(measurements[, , targets])))
+  omicsTargets <- setdiff("sampleInfo", targets)              
+  if(length(omicsTargets) > 0)
+  {
+    if(any(anyReplicated(measurements[, , omicsTargets])))
       stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
+  }
+  
   tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, outcomesColumns, restrict = NULL)
   runTests(tablesAndOutcomes[["dataTable"]], tablesAndOutcomes[["outcomes"]], ...)            
 })
