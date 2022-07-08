@@ -204,9 +204,8 @@ input data. Autmomatically reducing to smaller number.")
   {
     extrasList <- list()
     extras <- .methodFormals(modellingParams@trainParams@getFeatures, class(trained[[1]]))[-1]
-    extras <- setdiff(extras, "...") # Ensure that ellipsis is not one of them.
     if(length(extras) > 0)
-      extrasList <- mget(names(extras))
+      extrasList <- mget(setdiff(names(extras), "..."))
 
     featureInfo <- do.call(modellingParams@trainParams@getFeatures, c(trained[1], extrasList))
     rankedFeatures <- featureInfo[[1]]
