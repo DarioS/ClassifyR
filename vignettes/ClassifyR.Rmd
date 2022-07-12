@@ -81,7 +81,7 @@ The *crossValidate* function offers a quick and simple way to start analysing a 
 
 Data Type | $n \times p$ | $p \times n$
 ----|:----:|:----:
-<span style="font-family: 'Courier New', monospace;">matrix</span> |  | ✔
+<span style="font-family: 'Courier New', monospace;">matrix</span> | ✔ | 
 <span style="font-family: 'Courier New', monospace;">data.frame</span> | ✔ | 
 <span style="font-family: 'Courier New', monospace;">DataFrame</span> | ✔ |
 <span style="font-family: 'Courier New', monospace;">MultiAssayExperiment</span> |  | ✔
@@ -99,7 +99,7 @@ The type of classifier used can be changed with the *classifier* argument. The d
 ```{r}
 result <- crossValidate(measurements, classes, classifier = "SVM",
                         nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
-performancePlot(result)
+SVMplot <- performancePlot(result)
 ```
 
 ### Data Integration with crossValidate
@@ -118,7 +118,7 @@ mcols(measurementsDF) <- data.frame(
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-performancePlot(result)
+mergePlot <- performancePlot(result)
 ```
 
 If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
@@ -288,10 +288,10 @@ grid.draw(errorPlot)
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-More traditionally, the distirubition of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
+More traditionally, the distribution of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
 
 ```{r}
-performancePlot(list(DMresults, DDresults))
+meanDistPlot <- performancePlot(list(DMresults, DDresults))
 ```
 
 We can observe that the spread of balanced accuracy rates is small, but slightly wider for the differential distribution classifier.
