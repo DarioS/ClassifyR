@@ -54,26 +54,28 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
-#'                           permutation = rep(1:2, each = 40),
-#'                           class = factor(rep(c("Healthy", "Cancer"), 40)))
+#'   predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+#'                          permutation = rep(1:2, each = 40),
+#'                          class = factor(rep(c("Healthy", "Cancer"), 40)))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
 #'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validation"),
 #'                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
-#'                             list(c(1:3), c(2, 5, 6), 1:4, 5:8),
+#'                             LETTERS[1:10], DataFrame(`Original Feature` = paste("Gene", LETTERS[1:10]),
+#'                             `Renamed Feature` = paste("Feature", 1:10, sep = '')), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
+#'                             list(paste("Gene", 1:3), paste("Gene", c(2, 5, 6)), paste("Gene", 1:4), paste("Gene", 5:8)),
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   result1 <- calcCVperformance(result1, "Macro F1")
 #' 
-#'   predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+#'   predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
 #'                           permutation = rep(1:2, each = 40),
 #'                           class = factor(rep(c("Healthy", "Cancer"), 40)))
 #'                                
 #'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validation"),
 #'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+#'                             LETTERS[1:10], DataFrame(`Original Feature` = paste("Gene", LETTERS[1:10]),
+#'                             `Renamed Feature` = paste("Feature", 1:10, sep = '')), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
 #'                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8)),
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   result2 <- calcCVperformance(result2, "Macro F1")

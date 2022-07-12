@@ -14,8 +14,8 @@ Object}
 }
 \value{
 An \code{list} object. The first element is a vector or data frame
-of ranked features, the second is a vector or data frame of selected
-features.
+of ranked feature indicies, the second is a vector or data frame of selected
+feature indices of the \code{DataFrame} processed.
 }
 \description{
 Provides a ranking of features based on the magnitude of fitted GLM

@@ -1217,7 +1217,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @aliases ClassifyResult ClassifyResult-class
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
-#' allFeatureNames allFeatureNames,ClassifyResult-method
+#' featuresInfo featuresInfo,ClassifyResult-method
 #' predictions predictions,ClassifyResult-method actualOutcomes
 #' actualOutcomes,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
@@ -1237,9 +1237,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' package, the function names will automatically be generated and therefore it
 #' is not necessary to specify them.}
 #' \item{\code{originalNames}}{All sample names.}
-#' \item{\code{originalFeatures}}{All feature names. Character vector
-#' or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
-#' of measurements on the same set of samples.}
+#' \item{\code{featuresInfo}}{A \code{\link{DataFrame}} containing all feature names in original format
+#' and a safe format without any unusual symbols that R would automatically convert into another format and cause trouble.}
 #' \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
 #' or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 #' \item{\code{chosenFeatures}}{Features selected at each fold. Character
@@ -1267,7 +1266,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \describe{
 #' \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
 #' \describe{
-#' \item{\code{allFeatureNames(result)}}{Returns a vector of features present in the data set.}}
+#' \item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 #' \describe{
 #' \item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
 #' \describe{
@@ -1308,7 +1307,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @importFrom S4Vectors as.data.frame
 #' @usage NULL
 #' @export
-setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
+setGeneric("ClassifyResult", function(characteristics, originalNames, featuresInfo, ...)
 standardGeneric("ClassifyResult"))
 
 #' @rdname ClassifyResult-class
@@ -1316,13 +1315,13 @@ standardGeneric("ClassifyResult"))
 setClass("ClassifyResult", representation(
   characteristics = "DataFrame",
   originalNames = "character",
-  originalFeatures = "characterOrDataFrame",
+  featuresInfo = "DataFrame",
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
   actualOutcomes = "factorOrSurv",
   models = "list",
   tune = "listOrNULL",
-  predictions = "data.frame",
+  predictions = "DataFrame",
   performance = "listOrNULL",
   importance = "DataFrameOrNULL",
   modellingParams = "ModellingParamsOrNULL",
@@ -1332,11 +1331,11 @@ setClass("ClassifyResult", representation(
 #' @usage NULL
 #' @export
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
-          function(characteristics, originalNames, originalFeatures,
+          function(characteristics, originalNames, featuresInfo,
                    rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)
           {
             new("ClassifyResult", characteristics = characteristics,
-                originalNames = originalNames, originalFeatures = originalFeatures,
+                originalNames = originalNames, featuresInfo = featuresInfo,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
                 predictions = predictions, actualOutcomes = actualOutcomes, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
@@ -1383,16 +1382,16 @@ setMethod("sampleNames", c("ClassifyResult"),
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setGeneric("allFeatureNames", function(object, ...)
-standardGeneric("allFeatureNames"))
+setGeneric("featuresInfo", function(object, ...)
+standardGeneric("featuresInfo"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("allFeatureNames", c("ClassifyResult"),
+setMethod("featuresInfo", c("ClassifyResult"),
           function(object)
           {
-            object@originalFeatures
+            object@featuresInfo
           })
 
 #' @rdname ClassifyResult-class

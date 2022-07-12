@@ -114,7 +114,7 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   
   pairsClassDifferences <- otherClassDifferences - oneClassDifferences
   
-  featurePairs[order(abs(pairsClassDifferences), decreasing = TRUE)]
+  order(abs(pairsClassDifferences), decreasing = TRUE)
 })
 
 # One or more omics data sets, possibly with sample information data.

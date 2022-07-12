@@ -192,7 +192,7 @@ drawn.
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
-                     groupBy = c("sampleInfo", "Gender"),
+                     groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 
 }

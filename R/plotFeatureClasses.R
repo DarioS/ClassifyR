@@ -131,7 +131,7 @@
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
 #'   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
-#'                      groupBy = c("sampleInfo", "Gender"),
+#'                      groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #' 
 #' @importFrom dplyr mutate n
@@ -175,7 +175,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
                     facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
   
-  splitDataset <- .splitDataAndOutcomes(measurements, classes)
+  splitDataset <- .splitDataAndOutcomes(measurements, classes, restrict = NULL)
   measurements <- splitDataset[["measurements"]]
   classes <- splitDataset[["outcomes"]]
   

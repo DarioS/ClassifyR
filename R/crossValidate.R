@@ -52,7 +52,7 @@
 #' 
 #' # Compare randomForest and SVM classifiers.
 #' result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
-#' # performancePlot(result)
+#' performancePlot(result)
 #' 
 #' 
 #' # Compare performance of different datasets. 
@@ -125,11 +125,13 @@ setMethod("crossValidate", "DataFrame",
   Using an ordinary GLM instead.")
                   classifier <- "GLM"
               }
+              
               classifier <- cleanClassifier(classifier = classifier,
                                             measurements = measurements)
 
               # Which data-types or data-views are present?
               datasetIDs <- unique(mcols(measurements)[, "dataset"])
+              if(is.null(datasetIDs)) datasetIDs <- 1
               
               ##!!!!! Do something with data combinations
 
@@ -161,9 +163,10 @@ setMethod("crossValidate", "DataFrame",
                               sapply(selectionMethod[[dataIndex]], function(selectionIndex) {
                                   # Loop over classifiers
                                   set.seed(seed)
+                                  measurementsUse <- measurements
+                                  if(!is.null(mcols(measurements))) measurementsUse <- measurements[, mcols(measurements)[, "dataset"] == dataIndex, drop = FALSE]
                                   CV(
-                                      measurements = measurements[, mcols(measurements)$dataset == dataIndex, drop = FALSE],
-                                      classes = classes,
+                                      measurements = measurementsUse, classes = classes,
                                       nFeatures = nFeatures[dataIndex],
                                       selectionMethod = selectionIndex,
                                       selectionOptimisation = selectionOptimisation,
@@ -201,7 +204,7 @@ setMethod("crossValidate", "DataFrame",
                   # This allows someone to answer which combinations of the datasets might be most useful.
 
 
-                  if(is.null(dataCombinations)) dataCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
+                  if(is.null(dataCombinations)) dataCombinations <- do.call("c", sapply(seq_along(datasetIDs),function(n)combn(datasetIDs, n, simplify = FALSE)))
 
                   result <- sapply(dataCombinations, function(dataIndex){
                       CV(measurements = measurements[, mcols(measurements)$dataset %in% dataIndex],
@@ -310,7 +313,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    characteristicsLabel = NULL)
           {
               targets <- c(names(measurements), "sampleInfo")
-              omicsTargets <- setdiff("sampleInfo", targets)              
+              omicsTargets <- setdiff(targets, "sampleInfo")  
               if(length(omicsTargets) > 0)
               {
                   if(any(anyReplicated(measurements[, , omicsTargets])))
@@ -352,9 +355,6 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                    characteristicsLabel = NULL)
           {
               measurements <- DataFrame(measurements)
-              message(paste("You have", ncol(measurements), "features and", nrow(measurements), "samples and only one data-type."))
-              mcols(measurements)$dataset <- "dataset"
-              mcols(measurements)$feature <- colnames(measurements)
               crossValidate(measurements = measurements,
                             classes = classes, 
                             nFeatures = nFeatures,
@@ -386,8 +386,6 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
                    characteristicsLabel = NULL)
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
-              mcols(measurements)$dataset <- "dataset"
-              mcols(measurements)$feature <- colnames(measurements)
               crossValidate(measurements = measurements,
                             classes = classes, 
                             nFeatures = nFeatures,
@@ -407,7 +405,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
 ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #' @rdname crossValidate
 #' @export
-setMethod("crossValidate", "list", # data.frame of numeric measurements.
+setMethod("crossValidate", "list",
           function(measurements,
                    classes, 
                    nFeatures = 20,
@@ -481,14 +479,16 @@ setMethod("crossValidate", "list", # data.frame of numeric measurements.
 ######################################
 cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up
-    obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    if(!is.null(mcols(measurements)))
+      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    else obsFeatures <- ncol(measurements)
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
     if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
     if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(x, nFeatures), simplify = FALSE)
     #if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
-    if(!all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
-    if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
-    if(all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "list")) nFeatures <- mapply(pmin, nFeatures[names(obsFeatures)], obsFeatures, SIMPLIFY = FALSE)
+    if(!is.null(names(obsFeatures)) && !all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the datasets.")
+    if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
+    if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "list")) nFeatures <- mapply(pmin, nFeatures[names(obsFeatures)], obsFeatures, SIMPLIFY = FALSE)
     nFeatures
 }
 
@@ -496,30 +496,32 @@ cleanNFeatures <- function(nFeatures, measurements){
 ######################################
 cleanSelectionMethod <- function(selectionMethod, measurements){
     #### Clean up
-    obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    if(!is.null(mcols(measurements)))
+      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    else return(list(selectionMethod))
 
-    if(is.null(names(selectionMethod)) & length(selectionMethod) == 1) selectionMethod <- sapply(names(obsFeatures), function(x)selectionMethod, simplify = FALSE)
-    if(is.null(names(selectionMethod)) & length(selectionMethod) > 1) selectionMethod <- sapply(names(obsFeatures), function(x)selectionMethod, simplify = FALSE)
+    if(is.null(names(selectionMethod)) & length(selectionMethod) == 1 & !is.null(names(obsFeatures))) selectionMethod <- sapply(names(obsFeatures), function(x) selectionMethod, simplify = FALSE)
+    if(is.null(names(selectionMethod)) & length(selectionMethod) > 1 & !is.null(names(obsFeatures))) selectionMethod <- sapply(names(obsFeatures), function(x) selectionMethod, simplify = FALSE)
     #if(is.null(names(selectionMethod)) & length(selectionMethod) > 1) stop("selectionMethod needs to be a named character vector or list with the same names as the datasets.")
-    if(!all(names(obsFeatures) %in% names(selectionMethod))) stop("selectionMethod needs to be a named character vector or list with the same names as the datasets.")
-    if(all(names(obsFeatures) %in% names(selectionMethod)) & is(selectionMethod, "character")) selectionMethod <- as.list(selectionMethod[names(obsFeatures)])
+    if(!is.null(names(obsFeatures)) && !all(names(obsFeatures) %in% names(selectionMethod))) stop("selectionMethod needs to be a named character vector or list with the same names as the datasets.")
+    if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(selectionMethod)) & is(selectionMethod, "character")) selectionMethod <- as.list(selectionMethod[names(obsFeatures)])
     selectionMethod
-
 }
 
 ######################################
 ######################################
 cleanClassifier <- function(classifier, measurements){
     #### Clean up
-    obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    if(!is.null(mcols(measurements)))
+      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "dataset"])))
+    else return(list(classifier))
 
-    if(is.null(names(classifier)) & length(classifier) == 1) classifier <- sapply(names(obsFeatures), function(x)classifier, simplify = FALSE)
-    if(is.null(names(classifier)) & length(classifier) > 1) classifier <- sapply(names(obsFeatures), function(x)classifier, simplify = FALSE)
+    if(is.null(names(classifier)) & length(classifier) == 1 & !is.null(names(obsFeatures))) classifier <- sapply(names(obsFeatures), function(x)classifier, simplify = FALSE)
+    if(is.null(names(classifier)) & length(classifier) > 1 & !is.null(names(obsFeatures))) classifier <- sapply(names(obsFeatures), function(x)classifier, simplify = FALSE)
     #if(is.null(names(classifier)) & length(classifier) > 1) stop("classifier needs to be a named character vector or list with the same names as the datasets.")
-    if(!all(names(obsFeatures) %in% names(classifier))) stop("classifier needs to be a named character vector or list with the same names as the datasets.")
-    if(all(names(obsFeatures) %in% names(classifier)) & is(classifier, "character")) classifier <- as.list(classifier[names(obsFeatures)])
+    if(!is.null(names(obsFeatures)) && !all(names(obsFeatures) %in% names(classifier))) stop("classifier needs to be a named character vector or list with the same names as the datasets.")
+    if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(classifier)) & is(classifier, "character")) classifier <- as.list(classifier[names(obsFeatures)])
     classifier
-
 }
 
 
@@ -644,7 +646,7 @@ generateModellingParams <- function(datasetIDs,
     
     classifiers <- c("randomForest", "GLM", "elasticNetGLM", "SVM", "DLDA",
                      "naiveBayes", "mixturesNormals", "kNN",
-                     "elasticNetPreval", "CoxPH", "CoxNet")
+                     "CoxPH", "CoxNet")
     # Check classifier
     if(!classifier %in% classifiers)
         stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
@@ -659,7 +661,6 @@ generateModellingParams <- function(datasetIDs,
         "naiveBayes" = naiveBayesParams(),
         "mixturesNormals" = mixModelsParams(),
         "kNN" = kNNparams(),
-        "elasticNetPreval" = elasticNetPreval(),
         "CoxPH" = coxphParams(),
         "CoxNet" = coxnetParams()
     )
@@ -876,6 +877,7 @@ CV <- function(measurements,
 
     # Which data-types or data-views are present?
     datasetIDs <- unique(mcols(measurements)[, "dataset"])
+    if(is.null(datasetIDs)) datasetIDs <- 1
     if(is.null(dataCombinations)) dataCombinations <- datasetIDs
     if(is.null(characteristicsLabel)) characteristicsLabel <- "none"
 
@@ -896,8 +898,7 @@ CV <- function(measurements,
                                                multiViewMethod = multiViewMethod
     )
 
-
-    characteristics = S4Vectors::DataFrame(characteristic = c("dataset", "classifier", "selectionMethod", "multiViewMethod", "characteristicsLabel"), value = c(paste(datasetIDs, collapse = ", "), paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
+    characteristics = S4Vectors::DataFrame(characteristic = c(if(length(datasetIDs) > 1) "Data Set" else NULL, "Classifier Name", "Selection Name", "multiViewMethod", "characteristicsLabel"), value = c(if(length(datasetIDs) > 1) paste(datasetIDs, collapse = ", ") else NULL, paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
 
     classifyResults <- runTests(measurements, classes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
     

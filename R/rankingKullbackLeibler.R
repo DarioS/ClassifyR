@@ -88,11 +88,7 @@ setMethod("KullbackLeiblerRanking", "DataFrame", # Sample information data or on
                          ((oneClassDistribution[[2]])^2) / ((otherClassDistribution[[2]])^2) +
                          ((otherClassDistribution[[2]])^2) / ((oneClassDistribution[[2]])^2))
 
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(divergence, decreasing = TRUE), ]
-  else
-    colnames(measurementsTrain)[order(divergence, decreasing = TRUE)]
-  
+  order(divergence, decreasing = TRUE)
 })
 
 # One or more omics data sets, possibly with sample information data.

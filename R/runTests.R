@@ -96,10 +96,7 @@ input data. Autmomatically reducing to smaller number.")
   # Element names of the list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
   
-  featureInfo <- .summaryFeatures(measurements)
-  allFeatures <- featureInfo[[1]]
-  featureNames <- featureInfo[[2]]
-  consideredFeatures <- featureInfo[[3]]
+  featuresInfo <- .summaryFeatures(measurements)
   # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, outcomes)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
@@ -116,7 +113,7 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(verbose >= 1 && setNumber %% 10 == 0)
       message("Processing sample set ", setNumber, '.')
-    
+
     # crossValParams is needed at least for nested feature tuning.
     runTest(measurements[trainingSamples, , drop = FALSE], outcomes[trainingSamples],
             measurements[testSamples, , drop = FALSE], outcomes[testSamples],
@@ -162,10 +159,10 @@ input data. Autmomatically reducing to smaller number.")
         predictsColumnName <- "risk"
     else # Classification task. A factor.
         predictsColumnName <- "class"
-    predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
+    predictionsTable <- DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
     colnames(predictionsTable)[ncol(predictionsTable)] <- predictsColumnName
   } else { # data frame
-    predictionsTable <- data.frame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
+    predictionsTable <- DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
   }
   rownames(predictionsTable) <- NULL
   tuneList <- lapply(results, "[[", "tune")
@@ -175,7 +172,7 @@ input data. Autmomatically reducing to smaller number.")
   if(!is.null(results[[1]][["importance"]]))
     importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
-  ClassifyResult(characteristics, rownames(measurements), allFeatures,
+  ClassifyResult(characteristics, rownames(measurements), featuresInfo,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance, modellingParams)
 })
@@ -185,7 +182,7 @@ input data. Autmomatically reducing to smaller number.")
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomesColumns, ...)
 {
-  omicsTargets <- setdiff("sampleInfo", targets)              
+  omicsTargets <- setdiff(targets, "sampleInfo")
   if(length(omicsTargets) > 0)
   {
     if(any(anyReplicated(measurements[, , omicsTargets])))

@@ -110,10 +110,7 @@ setMethod("edgeRranking", "DataFrame", function(countsTrain, classesTrain, normF
   fit <- do.call(edgeR::glmFit, paramList)
   test <- edgeR::glmLRT(fit, coef = 2:length(levels(classesTrain)))[["table"]]
   
-  if(!is.null(S4Vectors::mcols(countsTrain)))
-    S4Vectors::mcols(countsTrain)[order(test[, "PValue"]), ]
-  else
-    colnames(countsTrain)[order(test[, "PValue"])]
+  order(test[, "PValue"]) # From smallest to largest.
 })
 
 # One or more omics data sets, possibly with sample information data.

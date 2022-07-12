@@ -167,7 +167,7 @@ data(asthma)
 
 # Compare randomForest and SVM classifiers.
 result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
-# performancePlot(result)
+performancePlot(result)
 
 
 # Compare performance of different datasets. 

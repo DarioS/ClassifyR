@@ -9,8 +9,8 @@
 }
 \value{
 An \code{list} object. The first element is a vector or data frame
-of features, ranked from best to worst using the Gini index. The second
-element is a vector or data frame of features used in at least one tree.
+of feature indices, ranked from best to worst using the Gini index. The second
+element is a vector or data frame of feature indices used in at least one tree.
 }
 \description{
 Provides a ranking of features based on the total decrease in node

@@ -96,19 +96,21 @@ setMethod("previousSelection", "DataFrame",
   previousIDs <- chosenFeatureNames(classifyResult)[[.iteration]]
   if(is.character(previousIDs))
   {
-    commonFeatures <- intersect(previousIDs, colnames(measurementsTrain))
-    overlapPercent <- length(commonFeatures) / length(previousIDs) * 100
-  } else { # A data.frame describing the data set and variable name of the chosen feature.
+    featuresIDs <- colnames(measurementsTrain)
+    IDsRows <- match(previousIDs, featuresInfo(classifyResult)[, "Original Feature"])
+    safeIDs <- featuresInfo(classifyResult)[IDsRows, "Renamed Feature"]
+  } else { # A data frame describing the data set and variable name of the chosen feature.
     featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
-    selectedIDs <-  do.call(paste, previousIDs)
-    selectedColumns <- match(selectedIDs, featuresIDs)
-    commonFeatures <- sum(!is.na(selectedColumns))
-    overlapPercent <- commonFeatures / nrow(previousIDs) * 100
+    IDsRows <-  match(do.call(paste, previousIDs), do.call(paste(featuresInfo(classifyResult)[, c("Original Dataset", "Original Feature")])))
+    safeIDs <- do.call(paste, featuresInfo(classifyResult)[IDsRows, c("Renamed Dataset", "Renamed Feature")])
   }
+  
+  commonFeatures <- intersect(safeIDs, featuresIDs)
+  overlapPercent <- length(commonFeatures) / length(safeIDs) * 100
   if(overlapPercent < minimumOverlapPercent)
     signalCondition(simpleError(paste("Number of features in common between previous and current data set is lower than", minimumOverlapPercent, "percent.")))
-  
-  S4Vectors::mcols(measurementsTrain)[selectedColumns, ] # Each row is about one column.
+
+  match(safeIDs, featuresIDs) # Return indices, not identifiers.
 })
 
 #' @rdname previousSelection
@@ -117,7 +119,7 @@ setMethod("previousSelection", "MultiAssayExperiment",
           function(measurementsTrain, ...)
           {
             sampleInfoColumns <- colnames(MultiAssayExperiment::colData(sampleInfoColumns))
-            dataTable <- wideFormat(measurementsTrain, colDataCols = sampleInfoColumns, check.names = FALSE, collapse = ':')
+            dataTable <- MultiAssayExperiment::wideFormat(measurementsTrain, colDataCols = sampleInfoColumns, check.names = FALSE, collapse = ':')
             S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
             previousSelection(dataTable, ...)
           })

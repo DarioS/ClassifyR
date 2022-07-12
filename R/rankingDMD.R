@@ -102,11 +102,7 @@ setMethod("DMDranking", "DataFrame", # sampleInfo data or one of the other input
   if(differences %in% c("both", "scale"))
     divergence <- divergence + scalesDifferences
 
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-      S4Vectors::mcols(measurementsTrain)[order(divergence, decreasing = TRUE), ]
-  else
-      colnames(measurementsTrain)[order(divergence, decreasing = TRUE)]
-  
+  order(divergence, decreasing = TRUE)
 })
 
 #' @rdname DMDranking

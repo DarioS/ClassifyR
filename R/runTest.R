@@ -99,7 +99,7 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
       stop("'measurementsTrain' DataFrame must have sample identifiers as its row names.")
     if(any(is.na(measurementsTrain)))
       stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")                
-    
+
     splitDatasetTrain <- .splitDataAndOutcomes(measurementsTrain, outcomesTrain)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
@@ -111,18 +111,26 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     }
   }
     
+  if(is.null(.iteration) || .iteration != "internal") # Not nested cross-validation.
+  {
+    # Avoid strange symbols in feature identifiers.
+    featuresInfo <- .summaryFeatures(measurementsTrain)
+    if(!is.null(S4Vectors::mcols(measurementsTrain)))
+    {
+      S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
+      S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
+    } else {
+      colnames(measurementsTrain) <- featuresInfo[, "Renamed Feature"]
+      colnames(measurementsTest) <- featuresInfo[, "Renamed Feature"]
+    }
+  }
+    
   if(!is.null(modellingParams@selectParams) && max(modellingParams@selectParams@tuneParams[["nFeatures"]]) > ncol(measurementsTrain))
   {
     warning("Attempting to evaluate more features for feature selection than in
 input data. Autmomatically reducing to smaller number.")
     modellingParams@selectParams@tuneParams[["nFeatures"]] <- 1:min(10, ncol(measurementsTrain))
   }
-  
-  # All input features.
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    allFeatures <- S4Vectors::mcols(measurementsTrain)
-  else
-    allFeatures <- colnames(measurementsTrain)
   
   if(!is.null(crossValParams) && !is.null(crossValParams@adaptiveResamplingDelta))
   { # Iteratively resample training samples until their class probability or risk changes, on average, less than delta.
@@ -159,34 +167,25 @@ input data. Autmomatically reducing to smaller number.")
     if(is.character(measurementsTransformedList[[1]])) return(measurementsTransformedList[[1]]) # An error occurred.
   }
 
-  rankedFeatures <- NULL
-  selectedFeatures <- NULL
+  rankedFeaturesIndices <- NULL
+  selectedFeaturesIndices <- NULL
   tuneDetailsSelect <- NULL
-  
+
   if(!is.null(modellingParams@selectParams))
   {
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
-    
+ 
     topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose),
                             error = function(error) error[["message"]]) 
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
-    rankedFeatures <- topFeatures[[1]] # Extract for result object.
-    selectedFeatures <- topFeatures[[2]] # Extract for subsetting.
+    
+    rankedFeaturesIndices <- topFeatures[[1]] # Extract for result object.
+    selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
     tuneDetailsSelect <- topFeatures[[3]]
 
     if(modellingParams@selectParams@subsetToSelections == TRUE)
-    { # Subset the the data table to only the selected features.
-      if(is.null(S4Vectors::mcols(measurementsTrain)))
-      { # Input was ordinary matrix or DataFrame.
-        measurementsTrain <- measurementsTrain[, selectedFeatures, drop = FALSE]
-      } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
-        selectedIDs <-  do.call(paste, selectedFeatures)
-        featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
-        selectedColumns <- match(selectedIDs, featuresIDs)
-        measurementsTrain <- measurementsTrain[, selectedColumns, drop = FALSE]
-      }
-    }
+      measurementsTrain <- measurementsTrain[, selectedFeaturesIndices, drop = FALSE]
   } 
   
   # Training stage.
@@ -207,9 +206,9 @@ input data. Autmomatically reducing to smaller number.")
     if(length(extras) > 0)
       extrasList <- mget(setdiff(names(extras), "..."))
 
-    featureInfo <- do.call(modellingParams@trainParams@getFeatures, c(trained[1], extrasList))
-    rankedFeatures <- featureInfo[[1]]
-    selectedFeatures <- featureInfo[[2]]
+    rankedChosenList <- do.call(modellingParams@trainParams@getFeatures, c(trained[1], extrasList))
+    rankedFeaturesIndices <- rankedChosenList[[1]]
+    selectedFeaturesIndices <- rankedChosenList[[2]]
   }
   
   if(!is.null(modellingParams@predictParams))
@@ -263,7 +262,8 @@ input data. Autmomatically reducing to smaller number.")
     if(!is.null(ncol(predictedOutcomes)))
         predictedOutcomes <- predictedOutcomes[, na.omit(match(c("class", "risk"), colnames(predictedOutcomes)))]
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType), 2)
-      
+     
+    if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Dataset", "Original Feature")]
     importanceTable <- DataFrame(selectedFeatures, performanceChanges)
     if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
     colnames(importanceTable)[ncol(importanceTable)] <- paste("Change in", performanceType)
@@ -271,6 +271,22 @@ input data. Autmomatically reducing to smaller number.")
   
   if(is.null(modellingParams@predictParams)) models <- NULL else models <- trained[[1]] # One function for training and testing. Typically, the models aren't returned to the user, such as Poisson LDA implemented by PoiClaClu.
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
+
+  # Convert back into original feature identifiers unless it is a nested cross-validation.
+  if(is.null(.iteration) || .iteration != "internal")
+  {
+    if(!is.null(rankedFeaturesIndices))
+    {
+      if(is.null(S4Vectors::mcols(measurementsTrain))) rankedFeatures <- featuresInfo[rankedFeaturesIndices, "Original Feature"] else rankedFeatures <- featuresInfo[rankedFeaturesIndices, c("Original Dataset", "Original Feature")]
+    } else { rankedFeatures <- NULL}
+    if(!is.null(selectedFeaturesIndices))
+    {
+      if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Dataset", "Original Feature")]
+    } else { selectedFeatures <- NULL}
+  } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 
+      rankedFeatures <- selectedFeatures <- NULL
+  }
+  
   if(!is.null(.iteration)) # This function was not called by the end user.
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcomes, tune = tuneDetails, importance = importanceTable)
@@ -298,9 +314,9 @@ input data. Autmomatically reducing to smaller number.")
       allOutcomes <- c(outcomesTrain, outcomesTest)
       names(allOutcomes) <- allSamples
     }
-    
-    ClassifyResult(characteristics, allSamples, allFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, data.frame(sample = rownames(measurementsTest), predictedOutcomes, check.names = FALSE), allOutcomes, importanceTable)
+
+    ClassifyResult(characteristics, allSamples, featuresInfo, list(rankedFeatures), list(selectedFeatures),
+                   list(models), tuneDetails, DataFrame(sample = rownames(measurementsTest), predictedOutcomes, check.names = FALSE), allOutcomes, importanceTable)
   }  
 })
 
@@ -309,7 +325,7 @@ input data. Autmomatically reducing to smaller number.")
 setMethod("runTest", c("MultiAssayExperiment"),
           function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)
 {
-  omicsTargets <- setdiff("sampleInfo", targets)              
+  omicsTargets <- setdiff(targets, "sampleInfo")
   if(length(omicsTargets) > 0)
   {
     if(any(anyReplicated(measurements[, , omicsTargets])))

@@ -70,7 +70,6 @@
 #'     colnames(genesMatrix) <- paste("Gene", 1:ncol(genesMatrix))
 #'     
 #'     CVparams <- CrossValParams("k-Fold")
-#'       
 #'     trainParams <- TrainParams(GLMtrainInterface)
 #'     predictParams <- PredictParams(GLMpredictInterface)
 #'     modParams <- ModellingParams(selectParams = NULL, trainParams = trainParams,

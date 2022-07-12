@@ -76,10 +76,7 @@ setMethod("leveneRanking", "DataFrame", # Sample information data or one of the 
   pValues <- apply(measurementsTrain, 2, function(featureColumn)
              car::leveneTest(featureColumn, classesTrain)[["Pr(>F)"]][1])
   
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
-  else
-    colnames(measurementsTrain)[order(pValues)]
+  order(pValues) # From smallest to largest.
 })
 
 # One or more omics data sets, possibly with sample information data.

@@ -8,8 +8,8 @@
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}
-\alias{allFeatureNames}
-\alias{allFeatureNames,ClassifyResult-method}
+\alias{featuresInfo}
+\alias{featuresInfo,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
 \alias{actualOutcomes}
@@ -46,9 +46,8 @@ using wrapper functions for feature selection and classifiers in this
 package, the function names will automatically be generated and therefore it
 is not necessary to specify them.}
 \item{\code{originalNames}}{All sample names.}
-\item{\code{originalFeatures}}{All feature names. Character vector
-or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
-of measurements on the same set of samples.}
+\item{\code{featuresInfo}}{A \code{\link{DataFrame}} containing all feature names in original format
+and a safe format without any unusual symbols that R would automatically convert into another format and cause trouble.}
 \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
 or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{chosenFeatures}}{Features selected at each fold. Character
@@ -80,7 +79,7 @@ most popular value of the parameter in cross-validation is used.}
 \describe{
 \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
 \describe{
-\item{\code{allFeatureNames(result)}}{Returns a vector of features present in the data set.}}
+\item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 \describe{
 \item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
 \describe{

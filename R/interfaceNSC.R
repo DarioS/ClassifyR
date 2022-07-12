@@ -240,7 +240,7 @@ setMethod("NSCpredictInterface", c("pamrtrained", "MultiAssayExperiment"), funct
 #' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurementsTrain}.
 #' @return A list with the first element being empty (no feature ranking is
-#' provided) and second element being the selected features.
+#' provided) and second element being the selected features' indices.
 #' @author Dario Strbenac
 #' @seealso \code{\link[pamr]{pamr.listgenes}} for the function that is
 #' interfaced to.
@@ -278,12 +278,7 @@ setMethod("NSCfeatures", "pamrtrained",
             minError <- min(model[["errors"]])
             threshold <- model[["threshold"]][max(which(model[["errors"]] == minError))]
             params <- c(list(model), list(list(x = t(as.matrix(measurementsTrain)), y = measurementsTrain, geneid = 1:ncol(measurementsTrain))), threshold)
-            chosen <- as.numeric(do.call(pamr::pamr.listgenes, params)[, 1])
+            chosenIndices <- as.numeric(do.call(pamr::pamr.listgenes, params)[, 1])
             
-            if(is.matrix(measurementsTrain) || is.null(S4Vectors::mcols(measurementsTrain)))
-              chosen <- colnames(measurementsTrain)[chosen]
-            else
-              chosen <- S4Vectors::mcols(measurementsTrain)[chosen, ]
-            
-            list(NULL, chosen)
+            list(NULL, chosenIndices)
           })

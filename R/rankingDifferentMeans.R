@@ -87,10 +87,7 @@ setMethod("differentMeansRanking", "DataFrame",
     pValues <- genefilter::rowFtests(measurementsMatrix, classesTrain)[, "p.value"]
   }
   
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
-  else
-    colnames(measurementsTrain)[order(pValues)]
+  order(pValues) # From smallest to largest.
 })
 
 # One or more omics data sets, possibly with sample information data.

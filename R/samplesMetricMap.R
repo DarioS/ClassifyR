@@ -48,10 +48,11 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = LETTERS[sample(10, 100, replace = TRUE)],
+#'   predicted <- DataFrame(sample = LETTERS[sample(10, 100, replace = TRUE)],
 #'                           class = rep(c("Healthy", "Cancer"), each = 50))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5), levels = c("Healthy", "Cancer"))
 #'   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
+#'   features <- DataFrame(`Original Feature` = features, `Renamed Feature` = paste("Feature", 1:100, sep = ''), check.names = FALSE)
 #'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validation"),
 #'                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),

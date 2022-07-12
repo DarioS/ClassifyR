@@ -119,13 +119,15 @@ the relevant options to \code{parallelParams}.
 }
 \examples{
 
-  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+  predicted <- DataFrame(sample = sample(10, 100, replace = TRUE),
                           permutation = rep(1:2, each = 50),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
-  rankList <- list(allFeatures[1:100], allFeatures[c(15:6, 1:5, 16:100)],
-                   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 61:100, 60:51)])
+  allFeatures <- DataFrame(`Original Feature` = allFeatures, `Renamed Feature` = paste("Feature", 1:100, sep = ''),
+  check.names = FALSE)
+  rankList <- list(allFeatures[1:100, "Original Feature"], allFeatures[c(15:6, 1:5, 16:100), "Original Feature"],
+                   allFeatures[c(1:9, 11, 10, 12:100), "Original Feature"], allFeatures[c(1:50, 61:100, 60:51), "Original Feature"])
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Melanoma", "t-test", "Diagonal LDA", "2 Permutations, 2 Folds")),
@@ -136,8 +138,8 @@ the relevant options to \code{parallelParams}.
                             predicted, actual)
   
   predicted[, "class"] <- sample(predicted[, "class"])
-  rankList <- list(allFeatures[1:100], allFeatures[c(sample(20), 21:100)],
-                   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
+  rankList <- list(allFeatures[1:100, "Original Feature"], allFeatures[c(sample(20), 21:100), "Original Feature"],
+  allFeatures[c(1:9, 11, 10, 12:100), "Original Feature"], allFeatures[c(1:50, 60:51, 61:100), "Original Feature"])
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validations"),
                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),

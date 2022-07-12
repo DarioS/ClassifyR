@@ -77,10 +77,7 @@ setMethod("limmaRanking", "DataFrame",
   linearModel <- limma::eBayes(linearModel)
   linearModel <- linearModel[, -1] # Get rid of intercept.
   
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(linearModel[["F.p.value"]]), ]
-  else
-    colnames(measurementsTrain)[order(linearModel[["F.p.value"]])]
+  order(linearModel[["F.p.value"]]) # From smallest to largest.
 })
 
 # One or more omics data sets, possibly with sample information data.

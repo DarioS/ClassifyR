@@ -61,14 +61,6 @@ mixModelsParams <- function() {
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-# Elastic Net GLM with Prevaliation of Omics Data
-elasticNetPreval <- function() {
-    trainParams <- TrainParams(elasticNetGLMtrainInterfacePreval)
-    predictParams <- PredictParams(elasticNetGLMpredictInterface)
-    
-    return(list(trainParams = trainParams, predictParams = predictParams))
-}
-
 # Cox Proportional Hazards Model for Survival
 coxphParams <- function() {
     trainParams <- TrainParams(coxphTrainInterface)

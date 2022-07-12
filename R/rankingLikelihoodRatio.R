@@ -99,10 +99,7 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or on
     switch(alternative[["scale"]], same = allDistribution[[2]], different = classDistribution[[2]])))    
   }))
   
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(logLikelihoodRatios), ]
-  else
-    colnames(measurementsTrain)[order(logLikelihoodRatios)]
+  order(logLikelihoodRatios) # From smallest to largest.
 })
 
 # One or more omics data sets, possibly with sample information data.

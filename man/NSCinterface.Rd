@@ -86,7 +86,7 @@ each class, or a table of both the class labels and class scores, depending
 on the setting of \code{returnType}.
 
 A list with the first element being empty (no feature ranking is
-provided) and second element being the selected features.
+provided) and second element being the selected features' indices.
 }
 \description{
 Restructures variables from ClassifyR framework to be compatible with

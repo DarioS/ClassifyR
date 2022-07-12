@@ -193,8 +193,8 @@ setMethod("randomForestPredictInterface", c("randomForest", "MultiAssayExperimen
 #' @aliases forestFeatures forestFeatures,randomForest-method
 #' @param forest A trained random forest which was created by \code{\link{randomForest}}.
 #' @return An \code{list} object. The first element is a vector or data frame
-#' of features, ranked from best to worst using the Gini index. The second
-#' element is a vector or data frame of features used in at least one tree.
+#' of feature indices, ranked from best to worst using the Gini index. The second
+#' element is a vector or data frame of feature indices used in at least one tree.
 #' @author Dario Strbenac
 #' @examples
 #'
@@ -226,17 +226,7 @@ setGeneric("forestFeatures", function(forest, ...)
 setMethod("forestFeatures", "randomForest",
           function(forest)
           {
-            inputFeatures <- rownames(randomForest::importance(forest))
-            rankedFeatures <- inputFeatures[order(randomForest::importance(forest), decreasing = TRUE)]
-            selectedFeatures <- inputFeatures[randomForest::varUsed(forest) > 0]
-            selectedFeatures <- selectedFeatures[na.omit(match(rankedFeatures, selectedFeatures))]
-            
-            # Colon is a reserved symbol for separating data name and feature name, which is necessary for identifiability of MultiAssayExperiment features. It is not permitted in feature names.
-            if(grepl(':', selectedFeatures[1]) == TRUE) # Convert to data.frame.
-            {
-              selectedFeatures <- do.call(rbind, strsplit(selectedFeatures, ':'))
-              rankedFeatures <- do.call(rbind, strsplit(rankedFeatures, ':'))
-              colnames(selectedFeatures) <- colnames(rankedFeatures) <- c("dataset", "feature")
-            }
-            list(rankedFeatures, selectedFeatures)
+            rankedFeaturesIndices <- order(randomForest::importance(forest), decreasing = TRUE)
+            selectedFeaturesIndices <- which(randomForest::varUsed(forest) > 0)
+            list(rankedFeaturesIndices, selectedFeaturesIndices)
           })

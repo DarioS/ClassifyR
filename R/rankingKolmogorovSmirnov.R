@@ -75,10 +75,7 @@ setMethod("KolmogorovSmirnovRanking", "DataFrame", # Sample information data or 
   KSdistance <- apply(measurementsTrain, 2, function(featureColumn)
                       stats::ks.test(featureColumn[oneClass], featureColumn[otherClass], ...)[["statistic"]])
 
-  if(!is.null(S4Vectors::mcols(measurementsTrain)))
-    S4Vectors::mcols(measurementsTrain)[order(KSdistance, decreasing = TRUE), ]
-  else
-    colnames(measurementsTrain)[order(KSdistance, decreasing = TRUE)]
+  order(KSdistance, decreasing = TRUE)
 })
 
 # One or more omics data sets, possibly with sample information data.
