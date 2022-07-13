@@ -36,9 +36,8 @@ the value is 3.}
 used in the analysis.}
 }
 \value{
-A vector or data frame (if \code{MultiAssayExperiment} input) of
-features, from the most promising features in the first position to the
-least promising feature in the last position.
+A vector of feature indicies, from the most promising features in
+the first position to the least promising feature in the last position.
 }
 \description{
 Uses a moderated F-test with empirical Bayes shrinkage to rank

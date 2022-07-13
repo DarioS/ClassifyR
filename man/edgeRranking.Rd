@@ -55,9 +55,8 @@ the value is 3.}
 names of the data tables of counts to be used.}
 }
 \value{
-A vector or data frame (if \code{MultiAssayExperiment} input) of
-features, from the most promising features in the first position to the
-least promising feature in the last position.
+A vector of feature indices, from the most promising features in the
+first position to the least promising feature in the last position.
 }
 \description{
 Performs a differential expression analysis between classes and ranks the

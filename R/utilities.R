@@ -354,25 +354,25 @@
       
       list(ranked = rankingUse, selected = selectionIndices, tune = tuneDetails)
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
-      featuresLists <- mapply(function(selector, selParams)
+      featuresIndiciesLists <- mapply(function(selector, selParams)
       {
         paramList <- list(measurementsTrain, outcomesTrain, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
         do.call(selector, paramList)
-      }, modellingParams@selectParams@featureRanking, modellingParams@selectParams@featureRanking, SIMPLIFY = FALSE)
+      }, modellingParams@selectParams@featureRanking, modellingParams@selectParams@otherParams, SIMPLIFY = FALSE)
 
       performances <- sapply(topNfeatures, function(topN)
       {
-        topIndices <- unlist(lapply(featuresLists, function(features) features[1:topN]))
+        topIndices <- unlist(lapply(featuresIndiciesLists, function(featuresIndicies) featuresIndicies[1:topN]))
         topIndicesCounts <- table(topIndices)
         keep <- names(topIndicesCounts)[topIndicesCounts >= modellingParams@selectParams@minPresence]
-        measurementsSelected <- measurementsTrain[, keep, drop = FALSE] # Features in columns
+        measurementsTrain <- measurementsTrain[, as.numeric(keep), drop = FALSE] # Features in columns
         
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurementsSelected, classesTrain,
-                            training = 1:nrow(measurementsSelected), testing = 1:nrow(measurementsSelected),
+          result <- runTest(measurementsTrain, outcomesTrain,
+                            measurementsTrain, outcomesTrain,
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
           predictions <- result[["predictions"]]
@@ -389,13 +389,13 @@
       })
       bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
       
-      selectedFeatures <- unlist(lapply(featuresLists, function(featuresList) featuresList[1:topNfeatures[bestOne]]))
-      names(table(selectedFeatures))[table(selectedFeatures) >= modellingParams@selectParams@minPresence]
+      selectionIndices <- unlist(lapply(featuresLists, function(featuresList) featuresList[1:topNfeatures[bestOne]]))
+      names(table(selectionIndices))[table(selectionIndices) >= modellingParams@selectParams@minPresence]
       
-      list(NULL, selectedFeatures, NULL)
+      list(NULL, selectionIndices, NULL)
     } else { # Previous selection
       selectedFeatures <- 
-      list(NULL, selectedFeatures, NULL)
+      list(NULL, selectionIndices, NULL)
     }
 }
 

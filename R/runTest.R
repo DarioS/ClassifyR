@@ -119,9 +119,9 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     {
       S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
       S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
+      colnames(measurementsTrain) <- colnames(measurementsTest) <- paste(featuresInfo[["Renamed Dataset"]], featuresInfo[["Renamed Feature"]], sep = '')
     } else {
-      colnames(measurementsTrain) <- featuresInfo[, "Renamed Feature"]
-      colnames(measurementsTest) <- featuresInfo[, "Renamed Feature"]
+      colnames(measurementsTrain) <- colnames(measurementsTest) <- featuresInfo[, "Renamed Feature"]
     }
   }
     
@@ -185,8 +185,11 @@ input data. Autmomatically reducing to smaller number.")
     tuneDetailsSelect <- topFeatures[[3]]
 
     if(modellingParams@selectParams@subsetToSelections == TRUE)
+    {
       measurementsTrain <- measurementsTrain[, selectedFeaturesIndices, drop = FALSE]
-  } 
+      measurementsTest <- measurementsTest[, selectedFeaturesIndices, drop = FALSE]
+    }
+  }
   
   # Training stage.
   if(length(modellingParams@trainParams@intermediate) > 0)
@@ -232,25 +235,16 @@ input data. Autmomatically reducing to smaller number.")
   importanceTable <- NULL
   if(is.numeric(.iteration) && modellingParams@doImportance == TRUE)
   {
-    nSelected <- ifelse(is.null(ncol(selectedFeatures)), length(selectedFeatures), nrow(selectedFeatures))
     performanceMP <- modellingParams@selectParams@tuneParams[["performanceType"]]
     performanceType <- ifelse(!is.null(performanceMP), performanceMP, "Balanced Error")
-    performancesWithoutEach <- sapply(1:nSelected, function(selectedIndex)
+    performancesWithoutEach <- sapply(selectedFeaturesIndices, function(selectedIndex)
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)))
-      { # Input was ordinary matrix or DataFrame.
-        measurementsTrainLess1 <- measurementsTrain[, selectedFeatures[-selectedIndex], drop = FALSE]
-      } else { # Input was MultiAssayExperiment. # Match the selected features to the data frame columns
-        selectedIDs <-  do.call(paste, selectedFeatures[-selectedIndex, ])
-        featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
-        useColumns <- match(selectedIDs, featuresIDs)
-        measurementsTrainLess1 <- measurementsTrain[, useColumns, drop = FALSE]
-      }
-         
-      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
+      measurementsTrainLess1 <- measurementsTrain[, -selectedIndex, drop = FALSE]
+      measurementsTestLess1 <- measurementsTest[, -selectedIndex, drop = FALSE]
+      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomesTrain, measurementsTestLess1, outcomesTest, modellingParams, verbose),
                                   error = function(error) error[["message"]])
       if(!is.null(modellingParams@predictParams))
-      predictedOutcomesWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTest, modellingParams@predictParams, verbose),
+      predictedOutcomesWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTestLess1, modellingParams@predictParams, verbose),
                                               error = function(error) error[["message"]])
       else predictedOutcomesWithoutOne <- modelWithoutOne[["model"]]
 

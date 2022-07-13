@@ -165,6 +165,7 @@ setMethod("crossValidate", "DataFrame",
                                   set.seed(seed)
                                   measurementsUse <- measurements
                                   if(!is.null(mcols(measurements))) measurementsUse <- measurements[, mcols(measurements)[, "dataset"] == dataIndex, drop = FALSE]
+                                  
                                   CV(
                                       measurements = measurementsUse, classes = classes,
                                       nFeatures = nFeatures[dataIndex],
@@ -233,7 +234,7 @@ setMethod("crossValidate", "DataFrame",
 
 
                   if(is.null(dataCombinations)){
-                      dataCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
+                      dataCombinations <- do.call("c", sapply(seq_along(datasetIDs),function(n)combn(datasetIDs, n, simplify = FALSE)))
                       dataCombinations <- dataCombinations[sapply(dataCombinations, function(x)"clinical"%in%x, simplify = TRUE)]
                       if(length(dataCombinations)==0) stop("No dataCombinations with `clinical` data")
                   }
@@ -267,7 +268,7 @@ setMethod("crossValidate", "DataFrame",
 
 
                   if(is.null(dataCombinations)){
-                      dataCombinations <- do.call("c", sapply(seq_len(length(datasetIDs)),function(n)combn(datasetIDs, n, simplify = FALSE)))
+                      dataCombinations <- do.call("c", sapply(seq_along(datasetIDs),function(n)combn(datasetIDs, n, simplify = FALSE)))
                       dataCombinations <- dataCombinations[sapply(dataCombinations, function(x)"clinical"%in%x, simplify = TRUE)]
                       if(length(dataCombinations)==0) stop("No dataCombinations with `clinical` data")
                   }
@@ -611,8 +612,6 @@ generateModellingParams <- function(datasetIDs,
                                     classifier,
                                     multiViewMethod = "none"
 ){
-
-
     if(multiViewMethod != "none") {
         params <- generateMultiviewParams(datasetIDs,
                                           measurements,
@@ -627,7 +626,8 @@ generateModellingParams <- function(datasetIDs,
 
 
 
-    obsFeatures <- sum(mcols(measurements)[, "dataset"] %in% datasetIDs)
+    if(length(datasetIDs) > 1) obsFeatures <- sum(mcols(measurements)[, "dataset"] %in% datasetIDs)
+    else obsFeatures <- ncol(measurements)
 
 
     nFeatures <- unlist(nFeatures)

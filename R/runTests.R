@@ -113,7 +113,7 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(verbose >= 1 && setNumber %% 10 == 0)
       message("Processing sample set ", setNumber, '.')
-
+      
     # crossValParams is needed at least for nested feature tuning.
     runTest(measurements[trainingSamples, , drop = FALSE], outcomes[trainingSamples],
             measurements[testSamples, , drop = FALSE], outcomes[testSamples],

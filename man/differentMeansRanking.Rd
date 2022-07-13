@@ -40,9 +40,8 @@ the value is 3.}
 used in the analysis.}
 }
 \value{
-A vector or data frame (if \code{MultiAssayExperiment} input) of
-features, from the most promising features in the first position to the
-least promising feature in the last position.
+A vector of feature indices, from the most promising features in the
+first position to the least promising feature in the last position.
 }
 \description{
 Uses an ordinary t-test if the data set has two classes or one-way ANOVA if

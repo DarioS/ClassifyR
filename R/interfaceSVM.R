@@ -146,6 +146,7 @@ setMethod("SVMpredictInterface", c("svm", "DataFrame"), function(model, measurem
   
   # Prediction function depends on test data having same set of columns in same order as
   # selected features used for training.
+  colnames(measurementsTest) <- make.names(colnames(measurementsTest))
   measurementsTest <- measurementsTest[, colnames(model[["SV"]])]
   classPredictions <- predict(model, measurementsTest, probability = TRUE)
   

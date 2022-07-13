@@ -31,7 +31,7 @@
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
-#' @return A \code{\link{Pairs}} object, from the most promising feature pair
+#' @return A vector of feature indices, from the most promising feature pair
 #' in the first position to the least promising feature pair in the last
 #' position.
 #' @author Dario Strbenac

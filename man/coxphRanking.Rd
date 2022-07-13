@@ -45,9 +45,8 @@ and specifies that numeric variables from the clinical data table will be
 used.}
 }
 \value{
-A vector or data frame (if \code{MultiAssayExperiment} input) of
-features, from the most promising features in the first position to the
-least promising feature in the last position.
+A vector of feature indicies, from the most promising features in the
+first position to the least promising feature in the last position.
 }
 \description{
 Ranks all features from largest coxph statistic to smallest.

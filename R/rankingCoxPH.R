@@ -29,9 +29,8 @@
 #' @param verbose Default: 3. A number between 0 and 3 for the amount of
 #' progress messages to give.  This function only prints progress messages if
 #' the value is 3.
-#' @return A vector or data frame (if \code{MultiAssayExperiment} input) of
-#' features, from the most promising features in the first position to the
-#' least promising feature in the last position.
+#' @return A vector of feature indicies, from the most promising features in the
+#' first position to the least promising feature in the last position.
 #' @importFrom survival coxph
 #' @rdname coxphRanking
 #' @usage NULL

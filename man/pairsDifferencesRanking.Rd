@@ -57,7 +57,7 @@ the value is 3.}
 name of the data table to be used.}
 }
 \value{
-A \code{\link{Pairs}} object, from the most promising feature pair
+A vector of feature indices, from the most promising feature pair
 in the first position to the least promising feature pair in the last
 position.
 }
