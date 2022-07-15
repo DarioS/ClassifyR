@@ -57,6 +57,7 @@
 #' there are two classes.}
 #' \item{\code{"AUC"}: Area Under the Curve. An area ranging from 0 to 1, under the ROC.}
 #' \item{\code{"C-index"}: For survival data, the concordance index, for models which produce risk scores. Ranges from 0 to 1.}
+#' \item{\code{"Sample C-index"}: Per-individual C-index.}
 #' }
 #' 
 #' @param actualOutcomes A factor vector or survival information specifying each sample's known outcome.
@@ -128,7 +129,7 @@ setMethod("calcCVperformance", "ClassifyResult",
                                                "Micro Precision", "Micro Recall",
                                                "Micro F1", "Macro Precision",
                                                "Macro Recall", "Macro F1", "Matthews Correlation Coefficient", "AUC", 
-                                               "C-index"))
+                                               "C-index", "Sample C-index"))
 {
   performanceType <- match.arg(performanceType)
   actualOutcomes <- actualOutcomes(result) # Extract the known outcomes of all samples.
@@ -143,7 +144,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   }
   
   ### Performance for survival data
-  if(performanceType == "C-index") {
+  if(performanceType %in% c("C-index", "Sample C-index")) {
     samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
     performance <- .calcPerformance(actualOutcomes = actualOutcomes[match(result@predictions[, "sample"], sampleNames(result))],
                                     predictedOutcomes = result@predictions[, "risk"], 
@@ -180,30 +181,63 @@ setMethod("calcCVperformance", "ClassifyResult",
 {
   if(performanceType %in% c("Sample Error", "Sample Accuracy"))
   {
-    resultTable <- data.frame(sample = samples,
-                              actual = actualOutcomes,
-                              predicted = predictedOutcomes)
-    allIDs <- levels(resultTable[, "sample"])
     
-    sampleMetricValues <- sapply(allIDs, function(sampleID)
+    sampleMetricValues <- sapply(levels(samples), function(sampleID)
     {
-      sampleResult <- subset(resultTable, sample == sampleID)
-      if(nrow(sampleResult) == 0)
-        return(NA)
+      consider <- which(samples == sampleID)
       if(performanceType == "Sample Error")
-        sum(as.character(sampleResult[, "predicted"]) != as.character(sampleResult[, "actual"]))
+        sum(predictedOutcomes[consider] != as.character(actualOutcomes[consider]))
       else
-        sum(as.character(sampleResult[, "predicted"]) == as.character(sampleResult[, "actual"]))
+        sum(predictedOutcomes[consider] == as.character(actualOutcomes[consider]))
     })
-    performanceValues <- as.numeric(sampleMetricValues / table(factor(resultTable[, "sample"], levels = allIDs)))
-    names(performanceValues) <- allIDs
+    performanceValues <- as.numeric(sampleMetricValues / table(samples))
+    names(performanceValues) <- levels(samples)
     return(list(name = performanceType, values = performanceValues))
   }
-  
+    
   if(!is.null(grouping))
   {
     actualOutcomes <- split(actualOutcomes, grouping)
     predictedOutcomes <- split(predictedOutcomes, grouping)
+    allSamples <- levels(samples)
+    samples <- split(samples, grouping)
+  }
+    
+  if(performanceType == "Sample C-index")
+  {
+    performanceValues <- do.call(rbind, mapply(function(iterationSurv, iterationPredictions, iterationSamples)
+    {
+      do.call(rbind, lapply(allSamples, function(sampleID)
+      {
+        sampleIndex <- which(iterationSamples == sampleID)
+        otherIndices <- setdiff(seq_along(allSamples), sampleIndex)
+        concordants <- discordants <- 0
+        iterationSurv <- as.matrix(iterationSurv)
+        for(compareIndex in otherIndices)
+        {
+          if(iterationSurv[sampleIndex, "time"] < iterationSurv[compareIndex, "time"] && iterationPredictions[sampleIndex] > iterationPredictions[compareIndex] && iterationSurv[sampleIndex, "status"] == 1)
+          { # Reference sample has shorter time, it is not censored, greater risk. Concordant.
+            concordants <- concordants + 1
+          } else if(iterationSurv[sampleIndex, "time"] > iterationSurv[compareIndex, "time"] && iterationPredictions[sampleIndex] < iterationPredictions[compareIndex] && iterationSurv[compareIndex, "status"] == 1)
+          { # Reference sample has longer time, the comparison sample is not censored, lower risk. Concordant.
+            concordants <- concordants + 1
+          } else if(iterationSurv[sampleIndex, "time"] < iterationSurv[compareIndex, "time"] && iterationPredictions[sampleIndex] < iterationPredictions[compareIndex] && iterationSurv[sampleIndex, "status"] == 1)
+          { # Reference sample has shorter time, it is not censored, but lower risk than comparison sample. Discordant.
+            discordants <- discordants + 1
+          } else if(iterationSurv[sampleIndex, "time"] > iterationSurv[compareIndex, "time"] && iterationPredictions[sampleIndex] > iterationPredictions[compareIndex] && iterationSurv[compareIndex, "status"] == 1)
+          { # Reference sample has longer time, the comparison sample is not censored, but higher risk than comparison sample. Discordant.
+            discordants <- discordants + 1
+          }
+        }
+        data.frame(sample = sampleID, concordant = concordants, discordant = discordants)
+      }))
+    }, actualOutcomes, predictedOutcomes, samples, SIMPLIFY = FALSE))
+
+    sampleValues <- by(performanceValues[, c("concordant", "discordant")], performanceValues[, "sample"], colSums)
+    Cindex <- round(sapply(sampleValues, '[', 1) / (sapply(sampleValues, '[', 1) + sapply(sampleValues, '[', 2)), 2)
+    names(Cindex) <- names(sampleValues)
+    Cindex <- Cindex[!is.nan(Cindex)] # The individual with the smallest censored time will always have no useful inequalities.
+    return(list(name = performanceType, values = Cindex))
   }
   
   if(!is(actualOutcomes, "list")) actualOutcomes <- list(actualOutcomes)

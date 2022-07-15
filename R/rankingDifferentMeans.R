@@ -49,6 +49,7 @@
 #'     head(ranked)
 #' @usage NULL
 #' @export
+#' @importFrom genefilter rowttests rowFtests
 setGeneric("differentMeansRanking", function(measurementsTrain, ...)
            standardGeneric("differentMeansRanking"))
 

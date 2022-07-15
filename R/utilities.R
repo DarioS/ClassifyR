@@ -40,25 +40,19 @@
     outcomes <- factor(outcomes)
   
   # Outcomes has columns, so it is tabular. It is inferred to represent survival data.
-  if(!is.null(ncol(outcomes)))
+  if(!is.null(ncol(outcomes)) && ncol(outcomes) %in% 2:3)
   {
     # Assume that event status is in the last column (second for two columns, third for three columns)
-    if(!is.null(dim(outcomes)) && length(dim(data)) == 2 && ncol(outcomes) %in% 2:3)
-    {
-      numberEventTypes <- length(unique(outcomes[, ncol(outcomes)]))
-      # Could be one or two kinds of events. All events might be uncensored or censored
-      # in a rare but not impossible scenario.
-      if(numberEventTypes > 2)
-        stop("Number of distinct event types in the last column exceeds 2 but must be 1 or 2.")
+    numberEventTypes <- length(unique(outcomes[, ncol(outcomes)]))
+    # Could be one or two kinds of events. All events might be uncensored or censored
+    # in a rare but not impossible scenario.
+    if(numberEventTypes > 2)
+      stop("Number of distinct event types in the last column exceeds 2 but must be 1 or 2.")
       
-      
-      if(ncol(outcomes) == 2) # Typical, right-censored survival data.
-      {
-        outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2])
-      } else { # Three columns. Therefore, counting process data.
-        outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2], outcomes[, 3])
-      }
-    }
+    if(ncol(outcomes) == 2) # Typical, right-censored survival data.
+      outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2])
+    else # Three columns. Therefore, counting process data.
+      outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2], outcomes[, 3])
   }
   
   if(!is.null(restrict))

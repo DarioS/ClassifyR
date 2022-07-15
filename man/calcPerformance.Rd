@@ -29,7 +29,7 @@ Pair of Factor Vectors}
   performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
-    "AUC", "C-index")
+    "AUC", "C-index", "Sample C-index")
 )
 }
 \arguments{
@@ -64,6 +64,7 @@ between -1 and 1 indicating how concordant the predicted classes are to the actu
 there are two classes.}
 \item{\code{"AUC"}: Area Under the Curve. An area ranging from 0 to 1, under the ROC.}
 \item{\code{"C-index"}: For survival data, the concordance index, for models which produce risk scores. Ranges from 0 to 1.}
+\item{\code{"Sample C-index"}: Per-individual C-index.}
 }}
 
 \item{result}{An object of class \code{\link{ClassifyResult}}.}
