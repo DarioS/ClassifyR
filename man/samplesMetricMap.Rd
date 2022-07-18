@@ -9,7 +9,7 @@
 \S4method{samplesMetricMap}{list}(
   results,
   comparison = "Classifier Name",
-  metric = c("Sample Error", "Sample Accuracy"),
+  metric = c("Sample Error", "Sample Accuracy", "Sample C-index"),
   featureValues = NULL,
   featureName = NULL,
   metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
@@ -18,7 +18,8 @@
   groupColours = c("darkgreen", "yellow2"),
   fontSizes = c(24, 16, 12, 12, 12),
   mapHeight = 4,
-  title = "Error Comparison",
+  title = switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` =
+    "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison"),
   showLegends = TRUE,
   xAxisLabel = "Sample Name",
   showXtickLabels = TRUE,
@@ -54,19 +55,21 @@
 \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be
 a matrix of pre-calculated metrics, for backwards compatibility.}
 
-\item{comparison}{Default: Classifier Name. The aspect of the experimental
+\item{comparison}{Default: "Classifier Name". The aspect of the experimental
 design to compare. Can be any characteristic that all results share.}
 
-\item{metric}{The sample-wise metric to plot.}
+\item{metric}{Default: "Sample Error". The sample-wise metric to plot.}
 
 \item{featureValues}{If not NULL, can be a named factor or named numeric
-vector specifying some variable of interest to plot underneath the class
-bar.}
+vector specifying some variable of interest to plot underneath the above the
+heatmap.}
 
 \item{featureName}{A label describing the information in
 \code{featureValues}. It must be specified if \code{featureValues} is.}
 
-\item{metricColours}{A vector of colours for metric levels.}
+\item{metricColours}{If the outcome is categorical, a list of vectors of colours
+for metric levels for each class. If the outcome is numeric, such as a risk score,
+then a single vector of colours for the metric levels for all samples.}
 
 \item{classColours}{Either a vector of colours for class levels if both
 classes should have same colour, or a list of length 2, with each component
@@ -74,7 +77,7 @@ being a vector of the same length. The vector has the colour gradient for
 each class.}
 
 \item{groupColours}{A vector of colours for group levels. Only useful if
-\code{groups} is not NULL.}
+\code{featureValues} is not NULL.}
 
 \item{fontSizes}{A vector of length 5. The first number is the size of the
 title.  The second number is the size of the axes titles. The third number

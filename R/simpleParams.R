@@ -1,7 +1,15 @@
-# RandomForest
+# Random Forest
 RFparams <- function() {
     trainParams <- TrainParams(randomForestTrainInterface)
     predictParams <- PredictParams(randomForestPredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
+# Random Surival Forest
+RSFparams <- function() {
+    trainParams <- TrainParams(rfsrcTrainInterface)
+    predictParams <- PredictParams(rfsrcPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }

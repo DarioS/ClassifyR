@@ -34,6 +34,10 @@ vignette: >
 options(width = 130)
 ```
 
+## Installation
+
+Typically, each feature selection method or classifier originates from a different R package, which **ClassifyR** provides a wrapper around. By default, only high-performance t-test/F-test and random forest are installed. If you intend to compare between numerous different modelling methods, you should install all suggested packages at once by using the command `BiocManager::install("ClassifyR", dependencies = TRUE)`. This will take a few minutes, particularly on Linux, because each package will be compiled from source code.
+
 ## Overview
 
 **ClassifyR** provides a structured pipeline for cross-validated classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The driver functions *crossValidate* and *runTests* implements varieties of cross-validation. They are:

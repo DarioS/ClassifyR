@@ -103,6 +103,16 @@ setOldClass("coxph")
 #' @docType class
 setOldClass("Surv")
 
+#' Survival Forest Data Container
+#' 
+#' Enables S4 method dispatching on it.
+#' 
+#' 
+#' @name rfsrc-class
+#' @aliases rfsrc rfsrc-class
+#' @docType class
+setOldClass("rfsrc")
+
 ################################################################################
 #
 # Create union of classes

@@ -654,6 +654,7 @@ generateModellingParams <- function(datasetIDs,
     classifier <- switch(
         classifier,
         "randomForest" = RFparams(),
+        "randomSurvivalForest" = RSFparams(),
         "GLM" = GLMparams(),
         "elasticNetGLM" = elasticNetGLMparams(),
         "SVM" = SVMparams(),
