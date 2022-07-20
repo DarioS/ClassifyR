@@ -644,7 +644,7 @@ generateModellingParams <- function(datasetIDs,
     performanceType <- ifelse(classifier %in% c("CoxPH", "CoxNet"), "C-index", "Balanced Accuracy")
     
     
-    classifiers <- c("randomForest", "GLM", "elasticNetGLM", "SVM", "DLDA",
+    classifiers <- c("randomForest", "randomSurvivalForest", "GLM", "elasticNetGLM", "SVM", "DLDA",
                      "naiveBayes", "mixturesNormals", "kNN",
                      "CoxPH", "CoxNet")
     # Check classifier
