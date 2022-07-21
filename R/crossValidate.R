@@ -420,8 +420,6 @@ setMethod("crossValidate", "list",
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
-              return("crossValidate of list of data sets") # Stub. Remove when working.
-              
               # Check if the list only contains one data type
               if (measurements |> sapply(class) |> unique() |> length() != 1) {
                   stop("All datasets must be of the same type (e.g. data.frame, matrix)")
@@ -438,17 +436,17 @@ setMethod("crossValidate", "list",
               }
               
               # Check same number of samples for all datasets
-              if ((df_list |> sapply(dim))[2,] |> unique() |> length() != 1) {
+              if ((measurements |> sapply(dim))[1,] |> unique() |> length() != 1) {
                   stop("All datasets must have the same number of samples")
               }
               
               # Check the number of classes is the same
-              if ((df_list[[1]] |> dim())[2] != classes |> length()) {
+              if ((measurements[[1]] |> dim())[1] != length(classes)) {
                   stop("Classes must have same number of samples as measurements")
               }
               
               df_list <- sapply(measurements, t, simplify = FALSE)
-              df_list <- sapply(df_list , S4Vectors::DataFrame)
+              df_list <- sapply(measurements , S4Vectors::DataFrame)
               
               df_list <- mapply(function(meas, nam){
                   mcols(meas)$dataset <- nam
