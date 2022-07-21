@@ -66,7 +66,7 @@ used.}
 
 \item{model}{A trained rfsrc classifier, as created by
 \code{rfsrcTrainInterface}, which has the same form as the output of
-\code{\link[survival]{rfsrc}}.}
+\code{\link[randomForestSRC]{rfsrc}}.}
 
 \item{measurementsTest}{An object of the same class as \code{measurementsTrain} with no
 samples in common with \code{measurementsTrain} and the same number of features

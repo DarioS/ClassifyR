@@ -30,7 +30,7 @@
 #' calcExternalPerformance,factor,factor-method calcExternalPerformance,Surv,numeric-method
 #' calcCVperformance,ClassifyResult-method
 #' @param result An object of class \code{\link{ClassifyResult}}.
-#' @param performanceType A character vector of length 1. Default: \code{"Balanced Error"}.
+#' @param performanceType A character vector of length 1. Default: \code{"Balanced Accuracy"}.
 #' Must be one of the following options:
 #' \itemize{
 #' \item{\code{"Error"}: Ordinary error rate.}
@@ -93,7 +93,7 @@ standardGeneric("calcExternalPerformance"))
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualOutcomes, predictedOutcomes, # Both are classes.
-                   performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+                   performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
                                        "Sample Error", "Sample Accuracy",
                                        "Micro Precision", "Micro Recall",
                                        "Micro F1", "Macro Precision",
@@ -124,7 +124,7 @@ setGeneric("calcCVperformance", function(result, ...)
 #' @rdname calcPerformance
 #' @exportMethod calcCVperformance
 setMethod("calcCVperformance", "ClassifyResult",
-          function(result, performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+          function(result, performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
                                                "Sample Error", "Sample Accuracy",
                                                "Micro Precision", "Micro Recall",
                                                "Micro F1", "Macro Precision",

@@ -13,7 +13,7 @@ Pair of Factor Vectors}
 \S4method{calcExternalPerformance}{factor,factor}(
   actualOutcomes,
   predictedOutcomes,
-  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient")
 )
@@ -26,7 +26,7 @@ Pair of Factor Vectors}
 
 \S4method{calcCVperformance}{ClassifyResult}(
   result,
-  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
     "AUC", "C-index", "Sample C-index")
@@ -37,7 +37,7 @@ Pair of Factor Vectors}
 
 \item{predictedOutcomes}{A factor vector or survival information of the same length as \code{actualOutcomes} specifying each sample's predicted outcome.}
 
-\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Error"}.
+\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Accuracy"}.
 Must be one of the following options:
 \itemize{
 \item{\code{"Error"}: Ordinary error rate.}
