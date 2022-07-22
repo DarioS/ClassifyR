@@ -100,7 +100,7 @@
     dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(sampleInfoColumnsTrain, outcomesColumns), check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
     S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
-    colnames(S4Vectors::mcols(dataTable))[1] <- "dataset"
+    colnames(S4Vectors::mcols(dataTable))[1] <- "assay"
   
     # Sample information variable names not included in column metadata of wide table but only as row names of it.
     # Create a combined column named "feature" which has feature names of the assays as well as the sample information.
@@ -109,7 +109,7 @@
     S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
     
     # Finally, a column annotation recording variable name and which table it originated from for all of the source tables.
-    S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("dataset", "feature")]
+    S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("assay", "feature")]
   } else { # Must have only been sample information data.
     dataTable <- MultiAssayExperiment::colData(measurements)
   }
@@ -569,24 +569,23 @@
   {
     originalInfo <- S4Vectors::mcols(measurements)
     featureNames <- S4Vectors::mcols(measurements)[, "feature"]
-    datasets <- unique(S4Vectors::mcols(measurements)[, "dataset"])
+    assays <- unique(S4Vectors::mcols(measurements)[, "assay"])
     renamedInfo <- S4Vectors::mcols(measurements)
-    renamedDatasets <- paste("Dataset", seq_along(datasets), sep = '')
-    for(dataset in datasets)
+    renamedAssays <- paste("Assay", seq_along(assays), sep = '')
+    for(assay in assays)
     {
-      rowsDataset <- which(renamedInfo[, "dataset"] == dataset)
-      renamedInfo[rowsDataset, "feature"] <- paste("Feature", seq_along(rowsDataset), sep = '')
-      renamedInfo[rowsDataset, "dataset"] <- renamedDatasets[match(dataset, datasets)]
+      rowsAssay <- which(renamedInfo[, "assay"] == assay)
+      renamedInfo[rowsAssay, "feature"] <- paste("Feature", seq_along(rowsAssay), sep = '')
+      renamedInfo[rowsAssay, "assay"] <- renamedAssays[match(assay, assays)]
     }
     featuresInfo <- DataFrame(originalInfo, renamedInfo)
-    colnames(featuresInfo) <- c("Original Dataset", "Original Feature", "Renamed Dataset", "Renamed Feature")
+    colnames(featuresInfo) <- c("Original Assay", "Original Feature", "Renamed Assay", "Renamed Feature")
   } else {
     originalFeatures <- colnames(measurements)
     renamedInfo <- paste("Feature", seq_along(measurements), sep = '')
     featuresInfo <- DataFrame(originalFeatures, renamedInfo)
     colnames(featuresInfo) <- c("Original Feature", "Renamed Feature")
   }
-  
   featuresInfo
 }
 

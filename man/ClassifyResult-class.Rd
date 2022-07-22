@@ -111,7 +111,7 @@ of predictions made during the cross-validation procedure.}}
     modellingParams <- ModellingParams()
     classified <-
     runTests(measurements, classes, LOOCVparams, modellingParams,
-             DataFrame(characteristic = c("dataset", "classification"),
+             DataFrame(characteristic = c("Data Set", "Classification"),
                       value = c("Asthma", "Different Means"))
              )
     class(classified)

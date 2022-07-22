@@ -92,7 +92,7 @@ setMethod("runTest", "DataFrame", # Sample information data or one of the other 
 function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), verbose = 1, .iteration = NULL)
-{
+{if(!is.null(.iteration) && .iteration != "internal")
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -117,9 +117,9 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     featuresInfo <- .summaryFeatures(measurementsTrain)
     if(!is.null(S4Vectors::mcols(measurementsTrain)))
     {
-      S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
-      S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Dataset", "Renamed Feature")]
-      colnames(measurementsTrain) <- colnames(measurementsTest) <- paste(featuresInfo[["Renamed Dataset"]], featuresInfo[["Renamed Feature"]], sep = '')
+      S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
+      S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
+      colnames(measurementsTrain) <- colnames(measurementsTest) <- paste(featuresInfo[["Renamed Assay"]], featuresInfo[["Renamed Feature"]], sep = '')
     } else {
       colnames(measurementsTrain) <- colnames(measurementsTest) <- featuresInfo[, "Renamed Feature"]
     }
@@ -257,7 +257,7 @@ input data. Autmomatically reducing to smaller number.")
         predictedOutcomes <- predictedOutcomes[, na.omit(match(c("class", "risk"), colnames(predictedOutcomes)))]
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType), 2)
      
-    if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Dataset", "Original Feature")]
+    if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Assay", "Original Feature")]
     importanceTable <- DataFrame(selectedFeatures, performanceChanges)
     if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
     colnames(importanceTable)[ncol(importanceTable)] <- paste("Change in", performanceType)
@@ -271,11 +271,11 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(!is.null(rankedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain))) rankedFeatures <- featuresInfo[rankedFeaturesIndices, "Original Feature"] else rankedFeatures <- featuresInfo[rankedFeaturesIndices, c("Original Dataset", "Original Feature")]
+      if(is.null(S4Vectors::mcols(measurementsTrain))) rankedFeatures <- featuresInfo[rankedFeaturesIndices, "Original Feature"] else rankedFeatures <- featuresInfo[rankedFeaturesIndices, c("Original Assay", "Original Feature")]
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Dataset", "Original Feature")]
+      if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Assay", "Original Feature")]
     } else { selectedFeatures <- NULL}
   } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 
       rankedFeatures <- selectedFeatures <- NULL

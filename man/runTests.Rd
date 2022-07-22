@@ -80,7 +80,7 @@ parallel is possible by leveraging the package \code{\link{BiocParallel}}.
     selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
     runTests(measurements, classes, CVparams, modellingParams,
-             DataFrame(characteristic = c("Dataset Name", "Classifier Name"),
+             DataFrame(characteristic = c("Assay Name", "Classifier Name"),
                        value = c("Asthma", "Different Means"))
              )
   #}

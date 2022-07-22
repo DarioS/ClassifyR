@@ -27,7 +27,7 @@
   yLabelPositions = "auto",
   fontSizes = c(24, 16, 12, 12, 12),
   colours = c("#3F48CC", "#880015"),
-  showDatasetName = TRUE,
+  showAssayName = TRUE,
   plot = TRUE
 )
 
@@ -37,7 +37,7 @@
   classesColumn,
   groupBy = NULL,
   groupingName = NULL,
-  showDatasetName = TRUE,
+  showAssayName = TRUE,
   ...
 )
 }
@@ -130,7 +130,7 @@ legends' titles. The fifth number is the font size of the legend labels.}
 \item{colours}{The colours to plot data of each class in. The length of this
 vector must be as long as the distinct number of classes in the data set.}
 
-\item{showDatasetName}{Logical. Default: \code{TRUE}. If \code{TRUE} and the
+\item{showAssayName}{Logical. Default: \code{TRUE}. If \code{TRUE} and the
 data is in a \code{MultiAssayExperiment} object, the the name of the table
 in which the feature is stored in is added to the plot title.}
 
@@ -190,7 +190,7 @@ drawn.
   genesMatrix <- t(genesMatrix) # MultiAssayExperiment needs features in rows.
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
-  targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
+  targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
                      groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)

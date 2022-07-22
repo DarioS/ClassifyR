@@ -135,7 +135,7 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain
   fitted
 })
 
-# One or more omics datasets, possibly with sample information data.
+# One or more omics assays, possibly with sample information data.
 #' @rdname elasticNetGLM
 #' @export
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",

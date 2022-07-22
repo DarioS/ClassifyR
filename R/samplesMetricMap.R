@@ -220,7 +220,7 @@ setMethod("samplesMetricMap", "list",
                                                      legend.position = ifelse(showLegends, "right", "none"),
                                                      legend.key.size = legendSize)
     } else # Numeric data about the samples.
-    {#browser()
+    {
       featureValuesData <- data.frame(measurements = featureValues, Class = 1)
       if(metric != "Sample C-index") featureValuesData[, "Class"] <- knownClasses
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, environment = environment()) +

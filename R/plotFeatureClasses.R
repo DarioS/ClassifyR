@@ -82,7 +82,7 @@
 #' legends' titles. The fifth number is the font size of the legend labels.
 #' @param colours The colours to plot data of each class in. The length of this
 #' vector must be as long as the distinct number of classes in the data set.
-#' @param showDatasetName Logical. Default: \code{TRUE}. If \code{TRUE} and the
+#' @param showAssayName Logical. Default: \code{TRUE}. If \code{TRUE} and the
 #' data is in a \code{MultiAssayExperiment} object, the the name of the table
 #' in which the feature is stored in is added to the plot title.
 #' @param plot Logical. Default: \code{TRUE}. If \code{TRUE}, a plot is
@@ -129,7 +129,7 @@
 #'   genesMatrix <- t(genesMatrix) # MultiAssayExperiment needs features in rows.
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
-#'   targetFeatures <- DataFrame(dataset = "RNA", feature = "Gene 50")                                     
+#'   targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
 #'   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
 #'                      groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
@@ -161,7 +161,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
                                                       xLabelPositions = "auto", yLabelPositions = "auto",
                                                       fontSizes = c(24, 16, 12, 12, 12),
                                                       colours = c("#3F48CC", "#880015"),
-                                                      showDatasetName = TRUE, plot = TRUE)
+                                                      showAssayName = TRUE, plot = TRUE)
 {
   if(missing(targets))
     stop("'targets' must be specified.")
@@ -197,9 +197,6 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
   
   # Subsetting of measurements to the features of interest.
   
-  # Remove unnecessary dataset column for a single dataset.
-  if(!is.null(ncol(targets)) && all(targets[, "dataset"] == "dataset")) targets <- targets[, "feature"]
-  
   if(!is(targets, "DataFrame"))
   {
     if(!"Pairs" %in% class(targets)) # A simple vector.
@@ -224,9 +221,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
         featureText <- colnames(measurements)[columnIndex]
       } else {
         featureText <- S4Vectors::mcols(measurements)[columnIndex, "feature"]
-        if(showDatasetName == TRUE && !all(S4Vectors::mcols(measurements)[, "dataset"] == "dataset"))
+        if(showAssayName == TRUE && !all(S4Vectors::mcols(measurements)[, "assay"] == "assay"))
         {
-          featureText <- paste(featureText, paste('(', S4Vectors::mcols(measurements)[columnIndex, "dataset"], ')', sep = ''))
+          featureText <- paste(featureText, paste('(', S4Vectors::mcols(measurements)[columnIndex, "assay"], ')', sep = ''))
         }
       }
       
@@ -363,7 +360,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
 #' @rdname plotFeatureClasses
 #' @export
 setMethod("plotFeatureClasses", "MultiAssayExperiment",
-          function(measurements, targets, classesColumn, groupBy = NULL, groupingName = NULL, showDatasetName = TRUE, ...)
+          function(measurements, targets, classesColumn, groupBy = NULL, groupingName = NULL, showAssayName = TRUE, ...)
           {
             if(missing(targets))
               stop("'targets' must be specified by the user.")
@@ -385,7 +382,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
                 groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
               } else { # One of the omics tables.
                 groupBy <- measurements[groupBy[2], , groupingTable]
-                if(showDatasetName == TRUE)
+                if(showAssayName == TRUE)
                   groupingName <- paste(groupingName, groupingTable)
               }
               levelsOrder <- levels(groupBy)
@@ -399,11 +396,11 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
             measurements <- MultiAssayExperiment::wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
             measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
             S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
-            colnames(S4Vectors::mcols(measurements))[1] <- "dataset"
+            colnames(S4Vectors::mcols(measurements))[1] <- "assay"
             S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
             missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])
             S4Vectors::mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
-            S4Vectors::mcols(measurements) <- S4Vectors::mcols(measurements)[, c("dataset", "feature")]
+            S4Vectors::mcols(measurements) <- S4Vectors::mcols(measurements)[, c("assay", "feature")]
             
-            plotFeatureClasses(measurements, classes, S4Vectors::mcols(measurements), groupBy, groupingName, showDatasetName = showDatasetName, ...)
+            plotFeatureClasses(measurements, classes, S4Vectors::mcols(measurements), groupBy, groupingName, showAssayName = showAssayName, ...)
           })

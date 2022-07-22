@@ -101,7 +101,7 @@ Data Type | $n \times p$ | $p \times n$
 The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. A feature selection step can be performed before classification using *nFeatures* and *selectionMethod*, which is a t-test by default. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. If wanted, *nCores* can be specified to run the cross validation in parallel. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
 
 ```{r}
-result <- crossValidate(measurements, classes, classifier = "SVM",
+result <- crossValidate(measurements, classes, classifier = "SVM", assayName = "RNA-seq",
                         nFeatures = 20, nFolds = 5, nRepeats = 2, nCores = 1)
 SVMplot <- performancePlot(result)
 ```
@@ -115,17 +115,17 @@ If using Bioconductor's *DataFrame*, this can be specified using *mcols*. In the
 ```{r}
 measurementsDF <- DataFrame(measurements)
 mcols(measurementsDF) <- data.frame(
-  dataset = rep(c("dataset_1", "dataset_2"), times = c(10, 1990)),
+  assay = rep(c("assay_1", "assay_2"), times = c(10, 1990)),
   feature = colnames(measurementsDF)
 )
 
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-mergePlot <- performancePlot(result)
+mergePlot <- performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```
 
-If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
+If using a list of *data.frame*s, the name of each element in the list will be used as the assay name.
 
 ```{r, eval = FALSE}
 # Assigns first 10 variables to dataset_1, and the rest to dataset_2
@@ -133,12 +133,12 @@ measurementsList <- list(
   (measurements |> as.data.frame())[1:10],
   (measurements |> as.data.frame())[11:2000]
 )
-names(measurementsList) <- c("dataset_1", "dataset_2")
+names(measurementsList) <- c("assay_1", "assay_1")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-performancePlot(result)
+mergePlot <- performancePlot(result)
 ```
 
 ## A More Detailed Look at ClassifyR
@@ -256,7 +256,7 @@ Classification error rates, as well as many other prediction performance measure
 See the documentation of *calcCVperformance* for a list of performance metrics which may be calculated.
 
 ```{r}
-DMresults <- calcCVperformance(DMresults, "Balanced Error")
+DMresults <- calcCVperformance(DMresults)
 DMresults
 performance(DMresults)
 ```
@@ -295,7 +295,7 @@ The benefit of this plot is that it allows the easy identification of samples wh
 More traditionally, the distribution of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
 
 ```{r}
-meanDistPlot <- performancePlot(list(DMresults, DDresults))
+accDistributionPlot <- performancePlot(list(DMresults, DDresults))
 ```
 
 We can observe that the spread of balanced accuracy rates is small, but slightly wider for the differential distribution classifier.

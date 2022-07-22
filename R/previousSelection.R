@@ -100,9 +100,9 @@ setMethod("previousSelection", "DataFrame",
     IDsRows <- match(previousIDs, featuresInfo(classifyResult)[, "Original Feature"])
     safeIDs <- featuresInfo(classifyResult)[IDsRows, "Renamed Feature"]
   } else { # A data frame describing the data set and variable name of the chosen feature.
-    featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("dataset", "feature")])
-    IDsRows <-  match(do.call(paste, previousIDs), do.call(paste(featuresInfo(classifyResult)[, c("Original Dataset", "Original Feature")])))
-    safeIDs <- do.call(paste, featuresInfo(classifyResult)[IDsRows, c("Renamed Dataset", "Renamed Feature")])
+    featuresIDs <- do.call(paste, S4Vectors::mcols(measurementsTrain)[, c("assay", "feature")])
+    IDsRows <-  match(do.call(paste, previousIDs), do.call(paste(featuresInfo(classifyResult)[, c("Original Assay", "Original Feature")])))
+    safeIDs <- do.call(paste, featuresInfo(classifyResult)[IDsRows, c("Renamed Assay", "Renamed Feature")])
   }
   
   commonFeatures <- intersect(safeIDs, featuresIDs)

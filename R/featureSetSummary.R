@@ -165,8 +165,8 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
   if(class(featureSets) != "FeatureSetCollection")
     stop("'featureSets' is not of type FeatureSetCollection but must be.")
 
-  datasetUsed <- measurements[[target]]                                   
-  assayedFeatures <- rownames(datasetUsed)
+  assayUsed <- measurements[[target]]                                   
+  assayedFeatures <- rownames(assayUsed)
   featureSets <- featureSets@sets
   keepSets <- sapply(featureSets, function(featureSet)
     length(intersect(featureSet, assayedFeatures)) / length(featureSet) * 100 > minimumOverlapPercent)
@@ -194,7 +194,7 @@ setMethod("featureSetSummary", "MultiAssayExperiment", # Pick one numeric table 
       message("Summarising features to feature sets.")
 
   # Transform measurements into one feature per set.
-  transformed <- apply(datasetUsed, 2, function(sampleMeasurements)
+  transformed <- apply(assayUsed, 2, function(sampleMeasurements)
   {
     sapply(featureSets, function(featureSet) locationFunction(sampleMeasurements[featureSet]))
   })

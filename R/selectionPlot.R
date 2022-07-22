@@ -238,12 +238,10 @@ setMethod("selectionPlot", "list",
                   } else {
                       summaryTable <- result@importance
                   }
-                 if("dataset" %in% colnames(summaryTable) && all(summaryTable[, "dataset"] == "dataset"))
-                   summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
-                 if("dataset" %in% colnames(summaryTable))
+                 if("assay" %in% colnames(summaryTable))
                  {
-                    summaryTable[, "feature"] <- paste(summaryTable[, "dataset"], summaryTable[, "feature"])
-                    summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
+                    summaryTable[, "feature"] <- paste(summaryTable[, "assay"], summaryTable[, "feature"])
+                    summaryTable <- summaryTable[, -match("assay", colnames(summaryTable))]
                   }
                   summaryTable
                 }))

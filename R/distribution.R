@@ -103,7 +103,7 @@ setMethod("distribution", "ClassifyResult",
       allFeaturesText <- allFeatures
     } else if(is(chosenFeatures[[1]], "DataFrame")) {
       allFeatures <- do.call(rbind, chosenFeatures)
-      allFeaturesText <- paste(allFeatures[, "dataset"], allFeatures[, "feature"], sep = ':')
+      allFeaturesText <- paste(allFeatures[, "Original Assay"], allFeatures[, "Original Feature"], sep = ':')
     } else if("Pairs" %in% class(chosenFeatures[[1]])) {
       allFeatures <- do.call(c, unname(chosenFeatures))
       allFeaturesText <- paste(first(allFeatures), second(allFeatures), sep = ', ')
@@ -153,7 +153,7 @@ setMethod("distribution", "ClassifyResult",
     if(isPairs) # Make it DataFrame for counting of the occurrences.
       allFeatures <- as(allFeatures, "DataFrame")
     
-    summaryTable <- aggregate(list(count = rep(1, nrow(allFeatures))), as.data.frame(allFeatures), length)
+    summaryTable <- aggregate(list(count = rep(1, nrow(allFeatures))), as.data.frame(allFeatures, optional = TRUE), length)
     
     if(summaryType == "percentage")
     {
@@ -166,9 +166,7 @@ setMethod("distribution", "ClassifyResult",
       pairsSummary <- S4Vectors::Pairs(summaryTable[, "first"], summaryTable[, "second"], summaryTable[, 3])
       colnames(mcols(pairsSummary)) <- colnames(summaryTable[, 3])
       return(pairsSummary)
-    } else { # A table of dataset and feature.
-      if(all(summaryTable[, "dataset"] == "dataset")) # Just return a vector and get rid of unnecessary dataset.
-        summaryTable <- setNames(summaryTable[, 3], summaryTable[, 2])
+    } else { # A table of assay and feature.
       summaryTable
     }
   }

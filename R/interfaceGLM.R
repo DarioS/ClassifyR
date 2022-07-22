@@ -109,7 +109,7 @@ setMethod("GLMtrainInterface", "DataFrame", function(measurementsTrain, classesT
   glm(class ~ . + 0, family = binomial, data = fitData, ...)
 })
 
-# One or more omics datasets, possibly with sample information data.
+# One or more omics assays, possibly with sample information data.
 #' @rdname GLM
 #' @export
 setMethod("GLMtrainInterface", "MultiAssayExperiment",
