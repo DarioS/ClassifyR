@@ -127,18 +127,18 @@ mergePlot <- performancePlot(result, characteristicsList = list(x = "Assay Name"
 
 If using a list of *data.frame*s, the name of each element in the list will be used as the assay name.
 
-```{r, eval = FALSE}
+```{r}
 # Assigns first 10 variables to dataset_1, and the rest to dataset_2
 measurementsList <- list(
   (measurements |> as.data.frame())[1:10],
   (measurements |> as.data.frame())[11:2000]
 )
-names(measurementsList) <- c("assay_1", "assay_1")
+names(measurementsList) <- c("assay_1", "assay_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-mergePlot <- performancePlot(result)
+mergePlot <- performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```
 
 ## A More Detailed Look at ClassifyR
