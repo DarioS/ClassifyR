@@ -143,7 +143,7 @@ setMethod("samplesMetricMap", "list",
   
   if(metric != "Sample C-index")
   {
-    knownClasses <- actualOutcomes(results[[1]])
+    knownClasses <- actualOutcome(results[[1]])
     classedMetricValues <- lapply(metricValues, function(metricSet)
     {
       metricSet <- factor(paste(knownClasses, metricSet, sep = ','),

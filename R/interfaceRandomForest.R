@@ -102,7 +102,7 @@ setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measuremen
 #' @rdname randomForest
 setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain, restrict = NULL)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain, restrict = NULL)
 
   if(!requireNamespace("randomForest", quietly = TRUE))
     stop("The package 'randomForest' could not be found. Please install it.")
@@ -111,7 +111,7 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain,
             data.")
 
   # Convert to base data.frame as randomForest doesn't understand DataFrame.
-  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcomes"]], keep.forest = TRUE, ...)
+  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcome"]], keep.forest = TRUE, ...)
 })
 
 #' @export
@@ -121,7 +121,7 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   
   randomForestTrainInterface(measurementsTrain, classesTrain, ...)
 })

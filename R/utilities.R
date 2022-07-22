@@ -1,58 +1,58 @@
 # Operates on an input data frame, to extract the outcome column(s) and return
-# a list with the table of covariates in one element and the outcomes in another.
-# The outcomes need to be removed from the data table before predictor training!
-.splitDataAndOutcomes <- function(measurements, outcomes, restrict = "numeric")
-{ # DataFrame's outcomes variable can be character or factor, so it's a bit involved.
-  if(is.character(outcomes) && length(outcomes) > 3 && length(outcomes) != nrow(measurements))
-    stop("'outcomes' is a character variable but has more than one element. Either provide a\n",
+# a list with the table of covariates in one element and the outcome in another.
+# The outcome need to be removed from the data table before predictor training!
+.splitDataAndOutcome <- function(measurements, outcome, restrict = "numeric")
+{ # DataFrame's outcome variable can be character or factor, so it's a bit involved.
+  if(is.character(outcome) && length(outcome) > 3 && length(outcome) != nrow(measurements))
+    stop("'outcome' is a character variable but has more than one element. Either provide a\n",
          "       one to three column names or a factor of the same length as the number of samples.")
 
   ## String specifies the name of a single outcome column, typically a class.
-  if(is.character(outcomes) && length(outcomes) == 1)
+  if(is.character(outcome) && length(outcome) == 1)
   {
-    outcomesColumn <- match(outcomes, colnames(measurements))
-    if(is.na(outcomesColumn))
-      stop("Specified column name of outcomes is not present in the data table.")
-    outcomes <- measurements[, outcomesColumn]
-    measurements <- measurements[, -outcomesColumn, drop = FALSE]
+    outcomeColumn <- match(outcome, colnames(measurements))
+    if(is.na(outcomeColumn))
+      stop("Specified column name of outcome is not present in the data table.")
+    outcome <- measurements[, outcomeColumn]
+    measurements <- measurements[, -outcomeColumn, drop = FALSE]
     # R version 4 and greater no longer automatically casts character columns to factors because stringsAsFactors
     # is FALSE by default, so it is more likely to be character format these days. Handle it.
-    if(class(outcomes) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
-      outcomes <- factor(outcomes)
+    if(class(outcome) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
+      outcome <- factor(outcome)
   }
   
   # survival's Surv constructor has two inputs for the popular right-censored data and
   # three inputs for less-common interval data.
-  if(is.character(outcomes) && length(outcomes) %in% 2:3)
+  if(is.character(outcome) && length(outcome) %in% 2:3)
   {
-    outcomesColumns <- match(outcomes, colnames(measurements))
-    if(any(is.na(outcomesColumns)))
-      stop("Specified column names of outcomes is not present in the data table.")
-    outcomes <- measurements[, outcomesColumns]
-    measurements <- measurements[, -outcomesColumns, drop = FALSE]
+    outcomeColumns <- match(outcome, colnames(measurements))
+    if(any(is.na(outcomeColumns)))
+      stop("Specified column names of outcome is not present in the data table.")
+    outcome <- measurements[, outcomeColumns]
+    measurements <- measurements[, -outcomeColumns, drop = FALSE]
   }
   
-  if(is(outcomes, "factor") && length(outcomes) > 3 & length(outcomes) < nrow(measurements))
-    stop("The length of outcomes is not equal to the number of samples.")
+  if(is(outcome, "factor") && length(outcome) > 3 & length(outcome) < nrow(measurements))
+    stop("The length of outcome is not equal to the number of samples.")
   
   ## A vector of characters was input by the user. Ensure that it is a factor.
-  if(is.character(outcomes) & length(outcomes) == nrow(measurements))
-    outcomes <- factor(outcomes)
+  if(is.character(outcome) & length(outcome) == nrow(measurements))
+    outcome <- factor(outcome)
   
-  # Outcomes has columns, so it is tabular. It is inferred to represent survival data.
-  if(!is.null(ncol(outcomes)) && ncol(outcomes) %in% 2:3)
+  # Outcome has columns, so it is tabular. It is inferred to represent survival data.
+  if(!is.null(ncol(outcome)) && ncol(outcome) %in% 2:3)
   {
     # Assume that event status is in the last column (second for two columns, third for three columns)
-    numberEventTypes <- length(unique(outcomes[, ncol(outcomes)]))
+    numberEventTypes <- length(unique(outcome[, ncol(outcome)]))
     # Could be one or two kinds of events. All events might be uncensored or censored
     # in a rare but not impossible scenario.
     if(numberEventTypes > 2)
       stop("Number of distinct event types in the last column exceeds 2 but must be 1 or 2.")
       
-    if(ncol(outcomes) == 2) # Typical, right-censored survival data.
-      outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2])
+    if(ncol(outcome) == 2) # Typical, right-censored survival data.
+      outcome <- survival::Surv(outcome[, 1], outcome[, 2])
     else # Three columns. Therefore, counting process data.
-      outcomes <- survival::Surv(outcomes[, 1], outcomes[, 2], outcomes[, 3])
+      outcome <- survival::Surv(outcome[, 1], outcome[, 2], outcome[, 3])
   }
   
   if(!is.null(restrict))
@@ -63,24 +63,24 @@
       stop(paste("No features are left after restricting to", restrict, "but at least one must be."))
   }
 
-  list(measurements = measurements, outcomes = outcomes)
+  list(measurements = measurements, outcome = outcome)
 }
 
 # Function to convert a MultiAssayExperiment object into a flat DataFrame table, to enable it
 # to be used in typical model building functions.
-# Returns a list with a covariate table and and outcomes vector/table, or just a covariate table
+# Returns a list with a covariate table and and outcome vector/table, or just a covariate table
 # in the case the input is a test data set.
-.MAEtoWideTable <- function(measurements, targets = NULL, outcomesColumns = NULL, restrict = "numeric")
+.MAEtoWideTable <- function(measurements, targets = NULL, outcomeColumns = NULL, restrict = "numeric")
 {
   if(is.null(targets))
     stop("'targets' is not specified but must be.")
-  if(is.null(outcomesColumns))
-    stop("'outcomesColumns' is not specified but must be.")    
+  if(is.null(outcomeColumns))
+    stop("'outcomeColumns' is not specified but must be.")    
   if(!all(targets %in% c(names(measurements), "sampleInfo")))
     stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")
   sampleInfoColumns <- colnames(MultiAssayExperiment::colData(measurements))
-  if(!missing(outcomesColumns) & !all(outcomesColumns %in% sampleInfoColumns))
-    stop("Not all column names specified by 'outcomesColumns' found in sample information table.")  
+  if(!missing(outcomeColumns) & !all(outcomeColumns %in% sampleInfoColumns))
+    stop("Not all column names specified by 'outcomeColumns' found in sample information table.")  
 
   if("sampleInfo" %in% targets)
   {
@@ -94,10 +94,10 @@
   {
     measurements <- measurements[, , targets]
   
-    # Get all desired measurements tables and sample information columns (other than the columns representing outcomes).
+    # Get all desired measurements tables and sample information columns (other than the columns representing outcome).
     # These form the independent variables to be used for making predictions with.
     # Variable names will have names like RNA:BRAF for traceability.
-    dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(sampleInfoColumnsTrain, outcomesColumns), check.names = FALSE, collapse = ':')
+    dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(sampleInfoColumnsTrain, outcomeColumns), check.names = FALSE, collapse = ':')
     rownames(dataTable) <- dataTable[, "primary"]
     S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "assay"
@@ -113,7 +113,7 @@
   } else { # Must have only been sample information data.
     dataTable <- MultiAssayExperiment::colData(measurements)
   }
-  if(!is.null(outcomesColumns)) outcomes <- dataTable[, outcomesColumns]
+  if(!is.null(outcomeColumns)) outcome <- dataTable[, outcomeColumns]
   
   if(!is.null(restrict))
   {
@@ -125,12 +125,12 @@
 
   # Only return independent variables in dataTable for making classifications with.
   # "primary" column is auto-generated by sample information table row names and a duplicate.
-  dropColumns <- na.omit(match(c("primary", outcomesColumns), colnames(dataTable)))
+  dropColumns <- na.omit(match(c("primary", outcomeColumns), colnames(dataTable)))
   if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
   
-  # Training data table and outcomes for training data.
-  if(!is.null(outcomesColumns))
-      list(dataTable = dataTable, outcomes = outcomes)
+  # Training data table and outcome for training data.
+  if(!is.null(outcomeColumns))
+      list(dataTable = dataTable, outcome = outcome)
   else # Only test data table for test data input.
     dataTable
 }
@@ -138,7 +138,7 @@
 # For classifiers which use one single function for inputting a training and a testing table,
 # and work only for the numeric data type, this checks whether the training and testing tables 
 # both have the same set of features and there are at least some numeric features to use,
-# after they have been filtered by another function which splits the covariates and the outcomes from the input.
+# after they have been filtered by another function which splits the covariates and the outcome from the input.
 .checkVariablesAndSame <- function(trainingMatrix, testingMatrix)
 {
   if(ncol(trainingMatrix) == 0) # Filtering of table removed all columns, leaving nothing to classify with.
@@ -150,7 +150,7 @@
 # Creates two lists of lists. First has training samples, second has test samples for a range
 # of different cross-validation schemes.
 #' @import utils
-.samplesSplits <- function(crossValParams, outcomes)
+.samplesSplits <- function(crossValParams, outcome)
 {
   if(crossValParams@samplesSplits %in% c("k-Fold", "Permute k-Fold"))
   {
@@ -160,15 +160,15 @@
     {
       # Create maximally-balanced folds, so class balance is about the same in all.
       allFolds <- vector(mode = "list", length = nFolds)
-      foldsIndexes <- rep(1:nFolds, length.out = length(outcomes))
+      foldsIndexes <- rep(1:nFolds, length.out = length(outcome))
       
       foldsIndex = 1
       # Dummy encoding for when outcome is not a class.
-      if(is(outcomes, "Surv")) outcomes <- factor(rep("a", length(outcomes)))
-      for(outcomeName in levels(outcomes))
+      if(is(outcome, "Surv")) outcome <- factor(rep("a", length(outcome)))
+      for(outcomeName in levels(outcome))
       {
         # Permute the indexes of samples in the class.
-        whichSamples <- sample(which(outcomes == outcomeName))
+        whichSamples <- sample(which(outcome == outcomeName))
         whichFolds <- foldsIndexes[foldsIndex:(foldsIndex + length(whichSamples) - 1)]
         
         # Put each sample into its fold.
@@ -190,22 +190,22 @@
   } else if(crossValParams@samplesSplits == "Permute Percentage Split") {
     # Take the same percentage of samples from each class to be in training set.
     percent <- crossValParams@percentTest
-    samplesTrain <- round((100 - percent) / 100 * table(outcomes))
-    samplesTest <- round(percent / 100 * table(outcomes))
+    samplesTrain <- round((100 - percent) / 100 * table(outcome))
+    samplesTest <- round(percent / 100 * table(outcome))
     samplesLists <- lapply(1:crossValParams@permutations, function(permutation)
     {
       trainSet <- unlist(mapply(function(outcomeName, number)
       {
-        sample(which(outcomes == outcomeName), number)
-      }, levels(outcomes), samplesTrain))
+        sample(which(outcome == outcomeName), number)
+      }, levels(outcome), samplesTrain))
       testSet <- setdiff(1:length(classes), trainSet)
       list(trainSet, testSet)
     })
     # Reorganise into two lists: training, testing.
     list(train = lapply(samplesLists, "[[", 1), test = lapply(samplesLists, "[[", 2))
   } else if(crossValParams@samplesSplits == "Leave-k-Out") { # leave k out. 
-    testSamples <- as.data.frame(utils::combn(length(outcomes), crossValParams@leave))
-    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:length(outcomes), sample))
+    testSamples <- as.data.frame(utils::combn(length(outcome), crossValParams@leave))
+    trainingSamples <- lapply(testSamples, function(sample) setdiff(1:length(outcome), sample))
     list(train = as.list(trainingSamples), test = as.list(testSamples))
   }
 }
@@ -250,7 +250,7 @@
 # the features in the training set from best to worst and different top sets are used either for
 # predicting on the training set (resubstitution) or nested cross-validation of the training set,
 # to find the set of top features which give the best (user-specified) performance measure.
-.doSelection <- function(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose)
+.doSelection <- function(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose)
 {
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
@@ -268,7 +268,7 @@
   betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
   if(is.function(featureRanking)) # Not a list for ensemble selection.
   {
-    paramList <- list(measurementsTrain, outcomesTrain, verbose = verbose)
+    paramList <- list(measurementsTrain, outcomeTrain, verbose = verbose)
     paramList <- append(paramList, otherParams) # Used directly by a feature ranking function for rankings of features.
     if(length(tuneParams) == 0) tuneParams <- list(None = "none")
     tuneCombosSelect <- expand.grid(tuneParams, stringsAsFactors = FALSE)
@@ -312,20 +312,20 @@
         # Do either resubstitution classification or nested-CV classification and calculate the resulting performance metric.
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          # Specify measurementsTrain and outcomesTrain for testing, too.
-          result <- runTest(measurementsTrain, outcomesTrain, measurementsTrain, outcomesTrain,
+          # Specify measurementsTrain and outcomeTrain for testing, too.
+          result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
           
           predictions <- result[["predictions"]]
           # Classifiers will use a column "class" and survival models will use a column "risk".
           if(class(predictions) == "data.frame")
-           predictedOutcomes <- predictions[, na.omit(match(c("class", "risk"), colnames(predictions)))]
+           predictedOutcome <- predictions[, na.omit(match(c("class", "risk"), colnames(predictions)))]
           else
-           predictedOutcomes <- predictions
-          calcExternalPerformance(outcomesTrain, predictedOutcomes, performanceType)
+           predictedOutcome <- predictions
+          calcExternalPerformance(outcomeTrain, predictedOutcome, performanceType)
         } else {
-           result <- runTests(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose = verbose)
+           result <- runTests(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose = verbose)
            result <- calcCVperformance(result, performanceType)
            median(performance(result)[[performanceType]])
          }
@@ -350,7 +350,7 @@
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresIndiciesLists <- mapply(function(selector, selParams)
       {
-        paramList <- list(measurementsTrain, outcomesTrain, trainParams = trainParams,
+        paramList <- list(measurementsTrain, outcomeTrain, trainParams = trainParams,
                           predictParams = predictParams, verbose = verbose)
         paramList <- append(paramList, selParams)
         do.call(selector, paramList)
@@ -365,18 +365,18 @@
         
         if(crossValParams@tuneMode == "Resubstitution")
         {
-          result <- runTest(measurementsTrain, outcomesTrain,
-                            measurementsTrain, outcomesTrain,
+          result <- runTest(measurementsTrain, outcomeTrain,
+                            measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
           predictions <- result[["predictions"]]
           if(class(predictions) == "data.frame")
-            predictedOutcomes <- predictions[, "class"]
+            predictedOutcome <- predictions[, "class"]
           else
-            predictedOutcomes <- predictions
-          calcExternalPerformance(outcomesTrain, predictedOutcomes, performanceType)
+            predictedOutcome <- predictions
+          calcExternalPerformance(outcomeTrain, predictedOutcome, performanceType)
         } else {
-          result <- runTests(measurementsSubset, outcomesTrain, crossValParams, modellingParams, verbose = verbose)
+          result <- runTests(measurementsSubset, outcomeTrain, crossValParams, modellingParams, verbose = verbose)
           result <- calcCVperformance(result, performanceType)
           median(performance(aResult)[[performanceType]])
         }
@@ -405,7 +405,7 @@
 
 # Code to create a function call to a training function. Might also do training and testing
 # within the same function, so test samples are also passed in case they are needed.
-.doTrain <- function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose)
+.doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose)
 {
   tuneChosen <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
@@ -420,18 +420,18 @@
       modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, as.list(tuneCombos[rowIndex, ]))
       if(crossValParams@tuneMode == "Resubstitution")
       {
-        result <- runTest(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
+        result <- runTest(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
         
         predictions <- result[["predictions"]]
         if(class(predictions) == "data.frame")
-          predictedOutcomes <- predictions[, "outcome"]
+          predictedOutcome <- predictions[, "outcome"]
         else
-          predictedOutcomes <- predictions
-        calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType)
+          predictedOutcome <- predictions
+        calcExternalPerformance(outcomeTest, predictedOutcome, performanceType)
       } else {
-        result <- runTests(measurementsTrain, outcomesTrain,
+        result <- runTests(measurementsTrain, outcomeTrain,
                            crossValParams, modellingParams,
                            verbose = verbose, .iteration = "internal")
         result <- calcCVperformance(result, performanceType)
@@ -445,8 +445,8 @@
   }
 
   if(modellingParams@trainParams@classifier@generic != "previousTrained")
-    # Don't name these first two variables. Some classifier functions might use classesTrain and others use outcomesTrain.
-    paramList <- list(measurementsTrain, outcomesTrain)
+    # Don't name these first two variables. Some classifier functions might use classesTrain and others use outcomeTrain.
+    paramList <- list(measurementsTrain, outcomeTrain)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
     paramList <- list()
   if(is.null(modellingParams@predictParams)) # One function does both training and testing.

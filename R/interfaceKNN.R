@@ -71,8 +71,8 @@ setMethod("kNNinterface", "matrix",
 #' @export
 setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain, measurementsTest, ..., classifierName = "k Nearest Neighbours", verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
-  classesTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcome"]]
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
   measurementsTest <- measurementsTest[, colnames(measurementsTrain), drop = FALSE]
   
@@ -91,7 +91,7 @@ function(measurementsTrain, measurementsTest, targets = names(measurementsTrain)
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
+  classes <- tablesAndClasses[["outcome"]]
   testingTable <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingTable, testingTable)

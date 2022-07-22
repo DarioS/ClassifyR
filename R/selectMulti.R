@@ -9,7 +9,7 @@ setMethod("selectMulti", "DataFrame",
               featuresIndices <- mapply(.doSelection, 
                                          measurements = assayTrain,
                                          modellingParams = params,
-                                         MoreArgs = list(outcomesTrain = classesTrain, 
+                                         MoreArgs = list(outcomeTrain = classesTrain, 
                                                          crossValParams = CrossValParams(permutations = 1, folds = 5), ###### Where to get this from?
                                                          verbose = 0), SIMPLIFY = FALSE
                                         )

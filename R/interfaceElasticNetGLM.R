@@ -117,18 +117,18 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain
   if(verbose == 3)
     message("Fitting elastic net regularised GLM classifier to data.")
   
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain, restrict = NULL)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain, restrict = NULL)
   measurementsTrain <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
   measurementsMatrix <- glmnet::makeX(as(measurementsTrain, "data.frame"))
 
-  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["outcomes"]], family = "multinomial", ...)
+  fitted <- glmnet::glmnet(measurementsMatrix, splitDataset[["outcome"]], family = "multinomial", ...)
 
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
   { # Pick one lambda based on resubstitution performance.
     bestLambda <- fitted[["lambda"]][which.min(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
     {
       classPredictions <- factor(as.character(predict(fitted, measurementsMatrix, s = lambda, type = "class")), levels = fitted[["classnames"]])
-      calcExternalPerformance(splitDataset[["outcomes"]], classPredictions, "Balanced Error")
+      calcExternalPerformance(splitDataset[["outcome"]], classPredictions, "Balanced Error")
     }))[1]]
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
@@ -141,9 +141,9 @@ setMethod("elasticNetGLMtrainInterface", "DataFrame", function(measurementsTrain
 setMethod("elasticNetGLMtrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndOutcomes <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
-  measurementsTrain <- tablesAndOutcomes[["dataTable"]]
-  classesTrain <- tablesAndOutcomes[["outcomes"]]
+  tablesAndOutcome <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
+  measurementsTrain <- tablesAndOutcome[["dataTable"]]
+  classesTrain <- tablesAndOutcome[["outcome"]]
   
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

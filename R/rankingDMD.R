@@ -79,7 +79,7 @@ setMethod("DMDranking", "DataFrame", # sampleInfo data or one of the other input
           function(measurementsTrain, classesTrain, differences = c("both", "location", "scale"),
                    ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
 
   if(verbose == 3)
@@ -113,6 +113,6 @@ setMethod("DMDranking", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]            
+  classesTrain <- tablesAndClasses[["outcome"]]            
   DMDranking(measurementsTrain, classesTrain, ...)
 })

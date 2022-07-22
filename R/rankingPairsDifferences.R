@@ -86,7 +86,7 @@ setMethod("pairsDifferencesRanking", "DataFrame",
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")
             
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
   
   suppliedPairs <- length(featurePairs)
@@ -130,6 +130,6 @@ setMethod("pairsDifferencesRanking", "MultiAssayExperiment",
             
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, target, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]            
+  classesTrain <- tablesAndClasses[["outcome"]]            
   pairsDifferencesRanking(measurementsTrain, classesTrain, featurePairs, ...)
 })

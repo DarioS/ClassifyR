@@ -98,7 +98,7 @@ setMethod("ROCplot", "list",
   mode <- match.arg(mode)
                       
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
-  distinctClasses <- levels(actualOutcomes(results[[1]]))
+  distinctClasses <- levels(actualOutcome(results[[1]]))
   numberDistinctClasses <- length(distinctClasses)
   comparisonName <- comparison
   comparisonValues <- sapply(results, function(result) result@characteristics[match(comparisonName, result@characteristics[, "characteristic"]), "value"])
@@ -124,7 +124,7 @@ setMethod("ROCplot", "list",
 
     allPRlist <- lapply(predictionsList, function(predictions)
     {
-      actualClasses <- actualOutcomes(result)[match(predictions[, "sample"], sampleNames(result))]
+      actualClasses <- actualOutcome(result)[match(predictions[, "sample"], sampleNames(result))]
       do.call(rbind, lapply(levels(actualClasses), function(class)
       {
         totalPositives <- sum(actualClasses == class)

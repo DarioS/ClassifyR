@@ -11,12 +11,11 @@
 \alias{predict,ClassifyResult-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-crossValidate(measurements, outcomes, ...)
+crossValidate(measurements, outcome, ...)
 
 \S4method{crossValidate}{DataFrame}(
   measurements,
-  outcomes,
-  assayName = NULL,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -31,7 +30,7 @@ crossValidate(measurements, outcomes, ...)
 
 \S4method{crossValidate}{MultiAssayExperiment}(
   measurements,
-  outcomes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -46,8 +45,7 @@ crossValidate(measurements, outcomes, ...)
 
 \S4method{crossValidate}{data.frame}(
   measurements,
-  outcomes,
-  assayName = NULL,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -62,8 +60,7 @@ crossValidate(measurements, outcomes, ...)
 
 \S4method{crossValidate}{matrix}(
   measurements,
-  outcomes,
-  assayName = NULL,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -78,7 +75,7 @@ crossValidate(measurements, outcomes, ...)
 
 \S4method{crossValidate}{list}(
   measurements,
-  outcomes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -99,18 +96,14 @@ or a list of these objects containing the training data.  For a
 \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
 the rows are features and the columns are samples, as is typical in Bioconductor.}
 
-\item{outcomes}{A vector of class labels of class \code{\link{factor}} of the
+\item{outcome}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
 column name in \code{colData(measurements)} if \code{measurements} is a \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
 \code{measurements} for survival outcome.}
 
-\item{...}{Arguments other than measurements and outcomes in the generic.}
-
-\item{assayName}{An informative name describing the data (e.g. RNA-seq) table if the input is a data frame or matrix. Not used if input
-is \code{MultiAssayExperiment} or other list-like structure because it will already have assay names in the experiment list. This
-name will be stored in the characteristics table of the result as Assay Name characteristic.}
+\item{...}{Arguments other than measurements and outcome in the generic.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 

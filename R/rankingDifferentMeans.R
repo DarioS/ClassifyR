@@ -70,8 +70,8 @@ setMethod("differentMeansRanking", "DataFrame",
   if(!requireNamespace("genefilter", quietly = TRUE))
     stop("The package 'genefilter' could not be found. Please install it.")
 
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
-  classesTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcome"]]
   # Data is required to be in traditional bioinformatics format - features in rows
   # and samples in columns and also must be a matrix, not another kind of rectangular data.  
   measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]]))
@@ -103,6 +103,6 @@ setMethod("differentMeansRanking", "MultiAssayExperiment",
             
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   differentMeansRanking(measurementsTrain, classesTrain, ...)
 })

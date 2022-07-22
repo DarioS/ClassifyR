@@ -1228,8 +1228,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
 #' featuresInfo featuresInfo,ClassifyResult-method
-#' predictions predictions,ClassifyResult-method actualOutcomes
-#' actualOutcomes,ClassifyResult-method features features,ClassifyResult-method
+#' predictions predictions,ClassifyResult-method actualOutcome
+#' actualOutcome,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
 #' performance,ClassifyResult-method tunedParameters
 #' tunedParameters,ClassifyResult-method totalPredictions
@@ -1238,7 +1238,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' 
 #' @section Constructor:
 #' \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
+#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 #' \describe{
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of classification done. First column must be named
@@ -1257,7 +1257,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}
 #' \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 #' cross-validation iteration in which the prediction was made.}
-#' \item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+#' \item{\code{actualOutcome}}{The known class or survival data of each sample.}
 #' \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 #' \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 #' \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
@@ -1278,7 +1278,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \describe{
 #' \item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 #' \describe{
-#' \item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
+#' \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 #' \describe{
 #' \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
 #' \describe{
@@ -1328,7 +1328,7 @@ setClass("ClassifyResult", representation(
   featuresInfo = "DataFrame",
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
-  actualOutcomes = "factorOrSurv",
+  actualOutcome = "factorOrSurv",
   models = "list",
   tune = "listOrNULL",
   predictions = "DataFrame",
@@ -1342,13 +1342,13 @@ setClass("ClassifyResult", representation(
 #' @export
 setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
           function(characteristics, originalNames, featuresInfo,
-                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)
           {
             new("ClassifyResult", characteristics = characteristics,
                 originalNames = originalNames, featuresInfo = featuresInfo,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
-                predictions = predictions, actualOutcomes = actualOutcomes, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
+                predictions = predictions, actualOutcome = actualOutcome, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
           })
 
 #' @usage NULL
@@ -1463,16 +1463,16 @@ setMethod("performance", c("ClassifyResult"),
 
 #' @export
 #' @usage NULL
-setGeneric("actualOutcomes", function(object, ...)
-standardGeneric("actualOutcomes"))
+setGeneric("actualOutcome", function(object, ...)
+standardGeneric("actualOutcome"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("actualOutcomes", c("ClassifyResult"),
+setMethod("actualOutcome", c("ClassifyResult"),
           function(object)
           {
-            object@actualOutcomes
+            object@actualOutcome
           })
 
 #' @export

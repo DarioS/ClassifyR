@@ -115,9 +115,9 @@ setMethod("GLMtrainInterface", "DataFrame", function(measurementsTrain, classesT
 setMethod("GLMtrainInterface", "MultiAssayExperiment",
 function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ...)
 {
-  tablesAndOutcomes <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
-  measurementsTrain <- tablesAndOutcomes[["dataTable"]]
-  classesTrain <- tablesAndOutcomes[["outcomes"]]
+  tablesAndOutcome <- .MAEtoWideTable(measurementsTrain, targets, classesTrain, restrict = NULL)
+  measurementsTrain <- tablesAndOutcome[["dataTable"]]
+  classesTrain <- tablesAndOutcome[["outcome"]]
   
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

@@ -27,7 +27,7 @@
 #' thus each row unambiguously specifies a variable to be plotted.
 #' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-#' that contains the samples' outcomes to use for prediction.
+#' that contains each sample's outcome to use for prediction.
 #' @param groupBy If \code{measurements} is a \code{DataFrame}, then a
 #' character vector of length 1, which contains the name of a categorical
 #' feature, may be specified.  If \code{measurements} is a
@@ -175,9 +175,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
                     facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
   
-  splitDataset <- .splitDataAndOutcomes(measurements, classes, restrict = NULL)
+  splitDataset <- .splitDataAndOutcome(measurements, classes, restrict = NULL)
   measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["outcomes"]]
+  classes <- splitDataset[["outcome"]]
   
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")

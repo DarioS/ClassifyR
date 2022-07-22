@@ -12,8 +12,8 @@
 \alias{featuresInfo,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
-\alias{actualOutcomes}
-\alias{actualOutcomes,ClassifyResult-method}
+\alias{actualOutcome}
+\alias{actualOutcome,ClassifyResult-method}
 \alias{features}
 \alias{features,ClassifyResult-method}
 \alias{models}
@@ -37,7 +37,7 @@ created by \code{\link{runTest}} or \code{\link{runTests}}.
 \section{Constructor}{
 
 \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
+              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 \describe{
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 characteristics of classification done. First column must be named
@@ -56,7 +56,7 @@ vector or a data frame if data set has multiple kinds of measurements on the sam
 \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}
 \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 cross-validation iteration in which the prediction was made.}
-\item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+\item{\code{actualOutcome}}{The known class or survival data of each sample.}
 \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
@@ -81,7 +81,7 @@ most popular value of the parameter in cross-validation is used.}
 \describe{
 \item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 \describe{
-\item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
+\item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 \describe{
 \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
 \describe{

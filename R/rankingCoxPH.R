@@ -48,9 +48,9 @@ setMethod("coxphRanking", "matrix", function(measurementsTrain, survivalTrain, .
 #' @export
 setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain)
   measurementsTrain <- splitDataset[["measurements"]]
-  survivalTrain <- splitDataset[["outcomes"]]
+  survivalTrain <- splitDataset[["outcome"]]
 
   pValues <- apply(measurementsTrain, 2, function(featureColumn){
     fit <- survival::coxph(survivalTrain ~ featureColumn)
@@ -68,7 +68,7 @@ setMethod("coxphRanking", "MultiAssayExperiment", function(measurementsTrain, ta
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)
   measurementsTrain <- tablesAndSurvival[["dataTable"]]
-  survivalTrain <- tablesAndSurvival[["outcomes"]]
+  survivalTrain <- tablesAndSurvival[["outcome"]]
   
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

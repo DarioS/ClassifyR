@@ -101,12 +101,12 @@ setMethod("coxnetTrainInterface", "DataFrame", function(measurementsTrain, survi
   if(verbose == 3)
     message("Fitting coxnet model to data.")
   
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain)
   measurementsTrain <- data.frame(splitDataset[["measurements"]], check.names = FALSE)
   measurementsMatrix <- glmnet::makeX(as(measurementsTrain, "data.frame"))
   
   # The response variable is a Surv class of object.
-  fit <- glmnet::cv.glmnet(measurementsMatrix, splitDataset[["outcomes"]], family = "cox", type = "C", ...)
+  fit <- glmnet::cv.glmnet(measurementsMatrix, splitDataset[["outcome"]], family = "cox", type = "C", ...)
   fitted <- fit$glmnet.fit
   
   offset <- -mean(predict(fitted, measurementsMatrix, s = fit$lambda.min, type = "link"))
@@ -123,7 +123,7 @@ setMethod("coxnetTrainInterface", "MultiAssayExperiment",
           {
             tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain)
             measurementsTrain <- tablesAndClasses[["dataTable"]]
-            survivalTrain <- tablesAndClasses[["outcomes"]]
+            survivalTrain <- tablesAndClasses[["outcome"]]
             
             if(ncol(measurementsTrain) == 0)
               stop("No variables in data tables specified by \'targets\' are numeric.")
@@ -159,7 +159,7 @@ setMethod("coxnetPredictInterface", c("coxnet", "DataFrame"), function(model, me
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   if(!is.null(survivalTest))
   {
-    splitDataset <- .splitDataAndOutcomes(measurementsTest, survivalTest)  # Remove any classes, if present.
+    splitDataset <- .splitDataAndOutcome(measurementsTest, survivalTest)  # Remove any classes, if present.
     measurementsTest <- splitDataset[["measurements"]]
   }
   

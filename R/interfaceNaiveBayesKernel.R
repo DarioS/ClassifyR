@@ -122,9 +122,9 @@ setMethod("naiveBayesKernel", "DataFrame", # Sample information data or one of t
                    weighting = c("height difference", "crossover distance"),
                    minDifference = 0, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   trainingMatrix <- splitDataset[["measurements"]]
-  classesTrain <- splitDataset[["outcomes"]]
+  classesTrain <- splitDataset[["outcome"]]
   testingMatrix <- as.matrix(measurementsTest[, colnames(trainingMatrix), drop = FALSE])
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
@@ -249,7 +249,7 @@ setMethod("naiveBayesKernel", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   testingMatrix <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)

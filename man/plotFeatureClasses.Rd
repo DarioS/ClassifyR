@@ -139,7 +139,7 @@ produced on the current graphics device.}
 
 \item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-that contains the samples' outcomes to use for prediction.}
+that contains each sample's outcome to use for prediction.}
 }
 \value{
 Plots are created on the current graphics device and a list of plot

@@ -89,8 +89,8 @@ setMethod("coxphTrainInterface", "DataFrame", function(measurementsTrain, surviv
     message("Fitting coxph classifier to training data and making predictions on test
             data.")
 
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, survivalTrain)  
-  survivalTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain)  
+  survivalTrain <- splitDataset[["outcome"]]
   measurementsTrain <- splitDataset[["measurements"]]
   
   survival::coxph(survivalTrain ~ ., measurementsTrain)
@@ -102,7 +102,7 @@ setMethod("coxphTrainInterface", "MultiAssayExperiment", function(measurementsTr
 {
   tablesAndSurvival <- .MAEtoWideTable(measurementsTrain, targets, survivalTrain, restrict = NULL)
   measurementsTrain <- tablesAndSurvival[["dataTable"]]
-  survivalTrain <- tablesAndSurvival[["outcomes"]]
+  survivalTrain <- tablesAndSurvival[["outcome"]]
   
   coxphTrainInterface(measurementsTrain, survivalTrain, ...)
 })

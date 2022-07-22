@@ -92,6 +92,6 @@ setMethod("limmaRanking", "MultiAssayExperiment",
             
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   limmaRanking(measurementsTrain, classesTrain, ...)
 })

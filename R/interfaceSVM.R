@@ -89,7 +89,7 @@ setMethod("SVMtrainInterface", "DataFrame", function(measurementsTrain, classesT
   if(!requireNamespace("e1071", quietly = TRUE))
     stop("The package 'e1071' could not be found. Please install it.")
     
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   # Classifier requires matrix input data type.
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
   
@@ -110,7 +110,7 @@ function(measurementsTrain, targets = names(measurementsTrain), classesTrain, ..
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

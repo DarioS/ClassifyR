@@ -14,12 +14,12 @@
 #' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data. For a
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
-#' @param outcomesTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
+#' @param outcomeTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival.
 #' @param measurementsTest Same data type as \code{measurementsTrain}, but only the test
 #' samples.
-#' @param outcomesTest Same data type as \code{outcomesTrain}, but only the test
+#' @param outcomeTest Same data type as \code{outcomeTrain}, but only the test
 #' samples.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
 #' specifying the kind of cross-validation to be done, if nested
@@ -31,9 +31,9 @@
 #' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 #' and specifies that numeric variables from the sample information data table will be
 #' used.
-#' @param outcomesColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-#' that contain(s) the samples' outcomes to use for prediction.
+#' that contain(s) the samples' outcome to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -77,19 +77,19 @@ setGeneric("runTest", function(measurementsTrain, ...)
 #' @rdname runTest
 #' @export
 setMethod("runTest", "matrix", # Matrix of numeric measurements.
-  function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, ...)
+  function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, ...)
 {
   runTest(measurementsTrain = S4Vectors::DataFrame(measurementsTrain, check.names = FALSE),
-          outcomesTrain = outcomesTrain,
+          outcomeTrain = outcomeTrain,
           measurementsTest = S4Vectors::DataFrame(measurementsTest, check.names = FALSE),
-          outcomesTest = outcomesTest,
+          outcomeTest = outcomeTest,
           ...)
 })
 
 #' @rdname runTest
 #' @export
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
-function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
+function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), verbose = 1, .iteration = NULL)
 {if(!is.null(.iteration) && .iteration != "internal")
@@ -100,14 +100,14 @@ function(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest,
     if(any(is.na(measurementsTrain)))
       stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")                
 
-    splitDatasetTrain <- .splitDataAndOutcomes(measurementsTrain, outcomesTrain)
+    splitDatasetTrain <- .splitDataAndOutcome(measurementsTrain, outcomeTrain)
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
-    if(!is(outcomesTrain, "Surv"))
+    if(!is(outcomeTrain, "Surv"))
     {
-      rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcomes"]], modellingParams@balancing)
+      rebalancedTrain <- .rebalanceTrainingClasses(splitDatasetTrain[["measurements"]], splitDatasetTrain[["outcome"]], modellingParams@balancing)
       measurementsTrain <- rebalancedTrain[["measurementsTrain"]]
-      outcomesTrain <- rebalancedTrain[["classesTrain"]]
+      outcomeTrain <- rebalancedTrain[["classesTrain"]]
     }
   }
     
@@ -140,12 +140,12 @@ input data. Autmomatically reducing to smaller number.")
     repeat{
       newSamples <- sample(nrow(measurementsTrain), replace = TRUE, prob = scoresPrevious)
       measurementsTrainResampled <- measurementsTrain[newSamples, ]
-      outcomesResampled <- outcomesTrain[newSamples]
-      ASpredictions <- runTest(measurementsTrainResampled, outcomesResampled,
-              measurementsTrain, outcomesTrain, crossValParams, modellingParams,
+      outcomeResampled <- outcomeTrain[newSamples]
+      ASpredictions <- runTest(measurementsTrainResampled, outcomeResampled,
+              measurementsTrain, outcomeTrain, crossValParams, modellingParams,
               .iteration = "internal")[["predictions"]]
-      if(is.factor(outcomesResampled))
-          scoresNew <- mapply(function(rowIndex, class) ASpredictions[rowIndex, class], 1:nrow(ASpredictions), as.character(outcomesTrain))
+      if(is.factor(outcomeResampled))
+          scoresNew <- mapply(function(rowIndex, class) ASpredictions[rowIndex, class], 1:nrow(ASpredictions), as.character(outcomeTrain))
       else
           scoresNew <- ASpredictions[, "risk"]
 
@@ -176,7 +176,7 @@ input data. Autmomatically reducing to smaller number.")
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
  
-    topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomesTrain, crossValParams, modellingParams, verbose),
+    topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose),
                             error = function(error) error[["message"]]) 
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
     
@@ -196,7 +196,7 @@ input data. Autmomatically reducing to smaller number.")
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
 
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
-  trained <- tryCatch(.doTrain(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, modellingParams, verbose),
+  trained <- tryCatch(.doTrain(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose),
                       error = function(error) error[["message"]])
   if(is.character(trained)) return(trained) # An error occurred.
   
@@ -219,16 +219,16 @@ input data. Autmomatically reducing to smaller number.")
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
     
-    predictedOutcomes <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
+    predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
 
-    if(is.character(predictedOutcomes)) # An error occurred.
-      return(predictedOutcomes) # Return early.
+    if(is.character(predictedOutcome)) # An error occurred.
+      return(predictedOutcome) # Return early.
     
   } else { # One function that does training and testing, so predictions were made earlier
            # by .doTrain, rather than this .doTest stage.
-    predictedOutcomes <- trained[[1]]
+    predictedOutcome <- trained[[1]]
   }
   
   # Exclude one feature at a time, build model, predict test samples.
@@ -241,21 +241,21 @@ input data. Autmomatically reducing to smaller number.")
     {
       measurementsTrainLess1 <- measurementsTrain[, -selectedIndex, drop = FALSE]
       measurementsTestLess1 <- measurementsTest[, -selectedIndex, drop = FALSE]
-      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomesTrain, measurementsTestLess1, outcomesTest, modellingParams, verbose),
+      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomeTrain, measurementsTestLess1, outcomeTest, modellingParams, verbose),
                                   error = function(error) error[["message"]])
       if(!is.null(modellingParams@predictParams))
-      predictedOutcomesWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTestLess1, modellingParams@predictParams, verbose),
+      predictedOutcomeWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTestLess1, modellingParams@predictParams, verbose),
                                               error = function(error) error[["message"]])
-      else predictedOutcomesWithoutOne <- modelWithoutOne[["model"]]
+      else predictedOutcomeWithoutOne <- modelWithoutOne[["model"]]
 
-      if(!is.null(ncol(predictedOutcomesWithoutOne)))
-        predictedOutcomesWithoutOne <- predictedOutcomesWithoutOne[, na.omit(match(c("class", "risk"), colnames(predictedOutcomesWithoutOne)))]
-      calcExternalPerformance(outcomesTest, predictedOutcomesWithoutOne, performanceType)
+      if(!is.null(ncol(predictedOutcomeWithoutOne)))
+        predictedOutcomeWithoutOne <- predictedOutcomeWithoutOne[, na.omit(match(c("class", "risk"), colnames(predictedOutcomeWithoutOne)))]
+      calcExternalPerformance(outcomeTest, predictedOutcomeWithoutOne, performanceType)
     })
     
-    if(!is.null(ncol(predictedOutcomes)))
-        predictedOutcomes <- predictedOutcomes[, na.omit(match(c("class", "risk"), colnames(predictedOutcomes)))]
-    performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomesTest, predictedOutcomes, performanceType), 2)
+    if(!is.null(ncol(predictedOutcome)))
+        predictedOutcome <- predictedOutcome[, na.omit(match(c("class", "risk"), colnames(predictedOutcome)))]
+    performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomeTest, predictedOutcome, performanceType), 2)
      
     if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Assay", "Original Feature")]
     importanceTable <- DataFrame(selectedFeatures, performanceChanges)
@@ -283,7 +283,7 @@ input data. Autmomatically reducing to smaller number.")
   
   if(!is.null(.iteration)) # This function was not called by the end user.
   {
-    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcomes, tune = tuneDetails, importance = importanceTable)
+    list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcome, tune = tuneDetails, importance = importanceTable)
   } else { # runTest executed by the end user. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
     modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
@@ -300,24 +300,24 @@ input data. Autmomatically reducing to smaller number.")
     characteristics <- rbind(characteristics, extrasDF)
     
     allSamples <- c(rownames(measurementsTrain), rownames(measurementsTest))
-    if(!is.null(ncol(outcomesTrain)))
+    if(!is.null(ncol(outcomeTrain)))
     {
-      allOutcomes <- rbind(outcomesTrain, outcomesTest)
-      rownames(allOutcomes) <- allSamples
+      allOutcome <- rbind(outcomeTrain, outcomeTest)
+      rownames(allOutcome) <- allSamples
     } else { 
-      allOutcomes <- c(outcomesTrain, outcomesTest)
-      names(allOutcomes) <- allSamples
+      allOutcome <- c(outcomeTrain, outcomeTest)
+      names(allOutcome) <- allSamples
     }
 
     ClassifyResult(characteristics, allSamples, featuresInfo, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, DataFrame(sample = rownames(measurementsTest), predictedOutcomes, check.names = FALSE), allOutcomes, importanceTable)
+                   list(models), tuneDetails, DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable)
   }  
 })
 
 #' @rdname runTest
 #' @export
 setMethod("runTest", c("MultiAssayExperiment"),
-          function(measurementsTrain, measurementsTest, targets = names(measurements), outcomesColumns, ...)
+          function(measurementsTrain, measurementsTest, targets = names(measurements), outcomeColumns, ...)
 {
   omicsTargets <- setdiff(targets, "sampleInfo")
   if(length(omicsTargets) > 0)
@@ -326,8 +326,8 @@ setMethod("runTest", c("MultiAssayExperiment"),
       stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
   }
   
-  tablesAndClassesTrain <- .MAEtoWideTable(measurementsTrain, targets, outcomesColumns, restrict = NULL)
-  tablesAndClassesTest <- .MAEtoWideTable(measurementsTest, targets, outcomesColumns, restrict = NULL)
-  runTest(tablesAndClassesTrain[["dataTable"]], tablesAndClassesTrain[["outcomes"]],
-          tablesAndClassesTest[["dataTable"]], tablesAndClassesTest[["outcomes"]], ...)            
+  tablesAndClassesTrain <- .MAEtoWideTable(measurementsTrain, targets, outcomeColumns, restrict = NULL)
+  tablesAndClassesTest <- .MAEtoWideTable(measurementsTest, targets, outcomeColumns, restrict = NULL)
+  runTest(tablesAndClassesTrain[["dataTable"]], tablesAndClassesTrain[["outcome"]],
+          tablesAndClassesTest[["dataTable"]], tablesAndClassesTest[["outcome"]], ...)            
 })

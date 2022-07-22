@@ -82,8 +82,8 @@ setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, 
   returnType <- match.arg(returnType)
   
   # Ensure that any non-integer variables are removed from the training and testing matrices.
-  splitDataset <- .splitDataAndOutcomes(countsTrain, classesTrain, restrict = "integer")
-  classesTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(countsTrain, classesTrain, restrict = "integer")
+  classesTrain <- splitDataset[["outcome"]]
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
   isInteger <- sapply(countsTest, is.integer)
   testingMatrix <- as.matrix(countsTest[, isInteger, drop = FALSE])
@@ -106,9 +106,9 @@ setMethod("classifyInterface", "DataFrame", function(countsTrain, classesTrain, 
 setMethod("classifyInterface", "MultiAssayExperiment",
 function(countsTrain, countsTest, targets = names(countsTrain), classesTrain, ...)
 {
-  tablesAndOutcomes <- .MAEtoWideTable(countsTrain, targets, classesTrain, "integer")
-  trainingMatrix <- tablesAndOutcomes[["dataTable"]]
-  classesTrain <- tablesAndOutcomes[["outcomes"]]
+  tablesAndOutcome <- .MAEtoWideTable(countsTrain, targets, classesTrain, "integer")
+  trainingMatrix <- tablesAndOutcome[["dataTable"]]
+  classesTrain <- tablesAndOutcome[["outcome"]]
   testingMatrix <- .MAEtoWideTable(countsTest, targets, "integer")
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)

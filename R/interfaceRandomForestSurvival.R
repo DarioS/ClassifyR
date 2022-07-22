@@ -77,8 +77,8 @@ setMethod("rfsrcTrainInterface", "DataFrame", function(measurementsTrain, surviv
     message("Fitting rfsrc classifier to training data and making predictions on test
             data.")
 
-  splitDataset <- ClassifyR:::.splitDataAndOutcomes(measurementsTrain, survivalTrain)  
-  survivalTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain)  
+  survivalTrain <- splitDataset[["outcome"]]
   measurementsTrain <- splitDataset[["measurements"]]
   bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[,1], time = survivalTrain[,2])
   randomForestSRC::rfsrc(Surv(event = event, time = time) ~ ., as.data.frame(bindedMeasurements), ...)
@@ -90,7 +90,7 @@ setMethod("rfsrcTrainInterface", "MultiAssayExperiment", function(measurementsTr
 {
   tablesAndSurvival <- ClassifyR:::.MAEtoWideTable(measurementsTrain, targets, survivalTrain, restrict = NULL)
   measurementsTrain <- tablesAndSurvival[["dataTable"]]
-  survivalTrain <- tablesAndSurvival[["outcomes"]]
+  survivalTrain <- tablesAndSurvival[["outcome"]]
   
   rfsrcTrainInterface(measurementsTrain, survivalTrain, ...)
 })
@@ -123,9 +123,9 @@ setMethod("rfsrcPredictInterface", c("rfsrc", "matrix"), # Matrix of numeric mea
 setMethod("rfsrcPredictInterface", c("rfsrc", "DataFrame"),
 function(model, measurementsTest, ..., verbose = 3)
 {
-  predictedOutcomes = predict(model, as.data.frame(measurementsTest), ...)$predicted
-  names(predictedOutcomes) = rownames(measurementsTest)
-  predictedOutcomes
+  predictedOutcome = predict(model, as.data.frame(measurementsTest), ...)$predicted
+  names(predictedOutcome) = rownames(measurementsTest)
+  predictedOutcome
 })
 
 # One or more omics data sets, possibly with clinical data.

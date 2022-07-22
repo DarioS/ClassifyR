@@ -126,6 +126,6 @@ setMethod("edgeRranking", "MultiAssayExperiment", function(countsTrain, targets 
 
   tablesAndClasses <- .MAEtoWideTable(countsTrain, targets, "integer")
   countsTable <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   edgeRranking(countsTable, classesTrain, ...)
 })

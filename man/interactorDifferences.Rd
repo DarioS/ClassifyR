@@ -42,7 +42,7 @@ name of the data table to be used.}
 
 \item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-that contains the samples' outcomes to use for prediction.}
+that contains each sample's outcome to use for prediction.}
 }
 \value{
 An object of class \code{\link{DataFrame}} with one column for each

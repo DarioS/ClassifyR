@@ -7,13 +7,13 @@
 \alias{runTest,MultiAssayExperiment-method}
 \title{Perform a Single Classification}
 \usage{
-\S4method{runTest}{matrix}(measurementsTrain, outcomesTrain, measurementsTest, outcomesTest, ...)
+\S4method{runTest}{matrix}(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, ...)
 
 \S4method{runTest}{DataFrame}(
   measurementsTrain,
-  outcomesTrain,
+  outcomeTrain,
   measurementsTest,
-  outcomesTest,
+  outcomeTest,
   crossValParams = CrossValParams(),
   modellingParams = ModellingParams(),
   characteristics = S4Vectors::DataFrame(),
@@ -25,7 +25,7 @@
   measurementsTrain,
   measurementsTest,
   targets = names(measurements),
-  outcomesColumns,
+  outcomeColumns,
   ...
 )
 }
@@ -38,14 +38,14 @@ or \code{\link{MultiAssayExperiment}} containing the training data. For a
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{outcomesTrain}{Either a factor vector of classes, a \code{\link{Surv}} object, or
+\item{outcomeTrain}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
 containing either classes or time and event information about survival.}
 
 \item{measurementsTest}{Same data type as \code{measurementsTrain}, but only the test
 samples.}
 
-\item{outcomesTest}{Same data type as \code{outcomesTrain}, but only the test
+\item{outcomeTest}{Same data type as \code{outcomeTrain}, but only the test
 samples.}
 
 \item{crossValParams}{An object of class \code{\link{CrossValParams}},
@@ -76,9 +76,9 @@ names of the data tables to be used. \code{"sampleInfo"} is also a valid value
 and specifies that numeric variables from the sample information data table will be
 used.}
 
-\item{outcomesColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+\item{outcomeColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-that contain(s) the samples' outcomes to use for prediction.}
+that contain(s) the samples' outcome to use for prediction.}
 }
 \value{
 If called directly by the user rather than being used internally by

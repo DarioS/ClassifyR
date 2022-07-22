@@ -41,7 +41,7 @@ setGeneric("kNNinterface", function(measurementsTrain, ...) standardGeneric("kNN
 
 setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain, measurementsTest, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
   test <- test[, isNumeric, drop = FALSE]  
   
@@ -54,7 +54,7 @@ setMethod("kNNinterface", "DataFrame", function(measurementsTrain, classesTrain,
 })
 ```
 
-The function only emits a progress message if `verbose` is 3. The verbosity levels are explained in the introductory vignette. `.splitDataAndOutcomes` is an internal function in **ClassifyR** which ensures that outcomes are not in `measurements` when model training happens. If `classesTrain` is a factor vector, then the function has no effect. If `classesTrain` is the character name of a column in `measurementsTrain`, that column is removed from the table and returned as a separate variable. The `...` parameter captures any options to be passed onto `knn`, such as `k` (number of neighbours considered) and `l` (minimum vote for a definite decision), for example. The function is also defensive and removes any non-numeric columns from the input table.
+The function only emits a progress message if `verbose` is 3. The verbosity levels are explained in the introductory vignette. `.splitDataAndOutcome` is an internal function in **ClassifyR** which ensures that outcome column(s) is not in `measurements` when model training happens. If `classesTrain` is a factor vector, then the function has no effect. If `classesTrain` is the character name of a column in `measurementsTrain`, that column is removed from the table and returned as a separate variable. The `...` parameter captures any options to be passed onto `knn`, such as `k` (number of neighbours considered) and `l` (minimum vote for a definite decision), for example. The function is also defensive and removes any non-numeric columns from the input table.
 
 **ClassifyR** also accepts a `matrix` and a `MultiAssayExperiment` as input. Provide convenience methods for these inputs which converts them into a `DataFrame`. In this way, only the `DataFrame` version of `kNNinterface` does the classification.
 
@@ -72,7 +72,7 @@ function(measurementsTrain, measurementsTest, targets = names(measurementsTrain)
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   trainingTable <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
+  classes <- tablesAndClasses[["outcome"]]
   testingTable <- .MAEtoWideTable(measurementsTest, targets)
             
   .checkVariablesAndSame(trainingTable, testingTable)
@@ -101,7 +101,7 @@ knnParams <- ModellingParams(selectParams = NULL,
 CVparams <- CrossValParams("Leave-k-Out", leave = 1)
 classified <- runTests(measurements, classes, CVparams, knnParams)
 classified
-cbind(predictions(classified), known = actualOutcomes(classified))
+cbind(predictions(classified), known = actualOutcome(classified))
 ```
 
 `NULL` is specified instead of a function to `PredictParams` because one function does training and prediction. As expected for this easy task, the classifier predicts all samples correctly.

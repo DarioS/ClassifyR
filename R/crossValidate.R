@@ -7,16 +7,13 @@
 #' or a list of these objects containing the training data.  For a
 #' \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
 #' the rows are features and the columns are samples, as is typical in Bioconductor.
-#' @param outcomes A vector of class labels of class \code{\link{factor}} of the
+#' @param outcome A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 #' column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
 #' column name in \code{colData(measurements)} if \code{measurements} is a \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
 #' \code{measurements} for survival outcome.
-#' @param ... Arguments other than measurements and outcomes in the generic.
-#' @param assayName An informative name describing the data (e.g. RNA-seq) table if the input is a data frame or matrix. Not used if input
-#' is \code{MultiAssayExperiment} or other list-like structure because it will already have assay names in the experiment list. This
-#' name will be stored in the characteristics table of the result as Assay Name characteristic.
+#' @param ... Arguments other than measurements and outcome in the generic.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
@@ -81,15 +78,14 @@
 #' # performancePlot(c(result, resultMerge))
 #' 
 #' @importFrom survival Surv
-setGeneric("crossValidate", function(measurements, outcomes, ...)
+setGeneric("crossValidate", function(measurements, outcome, ...)
     standardGeneric("crossValidate"))
 
 #' @rdname crossValidate
 #' @export
 setMethod("crossValidate", "DataFrame", 
           function(measurements,
-                   outcomes,
-                   assayName = NULL,
+                   outcome,
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -103,16 +99,16 @@ setMethod("crossValidate", "DataFrame",
 
           {
               # Check that data is in the right format
-              splitAssay <- .splitDataAndOutcomes(measurements, outcomes)
+              splitAssay <- .splitDataAndOutcome(measurements, outcome)
               measurements <- splitAssay[["measurements"]]
-              outcomes <- splitAssay[["outcomes"]]
+              outcome <- splitAssay[["outcome"]]
               
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)[, "assay"])
               if(is.null(assayIDs))
                 assayIDs <- 1
               
-              checkData(measurements, outcomes)
+              checkData(measurements, outcome)
 
               # Check that other variables are in the right format and fix
               nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -161,10 +157,9 @@ setMethod("crossValidate", "DataFrame",
                                   # Loop over classifiers
                                   set.seed(seed)
                                   measurementsUse <- measurements
-                                  if(!is.null(assayName)) attr(measurementsUse, "assayName") <- assayName
                                   if(assayIndex != 1) measurementsUse <- measurements[, mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   CV(
-                                      measurements = measurementsUse, outcomes = outcomes,
+                                      measurements = measurementsUse, outcome = outcome,
                                       assayIDs = assayIndex,
                                       nFeatures = nFeatures[assayIndex],
                                       selectionMethod = selectionIndex,
@@ -206,7 +201,7 @@ setMethod("crossValidate", "DataFrame",
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
-                         outcomes = outcomes, assayIDs = assayIndex,
+                         outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
                          selectionOptimisation = selectionOptimisation,
@@ -239,7 +234,7 @@ setMethod("crossValidate", "DataFrame",
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
-                         outcomes = outcomes, assayIDs = assayIndex,
+                         outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
                          selectionOptimisation = selectionOptimisation,
@@ -272,7 +267,7 @@ setMethod("crossValidate", "DataFrame",
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)$assay %in% assayIndex],
-                         outcomes = outcomes, assayIDs = assayIndex,
+                         outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
                          selectionOptimisation = selectionOptimisation,
@@ -296,7 +291,7 @@ setMethod("crossValidate", "DataFrame",
 # One or more omics data sets, possibly with clinical data.
 setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
-                   outcomes, 
+                   outcome, 
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -316,12 +311,12 @@ setMethod("crossValidate", "MultiAssayExperiment",
                       stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
               }
               
-              tablesAndoutcomes <- .MAEtoWideTable(measurements, targets, outcomes, restrict = NULL)
-              measurements <- tablesAndoutcomes[["dataTable"]]
-              outcomes <- tablesAndoutcomes[["outcomes"]]
+              tablesAndoutcome <- .MAEtoWideTable(measurements, targets, outcome, restrict = NULL)
+              measurements <- tablesAndoutcome[["dataTable"]]
+              outcome <- tablesAndoutcome[["outcome"]]
 
               crossValidate(measurements = measurements,
-                            outcomes = outcomes, 
+                            outcome = outcome, 
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,
@@ -338,8 +333,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
 #' @export
 setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           function(measurements,
-                   outcomes, 
-                   assayName = NULL,
+                   outcome, 
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -353,8 +347,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           {
               measurements <- DataFrame(measurements)
               crossValidate(measurements = measurements,
-                            outcomes = outcomes,
-                            assayName = assayName,
+                            outcome = outcome,
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,
@@ -371,8 +364,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
 #' @export
 setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           function(measurements,
-                   outcomes,
-                   assayName = NULL,
+                   outcome,
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -386,8 +378,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
               crossValidate(measurements = measurements,
-                            outcomes = outcomes,
-                            assayName = assayName,
+                            outcome = outcome,
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,
@@ -407,7 +398,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
 #' @export
 setMethod("crossValidate", "list",
           function(measurements,
-                   outcomes, 
+                   outcome, 
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -439,9 +430,9 @@ setMethod("crossValidate", "list",
                   stop("All datasets must have the same number of samples")
               }
               
-              # Check the number of classes is the same
-              if ((measurements[[1]] |> dim())[1] != length(classes)) {
-                  stop("Classes must have same number of samples as measurements")
+              # Check the number of outcome is the same
+              if ((measurements[[1]] |> dim())[1] != length(outcome)) {
+                  stop("outcome must have same number of samples as measurements")
               }
               
               df_list <- sapply(measurements, t, simplify = FALSE)
@@ -458,7 +449,7 @@ setMethod("crossValidate", "list",
               colnames(combined_df) <- mcols(combined_df)$feature
               
               crossValidate(measurements = combined_df,
-                            outcomes = outcomes, 
+                            outcome = outcome, 
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,
@@ -563,7 +554,7 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
 
 ######################################
 ######################################
-checkData <- function(measurements, outcomes){
+checkData <- function(measurements, outcome){
     if(is.null(rownames(measurements)))
         stop("'measurements' DataFrame must have sample identifiers as its row names.")
     if(any(is.na(measurements)))
@@ -702,8 +693,8 @@ generateModellingParams <- function(assayIDs,
 
     #
     # if(multiViewMethod == "prevalidation"){
-    #     params$trainParams <- function(measurements, outcomes) prevalTrainInterface(measurements, outcomes, params)
-    #     params$trainParams <- function(measurements, outcomes) prevalTrainInterface(measurements, outcomes, params)
+    #     params$trainParams <- function(measurements, outcome) prevalTrainInterface(measurements, outcome, params)
+    #     params$trainParams <- function(measurements, outcome) prevalTrainInterface(measurements, outcome, params)
     # }
     #
 
@@ -849,7 +840,7 @@ generateMultiviewParams <- function(assayIDs,
 
 
 CV <- function(measurements,
-               outcomes,
+               outcome,
                assayIDs,
                nFeatures = NULL,
                selectionMethod = "t-test",
@@ -864,7 +855,7 @@ CV <- function(measurements,
 
 {
     # Check that data is in the right format
-    checkData(measurements, outcomes)
+    checkData(measurements, outcome)
     
     # Check that other variables are in the right format and fix
     nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -893,12 +884,12 @@ CV <- function(measurements,
                                                classifier = classifier,
                                                multiViewMethod = multiViewMethod
     )
-    if(assayIDs != 1) assayText <- assayIDs else if(!is.null(attr(measurements, "assayName"))) assayText <- attr(measurements, "assayName") else assayText <- NULL
+    if(length(assayIDs) > 1 || length(assayIDs) == 1 && assayIDs != 1) assayText <- assayIDs else assayText <- NULL
     characteristics <- S4Vectors::DataFrame(characteristic = c(if(!is.null(assayText)) "Assay Name" else NULL, "Classifier Name", "Selection Name", "multiViewMethod", "characteristicsLabel"), value = c(if(!is.null(assayText)) paste(assayText, collapse = ", ") else NULL, paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
 
-    classifyResults <- runTests(measurements, outcomes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
+    classifyResults <- runTests(measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
     
-    fullResult <- runTest(measurements, outcomes, measurements, outcomes, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+    fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
 
     classifyResults@finalModel <- list(fullResult$models)
     classifyResults
@@ -923,7 +914,3 @@ setMethod("predict", "ClassifyResult",
           {
               object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
           })
-
-
-
-

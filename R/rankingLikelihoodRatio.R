@@ -76,7 +76,7 @@ setMethod("likelihoodRatioRanking", "DataFrame", # Sample information data or on
           function(measurementsTrain, classesTrain, alternative = c(location = "different", scale = "different"),
                    ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
 
   if(verbose == 3)
@@ -109,7 +109,7 @@ setMethod("likelihoodRatioRanking", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
 
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

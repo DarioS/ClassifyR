@@ -121,9 +121,9 @@ setMethod("mixModelsTrain", "matrix", function(measurementsTrain, ...) # Matrix 
 #' @export
 setMethod("mixModelsTrain", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3) # Mixed data types.
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
-  classesTrain <- splitDataset[["outcomes"]]
+  classesTrain <- splitDataset[["outcome"]]
 
   if(verbose == 3)
     message("Fitting mixtures of normals for features.")
@@ -162,7 +162,7 @@ setMethod("mixModelsTrain", "MultiAssayExperiment", function(measurementsTrain, 
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   dataTable <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   mixModelsTrain(dataTable, classesTrain, ...)
 })
 

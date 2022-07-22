@@ -64,7 +64,7 @@ setMethod("leveneRanking", "matrix", function(measurementsTrain, classesTrain, .
 setMethod("leveneRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
   
   if(!requireNamespace("car", quietly = TRUE))
@@ -86,7 +86,7 @@ setMethod("leveneRanking", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   
   leveneRanking(measurementsTrain, classesTrain, ...)
 })

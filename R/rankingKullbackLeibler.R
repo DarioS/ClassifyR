@@ -71,7 +71,7 @@ setMethod("KullbackLeiblerRanking", "matrix", function(measurementsTrain, classe
 setMethod("KullbackLeiblerRanking", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, ..., verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   measurementsTrain <- splitDataset[["measurements"]]
   
   if(verbose == 3)
@@ -98,7 +98,7 @@ setMethod("KullbackLeiblerRanking", "MultiAssayExperiment",
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
 
   if(ncol(dataTable) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

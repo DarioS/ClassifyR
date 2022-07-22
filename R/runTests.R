@@ -11,7 +11,7 @@
 #' or \code{\link{MultiAssayExperiment}} containing all of the data. For a
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
 #' are features.
-#' @param outcomes Either a factor vector of classes, a \code{\link{Surv}} object, or
+#' @param outcome Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
@@ -29,9 +29,9 @@
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
 #' names of the data tables to be used. \code{"clinical"} is also a valid value
 #' and specifies that the clinical data table will be used.
-#' @param outcomesColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+#' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-#' that contain(s)s the samples' outcomes to use for prediction.
+#' that contain(s)s the samples' outcome to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -62,29 +62,29 @@ setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
 #' @rdname runTests
 #' @export
-setMethod("runTests", c("matrix"), function(measurements, outcomes, ...) # Matrix of numeric measurements.
+setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix of numeric measurements.
 {
   if(is.null(rownames(measurements)))
     stop("'measurements' matrix must have sample identifiers as its row names.")
-  runTests(S4Vectors::DataFrame(measurements, check.names = FALSE), outcomes, ...)
+  runTests(S4Vectors::DataFrame(measurements, check.names = FALSE), outcome, ...)
 })
 
 # Clinical data or one of the other inputs, transformed.
 #' @rdname runTests
 #' @export
-setMethod("runTests", "DataFrame", function(measurements, outcomes, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
+setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = S4Vectors::DataFrame(), verbose = 1)
 {
-  # Get out the outcomes if inside of data table.           
+  # Get out the outcome if inside of data table.           
   if(is.null(rownames(measurements)))
     stop("'measurements' DataFrame must have sample identifiers as its row names.")
   
   if(any(is.na(measurements)))
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
             
-  splitDataset <- .splitDataAndOutcomes(measurements, outcomes)
+  splitDataset <- .splitDataAndOutcome(measurements, outcome)
   measurements <- splitDataset[["measurements"]]
-  outcomes <- splitDataset[["outcomes"]]
+  outcome <- splitDataset[["outcome"]]
   
   if(!is.null(modellingParams@selectParams) && max(modellingParams@selectParams@tuneParams[["nFeatures"]]) > ncol(measurements))
   {
@@ -98,7 +98,7 @@ input data. Autmomatically reducing to smaller number.")
   
   featuresInfo <- .summaryFeatures(measurements)
   # Create all partitions of training and testing sets.
-  samplesSplits <- .samplesSplits(crossValParams, outcomes)
+  samplesSplits <- .samplesSplits(crossValParams, outcome)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
   
   # Necessary hack for parallel processing on Windows.
@@ -115,8 +115,8 @@ input data. Autmomatically reducing to smaller number.")
       message("Processing sample set ", setNumber, '.')
       
     # crossValParams is needed at least for nested feature tuning.
-    runTest(measurements[trainingSamples, , drop = FALSE], outcomes[trainingSamples],
-            measurements[testSamples, , drop = FALSE], outcomes[testSamples],
+    runTest(measurements[trainingSamples, , drop = FALSE], outcome[trainingSamples],
+            measurements[testSamples, , drop = FALSE], outcome[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
             .iteration = setNumber)
   }, samplesSplits[["train"]], samplesSplits[["test"]], (1:length(samplesSplits[["train"]])),
@@ -174,13 +174,13 @@ input data. Autmomatically reducing to smaller number.")
   
   ClassifyResult(characteristics, rownames(measurements), featuresInfo,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcomes, importance, modellingParams)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams)
 })
 
 #' @rdname runTests
 #' @export
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), outcomesColumns, ...)
+          function(measurements, targets = names(measurements), outcomeColumns, ...)
 {
   omicsTargets <- setdiff(targets, "sampleInfo")
   if(length(omicsTargets) > 0)
@@ -189,6 +189,6 @@ setMethod("runTests", c("MultiAssayExperiment"),
       stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
   }
   
-  tablesAndOutcomes <- .MAEtoWideTable(measurements, targets, outcomesColumns, restrict = NULL)
-  runTests(tablesAndOutcomes[["dataTable"]], tablesAndOutcomes[["outcomes"]], ...)            
+  tablesAndOutcome <- .MAEtoWideTable(measurements, targets, outcomeColumns, restrict = NULL)
+  runTests(tablesAndOutcome[["dataTable"]], tablesAndOutcome[["outcome"]], ...)            
 })

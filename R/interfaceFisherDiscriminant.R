@@ -74,9 +74,9 @@ setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTra
 setMethod("fisherDiscriminant", "DataFrame", # Sample information data or one of the other inputs, transformed.
           function(measurementsTrain, classesTrain, measurementsTest, returnType = c("both", "class", "score"), verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]])
-  classesTrain <- splitDataset[["outcomes"]]
+  classesTrain <- splitDataset[["outcome"]]
   isNumeric <- sapply(measurementsTest, is.numeric)
   testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
             
@@ -117,7 +117,7 @@ setMethod("fisherDiscriminant", "MultiAssayExperiment", function(measurementsTra
 {
   tablesAndClasses <- .MAEtoWideTable(measurements, targets, classesTrain)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   testingMatrix <- .MAEtoWideTable(measurementsTest, targets)
   
   .checkVariablesAndSame(trainingMatrix, testingMatrix)

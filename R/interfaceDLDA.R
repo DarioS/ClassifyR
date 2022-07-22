@@ -82,9 +82,9 @@ setMethod("DLDAtrainInterface", "matrix", function(measurementsTrain, classesTra
 #' @export
 setMethod("DLDAtrainInterface", "DataFrame", function(measurementsTrain, classesTrain, verbose = 3)
 {
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
   trainingMatrix <- as.matrix(splitDataset[["measurements"]]) # DLDA demands matrix input type.
-  classesTrain <- splitDataset[["outcomes"]]
+  classesTrain <- splitDataset[["outcome"]]
   
   #if(!requireNamespace("sparsediscrim", quietly = TRUE))
   #stop("The package 'sparsediscrim' could not be found. Please install it.")
@@ -101,7 +101,7 @@ setMethod("DLDAtrainInterface", "MultiAssayExperiment", function(measurementsTra
 {
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, targets, classesTrain)
   measurementsTrain <- tablesAndClasses[["dataTable"]]
-  classesTrain <- tablesAndClasses[["outcomes"]]
+  classesTrain <- tablesAndClasses[["outcome"]]
   
   if(ncol(measurementsTrain) == 0)
     stop("No variables in data tables specified by \'targets\' are numeric.")

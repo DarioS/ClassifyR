@@ -115,8 +115,8 @@ setMethod("kTSPclassifier", "DataFrame", # Sample information data or one of the
   if(!"Pairs" %in% class(featurePairs))
     stop("'featurePairs' must be of type Pairs.")            
         
-  splitDataset <- .splitDataAndOutcomes(measurementsTrain, classesTrain)
-  classesTrain <- splitDataset[["outcomes"]]
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain)
+  classesTrain <- splitDataset[["outcome"]]
   trainingMatrix <- splitDataset[["measurements"]]
   isNumeric <- sapply(measurementsTest, is.numeric)
   testingMatrix <- as.matrix(measurementsTest[, isNumeric, drop = FALSE])
@@ -205,7 +205,7 @@ setMethod("kTSPclassifier", "MultiAssayExperiment",
             
   tablesAndClasses <- .MAEtoWideTable(measurementsTrain, target)
   trainingMatrix <- tablesAndClasses[["dataTable"]]
-  classes <- tablesAndClasses[["outcomes"]]
+  classes <- tablesAndClasses[["outcome"]]
   testingMatrix <- .MAEtoWideTable(measurementsTest, target)
             
   .checkVariablesAndSame(trainingMatrix, testingMatrix)
