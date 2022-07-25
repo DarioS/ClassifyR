@@ -45,7 +45,7 @@ leave-k-out, when k is small.}
 No elements are mandatory. If specified, each list element's name must be
 either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 associated to fill or line by \code{characteristicsList} but this list is
-empty, a palette of colours will be automaticaly chosen.}
+empty, a palette of colours will be automatically chosen.}
 
 \item{orderingList}{An optional named list. Any of the variables specified
 to \code{characteristicsList} can be the name of an element of this list and

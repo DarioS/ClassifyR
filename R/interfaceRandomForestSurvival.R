@@ -20,6 +20,7 @@
 #' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param mTryProportion Default: 0.5. The proportion of features to try at each split.
 #' @param survivalTrain A tabular data type of survival information of the
 #' same number of rows as the number of samples in \code{measurementsTrain} and 2 to 3 columns if it is a
 #' \code{\link{matrix}} or a \code{\link{DataFrame}}, or a character vector of length 2 to 3 containing the
@@ -63,7 +64,7 @@ setMethod("rfsrcTrainInterface", "matrix", function(measurementsTrain, survivalT
 # Clinical data or one of the other inputs, transformed.
 #' @rdname rfsrcInterface
 #' @export
-setMethod("rfsrcTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, ..., verbose = 3)
+setMethod("rfsrcTrainInterface", "DataFrame", function(measurementsTrain, survivalTrain, mTryProportion = 0.5, ..., verbose = 3)
 {
   if(!requireNamespace("survival", quietly = TRUE))
     stop("The package 'survival' could not be found. Please install it.")
@@ -81,7 +82,8 @@ setMethod("rfsrcTrainInterface", "DataFrame", function(measurementsTrain, surviv
   survivalTrain <- splitDataset[["outcome"]]
   measurementsTrain <- splitDataset[["measurements"]]
   bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[,1], time = survivalTrain[,2])
-  randomForestSRC::rfsrc(Surv(event = event, time = time) ~ ., as.data.frame(bindedMeasurements), ...)
+  mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
+  randomForestSRC::rfsrc(Surv(event = event, time = time) ~ ., as.data.frame(bindedMeasurements), mtry = mtry, ...)
 })
 
 #' @rdname rfsrcInterface

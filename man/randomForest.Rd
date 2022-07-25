@@ -14,7 +14,13 @@
 \usage{
 \S4method{randomForestTrainInterface}{matrix}(measurementsTrain, classesTrain, ...)
 
-\S4method{randomForestTrainInterface}{DataFrame}(measurementsTrain, classesTrain, ..., verbose = 3)
+\S4method{randomForestTrainInterface}{DataFrame}(
+  measurementsTrain,
+  classesTrain,
+  mTryProportion = 0.5,
+  ...,
+  verbose = 3
+)
 
 \S4method{randomForestTrainInterface}{MultiAssayExperiment}(
   measurementsTrain,
@@ -58,6 +64,8 @@ containing the column name in \code{measurementsTrain} if it is a \code{\link{Da
 column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 removed before training.}
+
+\item{mTryProportion}{Default: 0.5. The proportion of features to try at each split.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if

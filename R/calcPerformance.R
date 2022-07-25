@@ -200,7 +200,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   {
     actualOutcome <- split(actualOutcome, grouping)
     predictedOutcome <- split(predictedOutcome, grouping)
-    if(!is.na(samples))
+    if(length(samples) > 1 || !is.na(samples))
     {
       allSamples <- levels(samples)
       samples <- split(samples, grouping)

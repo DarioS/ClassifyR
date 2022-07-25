@@ -23,6 +23,7 @@
 #' @param measurementsTrain Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 #' or \code{\link{MultiAssayExperiment}} containing the training data.  For a
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
+#' @param mTryProportion Default: 0.5. The proportion of features to try at each split.
 #' @param classesTrain A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurementsTrain} if it is a
 #' \code{\link{matrix}} or a \code{\link{DataFrame}} or a character vector of length 1
@@ -100,7 +101,7 @@ setMethod("randomForestTrainInterface", "matrix", # Matrix of numeric measuremen
 # Sample information data or one of the other inputs, transformed.
 #' @export
 #' @rdname randomForest
-setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, ..., verbose = 3)
+setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain, classesTrain, mTryProportion = 0.5, ..., verbose = 3)
 {
   splitDataset <- .splitDataAndOutcome(measurementsTrain, classesTrain, restrict = NULL)
 
@@ -109,9 +110,10 @@ setMethod("randomForestTrainInterface", "DataFrame", function(measurementsTrain,
   if(verbose == 3)
     message("Fitting random forest classifier to training data and making predictions on test
             data.")
-
+  mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
+      
   # Convert to base data.frame as randomForest doesn't understand DataFrame.
-  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcome"]], keep.forest = TRUE, ...)
+  randomForest::randomForest(as(splitDataset[["measurements"]], "data.frame"), splitDataset[["outcome"]], mtry = mtry, keep.forest = TRUE, ...)
 })
 
 #' @export

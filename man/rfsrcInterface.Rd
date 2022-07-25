@@ -17,7 +17,13 @@
 \usage{
 \S4method{rfsrcTrainInterface}{matrix}(measurementsTrain, survivalTrain, ...)
 
-\S4method{rfsrcTrainInterface}{DataFrame}(measurementsTrain, survivalTrain, ..., verbose = 3)
+\S4method{rfsrcTrainInterface}{DataFrame}(
+  measurementsTrain,
+  survivalTrain,
+  mTryProportion = 0.5,
+  ...,
+  verbose = 3
+)
 
 \S4method{rfsrcTrainInterface}{MultiAssayExperiment}(
   measurementsTrain,
@@ -54,6 +60,8 @@ column names in \code{measurementsTrain} if it is a \code{\link{DataFrame}} or t
 column name in \code{colData(measurementsTrain)} if \code{measurementsTrain} is a
 \code{\link{MultiAssayExperiment}}. If a vector of column names, those columns will be
 removed before training.}
+
+\item{mTryProportion}{Default: 0.5. The proportion of features to try at each split.}
 
 \item{verbose}{Default: 3. A number between 0 and 3 for the amount of
 progress messages to give.  This function only prints progress messages if
