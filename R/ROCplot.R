@@ -41,8 +41,6 @@
 #' Otherwise a character name can be provided.
 #' @param xLabel Label to be used for the x-axis of false positive rate.
 #' @param yLabel Label to be used for the y-axis of true positive rate.
-#' @param plot Logical. If \code{TRUE}, a plot is produced on the current
-#' graphics device.
 #' @param showAUC Logical. If \code{TRUE}, the AUC value of each result is
 #' added to its legend text.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
@@ -244,9 +242,6 @@ setMethod("ROCplot", "list",
                                                   left = grid::textGrob(yLabel, gp = grid::gpar(fontsize = fontSizes[2]), rot = 90),
                                                   bottom = grid::textGrob(xLabel, gp = grid::gpar(fontsize = fontSizes[2])))))
   }
-
-  if(plot == TRUE)
-    grid::grid.draw(ROCplot)
   
   ROCplot
 })
