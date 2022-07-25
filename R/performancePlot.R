@@ -151,7 +151,7 @@ setMethod("performancePlot", "list",
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
-  performancePlot <- ggplot2::ggplot() + ggplot2::geom_hline(yintercept = baseline, colour = "red", linetype = 2)
+  performancePlot <- ggplot2::ggplot() + ggplot2::geom_hline(yintercept = baseline, linetype = 2)
 
   if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
