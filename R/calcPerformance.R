@@ -179,9 +179,10 @@ setMethod("calcCVperformance", "ClassifyResult",
 #' @importFrom survival concordance
 .calcPerformance <- function(actualOutcome, predictedOutcome, samples = NA, performanceType, grouping = NULL)
 {
+  # Make splitting by group safe.
+  if(is(predictedOutcome, "DataFrame")) predictedOutcome <- as.data.frame(predictedOutcome, optional = TRUE)    
   if(performanceType %in% c("Sample Error", "Sample Accuracy"))
   {
-    
     sampleMetricValues <- sapply(levels(samples), function(sampleID)
     {
       consider <- which(samples == sampleID)
@@ -194,13 +195,16 @@ setMethod("calcCVperformance", "ClassifyResult",
     names(performanceValues) <- levels(samples)
     return(list(name = performanceType, values = performanceValues))
   }
-    
+
   if(!is.null(grouping))
   {
     actualOutcome <- split(actualOutcome, grouping)
     predictedOutcome <- split(predictedOutcome, grouping)
-    allSamples <- levels(samples)
-    samples <- split(samples, grouping)
+    if(!is.na(samples))
+    {
+      allSamples <- levels(samples)
+      samples <- split(samples, grouping)
+    }
   }
     
   if(performanceType == "Sample C-index")
@@ -270,7 +274,7 @@ setMethod("calcCVperformance", "ClassifyResult",
       else
         mean(classErrors / classSizes)
     }, actualOutcome, predictedOutcome, SIMPLIFY = FALSE))
-  } else if(performanceType %in% c("AUC")) {
+  } else if(performanceType == "AUC") {
     performanceValues <- unlist(mapply(function(iterationClasses, iterationPredictions)
     {
       classesTable <- do.call(rbind, lapply(levels(iterationClasses), function(class)

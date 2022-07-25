@@ -28,7 +28,7 @@
 #' No elements are mandatory. If specified, each list element's name must be
 #' either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 #' associated to fill or line by \code{characteristicsList} but this list is
-#' empty, a palette of colours will be automaticaly chosen.
+#' empty, a palette of colours will be automatically chosen.
 #' @param orderingList An optional named list. Any of the variables specified
 #' to \code{characteristicsList} can be the name of an element of this list and
 #' the value of the element is the order in which the factors should be
@@ -114,6 +114,8 @@ setMethod("performancePlot", "list",
     warning(paste(performanceName, "not found in all elements of results. Calculating it now."))
     results <- lapply(results, function(result) calcCVperformance(result, performanceName))
   }
+  
+  ifelse(performanceName == "Matthews Correlation Coefficient", baseline <- 0, baseline <- 0.5)
  
   plotData <- do.call(rbind, mapply(function(result, index)
                     {
@@ -130,7 +132,7 @@ setMethod("performancePlot", "list",
                       summaryTable
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
-  plotData <- plotData[,!duplicated(colnames(plotData))]
+  plotData <- plotData[, !duplicated(colnames(plotData))]
 
   # Fill in any missing variables needed for ggplot2 code.
   if("fillColour" %in% names(characteristicsList))
@@ -149,8 +151,7 @@ setMethod("performancePlot", "list",
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
-  performancePlot <- ggplot2::ggplot() + 
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
+  performancePlot <- ggplot2::ggplot() + ggplot2::geom_hline(yintercept = baseline, colour = "red", linetype = 2)
 
   if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
@@ -175,7 +176,8 @@ setMethod("performancePlot", "list",
   if(rotate90 == TRUE) performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
   
   performancePlot <- performancePlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
-
+  performancePlot <- performancePlot + ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
+  
   if(plot == TRUE)
     print(performancePlot)
   
