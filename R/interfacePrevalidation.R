@@ -135,12 +135,12 @@ setMethod("prevalTrainInterface", "DFrame",
               prevalidationModels =  mapply(
                   runTest,
                   measurementsTrain = assayTrain,
-                  outcomeTrain = classes,
-                  measurementsTest = assayTrain,
-                  outcomeTest = classes,
+                  measurementsTest = assayTrain,               
                   modellingParams = params,
                   MoreArgs = list(
                       crossValParams = CVparams,
+                      outcomeTrain = classes,
+                      outcomeTest = classes,
                       .iteration = 1,
                       verbose = 0
                   )
