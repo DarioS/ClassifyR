@@ -117,8 +117,8 @@ function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
     featuresInfo <- .summaryFeatures(measurementsTrain)
     if(!is.null(S4Vectors::mcols(measurementsTrain)))
     {
-      S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
-      S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
+      #S4Vectors::mcols(measurementsTrain) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
+      #S4Vectors::mcols(measurementsTest) <- featuresInfo[, c("Renamed Assay", "Renamed Feature")]
       colnames(measurementsTrain) <- colnames(measurementsTest) <- paste(featuresInfo[["Renamed Assay"]], featuresInfo[["Renamed Feature"]], sep = '')
     } else {
       colnames(measurementsTrain) <- colnames(measurementsTest) <- featuresInfo[, "Renamed Feature"]
