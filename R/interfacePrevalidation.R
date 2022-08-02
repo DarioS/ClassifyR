@@ -134,11 +134,11 @@ setMethod("prevalTrainInterface", "DFrame",
               # Fit models with each datatype for use in prevalidated prediction later..
               prevalidationModels =  mapply(
                   runTest,
-                  measurementsTrain = assayTrain[usePreval],
+                  measurementsTrain = assayTrain,
                   outcomeTrain = classes,
-                  measurementsTest = assayTrain[usePreval],
+                  measurementsTest = assayTrain,
                   outcomeTest = classes,
-                  modellingParams = params[usePreval],
+                  modellingParams = params,
                   MoreArgs = list(
                       crossValParams = CVparams,
                       .iteration = 1,
