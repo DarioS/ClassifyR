@@ -56,7 +56,7 @@ setMethod("prevalTrainInterface", "DFrame",
               ###
               # Splitting measurements into a list of each of the assays
               ###
-              assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["dataset"]] %in% assay], simplify = FALSE)
+              assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["assay"]] %in% assay], simplify = FALSE)
               
               if(!"clinical" %in% names(assayTrain)) stop("Must have an assay called \"clinical\"")
               
@@ -72,7 +72,7 @@ setMethod("prevalTrainInterface", "DFrame",
                   measurements = assayTrain[usePreval],
                   modellingParams = params[usePreval],
                   MoreArgs = list(
-                      classes = classes,
+                      outcome = classes,
                       crossValParams = CVparams,
                       verbose = 0
                   ), 
@@ -98,7 +98,7 @@ setMethod("prevalTrainInterface", "DFrame",
               #fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
               prevalidationTrain <- S4Vectors::DataFrame(prevalidationTrain)
-              mcols(prevalidationTrain)$assay = "PCA"
+              mcols(prevalidationTrain)$assay = "prevalidation"
               mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
               
               
@@ -116,10 +116,10 @@ setMethod("prevalTrainInterface", "DFrame",
               
               # Fit classification model (from clinical in params)
               runTestOutput = runTest(
-                  fullTrain,
-                  classes = classes,
-                  training = seq_len(nrow(fullTrain)),
-                  testing = seq_len(nrow(fullTrain)),
+                  measurementsTrain = fullTrain,
+                  outcomeTrain = classes,
+                  measurementsTest = fullTrain,
+                  outcomeTest = classes,
                   modellingParams = finalModParam,
                   crossValParams = CVparams,
                   .iteration = 1,
@@ -134,12 +134,12 @@ setMethod("prevalTrainInterface", "DFrame",
               # Fit models with each datatype for use in prevalidated prediction later..
               prevalidationModels =  mapply(
                   runTest,
-                  measurements = assayTrain[usePreval],
+                  measurementsTrain = assayTrain[usePreval],
+                  outcomeTrain = classes,
+                  measurementsTest = assayTrain[usePreval],
+                  outTest = classes,
                   modellingParams = params[usePreval],
                   MoreArgs = list(
-                      classes = classes,
-                      training = seq_len(nrow(fullTrain)),
-                      testing =  seq_len(nrow(fullTrain)),
                       crossValParams = CVparams,
                       .iteration = 1,
                       verbose = 0
@@ -191,7 +191,7 @@ setMethod("prevalPredictInterface", c("prevalModel", "DFrame"),
                   extractPrevalidation()
               
               prevalidationPredict <- S4Vectors::DataFrame(prevalidationPredict)
-              mcols(prevalidationPredict)$assay = "PCA"
+              mcols(prevalidationPredict)$assay = "prevalidation"
               mcols(prevalidationPredict)$feature = colnames(prevalidationPredict)
               
               fullTest = cbind(assayTest[["clinical"]], prevalidationPredict[rownames(assayTest[["clinical"]]), , drop = FALSE])
