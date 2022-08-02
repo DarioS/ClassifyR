@@ -137,7 +137,7 @@ setMethod("prevalTrainInterface", "DFrame",
                   measurementsTrain = assayTrain[usePreval],
                   outcomeTrain = classes,
                   measurementsTest = assayTrain[usePreval],
-                  outTest = classes,
+                  outcomeTest = classes,
                   modellingParams = params[usePreval],
                   MoreArgs = list(
                       crossValParams = CVparams,
