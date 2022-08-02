@@ -578,12 +578,12 @@
       renamedInfo[rowsAssay, "feature"] <- paste("Feature", seq_along(rowsAssay), sep = '')
       renamedInfo[rowsAssay, "assay"] <- renamedAssays[match(assay, assays)]
     }
-    featuresInfo <- DataFrame(originalInfo, renamedInfo)
+    featuresInfo <- S4Vectors::DataFrame(originalInfo, renamedInfo)
     colnames(featuresInfo) <- c("Original Assay", "Original Feature", "Renamed Assay", "Renamed Feature")
   } else {
     originalFeatures <- colnames(measurements)
     renamedInfo <- paste("Feature", seq_along(measurements), sep = '')
-    featuresInfo <- DataFrame(originalFeatures, renamedInfo)
+    featuresInfo <- S4Vectors::DataFrame(originalFeatures, renamedInfo)
     colnames(featuresInfo) <- c("Original Feature", "Renamed Feature")
   }
   featuresInfo

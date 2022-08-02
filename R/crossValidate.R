@@ -345,7 +345,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
-              measurements <- DataFrame(measurements)
+              measurements <- S4Vectors::DataFrame(measurements)
               crossValidate(measurements = measurements,
                             outcome = outcome,
                             nFeatures = nFeatures,

@@ -159,10 +159,10 @@ input data. Autmomatically reducing to smaller number.")
         predictsColumnName <- "risk"
     else # Classification task. A factor.
         predictsColumnName <- "class"
-    predictionsTable <- DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
+    predictionsTable <- S4Vectors::DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, unlist(lapply(results, "[[", "predictions")), check.names = FALSE)
     colnames(predictionsTable)[ncol(predictionsTable)] <- predictsColumnName
   } else { # data frame
-    predictionsTable <- DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
+    predictionsTable <- S4Vectors::DataFrame(sample = unlist(lapply(results, "[[", "testSet")), splitsTestInfo, do.call(rbind, lapply(results, "[[", "predictions")), check.names = FALSE)
   }
   rownames(predictionsTable) <- NULL
   tuneList <- lapply(results, "[[", "tune")

@@ -92,7 +92,7 @@ setMethod("runTest", "DataFrame", # Sample information data or one of the other 
 function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
          modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), verbose = 1, .iteration = NULL)
-{if(!is.null(.iteration) && .iteration != "internal")
+{
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
     if(is.null(rownames(measurementsTrain)))
@@ -258,7 +258,7 @@ input data. Autmomatically reducing to smaller number.")
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomeTest, predictedOutcome, performanceType), 2)
      
     if(is.null(S4Vectors::mcols(measurementsTrain))) selectedFeatures <- featuresInfo[selectedFeaturesIndices, "Original Feature"] else selectedFeatures <- featuresInfo[selectedFeaturesIndices, c("Original Assay", "Original Feature")]
-    importanceTable <- DataFrame(selectedFeatures, performanceChanges)
+    importanceTable <- S4Vectors::DataFrame(selectedFeatures, performanceChanges)
     if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
     colnames(importanceTable)[ncol(importanceTable)] <- paste("Change in", performanceType)
   }
@@ -310,7 +310,7 @@ input data. Autmomatically reducing to smaller number.")
     }
 
     ClassifyResult(characteristics, allSamples, featuresInfo, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable)
+                   list(models), tuneDetails, S4Vectors::DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable)
   }  
 })
 

@@ -144,7 +144,7 @@ standardGeneric("GLMpredictInterface"))
 setMethod("GLMpredictInterface", c("glm", "matrix"),
           function(model, measurementsTest, ...)
 {
-  GLMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  GLMpredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 #' @rdname GLM

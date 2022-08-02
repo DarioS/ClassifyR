@@ -64,9 +64,9 @@ setGeneric("fisherDiscriminant", function(measurementsTrain, ...) standardGeneri
 #' @export
 setMethod("fisherDiscriminant", "matrix", function(measurementsTrain, classesTrain, measurementsTest, ...) # Matrix of numeric measurements.
 {
-  fisherDiscriminant(DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
+  fisherDiscriminant(S4Vectors::DataFrame(measurementsTrain[, , drop = FALSE], check.names = FALSE),
                      classesTrain,
-                     DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
+                     S4Vectors::DataFrame(measurementsTest[, , drop = FALSE], check.names = FALSE), ...)
 })
 
 #' @rdname fisherDiscriminant

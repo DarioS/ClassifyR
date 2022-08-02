@@ -170,7 +170,7 @@ standardGeneric("elasticNetGLMpredictInterface"))
 setMethod("elasticNetGLMpredictInterface", c("multnet", "matrix"),
           function(model, measurementsTest, ...)
 {
-  elasticNetGLMpredictInterface(model, DataFrame(measurementsTest, check.names = FALSE), ...)
+  elasticNetGLMpredictInterface(model, S4Vectors::DataFrame(measurementsTest, check.names = FALSE), ...)
 })
 
 # Sample information data, for example.
