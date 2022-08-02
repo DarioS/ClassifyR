@@ -580,13 +580,14 @@
     }
     featuresInfo <- S4Vectors::DataFrame(originalInfo, renamedInfo)
     colnames(featuresInfo) <- c("Original Assay", "Original Feature", "Renamed Assay", "Renamed Feature")
+    featuresInfo <- cbind(originalInfo, featuresInfo)
   } else {
     originalFeatures <- colnames(measurements)
     renamedInfo <- paste("Feature", seq_along(measurements), sep = '')
     featuresInfo <- S4Vectors::DataFrame(originalFeatures, renamedInfo)
     colnames(featuresInfo) <- c("Original Feature", "Renamed Feature")
   }
-  cbind(originalInfo, featuresInfo)
+  featuresInfo
 }
 
 # Function to identify the parameters of an S4 method.
