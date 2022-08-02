@@ -56,7 +56,7 @@ setMethod("prevalTrainInterface", "DFrame",
               ###
               # Splitting measurements into a list of each of the assays
               ###
-              assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["dataset"]] %in% assay], simplify = FALSE)
+              assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["assay"]] %in% assay], simplify = FALSE)
               
               if(!"clinical" %in% names(assayTrain)) stop("Must have an assay called \"clinical\"")
               
