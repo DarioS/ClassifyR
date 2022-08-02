@@ -431,7 +431,7 @@ setMethod("crossValidate", "list",
               }
               
               # Check the number of outcome is the same
-              if ((measurements[[1]] |> dim())[1] != length(outcome)) {
+              if (((measurements[[1]] |> dim())[1] != length(outcome)) & length(outcome)>2) {
                   stop("outcome must have same number of samples as measurements")
               }
               
