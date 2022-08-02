@@ -586,7 +586,7 @@
     featuresInfo <- DataFrame(originalFeatures, renamedInfo)
     colnames(featuresInfo) <- c("Original Feature", "Renamed Feature")
   }
-  featuresInfo
+  cbind(originalInfo, featuresInfo)
 }
 
 # Function to identify the parameters of an S4 method.
