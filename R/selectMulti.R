@@ -5,7 +5,7 @@ setGeneric("selectMulti", function(measurementsTrain, classesTrain, params, ...)
 setMethod("selectMulti", "DataFrame",
           function(measurementsTrain, classesTrain, params, verbose = 0)
           {
-              assayTrain <- sapply(unique(mcols(measurementsTrain)[["Renamed Assay"]]), function(assay) measurementsTrain[, mcols(measurementsTrain)[["Renamed Assay"]] %in% assay], simplify = FALSE)
+              assayTrain <- sapply(unique(mcols(measurementsTrain)[["assay"]]), function(assay) measurementsTrain[, mcols(measurementsTrain)[["assay"]] %in% assay], simplify = FALSE)
               featuresIndices <- mapply(.doSelection, 
                                          measurements = assayTrain,
                                          modellingParams = params,

@@ -19,8 +19,8 @@ setMethod("mergeTrainInterface", "DFrame",
               runTestOutput = runTest(
                   fullTrain,
                   classes,
-                  training = seq_len(nrow(fullTrain)),
-                  testing = seq_len(nrow(fullTrain)),
+                  fullTrain,
+                  classes,
                   modellingParams = params2
               )
               

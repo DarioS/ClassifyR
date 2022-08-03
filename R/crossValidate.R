@@ -115,7 +115,7 @@ setMethod("crossValidate", "DataFrame",
                                           measurements = measurements)
               selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod,
                                                       measurements = measurements)
-              if(nFeatures == 1 && classifier == "elasticNetGLM")
+              if(any(nFeatures == 1) && classifier == "elasticNetGLM")
               {
                   options(warn = 1)
                   warning("Elastic Net GLM requires two or more features as input but there is only one.
