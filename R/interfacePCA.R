@@ -69,9 +69,9 @@ setMethod("pcaTrainInterface", "DFrame",
               
               runTestOutput = runTest(
                   fullTrain,
-                  classes = classes,
-                  training = seq_len(nrow(fullTrain)),
-                  testing = seq_len(nrow(fullTrain)),
+                  classes,
+                  fullTrain,
+                  classes,
                   modellingParams = finalModParam,
                   crossValParams = CVparams,
                   .iteration = 1,
