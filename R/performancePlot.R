@@ -15,15 +15,19 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName Default: "Balanced Accuracy". The name of the
-#' performance measure to make comparisons of. This is one of the names printed
+#' @param performanceName Default: "auto". The name of the
+#' performance measure or "auto". If the results are classification then
+#' balanced accuracy will be displayed. Otherwise, the results would be survival risk
+#' predictions and then C-index will be displayed. This is one of the names printed
 #' in the Performance Measures field when a \code{\link{ClassifyResult}} object is
-#' printed, or if none are stored, the performance metric will be calculated.
+#' printed, or if none are stored, the performance metric will be calculated automatically.
 #' @param characteristicsList A named list of characteristics. Each element's
 #' name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-#' \code{fillColour}, or \code{fillLine}. The value of each element must be a
+#' \code{"fillColour"}, or \code{"fillLine"}. The value of each element must be a
 #' characteristic name, as stored in the \code{"characteristic"} column of the
-#' results' characteristics table. Only \code{"x"} is mandatory.
+#' results' characteristics table. Only \code{"x"} is mandatory. It is
+#' \code{"auto"} by default, which will identify a characteristic that has a unique
+#' value for each element of \code{results}.
 #' @param coloursList A named list of plot aspects and colours for the aspects.
 #' No elements are mandatory. If specified, each list element's name must be
 #' either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
@@ -90,8 +94,8 @@ setGeneric("performancePlot", function(results, ...) standardGeneric("performanc
 #' @rdname performancePlot
 #' @export
 setMethod("performancePlot", "list", 
-          function(results, performanceName = "Balanced Accuracy",
-                   characteristicsList = list(x = "Classifier Name"), aggregate = character(), coloursList = list(), orderingList = list(),
+          function(results, performanceName = "auto",
+                   characteristicsList = list(x = "auto"), aggregate = character(), coloursList = list(), orderingList = list(),
                    densityStyle = c("box", "violin"), yLimits = NULL, fontSizes = c(24, 16, 12, 12), title = NULL,
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE)
 {
@@ -101,6 +105,16 @@ setMethod("performancePlot", "list",
     stop("The package 'scales' could not be found. Please install it.")
   densityStyle <- match.arg(densityStyle)
   densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
+  if(characteristicsList[["x"]] == "auto")
+  {
+    characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
+    if(max(characteristicsCounts) == length(results))
+      characteristicsList[["x"]] <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
+    else
+      stop("No characteristic is present for all results but must be.")
+  }
+  if(performanceName == "auto")
+      performanceName <- ifelse("risk" %in% colnames(results[[1]]@predictions), "C-index", "Balanced Accuracy")
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   performanceNames <- unlist(lapply(results, function(result)

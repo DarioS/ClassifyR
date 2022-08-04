@@ -7,8 +7,8 @@
 \usage{
 \S4method{performancePlot}{list}(
   results,
-  performanceName = "Balanced Accuracy",
-  characteristicsList = list(x = "Classifier Name"),
+  performanceName = "auto",
+  characteristicsList = list(x = "auto"),
   aggregate = character(),
   coloursList = list(),
   orderingList = list(),
@@ -18,23 +18,26 @@
   title = NULL,
   margin = grid::unit(c(1, 1, 1, 1), "lines"),
   rotate90 = FALSE,
-  showLegend = TRUE,
-  plot = TRUE
+  showLegend = TRUE
 )
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
 
-\item{performanceName}{Default: "Balanced Accuracy". The name of the
-performance measure to make comparisons of. This is one of the names printed
+\item{performanceName}{Default: "auto". The name of the
+performance measure or "auto". If the results are classification then
+balanced accuracy will be displayed. Otherwise, the results would be survival risk
+predictions and then C-index will be displayed. This is one of the names printed
 in the Performance Measures field when a \code{\link{ClassifyResult}} object is
-printed, or if none are stored, the performance metric will be calculated.}
+printed, or if none are stored, the performance metric will be calculated automatically.}
 
 \item{characteristicsList}{A named list of characteristics. Each element's
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-\code{fillColour}, or \code{fillLine}. The value of each element must be a
+\code{"fillColour"}, or \code{"fillLine"}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
-results' characteristics table. Only \code{"x"} is mandatory.}
+results' characteristics table. Only \code{"x"} is mandatory. It is
+\code{"auto"} by default, which will identify a characteristic that has a unique
+value for each element of \code{results}.}
 
 \item{aggregate}{A character vector of the levels of
 \code{characteristicsList['x']} to aggregate to a single number by taking
@@ -72,9 +75,6 @@ titles of grouped plots, if any are produced. In other words, when
 
 \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If
 FALSE, it is hidden.}
-
-\item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current
-graphics device.}
 }
 \value{
 An object of class \code{ggplot} and a plot on the current graphics

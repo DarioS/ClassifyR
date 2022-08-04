@@ -63,9 +63,6 @@ Otherwise a character name can be provided.}
 
 \item{yLabel}{Label to be used for the y-axis of true positive rate.}
 
-\item{plot}{Logical. If \code{TRUE}, a plot is produced on the current
-graphics device.}
-
 \item{showAUC}{Logical. If \code{TRUE}, the AUC value of each result is
 added to its legend text.}
 }

@@ -9,7 +9,7 @@
   results,
   comparison = "within",
   referenceLevel = NULL,
-  characteristicsList = list(x = "Classifier Name"),
+  characteristicsList = list(x = "auto"),
   coloursList = list(),
   orderingList = list(),
   binsList = list(),
@@ -48,7 +48,9 @@ level has the average pairwise overlap calculated to all other levels.}
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
 \code{"fillColour"}, or \code{"lineColour"}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
-results' characteristics table. Only \code{"x"} is mandatory.}
+results' characteristics table. Only \code{"x"} is mandatory. It is
+\code{"auto"} by default, which will identify a characteristic that has a unique
+value for each element of \code{results}.}
 
 \item{coloursList}{A named list of plot aspects and colours for the aspects.
 No elements are mandatory. If specified, each list element's name must be
