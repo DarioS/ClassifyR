@@ -18,7 +18,6 @@
   legendTitle = NULL,
   xLabel = "False Positive Rate",
   yLabel = "True Positive Rate",
-  plot = TRUE,
   showAUC = TRUE
 )
 }

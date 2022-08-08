@@ -29,6 +29,7 @@ Packaged: 2014-10-18 11:16:55 UTC; dario
 RoxygenNote: 7.2.0
 Collate:
     'ROCplot.R'
+    'available.R'
     'classes.R'
     'calcPerformance.R'
     'constants.R'

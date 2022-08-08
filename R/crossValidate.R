@@ -662,7 +662,7 @@ generateModellingParams <- function(assayIDs,
 
     selectionMethodParam <- switch(
         selectionMethod,
-        "none" = differentMeansRanking,
+        "none" = NULL,
         "t-test" = differentMeansRanking,
         "limma" = limmaRanking,
         "edgeR" = edgeRranking,
@@ -679,8 +679,6 @@ generateModellingParams <- function(assayIDs,
         selectionMethodParam,
         tuneParams = list(nFeatures = nFeatures, performanceType = performanceType)
         )
-    
-    if(selectionMethod == "none" || is.null(selectionMethod)) selectParams <- NULL
 
     params <- ModellingParams(
         balancing = "none",
