@@ -4,10 +4,11 @@
 \alias{available}
 \title{List Available Feature Selection and Classification Approaches}
 \usage{
-available(what = c("selectors", "classifiers"))
+available(what = c("classifier", "selectionMethod", "multiViewMethod"))
 }
 \arguments{
-\item{what}{Default: \code{"selectors"}. Either \code{"selectors"} or \code{"classifiers"}.}
+\item{what}{Default: \code{"classifier"}. Either \code{"classifier"}, \code{"selectionMethod"}
+or \code{"multiViewMethod"}.}
 }
 \description{
 Prints a list of keywords to use with \code{\link{crossValidate}}
