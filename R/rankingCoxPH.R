@@ -101,6 +101,7 @@ setMethod("coxphRanking", "MultiAssayExperiment", function(measurementsTrain, ta
 #
 ###############################################################################
 
+#' @useDynLib ClassifyR, .registration = TRUE
 coxmatC<-function(X,time,status){
   ### method for handling ties (alternative 'breslow')
   method <- "efron"
@@ -118,7 +119,7 @@ coxmatC<-function(X,time,status){
                 double(2 * nrow(X) + 2 + 3), eps = as.double(1e-09), 
               tol_chol = as.double(.Machine$double.eps^0.75), 
               sctest = as.double(method == "efron"), sctest2 = as.double(1), 
-              sctest3 = as.double(1))	
+              sctest3 = as.double(1), PACKAGE = "ClassifyR")	
   return(result)	
 }
 
