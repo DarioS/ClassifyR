@@ -58,7 +58,7 @@ setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain
   #   s$waldtest["pvalue"]
   # })
   
-  tests <- rowCoxTests(measurementsTrain, survivalTrain)
+  tests <- colCoxTests(as.matrix(measurementsTrain), survivalTrain)
   pValues <- tests[colnames(measurementsTrain), "p.value"]
   
   order(pValues) # From smallest to largest.
@@ -147,10 +147,10 @@ fastCox <- function(X, y, learnind, criterion, ...) {
 
 # equivalent to genefilter::rowttests for the cox model.  This is much faster
 # than calling coxph for each row of a ##igh-dimensional matrix.
-rowCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
+colCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
   option <- match.arg(option)
   if (identical(option, "fast")) {
-    X <- t(as.matrix(X))  #make variables columns
+    X <- (as.matrix(X))  #make variables columns
     time <- y[, 1]
     status <- y[, 2]
     sorted <- order(time)
