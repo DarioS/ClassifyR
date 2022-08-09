@@ -48,7 +48,7 @@ setMethod("coxphRanking", "matrix", function(measurementsTrain, survivalTrain, .
 #' @export
 setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
-  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain)
+  splitDataset <- .splitDataAndOutcome(measurementsTrain, survivalTrain, restrict = NULL)
   measurementsTrain <- splitDataset[["measurements"]]
   survivalTrain <- splitDataset[["outcome"]]
 
