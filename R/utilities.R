@@ -1,7 +1,7 @@
 # Operates on an input data frame, to extract the outcome column(s) and return
 # a list with the table of covariates in one element and the outcome in another.
 # The outcome need to be removed from the data table before predictor training!
-.splitDataAndOutcome <- function(measurements, outcome, restrict = "numeric")
+.splitDataAndOutcome <- function(measurements, outcome, restrict = NULL)
 { # DataFrame's outcome variable can be character or factor, so it's a bit involved.
   if(is.character(outcome) && length(outcome) > 3 && length(outcome) != nrow(measurements))
     stop("'outcome' is a character variable but has more than one element. Either provide a\n",
