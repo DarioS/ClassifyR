@@ -52,14 +52,16 @@ setMethod("coxphRanking", "DataFrame", function(measurementsTrain, survivalTrain
   measurementsTrain <- splitDataset[["measurements"]]
   survivalTrain <- splitDataset[["outcome"]]
 
-  # pValues <- apply(measurementsTrain, 2, function(featureColumn){
-  #   fit <- survival::coxph(survivalTrain ~ featureColumn)
-  #   s <- summary(fit)
-  #   s$waldtest["pvalue"]
-  # })
-  
+  if(any(sapply(measurementsTrain, class) %in% c("character", "factor"))){
+  pValues <- apply(measurementsTrain, 2, function(featureColumn){
+    fit <- survival::coxph(survivalTrain ~ featureColumn)
+    s <- summary(fit)
+    s$waldtest["pvalue"]
+  })
+  }else{
   tests <- colCoxTests(as.matrix(measurementsTrain), survivalTrain)
   pValues <- tests[colnames(measurementsTrain), "p.value"]
+  }
   
   order(pValues) # From smallest to largest.
 })
@@ -167,7 +169,7 @@ colCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
                                       pnorm(abs(out$zscores))) * 2) 
     rownames(output) <- colnames(X)
   } else if (identical(option, "slow")) {
-    output <- t(apply(X, 1, function(xrow) {
+    output <- (apply(X, 2, function(xrow) {
       fit <- try(coxph(y ~ xrow))
       if (class(fit) == "try-error") {
         c(NA, NA)
