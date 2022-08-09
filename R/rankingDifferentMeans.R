@@ -79,7 +79,6 @@ setMethod("differentMeansRanking", "DataFrame",
   
   categ <- sapply(splitDataset[["measurements"]], class) %in% c("character", "factor")
   if(any(categ)){
-    x = 1
      pValues[categ] <- sapply(which(categ), function(x){
       chisq.test(splitDataset[["measurements"]][,x], classesTrain)$p.value
     })
