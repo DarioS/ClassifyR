@@ -79,24 +79,26 @@ setMethod("differentMeansRanking", "DataFrame",
   
   categ <- sapply(splitDataset[["measurements"]], class) %in% c("character", "factor")
   if(any(categ)){
-    pValues[categ] <- sapply(which(categ), function(x){
-      suppressWarnings(chisq.test(splitDataset[["measurements"]][,x], classesTrain)$p.value)
+    x = 1
+     pValues[categ] <- sapply(which(categ), function(x){
+      chisq.test(splitDataset[["measurements"]][,x], classesTrain)$p.value
     })
   }
   
-  measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]]))
+
   
   
   if(any(!categ)){
+    measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]][,!categ, drop = FALSE]))
   if(length(levels(classesTrain)) == 2)
   {
     if(verbose == 3)
       message("Ranking features based on t-statistic.")
-    pValues[!categ] <- genefilter::rowttests(measurementsMatrix[!categ,], classesTrain)[, "p.value"]
+    pValues[!categ] <- genefilter::rowttests(measurementsMatrix, classesTrain)[, "p.value"]
   } else {
     if(verbose == 3)
       message("Ranking features based on F-statistic.")
-    pValues[!categ]  <- genefilter::rowFtests(measurementsMatrix[!categ,], classesTrain)[, "p.value"]
+    pValues[!categ]  <- genefilter::rowFtests(measurementsMatrix, classesTrain)[, "p.value"]
   }
   }
   
