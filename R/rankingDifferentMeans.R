@@ -74,17 +74,31 @@ setMethod("differentMeansRanking", "DataFrame",
   classesTrain <- splitDataset[["outcome"]]
   # Data is required to be in traditional bioinformatics format - features in rows
   # and samples in columns and also must be a matrix, not another kind of rectangular data.  
-  measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]]))
   
+  pValues <- NULL
+  
+  categ <- sapply(splitDataset[["measurements"]], class) %in% c("character", "factor")
+  if(any(categ)){
+     pValues[categ] <- sapply(which(categ), function(x){
+      chisq.test(splitDataset[["measurements"]][,x], classesTrain)$p.value
+    })
+  }
+  
+
+  
+  
+  if(any(!categ)){
+    measurementsMatrix <- t(as.matrix(splitDataset[["measurements"]][,!categ, drop = FALSE]))
   if(length(levels(classesTrain)) == 2)
   {
     if(verbose == 3)
       message("Ranking features based on t-statistic.")
-    pValues <- genefilter::rowttests(measurementsMatrix, classesTrain)[, "p.value"]
+    pValues[!categ] <- genefilter::rowttests(measurementsMatrix, classesTrain)[, "p.value"]
   } else {
     if(verbose == 3)
       message("Ranking features based on F-statistic.")
-    pValues <- genefilter::rowFtests(measurementsMatrix, classesTrain)[, "p.value"]
+    pValues[!categ]  <- genefilter::rowFtests(measurementsMatrix, classesTrain)[, "p.value"]
+  }
   }
   
   order(pValues) # From smallest to largest.

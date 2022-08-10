@@ -156,7 +156,7 @@ function(forest, measurementsTest, ..., returnType = c("both", "class", "score")
   returnType <- match.arg(returnType)
   if(verbose == 3)
     message("Predicting using random forest.")  
-  
+  measurementsTest <- as.data.frame(measurementsTest)
   classPredictions <- predict(forest, measurementsTest)
   classScores <- predict(forest, measurementsTest, type = "vote")[, forest[["classes"]], drop = FALSE]
   switch(returnType, class = classPredictions,
