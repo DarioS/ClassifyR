@@ -103,7 +103,7 @@ setMethod("distribution", "ClassifyResult",
       allFeaturesText <- allFeatures
     } else if(is(chosenFeatures[[1]], "DataFrame")) {
       allFeatures <- do.call(rbind, chosenFeatures)
-      allFeaturesText <- paste(allFeatures[, "Original Assay"], allFeatures[, "Original Feature"], sep = ':')
+      allFeaturesText <- paste(allFeatures[, "assay"], allFeatures[, "feature"], sep = ':')
     } else if("Pairs" %in% class(chosenFeatures[[1]])) {
       allFeatures <- do.call(c, unname(chosenFeatures))
       allFeaturesText <- paste(first(allFeatures), second(allFeatures), sep = ', ')

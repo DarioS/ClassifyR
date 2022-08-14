@@ -18,12 +18,12 @@
 #' or if the measurements are of class \code{DataFrame} a character vector of
 #' length 1 containing the column name in \code{measurement} is also permitted.
 #' Not used if \code{measurements} is a \code{MultiAssayExperiment} object.
-#' @param targets If \code{measurements} is a \code{matrix} or
+#' @param useFeatures If \code{measurements} is a \code{matrix} or
 #' \code{DataFrame}, then a vector of numeric or character indices or the
 #' feature identifiers corresponding to the feature(s) to be plotted. If
 #' \code{measurements} is a \code{MultiAssayExperiment}, then a
 #' \code{DataFrame} of 2 columns must be specified. The first column contains
-#' the names of the tables and the second contains the names of the variables,
+#' the names of the assays and the second contains the names of the variables,
 #' thus each row unambiguously specifies a variable to be plotted.
 #' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
@@ -34,7 +34,7 @@
 #' \code{MultiAssayExperiment}, then a character vector of length 2, which
 #' contains the name of a data table as the first element and the name of a
 #' categorical feature as the second element, may be specified.  Additionally,
-#' the value \code{"sampleInfo"} may be used to refer to the column annotation
+#' the value \code{"clinical"} may be used to refer to the column annotation
 #' stored in the \code{colData} slot of the of the \code{MultiAssayExperiment}
 #' object. A density plot will have additional lines of different line types
 #' for each category. A strip chart plot will have a separate strip chart
@@ -113,7 +113,7 @@
 #'   rownames(genesMatrix) <- paste("Sample", 1:50)
 #'   colnames(genesMatrix) <- paste("Gene", 1:100)
 #'   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
-#'   plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
+#'   plotFeatureClasses(genesMatrix, classes, useFeatures = "Gene 4",
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #'                      
 #'                      
@@ -123,15 +123,15 @@
 #'   clinicalData <- DataFrame(Gender = genders, Sugar = runif(50, 4, 10),
 #'                               Infection = factor(infectionResults, levels = c("No", "Yes")),
 #'                             row.names = rownames(genesMatrix))
-#'   plotFeatureClasses(clinicalData, classes, targets = "Infection")
-#'   plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")
+#'   plotFeatureClasses(clinicalData, classes, useFeatures = "Infection")
+#'   plotFeatureClasses(clinicalData, classes, useFeatures = "Infection", groupBy = "Gender")
 #'   
 #'   genesMatrix <- t(genesMatrix) # MultiAssayExperiment needs features in rows.
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
 #'   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
-#'                      groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
+#'                      groupBy = c("clinical", "Gender"), # Table name, feature name.
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #' 
 #' @importFrom dplyr mutate n
@@ -143,17 +143,7 @@ setGeneric("plotFeatureClasses", function(measurements, ...)
 
 #' @rdname plotFeatureClasses
 #' @export
-setMethod("plotFeatureClasses", "matrix", function(measurements, classes, targets, ...)
-{
-  if(missing(targets))
-    stop("'targets' must be specified.")
-  
-  plotFeatureClasses(S4Vectors::DataFrame(measurements, check.names = FALSE), classes, targets, ...)
-})
-
-#' @rdname plotFeatureClasses
-#' @export
-setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, targets, groupBy = NULL,
+setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, useFeatures, groupBy = NULL,
                                                       groupingName = NULL, whichNumericFeaturePlots = c("both", "density", "stripchart"),
                                                       measurementLimits = NULL, lineWidth = 1, dotBinWidth = 1,
                                                       xAxisLabel = NULL, yAxisLabels = c("Density", "Classes"),
@@ -174,10 +164,6 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
     groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
                     facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
-  
-  splitDataset <- .splitDataAndOutcome(measurements, classes, restrict = NULL)
-  measurements <- splitDataset[["measurements"]]
-  classes <- splitDataset[["outcome"]]
   
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
@@ -356,51 +342,3 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, tar
     }))
   }
 })
-
-#' @rdname plotFeatureClasses
-#' @export
-setMethod("plotFeatureClasses", "MultiAssayExperiment",
-          function(measurements, targets, classesColumn, groupBy = NULL, groupingName = NULL, showAssayName = TRUE, ...)
-          {
-            if(missing(targets))
-              stop("'targets' must be specified by the user.")
-            if(!all(targets[, 1] %in% c(names(measurements), "sampleInfo")))
-              stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")  
-            
-            assaysTargets <- targets[targets[, 1] != "sampleInfo", ]
-            sampleInfoTargets <- targets[targets[, 1] == "sampleInfo", ]
-            measurements <- measurements[assaysTargets[, 2], , assaysTargets[, 1]]
-            classes <- MultiAssayExperiment::colData(measurements)[, classesColumn]
-            
-            if(!is.null(groupBy))
-            {
-              if(is.null(groupingName))
-                groupingName <- groupBy[2]
-              groupingTable <- groupBy[1]
-              if(groupingTable == "sampleInfo")
-              {
-                groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
-              } else { # One of the omics tables.
-                groupBy <- measurements[groupBy[2], , groupingTable]
-                if(showAssayName == TRUE)
-                  groupingName <- paste(groupingName, groupingTable)
-              }
-              levelsOrder <- levels(groupBy)
-              groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
-                              facets = {groupText <- paste(groupingName, "is", groupBy)
-                              factor(groupText, levels = paste(groupingName, "is", levelsOrder))}
-              )
-            }
-            
-            MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfoTargets[, 2]]
-            measurements <- MultiAssayExperiment::wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
-            measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
-            S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
-            colnames(S4Vectors::mcols(measurements))[1] <- "assay"
-            S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
-            missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])
-            S4Vectors::mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
-            S4Vectors::mcols(measurements) <- S4Vectors::mcols(measurements)[, c("assay", "feature")]
-            
-            plotFeatureClasses(measurements, classes, S4Vectors::mcols(measurements), groupBy, groupingName, showAssayName = showAssayName, ...)
-          })

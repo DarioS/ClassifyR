@@ -8,8 +8,6 @@
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}
-\alias{featuresInfo}
-\alias{featuresInfo,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
 \alias{actualOutcome}
@@ -24,6 +22,7 @@
 \alias{tunedParameters,ClassifyResult-method}
 \alias{totalPredictions}
 \alias{totalPredictions,ClassifyResult-method}
+\alias{ClassifyResult,DataFrame,character-method}
 \alias{chosenFeatureNames}
 \alias{chosenFeatureNames,ClassifyResult-method}
 \title{Container for Storing Classification Results}
@@ -46,10 +45,6 @@ using wrapper functions for feature selection and classifiers in this
 package, the function names will automatically be generated and therefore it
 is not necessary to specify them.}
 \item{\code{originalNames}}{All sample names.}
-\item{\code{featuresInfo}}{A \code{\link{DataFrame}} containing all feature names in original format
-and a safe format without any unusual symbols that R would automatically convert into another format and cause trouble.}
-\item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{chosenFeatures}}{Features selected at each fold. Character
 vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{models}}{All of the models fitted to the training data.}
@@ -78,8 +73,6 @@ most popular value of the parameter in cross-validation is used.}
 \code{result} is a \code{ClassifyResult} object.
 \describe{
 \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
-\describe{
-\item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 \describe{
 \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 \describe{

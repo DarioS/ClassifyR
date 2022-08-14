@@ -33,8 +33,8 @@ to only those features of type \code{numeric}.}
 \item{scale}{The type of scale to be calculated.}
 
 \item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-and specifies that numeric variables from the sample information data table will be
+names of the data tables to be used. \code{"clinical"} is also a valid value
+and specifies that numeric variables from the clinical data table will be
 used.}
 }
 \value{

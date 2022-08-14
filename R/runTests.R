@@ -81,8 +81,10 @@ setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParam
   
   if(any(is.na(measurements)))
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
-            
-  splitDataset <- .splitDataAndOutcome(measurements, outcome)
+
+  originalFeatures <- colnames(measurements)
+  if("feature" %in% colnames(mcols(measurements))) originalFeatures <- mcols(measurements)[, c("assay", "feature")]                 
+  splitDataset <- prepareData(measurements, outcome)
   measurements <- splitDataset[["measurements"]]
   outcome <- splitDataset[["outcome"]]
   
@@ -96,7 +98,6 @@ input data. Autmomatically reducing to smaller number.")
   # Element names of the list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
   
-  featuresInfo <- .summaryFeatures(measurements)
   # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, outcome)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
@@ -140,7 +141,7 @@ input data. Autmomatically reducing to smaller number.")
   validationText <- .validationText(crossValParams)
   
   modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
-  autoCharacteristics <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams)) stageParams@characteristics)
+  autoCharacteristics <- lapply(modParamsList, function(stageParams) if(!is.null(stageParams) && !is(stageParams, "PredictParams")) stageParams@characteristics)
   autoCharacteristics <- do.call(rbind, autoCharacteristics)
 
   # Add extra settings.
@@ -172,7 +173,7 @@ input data. Autmomatically reducing to smaller number.")
   if(!is.null(results[[1]][["importance"]]))
     importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
-  ClassifyResult(characteristics, rownames(measurements), featuresInfo,
+  ClassifyResult(characteristics, rownames(measurements), originalFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams)
 })
@@ -182,7 +183,7 @@ input data. Autmomatically reducing to smaller number.")
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomeColumns, ...)
 {
-  omicsTargets <- setdiff(targets, "sampleInfo")
+  omicsTargets <- setdiff(targets, "clinical")
   if(length(omicsTargets) > 0)
   {
     if(any(anyReplicated(measurements[, , omicsTargets])))

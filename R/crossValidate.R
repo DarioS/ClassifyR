@@ -13,7 +13,7 @@
 #' column name in \code{colData(measurements)} if \code{measurements} is a \code{\link{MultiAssayExperiment}}. If a column name, that column will be
 #' removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
 #' \code{measurements} for survival outcome.
-#' @param ... Arguments other than measurements and outcome in the generic.
+#' @param ... Parameters passed into \code{\link{prepareData}}.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
@@ -95,18 +95,21 @@ setMethod("crossValidate", "DataFrame",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL)
+                   characteristicsLabel = NULL, ...)
 
           {
-              # Check that data is in the right format
-              splitAssay <- .splitDataAndOutcome(measurements, outcome)
-              measurements <- splitAssay[["measurements"]]
-              outcome <- splitAssay[["outcome"]]
+              # Check that data is in the right format, if not already done for MultiAssayExperiment input.
+              if(is.null(mcols(measurements)$assay))
+              {
+                splitAssay <- prepareData(measurements, outcome, ...)
+                measurements <- splitAssay[["measurements"]]
+                outcome <- splitAssay[["outcome"]]
+              }
               
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)[, "assay"])
-              if(is.null(assayIDs))
-                assayIDs <- 1
+              if(!is.null(characteristicsLabel)) assayIDs <- characteristicsLabel
+              if(is.null(assayIDs)) assayIDs <- 1
               
               checkData(measurements, outcome)
 
@@ -303,8 +306,8 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    nCores = 1,
                    characteristicsLabel = NULL)
           {
-              targets <- c(names(measurements), "sampleInfo")
-              omicsTargets <- setdiff(targets, "sampleInfo")  
+              targets <- c(names(measurements), "clinical")
+              omicsTargets <- setdiff(targets, "clinical")  
               if(length(omicsTargets) > 0)
               {
                   if(any(anyReplicated(measurements[, , omicsTargets])))

@@ -96,9 +96,7 @@ considered simultaneously, to calculate one curve per classification.
   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
                             value = c("Melanoma", "t-test", "Random Forest", "2-fold")),
-                            LETTERS[1:20], DataFrame(`Original Feature` = paste("Gene", LETTERS[1:10]),
-                            `Renamed Feature` = paste("Feature", 1:10, sep = ''), check.names = FALSE),
-                            list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
+                            LETTERS[1:20], list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
                             list(function(oracle){}), NULL, predicted, actual)
   
@@ -106,9 +104,7 @@ considered simultaneously, to calculate one curve per classification.
   predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
                                       value = c("Example", "Bartlett Test", "Differential Variability", "2-fold")),
-                            LETTERS[1:20], DataFrame(`Original Feature` = paste("Gene", LETTERS[1:10]),
-                            `Renamed Feature` = paste("Feature", 1:10, sep = ''), check.names = FALSE),
-                            list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
+                            LETTERS[1:20], list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
                             list(function(oracle){}), NULL, predicted, actual)
   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")

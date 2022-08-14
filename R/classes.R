@@ -462,7 +462,7 @@ setMethod("TransformParams", "function",
           {
             if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == transform@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(transform, "name"), "name"]))
             }
             new("TransformParams", transform = transform, characteristics = characteristics,
                 intermediate = intermediate, otherParams = list(...))
@@ -829,11 +829,11 @@ setMethod("SelectParams", c("functionOrList"),
           {
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == featureRanking@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(featureRanking, "name"), "name"]))
             }
             if(is.list(featureRanking) && (ncol(characteristics) == 0 || !"Ensemble Selection" %in% characteristics[, "characteristic"]))
             {
-              selectMethodNames <- unlist(lapply(featureRanking, function(rankingFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == rankingFunction@generic, "name"]))
+              selectMethodNames <- unlist(lapply(featureRanking, function(rankingFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(rankingFunction, "name"), "name"]))
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Ensemble Selection", value = paste(selectMethodNames, collapse = ", ")))
             }
             others <- list(...)
@@ -966,7 +966,7 @@ setMethod("TrainParams", c("function"),
           {
             if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == classifier@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(classifier, "name"), "name"]))
             }
             new("TrainParams", classifier = classifier, characteristics = characteristics,
                 intermediate = intermediate, getFeatures = getFeatures, tuneParams = tuneParams,
@@ -991,14 +991,7 @@ setMethod("show", "TrainParams",
                 cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
               }
             }
-
-            if(!is.null(object@getFeatures))
-              cat("Selected Features Extracted By: ", object@getFeatures@generic, ".\n", sep = '')
           })
-
-
-
-
 
 ##### PredictParams #####
 
@@ -1082,10 +1075,6 @@ setMethod("PredictParams", c("functionOrNULL"),
           {
             if(missing(predictor))
               stop("Either a function or NULL must be specified by 'predictor'.")
-            if(!is.null(predictor) && (ncol(characteristics) == 0 || !"Predictor Name" %in% characteristics[, "characteristic"]))
-            {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Predictor Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == predictor@generic, "name"]))
-            }
             others <- list(...)
             if(length(others) == 0) others <- NULL
             new("PredictParams", predictor = predictor, characteristics = characteristics,
@@ -1227,7 +1216,6 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @aliases ClassifyResult ClassifyResult-class
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
-#' featuresInfo featuresInfo,ClassifyResult-method
 #' predictions predictions,ClassifyResult-method actualOutcome
 #' actualOutcome,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
@@ -1247,10 +1235,9 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' package, the function names will automatically be generated and therefore it
 #' is not necessary to specify them.}
 #' \item{\code{originalNames}}{All sample names.}
-#' \item{\code{featuresInfo}}{A \code{\link{DataFrame}} containing all feature names in original format
-#' and a safe format without any unusual symbols that R would automatically convert into another format and cause trouble.}
-#' \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-#' or a data frame if data set has multiple kinds of measurements on the same set of samples.}
+#' \item{\code{originalFeatures}}{All feature names. Character vector
+#' or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
+#' of measurements on the same set of samples.}
 #' \item{\code{chosenFeatures}}{Features selected at each fold. Character
 #' vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 #' \item{\code{models}}{All of the models fitted to the training data.}
@@ -1275,8 +1262,6 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \code{result} is a \code{ClassifyResult} object.
 #' \describe{
 #' \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
-#' \describe{
-#' \item{\code{featuresInfo(result)}}{Returns a table of features present in the data set. Shows original names and renamed names to ensure no unusual symbols in names.}}
 #' \describe{
 #' \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 #' \describe{
@@ -1317,7 +1302,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @importFrom S4Vectors as.data.frame
 #' @usage NULL
 #' @export
-setGeneric("ClassifyResult", function(characteristics, originalNames, featuresInfo, ...)
+setGeneric("ClassifyResult", function(characteristics, originalNames, ...)
 standardGeneric("ClassifyResult"))
 
 #' @rdname ClassifyResult-class
@@ -1325,7 +1310,7 @@ standardGeneric("ClassifyResult"))
 setClass("ClassifyResult", representation(
   characteristics = "DataFrame",
   originalNames = "character",
-  featuresInfo = "DataFrame",
+  originalFeatures = "characterOrDataFrame",    
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
   actualOutcome = "factorOrSurv",
@@ -1340,12 +1325,11 @@ setClass("ClassifyResult", representation(
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
-          function(characteristics, originalNames, featuresInfo,
+setMethod("ClassifyResult", c("DataFrame", "character"),
+          function(characteristics, originalNames, originalFeatures,
                    rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)
           {
-            new("ClassifyResult", characteristics = characteristics,
-                originalNames = originalNames, featuresInfo = featuresInfo,
+            new("ClassifyResult", characteristics = characteristics, originalNames = originalNames, originalFeatures = originalFeatures,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
                 predictions = predictions, actualOutcome = actualOutcome, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
@@ -1383,7 +1367,7 @@ standardGeneric("sampleNames"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("sampleNames", c("ClassifyResult"),
+setMethod("sampleNames", "ClassifyResult",
           function(object)
           {
             object@originalNames
@@ -1392,16 +1376,16 @@ setMethod("sampleNames", c("ClassifyResult"),
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setGeneric("featuresInfo", function(object, ...)
-standardGeneric("featuresInfo"))
+setGeneric("allFeatureNames", function(object, ...)
+standardGeneric("allFeatureNames"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("featuresInfo", c("ClassifyResult"),
+setMethod("allFeatureNames", c("ClassifyResult"),
           function(object)
           {
-            object@featuresInfo
+            object@originalFeatures
           })
 
 #' @rdname ClassifyResult-class
@@ -1413,7 +1397,7 @@ standardGeneric("chosenFeatureNames"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("chosenFeatureNames", c("ClassifyResult"),
+setMethod("chosenFeatureNames", "ClassifyResult",
           function(object)
           {
             object@chosenFeatures
@@ -1427,7 +1411,7 @@ standardGeneric("models"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("models", c("ClassifyResult"),
+setMethod("models", "ClassifyResult",
           function(object)
           {
             object@models
@@ -1441,7 +1425,7 @@ standardGeneric("predictions"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("predictions", c("ClassifyResult"),
+setMethod("predictions", "ClassifyResult",
           function(object)
           {
             object@predictions
@@ -1455,7 +1439,7 @@ standardGeneric("performance"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("performance", c("ClassifyResult"),
+setMethod("performance", "ClassifyResult",
           function(object)
           {
             object@performance
@@ -1469,7 +1453,7 @@ standardGeneric("actualOutcome"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("actualOutcome", c("ClassifyResult"),
+setMethod("actualOutcome", "ClassifyResult",
           function(object)
           {
             object@actualOutcome
@@ -1496,7 +1480,7 @@ standardGeneric("totalPredictions"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("totalPredictions", c("ClassifyResult"),
+setMethod("totalPredictions", "ClassifyResult",
           function(result)
           {
               nrow(predictions(result))

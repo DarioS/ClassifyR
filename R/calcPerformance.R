@@ -75,9 +75,7 @@
 #'                             class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
 #'   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
 #'   result <- ClassifyResult(DataFrame(characteristic = "Data Set", value = "Example"),
-#'                            paste("A", 1:10, sep = ''), DataFrame(`Original Feature` = paste("Gene", 1:50),
-#'                            `Renamed Feature` = paste("Feature", 1:50, sep = '')),
-#'                            list(paste("Gene", 1:50), paste("Gene", 1:50)), list(paste("Gene", 1:5), paste("Gene", 1:10)),
+#'                            paste("A", 1:10, sep = ''), list(paste("Gene", 1:50), paste("Gene", 1:50)), list(paste("Gene", 1:5), paste("Gene", 1:10)),
 #'                            list(function(oracle){}), NULL, predictTable, actual)
 #'   result <- calcCVperformance(result) 
 #'   performance(result)

@@ -1,150 +1,58 @@
-# Operates on an input data frame, to extract the outcome column(s) and return
-# a list with the table of covariates in one element and the outcome in another.
-# The outcome need to be removed from the data table before predictor training!
-.splitDataAndOutcome <- function(measurements, outcome, restrict = NULL)
-{ # DataFrame's outcome variable can be character or factor, so it's a bit involved.
-  if(is.character(outcome) && length(outcome) > 3 && length(outcome) != nrow(measurements))
-    stop("'outcome' is a character variable but has more than one element. Either provide a\n",
-         "       one to three column names or a factor of the same length as the number of samples.")
-
-  ## String specifies the name of a single outcome column, typically a class.
-  if(is.character(outcome) && length(outcome) == 1)
-  {
-    outcomeColumn <- match(outcome, colnames(measurements))
-    if(is.na(outcomeColumn))
-      stop("Specified column name of outcome is not present in the data table.")
-    outcome <- measurements[, outcomeColumn]
-    measurements <- measurements[, -outcomeColumn, drop = FALSE]
-    # R version 4 and greater no longer automatically casts character columns to factors because stringsAsFactors
-    # is FALSE by default, so it is more likely to be character format these days. Handle it.
-    if(class(outcome) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
-      outcome <- factor(outcome)
-  }
-  
-  # survival's Surv constructor has two inputs for the popular right-censored data and
-  # three inputs for less-common interval data.
-  if(is.character(outcome) && length(outcome) %in% 2:3)
-  {
-    outcomeColumns <- match(outcome, colnames(measurements))
-    if(any(is.na(outcomeColumns)))
-      stop("Specified column names of outcome is not present in the data table.")
-    outcome <- measurements[, outcomeColumns]
-    measurements <- measurements[, -outcomeColumns, drop = FALSE]
-  }
-  
-  if(is(outcome, "factor") && length(outcome) > 3 & length(outcome) < nrow(measurements))
-    stop("The length of outcome is not equal to the number of samples.")
-  
-  ## A vector of characters was input by the user. Ensure that it is a factor.
-  if(is.character(outcome) & length(outcome) == nrow(measurements))
-    outcome <- factor(outcome)
-  
-  # Outcome has columns, so it is tabular. It is inferred to represent survival data.
-  if(!is.null(ncol(outcome)) && ncol(outcome) %in% 2:3)
-  {
-    # Assume that event status is in the last column (second for two columns, third for three columns)
-    numberEventTypes <- length(unique(outcome[, ncol(outcome)]))
-    # Could be one or two kinds of events. All events might be uncensored or censored
-    # in a rare but not impossible scenario.
-    if(numberEventTypes > 2)
-      stop("Number of distinct event types in the last column exceeds 2 but must be 1 or 2.")
-      
-    if(ncol(outcome) == 2) # Typical, right-censored survival data.
-      outcome <- survival::Surv(outcome[, 1], outcome[, 2])
-    else # Three columns. Therefore, counting process data.
-      outcome <- survival::Surv(outcome[, 1], outcome[, 2], outcome[, 3])
-  }
-  
-  if(!is.null(restrict))
-  {
-    isDesiredClass <- sapply(measurements, function(column) is(column, restrict))
-    measurements <- measurements[, isDesiredClass, drop = FALSE]
-    if(ncol(measurements) == 0)
-      stop(paste("No features are left after restricting to", restrict, "but at least one must be."))
-  }
-
-  list(measurements = measurements, outcome = outcome)
-}
-
 # Function to convert a MultiAssayExperiment object into a flat DataFrame table, to enable it
 # to be used in typical model building functions.
 # Returns a list with a covariate table and and outcome vector/table, or just a covariate table
 # in the case the input is a test data set.
-.MAEtoWideTable <- function(measurements, targets = NULL, outcomeColumns = NULL, restrict = "numeric")
+.MAEtoWideTable <- function(measurements, outcomeColumns, useFeatures)
 {
-  if(is.null(targets))
-    stop("'targets' is not specified but must be.")
-  if(is.null(outcomeColumns))
-    stop("'outcomeColumns' is not specified but must be.")    
-  if(!all(targets %in% c(names(measurements), "sampleInfo")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")
-  sampleInfoColumns <- colnames(MultiAssayExperiment::colData(measurements))
-  if(!missing(outcomeColumns) & !all(outcomeColumns %in% sampleInfoColumns))
-    stop("Not all column names specified by 'outcomeColumns' found in sample information table.")  
-
-  if("sampleInfo" %in% targets)
+  clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))    
+  if("clinical" %in% useFeatures[, 1])
   {
-    targets <- targets[targets != "sampleInfo"]
-    sampleInfoColumnsTrain <- sampleInfoColumns
+    clinicalRows <- useFeatures[, 1] == "clinical"      
+    clinicalColumns <- useFeatures[clinicalRows, 2]
+    useFeatures <- useFeatures[!clinicalRows, ]
   } else {
-    sampleInfoColumnsTrain <- NULL
+    clinicalColumns <- NULL
   }
   
-  if(length(targets) > 0)
+  if(nrow(useFeatures) > 0)
   {
-    measurements <- measurements[, , targets]
+    measurements <- measurements[, , unique(useFeatures[, 1])]
   
-    # Get all desired measurements tables and sample information columns (other than the columns representing outcome).
+    # Get all desired measurements tables and clinical columns (other than the columns representing outcome).
     # These form the independent variables to be used for making predictions with.
-    # Variable names will have names like RNA:BRAF for traceability.
-    dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(sampleInfoColumnsTrain, outcomeColumns), check.names = FALSE, collapse = ':')
+    # Variable names will have names like RNA_BRAF for traceability.
+    dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(clinicalColumns, outcomeColumns))
     rownames(dataTable) <- dataTable[, "primary"]
-    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(dataTable)[, "sourceName"])
+    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
     colnames(S4Vectors::mcols(dataTable))[1] <- "assay"
-  
+            
     # Sample information variable names not included in column metadata of wide table but only as row names of it.
-    # Create a combined column named "feature" which has feature names of the assays as well as the sample information.
+    # Create a combined column named "feature" which has feature names of the assays as well as the clinical.
     S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
     missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
     S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
     
     # Finally, a column annotation recording variable name and which table it originated from for all of the source tables.
     S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("assay", "feature")]
-  } else { # Must have only been sample information data.
+    
+    # Subset to only the desired features.
+    useFeaturesSubset <- useFeatures[useFeatures[, 2] != "all", ]
+    if(nrow(useFeaturesSubset) > 0)
+    {
+      uniqueAssays <- unique(useFeatures[, 1])
+      for(filterAssay in uniqueAssays)
+      {
+        dropFeatures <- S4Vectors::mcols(dataTable)[, "assay"] == filterAssay &
+                        !S4Vectors::mcols(dataTable)[, "feature"] %in% useFeatures[useFeatures[, 1] == filterAssay, 2]
+        dataTable <- dataTable[, !dropFeatures]
+      }
+    }
+    dataTable <- dataTable[, -match("primary", colnames(dataTable))]
+  } else { # Must have only been clinical data.
     dataTable <- MultiAssayExperiment::colData(measurements)
+    S4Vectors::mcols(dataTable) <- DataFrame(assay = "clinical", feature = colnames(dataTable))
   }
-  if(!is.null(outcomeColumns)) outcome <- dataTable[, outcomeColumns]
-  
-  if(!is.null(restrict))
-  {
-    isDesiredClass <- sapply(dataTable, function(column) is(column, restrict))
-    dataTable <- dataTable[, isDesiredClass, drop = FALSE]
-    if(ncol(dataTable) == 0)
-      stop(paste("No features are left after restricting to", restrict, "but at least one must be."))
-  }
-
-  # Only return independent variables in dataTable for making classifications with.
-  # "primary" column is auto-generated by sample information table row names and a duplicate.
-  dropColumns <- na.omit(match(c("primary", outcomeColumns), colnames(dataTable)))
-  if(length(dropColumns) > 0) dataTable <- dataTable[, -dropColumns]
-  
-  # Training data table and outcome for training data.
-  if(!is.null(outcomeColumns))
-      list(dataTable = dataTable, outcome = outcome)
-  else # Only test data table for test data input.
-    dataTable
-}
-
-# For classifiers which use one single function for inputting a training and a testing table,
-# and work only for the numeric data type, this checks whether the training and testing tables 
-# both have the same set of features and there are at least some numeric features to use,
-# after they have been filtered by another function which splits the covariates and the outcome from the input.
-.checkVariablesAndSame <- function(trainingMatrix, testingMatrix)
-{
-  if(ncol(trainingMatrix) == 0) # Filtering of table removed all columns, leaving nothing to classify with.
-    stop("No variables in data tables specified by \'targets\' are numeric.")
-  else if(ncol(trainingMatrix) != ncol(testingMatrix))
-    stop("Training data set and testing data set contain differing numbers of features.")  
+  dataTable
 }
 
 # Creates two lists of lists. First has training samples, second has test samples for a range
@@ -282,7 +190,7 @@
       do.call(featureRanking, paramList)
     })
     
-    if(featureRanking@generic == "previousSelection") # Actually selection not ranking.
+    if(attr(featureRanking, "name") == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
     if(tuneMode == "none") # Actually selection not ranking.
@@ -444,7 +352,7 @@
     modellingParams@trainParams@otherParams <- tuneChosen
   }
 
-  if(modellingParams@trainParams@classifier@generic != "previousTrained")
+  if(attr(modellingParams@trainParams@classifier, "name") != "previousTrained")
     # Don't name these first two variables. Some classifier functions might use classesTrain and others use outcomeTrain.
     paramList <- list(measurementsTrain, outcomeTrain)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
@@ -528,15 +436,6 @@
 # by user-specified values.
 .filterCharacteristics <- function(characteristics, autoCharacteristics)
 {
-  # Remove duplication of values for classifiers that have one function for training and 
-  # one function for prediction.
-  if("Classifier Name" %in% autoCharacteristics[, "characteristic"] && "Predictor Name" %in% autoCharacteristics[, "characteristic"])
-  {
-    classRow <- which(autoCharacteristics[, "characteristic"] == "Classifier Name")
-    predRow <- which(autoCharacteristics[, "characteristic"] == "Predictor Name")
-    if(autoCharacteristics[classRow, "value"] == autoCharacteristics[predRow, "value"])
-      autoCharacteristics <- autoCharacteristics[-predRow, ]
-  }
   # Overwrite automatically-chosen names with user's names.
   if(nrow(autoCharacteristics) > 0 && nrow(characteristics) > 0)
   {
@@ -558,36 +457,6 @@
                                                              levels = orderingList[[orderingIndex]])
   }
   plotData
-}
-
-# Summary of the features used and the total number of them, no matter if they are a simple type
-# or something more complex like Pairs or feature sets.
-.summaryFeatures <- function(measurements)
-{
-  # MultiAssayExperiment has feature details in mcols.
-  if(!is.null(S4Vectors::mcols(measurements)))
-  {
-    originalInfo <- S4Vectors::mcols(measurements)
-    featureNames <- S4Vectors::mcols(measurements)[, "feature"]
-    assays <- unique(S4Vectors::mcols(measurements)[, "assay"])
-    renamedInfo <- S4Vectors::mcols(measurements)
-    renamedAssays <- paste("Assay", seq_along(assays), sep = '')
-    for(assay in assays)
-    {
-      rowsAssay <- which(renamedInfo[, "assay"] == assay)
-      renamedInfo[rowsAssay, "feature"] <- paste("Feature", seq_along(rowsAssay), sep = '')
-      renamedInfo[rowsAssay, "assay"] <- renamedAssays[match(assay, assays)]
-    }
-    featuresInfo <- S4Vectors::DataFrame(originalInfo, renamedInfo)
-    colnames(featuresInfo) <- c("Original Assay", "Original Feature", "Renamed Assay", "Renamed Feature")
-    featuresInfo <- cbind(originalInfo, featuresInfo)
-  } else {
-    originalFeatures <- colnames(measurements)
-    renamedInfo <- paste("Feature", seq_along(measurements), sep = '')
-    featuresInfo <- S4Vectors::DataFrame(originalFeatures, renamedInfo)
-    colnames(featuresInfo) <- c("Original Feature", "Renamed Feature")
-  }
-  featuresInfo
 }
 
 # Function to identify the parameters of an S4 method.

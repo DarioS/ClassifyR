@@ -39,18 +39,7 @@ featurePuller = function(classifyObject) {
 
 setClass("prevalModel", slots = list(fullModel = "list"))
 
-
-setGeneric("prevalTrainInterface", function(measurements, classes, ...)
-{
-    standardGeneric("prevalTrainInterface")
-})
-
-
-setMethod("prevalTrainInterface", "DFrame",
-          function(measurements,
-                   classes,
-                   params,
-                   ...)
+prevalTrainInterface <- function(measurements, classes, params, ...)
           {
               
               ###
@@ -154,26 +143,9 @@ setMethod("prevalTrainInterface", "DFrame",
               
               fullModel <- new("prevalModel", fullModel = list(fullModel))
               fullModel
-              
-          })
+}
 
-
-
-
-
-setGeneric("prevalPredictInterface", function(fullModel, test, ...)
-{
-    standardGeneric("prevalPredictInterface")
-})
-
-
-setMethod("prevalPredictInterface", c("prevalModel", "DFrame"),
-          function(fullModel,
-                   test,
-                   ...,
-                   returnType = "both",
-                   verbose = 0
-          )
+prevalPredictInterface <- function(fullModel, test, ..., returnType = "both", verbose = 0)
           {
               fullModel <- fullModel@fullModel[[1]]
               assayTest <- sapply(unique(mcols(test)[["assay"]]), function(assay) test[, mcols(test)[["assay"]] %in% assay], simplify = FALSE)
@@ -204,4 +176,4 @@ setMethod("prevalPredictInterface", c("prevalModel", "DFrame"),
               finalPredictions <- do.call(predictParams@predictor, paramList)
 
               finalPredictions
-          })
+          }

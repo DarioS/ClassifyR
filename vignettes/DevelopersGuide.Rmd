@@ -85,7 +85,7 @@ located in `crossValidate.R` by adding a new keyword and function pair. There is
 
 ## Documenting the Function
 
-**ClassifyR** uses the Roxygen kind of documentation. Please document all paramters and include an example using a data set already in the package to demonstrate what the function does. See any of the existing R files for the structure of the documentation.
+**ClassifyR** uses the Roxygen kind of documentation. Please document all parameters and include an example using a data set already in the package to demonstrate what the function does. See any of the existing R files for the structure of the documentation.
 
 Secondly, in the main vignette, there are a couple of tables summarising the feature selection and model building functions available. Add your function to the relevant table.
 
@@ -97,7 +97,7 @@ Please make a pull request at [ClassifyR's GitHub website](https://github.com/Sy
 
 ## Feature Ranking and Selection
 
-The various functions in **ClassifyR** for prioritising features return a ranking, from best to worst, of features because the package takes care of the actual feture selection process. Based on the specification of the range of values of top features to try, the set of variables with either the best resubstitution (default) or nested cross-validation performance is found by the private function `.doSelection`.
+The various functions in **ClassifyR** for prioritising features return a ranking, from best to worst, of features because the package takes care of the actual feature selection process. Based on the specification of the range of values of top features to try, the set of variables with either the best resubstitution (default) or nested cross-validation performance is found by the private function `.doSelection`.
 
 The input data may be one table or a collection of tables. The `DataFrame` variable type stores metadata about the variables in its columns. Therefore, the ranking function should check if the metadata exists and, if so, return a two-column representation of the ranked variables. Otherise, it returns a vector of ranked variables. The typical format for the last part of a feature ranking function is:
 

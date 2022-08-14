@@ -1,19 +1,6 @@
-
 setClass("pcaModel", slots = list(fullModel = "list"))
 
-
-setGeneric("pcaTrainInterface", function(measurements, classes, ...)
-{
-    standardGeneric("pcaTrainInterface")
-})
-
-
-setMethod("pcaTrainInterface", "DFrame",
-          function(measurements,
-                   classes,
-                   params,
-                   nFeatures,
-                   ...)
+pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
           {
               
               ###
@@ -21,7 +8,7 @@ setMethod("pcaTrainInterface", "DFrame",
               ###
               assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["assay"]] %in% assay], simplify = FALSE)
               
-              if(!"clinical" %in% names(assayTrain)) stop("Must have an assay called \"clinical\"")
+              if(!"clinical" %in% names(assayTrain)) stop("Must have an assay called \"clinical\".")
               
               # Create generic crossValParams just to get things working, might be used for optimising features in runTest later???
               CVparams <- CrossValParams(permutations = 1, folds = 10, parallelParams = SerialParam(RNGseed = .Random.seed[1]), tuneMode = "Resubstitution") 
@@ -92,26 +79,9 @@ setMethod("pcaTrainInterface", "DFrame",
               fullModel$modellingParams <- finalModParam
               fullModel <- new("pcaModel", fullModel = list(fullModel))
               fullModel
-              
-          })
+          }
 
-
-
-
-
-setGeneric("pcaPredictInterface", function(fullModel, test, ...)
-{
-    standardGeneric("pcaPredictInterface")
-})
-
-
-setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
-          function(fullModel,
-                   test,
-                   ...,
-                   returnType = "both",
-                   verbose = 0
-          )
+pcaPredictInterface <- function(fullModel, test, ..., returnType = "both", verbose = 0)
           {
               # Pull out my classification model
               fullModel <- fullModel@fullModel[[1]]
@@ -148,4 +118,4 @@ setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
               finalPredictions <- do.call(predictParams@predictor, paramList)
 
               finalPredictions
-          })
+          }

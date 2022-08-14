@@ -27,6 +27,7 @@ Description: The software formalises a framework for classification in R.
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
 RoxygenNote: 7.2.0
+SystemRequirements: C++14
 Collate:
     'ROCplot.R'
     'available.R'
@@ -60,6 +61,7 @@ Collate:
     'interfaceSVM.R'
     'performancePlot.R'
     'plotFeatureClasses.R'
+    'prepareData.R'
     'previousSelection.R'
     'previousTrained.R'
     'rankingBartlett.R'

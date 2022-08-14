@@ -1,9 +1,4 @@
-setGeneric("selectMulti", function(measurementsTrain, classesTrain, params, ...)
-    standardGeneric("selectMulti"))
-
-# DataFrame of numeric measurements, likely created by runTests or runTest.
-setMethod("selectMulti", "DataFrame",
-          function(measurementsTrain, classesTrain, params, verbose = 0)
+selectMulti <- function(measurementsTrain, classesTrain, params, verbose = 0)
           {
               assayTrain <- sapply(unique(mcols(measurementsTrain)[["assay"]]), function(assay) measurementsTrain[, mcols(measurementsTrain)[["assay"]] %in% assay], simplify = FALSE)
               featuresIndices <- mapply(.doSelection, 
@@ -15,4 +10,4 @@ setMethod("selectMulti", "DataFrame",
                                         )
               
               unique(unlist(lapply(featuresIndices, "[[", 2)))
-          })
+          }

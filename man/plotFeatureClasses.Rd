@@ -7,12 +7,10 @@
 \alias{plotFeatureClasses,MultiAssayExperiment-method}
 \title{Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class}
 \usage{
-\S4method{plotFeatureClasses}{matrix}(measurements, classes, targets, ...)
-
 \S4method{plotFeatureClasses}{DataFrame}(
   measurements,
   classes,
-  targets,
+  useFeatures,
   groupBy = NULL,
   groupingName = NULL,
   whichNumericFeaturePlots = c("both", "density", "stripchart"),
@@ -30,16 +28,6 @@
   showAssayName = TRUE,
   plot = TRUE
 )
-
-\S4method{plotFeatureClasses}{MultiAssayExperiment}(
-  measurements,
-  targets,
-  classesColumn,
-  groupBy = NULL,
-  groupingName = NULL,
-  showAssayName = TRUE,
-  ...
-)
 }
 \arguments{
 \item{measurements}{A \code{\link{matrix}}, \code{\link{DataFrame}} or a
@@ -56,12 +44,12 @@ or if the measurements are of class \code{DataFrame} a character vector of
 length 1 containing the column name in \code{measurement} is also permitted.
 Not used if \code{measurements} is a \code{MultiAssayExperiment} object.}
 
-\item{targets}{If \code{measurements} is a \code{matrix} or
+\item{useFeatures}{If \code{measurements} is a \code{matrix} or
 \code{DataFrame}, then a vector of numeric or character indices or the
 feature identifiers corresponding to the feature(s) to be plotted. If
 \code{measurements} is a \code{MultiAssayExperiment}, then a
 \code{DataFrame} of 2 columns must be specified. The first column contains
-the names of the tables and the second contains the names of the variables,
+the names of the assays and the second contains the names of the variables,
 thus each row unambiguously specifies a variable to be plotted.}
 
 \item{groupBy}{If \code{measurements} is a \code{DataFrame}, then a
@@ -70,7 +58,7 @@ feature, may be specified.  If \code{measurements} is a
 \code{MultiAssayExperiment}, then a character vector of length 2, which
 contains the name of a data table as the first element and the name of a
 categorical feature as the second element, may be specified.  Additionally,
-the value \code{"sampleInfo"} may be used to refer to the column annotation
+the value \code{"clinical"} may be used to refer to the column annotation
 stored in the \code{colData} slot of the of the \code{MultiAssayExperiment}
 object. A density plot will have additional lines of different line types
 for each category. A strip chart plot will have a separate strip chart
@@ -174,7 +162,7 @@ drawn.
   rownames(genesMatrix) <- paste("Sample", 1:50)
   colnames(genesMatrix) <- paste("Gene", 1:100)
   classes <- factor(rep(c("Poor", "Good"), each = 25), levels = c("Good", "Poor"))
-  plotFeatureClasses(genesMatrix, classes, targets = "Gene 4",
+  plotFeatureClasses(genesMatrix, classes, useFeatures = "Gene 4",
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
                      
                      
@@ -184,15 +172,15 @@ drawn.
   clinicalData <- DataFrame(Gender = genders, Sugar = runif(50, 4, 10),
                               Infection = factor(infectionResults, levels = c("No", "Yes")),
                             row.names = rownames(genesMatrix))
-  plotFeatureClasses(clinicalData, classes, targets = "Infection")
-  plotFeatureClasses(clinicalData, classes, targets = "Infection", groupBy = "Gender")
+  plotFeatureClasses(clinicalData, classes, useFeatures = "Infection")
+  plotFeatureClasses(clinicalData, classes, useFeatures = "Infection", groupBy = "Gender")
   
   genesMatrix <- t(genesMatrix) # MultiAssayExperiment needs features in rows.
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
-                     groupBy = c("sampleInfo", "Gender"), # Table name, feature name.
+                     groupBy = c("clinical", "Gender"), # Table name, feature name.
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 
 }
