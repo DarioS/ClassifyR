@@ -25,7 +25,8 @@ crossValidate(measurements, outcome, ...)
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
 \S4method{crossValidate}{MultiAssayExperiment}(
@@ -103,7 +104,7 @@ column name in \code{colData(measurements)} if \code{measurements} is a \code{\l
 removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
 \code{measurements} for survival outcome.}
 
-\item{...}{Arguments other than measurements and outcome in the generic.}
+\item{...}{Parameters passed into \code{\link{prepareData}}.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 

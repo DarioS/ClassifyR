@@ -108,7 +108,6 @@ setMethod("crossValidate", "DataFrame",
               
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)[, "assay"])
-              if(!is.null(characteristicsLabel)) assayIDs <- characteristicsLabel
               if(is.null(assayIDs)) assayIDs <- 1
               
               checkData(measurements, outcome)
@@ -283,7 +282,7 @@ setMethod("crossValidate", "DataFrame",
                   }, simplify = FALSE)
 
               }
-
+              if(length(result) == 1) result <- result[[1]]
               result
 
           })

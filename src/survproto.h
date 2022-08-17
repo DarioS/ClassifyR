@@ -201,4 +201,3 @@ void agexact(Sint *maxiter,  Sint *nusedx,   Sint *nvarx,   double *start,
                             double *penalty,
                             int ptype,     int pdiag,     SEXP pexpr1,   double *cptr1, 
                             SEXP pexpr2,   double *cptr2, SEXP rho);
-             

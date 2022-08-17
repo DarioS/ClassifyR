@@ -68,6 +68,7 @@
 #' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
+#' @param ... Not used by end user.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
@@ -109,6 +110,12 @@ standardGeneric("rankingPlot"))
 
 #' @rdname rankingPlot
 #' @export
+setMethod("rankingPlot", "ClassifyResult", function(results, ...) {
+    rankingPlot(list(assay = results), ...)
+})
+
+#' @rdname rankingPlot
+#' @export
 setMethod("rankingPlot", "list",
           function(results, topRanked = seq(10, 100, 10),
                    comparison = "within", referenceLevel = NULL,
@@ -126,7 +133,8 @@ setMethod("rankingPlot", "list",
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
 
-  nFeatures <- nrow(featuresInfo(results[[1]]))
+  originalFeatures <- allFeatureNames(results[[1]])
+  if(is.character(originalFeatures)) nFeatures <- length(originalFeatures) else nFeatures <- nrow(originalFeatures)
   error <- character()
   if(max(topRanked) > nFeatures)
     error <- paste("'topRanked' is as high as", max(topRanked))

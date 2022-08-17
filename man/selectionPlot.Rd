@@ -3,8 +3,11 @@
 \name{selectionPlot}
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
+\alias{selectionPlot,ClassifyResult-method}
 \title{Plot Pair-wise Overlap, Variable Importance or Selection Size Distribution of Selected Features}
 \usage{
+\S4method{selectionPlot}{ClassifyResult}(results, ...)
+
 \S4method{selectionPlot}{list}(
   results,
   comparison = "within",
@@ -31,6 +34,8 @@
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+
+\item{...}{Not used by end user.}
 
 \item{comparison}{Default: within. The aspect of the experimental design to
 compare. Can be any characteristic that all results share or either one of

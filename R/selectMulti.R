@@ -10,4 +10,5 @@ selectMulti <- function(measurementsTrain, classesTrain, params, verbose = 0)
                                         )
               
               unique(unlist(lapply(featuresIndices, "[[", 2)))
-          }
+}
+attr(selectMulti, "name") <- "Union Selection"

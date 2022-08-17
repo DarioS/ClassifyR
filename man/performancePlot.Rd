@@ -3,8 +3,11 @@
 \name{performancePlot}
 \alias{performancePlot}
 \alias{performancePlot,list-method}
+\alias{performancePlot,ClassifyResult-method}
 \title{Plot Performance Measures for Various Classifications}
 \usage{
+\S4method{performancePlot}{ClassifyResult}(results, ...)
+
 \S4method{performancePlot}{list}(
   results,
   performanceName = "auto",
@@ -23,6 +26,8 @@
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+
+\item{...}{Not used by end user.}
 
 \item{performanceName}{Default: "auto". The name of the
 performance measure or "auto". If the results are classification then
@@ -100,7 +105,7 @@ calculated, and a barchart is plotted.
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
+                            LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
                             list(paste("Gene", 1:3), paste("Gene", c(2, 5, 6)), paste("Gene", 1:4), paste("Gene", 5:8)),
                             list(function(oracle){}), NULL, predicted, actual)
   result1 <- calcCVperformance(result1, "Macro F1")
@@ -112,7 +117,7 @@ calculated, and a barchart is plotted.
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
+                            LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8)),
                             list(function(oracle){}), NULL, predicted, actual)
   result2 <- calcCVperformance(result2, "Macro F1")

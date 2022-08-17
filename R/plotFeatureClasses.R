@@ -1,6 +1,6 @@
 #' Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class
 #' 
-#' Allows the visualisation of measurements in the data set. If \code{targets}
+#' Allows the visualisation of measurements in the data set. If \code{useFeatures}
 #' is of type \code{\link{Pairs}}, then a parallel plot is automatically drawn.
 #' If it's a single categorical variable, then a bar chart is automatically
 #' drawn.
@@ -130,7 +130,7 @@
 #'   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
 #'                                         colData = cbind(clinicalData, class = classes))
 #'   targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
-#'   plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
+#'   plotFeatureClasses(dataContainer, useFeatures = targetFeatures, classesColumn = "class",
 #'                      groupBy = c("clinical", "Gender"), # Table name, feature name.
 #'                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 #' 
@@ -140,6 +140,13 @@
 #' @export
 setGeneric("plotFeatureClasses", function(measurements, ...)
   standardGeneric("plotFeatureClasses"))
+
+#' @rdname plotFeatureClasses
+#' @export
+setMethod("plotFeatureClasses", "matrix", function(measurements, ...)
+{
+  plotFeatureClasses(S4Vectors::DataFrame(measurements, check.names = FALSE), ...)
+})
 
 #' @rdname plotFeatureClasses
 #' @export
@@ -153,9 +160,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
                                                       colours = c("#3F48CC", "#880015"),
                                                       showAssayName = TRUE, plot = TRUE)
 {
-  if(missing(targets))
-    stop("'targets' must be specified.")
-  
+  if(missing(useFeatures))
+    stop("'useFeatures' must be specified.")
+
   if(is.character(groupBy))
   {
     groupingName <- groupBy
@@ -182,16 +189,15 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
     yLabelPositions <- ggplot2::waiver()
   
   # Subsetting of measurements to the features of interest.
-  
-  if(!is(targets, "DataFrame"))
+  if(!is(useFeatures, "data.frame") && !is(useFeatures, "DataFrame"))
   {
-    if(!"Pairs" %in% class(targets)) # A simple vector.
-      measurements <- tryCatch(measurements[targets], error = function(error) message("Error: Parameter 'targets' not in measurements, subscript contains out-of-bounds indices"))
+    if(!is(useFeatures, "Pairs")) # A simple vector.
+      measurements <- tryCatch(measurements[useFeatures], error = function(error) message("Error: Parameter 'useFeatures' not in measurements, subscript contains out-of-bounds indices"))
     else # Pairs object.
-      measurements <- tryCatch(measurements[union(S4Vectors::first(targets), S4Vectors::second(targets))], error = function(error) message("Error: Parameter 'targets' not in measurements, subscript contains out-of-bounds indices"))
+      measurements <- tryCatch(measurements[union(S4Vectors::first(useFeatures), S4Vectors::second(useFeatures))], error = function(error) message("Error: Parameter 'useFeatures' not in measurements, subscript contains out-of-bounds indices"))
   }
   
-  if(!"Pairs" %in% class(targets))
+  if(!is(useFeatures, "Pairs"))
   {
     invisible(lapply(seq_along(measurements), function(columnIndex) # Plot a single feature at a time.
     {
@@ -310,7 +316,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
       }
     }))
   } else { # Plot parallel plots.
-    invisible(lapply(targets, function(featurePair) # Plot a single feature at a time.
+    invisible(lapply(useFeatures, function(featurePair) # Plot a single feature at a time.
     {
       plotData <- data.frame(first = measurements[, S4Vectors::first(featurePair)],
                              second = measurements[, S4Vectors::second(featurePair)], class = classes)
@@ -342,3 +348,51 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
     }))
   }
 })
+
+#' @rdname plotFeatureClasses
+#' @export
+setMethod("plotFeatureClasses", "MultiAssayExperiment",
+          function(measurements, useFeatures, classesColumn, groupBy = NULL, groupingName = NULL, showAssayName = TRUE, ...)
+          {
+            if(missing(useFeatures))
+              stop("'useFeatures' must be specified by the user.")
+            if(!all(useFeatures[, 1] %in% c(names(measurements), "sampleInfo")))
+              stop("Some table names in 'useFeatures' are not assay names in 'measurements' or \"sampleInfo\".")  
+            
+            assaysuseFeatures <- useFeatures[useFeatures[, 1] != "sampleInfo", ]
+            sampleInfouseFeatures <- useFeatures[useFeatures[, 1] == "sampleInfo", ]
+            measurements <- measurements[assaysuseFeatures[, 2], , assaysuseFeatures[, 1]]
+            classes <- MultiAssayExperiment::colData(measurements)[, classesColumn]
+            
+            if(!is.null(groupBy))
+            {
+              if(is.null(groupingName))
+                groupingName <- groupBy[2]
+              groupingTable <- groupBy[1]
+              if(groupingTable == "sampleInfo")
+              {
+                groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
+              } else { # One of the omics tables.
+                groupBy <- measurements[groupBy[2], , groupingTable]
+                if(showAssayName == TRUE)
+                  groupingName <- paste(groupingName, groupingTable)
+              }
+              levelsOrder <- levels(groupBy)
+              groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
+                              facets = {groupText <- paste(groupingName, "is", groupBy)
+                              factor(groupText, levels = paste(groupingName, "is", levelsOrder))}
+              )
+            }
+            
+            MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfouseFeatures[, 2]]
+            measurements <- MultiAssayExperiment::wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
+            measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
+            S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
+            colnames(S4Vectors::mcols(measurements))[1] <- "assay"
+            S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
+            missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])
+            S4Vectors::mcols(measurements)[missingIndices, "feature"] <- colnames(measurements)[missingIndices]
+            S4Vectors::mcols(measurements) <- S4Vectors::mcols(measurements)[, c("assay", "feature")]
+            
+            plotFeatureClasses(measurements, classes, S4Vectors::mcols(measurements), groupBy, groupingName, showAssayName = showAssayName, ...)
+          })

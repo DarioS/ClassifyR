@@ -7,6 +7,8 @@
 \alias{plotFeatureClasses,MultiAssayExperiment-method}
 \title{Plot Density, Scatterplot, Parallel Plot or Bar Chart for Features By Class}
 \usage{
+\S4method{plotFeatureClasses}{matrix}(measurements, ...)
+
 \S4method{plotFeatureClasses}{DataFrame}(
   measurements,
   classes,
@@ -27,6 +29,16 @@
   colours = c("#3F48CC", "#880015"),
   showAssayName = TRUE,
   plot = TRUE
+)
+
+\S4method{plotFeatureClasses}{MultiAssayExperiment}(
+  measurements,
+  useFeatures,
+  classesColumn,
+  groupBy = NULL,
+  groupingName = NULL,
+  showAssayName = TRUE,
+  ...
 )
 }
 \arguments{
@@ -145,7 +157,7 @@ size. Some manual experimentation is required to get similarly sized plot
 elements.
 }
 \description{
-Allows the visualisation of measurements in the data set. If \code{targets}
+Allows the visualisation of measurements in the data set. If \code{useFeatures}
 is of type \code{\link{Pairs}}, then a parallel plot is automatically drawn.
 If it's a single categorical variable, then a bar chart is automatically
 drawn.
@@ -179,7 +191,7 @@ drawn.
   dataContainer <- MultiAssayExperiment(list(RNA = genesMatrix),
                                         colData = cbind(clinicalData, class = classes))
   targetFeatures <- DataFrame(assay = "RNA", feature = "Gene 50")                                     
-  plotFeatureClasses(dataContainer, targets = targetFeatures, classesColumn = "class",
+  plotFeatureClasses(dataContainer, useFeatures = targetFeatures, classesColumn = "class",
                      groupBy = c("clinical", "Gender"), # Table name, feature name.
                      xAxisLabel = bquote(log[2]*'(expression)'), dotBinWidth = 0.5)
 

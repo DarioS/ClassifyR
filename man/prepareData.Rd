@@ -8,6 +8,22 @@
 \title{Convert Different Data Classes into DataFrame and Filter Features}
 \usage{
 \S4method{prepareData}{matrix}(measurements, outcome, ...)
+
+\S4method{prepareData}{DataFrame}(
+  measurements,
+  outcome,
+  useFeatures = "all",
+  maxMissingProp = 0,
+  topNvariance = NULL
+)
+
+\S4method{prepareData}{MultiAssayExperiment}(
+  measurements,
+  outcomeColumns = NULL,
+  useFeatures = data.frame(assay = names(measurements), feature = rep("all",
+    length(measurements))),
+  ...
+)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -23,10 +39,6 @@ are features.}
 a character string, or vector of such strings, containing column name(s) of column(s)
 containing either classes or time and event information about survival.}
 
-\item{outcomeColumns}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-that contain(s) the each individual's outcome to use for prediction.}
-
 \item{useFeatures}{If \code{measurements} is a \code{MultiAssayExperiment},
 a two-column table of features to use. The first column must have assay names
 and the second column must have feature names found for that assay. \code{"clinical"} is
@@ -38,6 +50,10 @@ for modelling. Otherwise, a character vector of feature names to use suffices.}
 tolerated proportion of missingness for a feature to be retained for modelling.}
 
 \item{topNvariance}{Default: NULL. An integer number of most variable features to subset to.}
+
+\item{outcomeColumns}{If \code{measurements} is a \code{MultiAssayExperiment}, the
+names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
+that contain(s) the each individual's outcome to use for prediction.}
 }
 \value{
 A list of length two. The first element is a \code{\link{DataFrame}} of features

@@ -1,67 +1,7 @@
-#' Reproducibly Run Various Kinds of Cross-Validation
-#' 
-#' Enables doing classification schemes such as ordinary 10-fold, 100
-#' permutations 5-fold, and leave one out cross-validation. Processing in
-#' parallel is possible by leveraging the package \code{\link{BiocParallel}}.
-#' 
-#' 
-#' @aliases runTests runTests,matrix-method runTests,DataFrame-method
-#' runTests,MultiAssayExperiment-method
-#' @param measurements Either a \code{\link{matrix}}, \code{\link{DataFrame}}
-#' or \code{\link{MultiAssayExperiment}} containing all of the data. For a
-#' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
-#' are features.
-#' @param outcome Either a factor vector of classes, a \code{\link{Surv}} object, or
-#' a character string, or vector of such strings, containing column name(s) of column(s)
-#' containing either classes or time and event information about survival.
-#' @param crossValParams An object of class \code{\link{CrossValParams}},
-#' specifying the kind of cross-validation to be done.
-#' @param modellingParams An object of class \code{\link{ModellingParams}},
-#' specifying the class rebalancing, transformation (if any), feature selection
-#' (if any), training and prediction to be done on the data set.
-#' @param characteristics A \code{\link{DataFrame}} describing the
-#' characteristics of the classification used. First column must be named
-#' \code{"charateristic"} and second column must be named \code{"value"}.
-#' Useful for automated plot annotation by plotting functions within this
-#' package.  Transformation, selection and prediction functions provided by
-#' this package will cause the characteristics to be automatically determined
-#' and this can be left blank.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that the clinical data table will be used.
-#' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-#' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-#' that contain(s)s the samples' outcome to use for prediction.
-#' @param ... Variables not used by the \code{matrix} nor the
-#' \code{MultiAssayExperiment} method which are passed into and used by the
-#' \code{DataFrame} method.
-#' @param verbose Default: 1. A number between 0 and 3 for the amount of
-#' progress messages to give.  A higher number will produce more messages as
-#' more lower-level functions print messages.
-#' @return An object of class \code{\link{ClassifyResult}}.
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   #if(require(sparsediscrim))
-#'   #{
-#'     data(asthma)
-#'     
-#'     CVparams <- CrossValParams(permutations = 5)
-#'     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
-#'     selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
-#'     modellingParams <- ModellingParams(selectParams = selectParams)
-#'     runTests(measurements, classes, CVparams, modellingParams,
-#'              DataFrame(characteristic = c("Assay Name", "Classifier Name"),
-#'                        value = c("Asthma", "Different Means"))
-#'              )
-#'   #}
-#'
-#' @export
-#' @usage NULL
+# Reproducibly Run Various Kinds of Cross-Validation
+
 setGeneric("runTests", function(measurements, ...) standardGeneric("runTests"))
 
-#' @rdname runTests
-#' @export
 setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix of numeric measurements.
 {
   if(is.null(rownames(measurements)))
@@ -69,9 +9,6 @@ setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix
   runTests(S4Vectors::DataFrame(measurements, check.names = FALSE), outcome, ...)
 })
 
-# Clinical data or one of the other inputs, transformed.
-#' @rdname runTests
-#' @export
 setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = S4Vectors::DataFrame(), verbose = 1)
 {
@@ -114,7 +51,7 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(verbose >= 1 && setNumber %% 10 == 0)
       message("Processing sample set ", setNumber, '.')
-      
+    
     # crossValParams is needed at least for nested feature tuning.
     runTest(measurements[trainingSamples, , drop = FALSE], outcome[trainingSamples],
             measurements[testSamples, , drop = FALSE], outcome[testSamples],
@@ -178,8 +115,6 @@ input data. Autmomatically reducing to smaller number.")
                  lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams)
 })
 
-#' @rdname runTests
-#' @export
 setMethod("runTests", c("MultiAssayExperiment"),
           function(measurements, targets = names(measurements), outcomeColumns, ...)
 {

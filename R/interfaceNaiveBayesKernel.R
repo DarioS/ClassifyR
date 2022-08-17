@@ -63,7 +63,7 @@ naiveBayesKernel <- function(measurementsTrain, classesTrain, measurementsTest,
     })
   }) # Matrix, rows are test samples, columns are features.
   
-  if(difference == "weighted" && weight == "crossover distance")
+  if(difference == "weighted" && weighting == "crossover distance")
   {
     if(verbose == 3)
       message("Calculating horizontal distances to crossover points of class densities.")

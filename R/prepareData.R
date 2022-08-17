@@ -46,8 +46,10 @@ setMethod("prepareData", "matrix",
   prepareData(S4Vectors::DataFrame(measurements, check.names = FALSE), outcome, ...)
 })
 
+#' @rdname prepareData
+#' @export
 setMethod("prepareData", "DataFrame",
-  function(measurements, outcome, useFeatures = "all", maxMissingProp = 0.3, topNvariance = NULL)
+  function(measurements, outcome, useFeatures = "all", maxMissingProp = 0.0, topNvariance = NULL)
 {
   if(useFeatures != "all") # Subset to only the desired ones.
     measurements <- measurements[, useFeatures]
@@ -137,6 +139,8 @@ setMethod("prepareData", "DataFrame",
   list(measurements = measurements, outcome = outcome)  
 })
 
+#' @rdname prepareData
+#' @export
 setMethod("prepareData", "MultiAssayExperiment",
   function(measurements, outcomeColumns = NULL, useFeatures = data.frame(assay = names(measurements), feature = rep("all", length(measurements))), ...)
 {

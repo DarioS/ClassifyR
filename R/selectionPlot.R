@@ -87,6 +87,7 @@
 #' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
+#' @param ... Not used by end user.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
@@ -131,6 +132,12 @@
 #' @export
 setGeneric("selectionPlot", function(results, ...)
 standardGeneric("selectionPlot"))
+
+#' @rdname selectionPlot
+#' @export
+setMethod("selectionPlot", "ClassifyResult", function(results, ...) {
+    selectionPlot(list(assay = results), ...)
+})
 
 #' @rdname selectionPlot
 #' @export

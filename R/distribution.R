@@ -36,8 +36,7 @@
 #'   #if(require(sparsediscrim))
 #'   #{
 #'     data(asthma)
-#'     CVparams <- CrossValParams(permutations = 5)
-#'     result <- runTests(measurements, classes, CVparams, ModellingParams())
+#'     result <- crossValidate(measurements, classes, nRepeats = 5)
 #'     featureDistribution <- distribution(result, "features", summaryType = "count",
 #'                                         plotType = "histogram", binwidth = 1)
 #'     print(head(featureDistribution))

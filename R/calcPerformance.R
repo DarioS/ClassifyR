@@ -5,13 +5,13 @@
 #' known classes and a vector of predicted classes determined outside of the
 #' ClassifyR package, a single metric value is calculated. If
 #' \code{calcCVperformance} is used, annotates the results of calling
-#' \code{\link{runTests}} with one of the user-specified performance measures.
+#' \code{\link{crossValidate}} with one of the user-specified performance measures.
 #' 
 #' All metrics except Matthews Correlation Coefficient are suitable for
 #' evaluating classification scenarios with more than two classes and are
 #' reimplementations of those available from Intel DAAL.
 #' 
-#' If \code{\link{runTests}} was run in resampling mode, one performance
+#' If \code{\link{crossValidate}} was run in resampling mode, one performance
 #' measure is produced for every resampling. If the leave-k-out mode was used,
 #' then the predictions are concatenated, and one performance measure is
 #' calculated for all classifications.
@@ -75,7 +75,7 @@
 #'                             class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
 #'   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
 #'   result <- ClassifyResult(DataFrame(characteristic = "Data Set", value = "Example"),
-#'                            paste("A", 1:10, sep = ''), list(paste("Gene", 1:50), paste("Gene", 1:50)), list(paste("Gene", 1:5), paste("Gene", 1:10)),
+#'                            paste("A", 1:10, sep = ''), paste("Gene", 1:50), list(paste("Gene", 1:50), paste("Gene", 1:50)), list(paste("Gene", 1:5), paste("Gene", 1:10)),
 #'                            list(function(oracle){}), NULL, predictTable, actual)
 #'   result <- calcCVperformance(result) 
 #'   performance(result)

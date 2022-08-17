@@ -316,7 +316,7 @@
 .doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose)
 {
   tuneChosen <- NULL
-  if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams@tuneParams))
+  if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams))
   {
     performanceType <- modellingParams@trainParams@tuneParams[["performanceType"]]
     modellingParams@trainParams@tuneParams <- modellingParams@trainParams@tuneParams[-match("performanceType", names(modellingParams@trainParams@tuneParams))]
