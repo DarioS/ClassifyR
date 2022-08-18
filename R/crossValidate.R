@@ -99,12 +99,12 @@ setMethod("crossValidate", "DataFrame",
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              if(is.null(mcols(measurements)$assay))
-              {
+              #if(is.null(mcols(measurements)$assay))
+              #{
                 splitAssay <- prepareData(measurements, outcome, ...)
                 measurements <- splitAssay[["measurements"]]
                 outcome <- splitAssay[["outcome"]]
-              }
+              #}
               
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)[, "assay"])
