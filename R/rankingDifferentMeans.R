@@ -14,10 +14,9 @@ differentMeansRanking <- function(measurementsTrain, classesTrain, verbose = 3)
   
   # Data is required to be in traditional bioinformatics format - features in rows
   # and samples in columns and also must be a matrix, not another kind of rectangular data.
-  measurementsTrain <- t(as.matrix(measurementsTrain))
+  measurementsMatrix <- t(as.matrix(measurementsTrain[, !categorical, drop = FALSE]))
   if(any(!categorical))
   {
-    measurementsMatrix <- measurementsTrain[!categorical, , drop = FALSE]
     if(length(levels(classesTrain)) == 2)
     {
       if(verbose == 3)
