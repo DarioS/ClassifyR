@@ -33,7 +33,7 @@ Contains a list of models, table of actual sample classes and predicted
 classes, the identifiers of features selected for each fold of each
 permutation or each hold-out classification, and performance metrics such as
 error rates. This class is not intended to be created by the user. It is
-created by \code{\link{crossValidate}}.
+created by \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}}.
 }
 \section{Constructor}{
 

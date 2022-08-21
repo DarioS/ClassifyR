@@ -53,9 +53,8 @@ setOldClass("rfsrc")
 # Union of A Function and NULL
 setClassUnion("functionOrNULL", c("function", "NULL"))
 
-# Union of Functions and List of Functions. Useful for allowing ensemble feature selection.
-setClassUnion("functionOrList", c("function", "list"))
-
+# Union of a Function and a List of Functions. Useful for allowing ensemble feature selection.
+setClassUnion("functionOrChraracterOrList", c("function", "character", "list"))
 
 # Union of A Numeric Value and NULL
 setClassUnion("numericOrNULL", c("numeric", "NULL"))
@@ -63,7 +62,7 @@ setClassUnion("numericOrNULL", c("numeric", "NULL"))
 # Union of a Character and a DataFrame
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
-# Union of a Surv class and a factor
+# Union of a Surv class and a factor for flexibility with sample outcome
 setClassUnion("factorOrSurv", c("factor", "Surv"))
 
 # Union of a List and NULL
@@ -82,7 +81,56 @@ setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 ##### CrossValParams #####
 
 # Parameters for Cross-validation Specification
-
+#' Parameters for Cross-validation Specification
+#' 
+#' Collects and checks necessary parameters required for cross-validation by
+#' \code{\link{runTests}}.
+#' 
+#' 
+#' @name CrossValParams
+#' @rdname CrossValParams-class
+#' @aliases CrossValParams CrossValParams-class
+#' @docType class
+#' 
+#' @param samplesSplits Default: "Permute k-Fold". A character value
+#' specifying what kind of sample splitting to do.
+#' @param permutations Default: 100. Number of times to permute the
+#' data set before it is split into training and test sets. Only relevant if
+#' \code{samplesSplits} is either \code{"Permute k-Fold"} or \code{"Permute
+#' Percentage Split"}.
+#' @param percentTest The percentage of the data
+#' set to assign to the test set, with the remainder of the samples belonging
+#' to the training set. Only relevant if \code{samplesSplits} is \code{"Permute
+#' Percentage Split"}.
+#' @param folds The number of approximately equal-sized folds to partition
+#' the samples into. Only relevant if \code{samplesSplits} is \code{"Permute k-Fold"}
+#' or \code{"k-Fold"}.
+#' @param leave The number of samples to generate all possible
+#' combination of and use as the test set.  Only relevant if \code{samplesSplits} is
+#' \code{"Leave-k-Out"}. If set to 1, it is the traditional leave-one-out cross-validation,
+#' sometimes written as LOOCV.
+#' @param tuneMode Default: Resubstitution. The scheme to use for selecting any tuning parameters.
+#' @param adaptiveResamplingDelta Default: \code{NULL}. If not null, adaptive resampling of training
+#' samples is performed and this number is the difference in consecutive iterations that the
+#' class probability or risk of all samples must change less than for the iterative process to stop. 0.01
+#' was used in the original publication.
+#' @param parallelParams An instance of \code{\link{BiocParallelParam}} specifying
+#' the kind of parallelisation to use. Default is to use two cores less than the total number of
+#' cores the computer has, if it has four or more cores, otherwise one core, as is the
+#' default of \code{\link{bpparam}}. To make results fully reproducible, please
+#' choose a specific back-end depending on your operating system and also set
+#' \code{RNGseed} to a number.
+#' 
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   CrossValParams() # Default is 100 permutations and 5 folds of each.
+#'   snow <- SnowParam(workers = 4, RNGseed = 999)
+#'   CrossValParams("Leave-k-Out", leave = 2, parallelParams = snow)
+#'   # Fully reproducible Leave-2-out cross-validation on 4 cores,
+#'   # even if feature selection or classifier use random sampling.
+#' 
+#' @exportClass CrossValParams
 setClass("CrossValParams", representation(
     samplesSplits = "character",
     permutations = "numericOrNULL",
@@ -96,6 +144,8 @@ setClass("CrossValParams", representation(
 )
 
 # CrossValParams constructor is an ordinary function and not S4 method for performance reasons.
+#' @export
+#' @rdname CrossValParams-class
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
                            tuneMode = c("Resubstitution", "Nested CV", "none"), adaptiveResamplingDelta = NULL, parallelParams = bpparam())
@@ -138,6 +188,7 @@ setClassUnion("StageParamsOrMissingOrNULL", c("StageParams", "missing", "NULL"))
 
 
 ##### TransformParams #####
+#' @exportClass TransformParams
 setClass("TransformParams", representation(
   transform = "function",
   characteristics = "DataFrame",
@@ -145,17 +196,67 @@ setClass("TransformParams", representation(
   otherParams = "list"), contains = "StageParams"
 )
 
-# Union of a TransformParams pbject and NULL. 
+# Union of a TransformParams object and NULL. 
 setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 
 # Parameters for Data Transformation within CV.
-
+#' Parameters for Data Transformation
+#' 
+#' Collects and checks necessary parameters required for transformation within CV.
+#' 
+#' 
+#' @name TransformParams
+#' @rdname TransformParams-class
+#' @aliases TransformParams TransformParams-class TransformParams,ANY-method
+#' TransformParams,character-method show,TransformParams-method
+#' @docType class
+#' @usage NULL
+#' @section Constructor:
+#' \describe{
+#' \item{}{
+#' \code{TransformParams(transform, characteristics = DataFrame(), intermediate = character(0), ...)} 
+#' Creates a \code{TransformParams} object which stores the function which will do the
+#' transformation and parameters that the function will use.
+#' \describe{
+#' \item{\code{transform}}{A character keyword referring to a registered transformation function. See \code{\link{available}}
+#' for valid keywords.}
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
+#' characteristics of data transformation to be done. First column must be
+#' named \code{"charateristic"} and second column must be named \code{"value"}.
+#' If using wrapper functions for data transformation in this package, the data
+#' transformation name will automatically be generated and therefore it is not
+#' necessary to specify it.}
+#' \item{\code{intermediate}}{Character vector. Names of any variables created in
+#' prior stages by \code{\link{runTest}} that need to be passed to a feature selection
+#' function.}
+#' \item{\code{...}}{Other named parameters which will be used by the transformation function.}
+#' } } }
+#' 
+#' @section Summary:
+#' \code{transformParams} is a \code{TransformParams} object.
+#' \describe{
+#' \item{}{
+#'     \code{show(transformParams)}: Prints a short summary of what \code{transformParams} contains.
+#'  }}
+#' 
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   transformParams <- TransformParams("diffLoc", location = "median")
+#'   # Subtract all values from training set median, to obtain absolute deviations.
+#' 
+#' @export
+#' @usage NULL
 setGeneric("TransformParams", function(transform, ...)
 standardGeneric("TransformParams"))
 
-setMethod("TransformParams", "function",
+#' @rdname TransformParams-class
+#' @usage NULL
+#' @export
+setMethod("TransformParams", "character",
           function(transform, characteristics = S4Vectors::DataFrame(), intermediate = character(0), ...)
           {
+            transform <- .transformKeywordToFunction(transform)
             if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(transform, "name"), "name"]))
@@ -164,10 +265,7 @@ setMethod("TransformParams", "function",
                 intermediate = intermediate, otherParams = list(...))
           })
 
-#' Inspect Data Transformation Details
-#'
-#' @rdname TransformParams-class
-#' @param object An object of class \code{TransformParams} to inspect.
+#' @usage NULL
 #' @export
 setMethod("show", "TransformParams",
           function(object)
@@ -374,6 +472,7 @@ setMethod("show", "FeatureSetCollection",
 )
 
 #' @export
+#' @usage NULL
 setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {
@@ -381,6 +480,7 @@ setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
 })
 
 #' @export
+#' @usage NULL
 setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
     function(x, i, j, ...)
 {
@@ -388,9 +488,12 @@ setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
 })
 
 setClassUnion("FeatureSetCollectionOrNULL", c("FeatureSetCollection", "NULL"))
+setClassUnion("functionOrList", c("function", "list"))
+setClassUnion("characterOrList", c("character", "list"))
 
 ##### SelectParams #####
 
+#' @exportClass SelectParams
 setClass("SelectParams", representation(
   featureRanking = "functionOrList",
   characteristics = "DataFrame",
@@ -404,22 +507,76 @@ setClass("SelectParams", representation(
 setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 
 # Parameters for Feature Selection
+#' Parameters for Feature Selection
+#' 
+#' Collects and checks necessary parameters required for feature selection.
+#' Either one function is specified or a list of functions to perform ensemble
+#' feature selection. The empty constructor is provided for convenience.
+#' 
+#' 
+#' @name SelectParams
+#' @rdname SelectParams-class
+#' @aliases SelectParams SelectParams-class SelectParams,missing-method
+#' SelectParams,characterOrList-method
+#' @docType class
+#' @section Constructor:
+#' \describe{
+#' \item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
+#' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
+#' object which stores the function(s) which will do the selection and parameters that the
+#' function will use.
+#' \describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}
+#' for valid keywords.}
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
+#' of feature selection to be done. First column must be named \code{"charateristic"} and
+#' second column must be named \code{"value"}. If using wrapper functions for feature
+#' selection in this package, the feature selection name will automatically be
+#' generated and therefore it is not necessary to specify it.}
+#' \item{\code{minPresence}}{If a list of functions was provided, how many of
+#' those must a feature have been selected by to be used in classification. 1
+#' is equivalent to a set union and a number the same length as
+#' \code{featureSelection} is equivalent to set intersection.}
+#' \item{\code{intermediate}}{Character vector. Names of any variables created
+#' in prior stages by \code{\link{runTest}} that need to be passed to a feature
+#' selection function.}
+#' \item{\code{subsetToSelections}}{Whether to subset the data table(s), after feature selection has been done.}
+#' \item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of
+#' the list are the names of the parameters and the vectors are the values of the parameters to try. All possible
+#' combinations are generated. Two elements named \code{nFeatures} and \code{performanceType} are mandatory, to
+#' define the performance metric which will be used to select features and how many top-ranked features to try.}
+#' \item{\code{...}}{Other named parameters which will be used by the
+#' selection function. If \code{featureSelection} was a list of functions,
+#' this must be a list of lists, as long as \code{featureSelection}.} } } }
+#' @section Summary:
+#' \code{selectParams} is a \code{SelectParams} object.
+#' \describe{
+#' \item{}{
+#'   \code{show(SelectParams)}: Prints a short summary of what \code{selectParams} contains.
+#' }}
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   #if(require(sparsediscrim))
+#'   #{
+#'     SelectParams("KS")
+#'     
+#'     # Ensemble feature selection.
+#'     SelectParams(list("Bartlett", "Levene"))
+#'   #}
+#' 
+#' @export
+#' @usage NULL
 setGeneric("SelectParams", function(featureRanking, ...)
 standardGeneric("SelectParams"))
 
-# Default constructor.
-setMethod("SelectParams", "missing", function()
-{
-  new("SelectParams", featureRanking = differentMeansRanking,
-      characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
-      minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
-      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
-})
-
-setMethod("SelectParams", c("functionOrList"),
+#' @rdname SelectParams-class
+#' @usage NULL
+#' @export
+setMethod("SelectParams", c("characterOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
                    intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
           {
+            if(is.character(featureRanking)) featureRanking <- .selectionKeywordToFunction(featureRanking) else featureRanking <- lapply(featureRanking, .selectionKeywordToFunction)
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(featureRanking, "name"), "name"]))
@@ -437,10 +594,8 @@ setMethod("SelectParams", c("functionOrList"),
                 tuneParams = tuneParams, otherParams = others)
           })
 
-#' Container for Storing Details of Feature Selection Function(s)
-#' 
+#' @usage NULL 
 #' @rdname SelectParams-class
-#' @param object An object of class \code{SelectParams} to inspect.
 #' @export
 setMethod("show", "SelectParams",
           function(object)
@@ -463,11 +618,9 @@ setMethod("show", "SelectParams",
             }
           })
 
-
-
-
 ##### TrainParams #####
 
+#' @exportClass TrainParams
 setClass("TrainParams", representation(
   classifier = "function",
   characteristics = "DataFrame",
@@ -476,19 +629,65 @@ setClass("TrainParams", representation(
   otherParams = "listOrNULL",
   getFeatures = "functionOrNULL"), contains = "StageParams")
 
-# Parameters for Classifier Training
+#' Parameters for Classifier Training
+#' 
+#' Collects and checks necessary parameters required for classifier training.
+#' The empty constructor is provided for convenience.
+#' 
+#' @name TrainParams
+#' @rdname TrainParams-class
+#' @aliases TrainParams TrainParams-class TrainParams,missing-method
+#' TrainParams,characterOrFunction-method show,TrainParams-method
+#' @docType class
+#' @section Constructor:
+#' \describe{
+#' \item{}{\preformatted{TrainParams(classifier, characteristics = DataFrame(),
+#' intermediate = character(0), getFeatures = NULL, ...)}
+#' Creates a \code{TrainParams} object which stores the function which will do the
+#' classifier building and parameters that the function will use.
+#' \describe{
+#' \item{\code{classifier}}{A character keyword referring to a registered classifier. See \code{\link{available}}
+#' for valid keywords.}
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
+#' characteristics of the classifier used. First column must be named \code{"charateristic"}
+#' and second column must be named \code{"value"}. If using wrapper functions for classifiers
+#' in this package, a classifier name will automatically be generated and
+#' therefore it is not necessary to specify it.}
+#' \item{\code{intermediate}}{Character vector. Names of any variables created
+#' in prior stages by \code{\link{runTest}} that need to be passed to
+#' \code{classifier}.}
+#' \item{\code{getFeatures}}{A function may be specified that extracts the selected
+#' features from the trained model. This is relevant if using a classifier that does
+#' feature selection within training (e.g. random forest). The function must return a
+#' list of two vectors. The first vector contains the ranked features (or empty if the
+#' training algorithm doesn't produce rankings) and the second vector contains the selected
+#' features.}
+#' \item{\code{...}}{Other named parameters which will be used by the classifier.} } } }
+#' @section Summary:
+#' \code{trainParams} is a \code{TrainParams} object.
+#' \describe{
+#' \item{}{
+#'   \code{show(trainParams)}: Prints a short summary of what \code{trainParams} contains.
+#' }}
+#' @author Dario Strbenac
+#' @examples
+#' 
+#' #if(require(sparsediscrim))
+#'   trainParams <- TrainParams("DLDA")
+#' 
+#' @usage NULL
+#' @export
 setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams"))
+setClassUnion("characterOrFunction", c("character", "function"))
 
-setMethod("TrainParams", "missing", function()
-{
-  new("TrainParams", classifier = DLDAtrainInterface,
-      characteristics = S4Vectors::DataFrame(characteristic = "Classifier Name", value = "Diagonal LDA"),
-      intermediate = character(0), getFeatures = NULL)
-})
-
-setMethod("TrainParams", c("function"),
+#' @usage NULL
+#' @rdname TrainParams-class
+#' @export
+setMethod("TrainParams", c("characterOrFunction"),
           function(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(), intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)
           {
+            if(is.character(classifier))              
+              classifier <- .classifierKeywordToParams(classifier)[[1]]@classifier # Training function.              
             if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(classifier, "name"), "name"]))
@@ -498,11 +697,7 @@ setMethod("TrainParams", c("function"),
                 otherParams = list(...))
           })
 
-#' Inspect Model Training Details
-#'
-#' @rdname TrainParams-class
-#' @param object An object of class \code{TrainParams} to inspect.
-#' @export
+#' @usage NULL
 setMethod("show", "TrainParams",
           function(object)
           {
@@ -523,39 +718,77 @@ setMethod("show", "TrainParams",
 
 ##### PredictParams #####
 
+#' @exportClass PredictParams
 setClass("PredictParams", representation(
-  predictor = "functionOrNULL",
+  predictor = "function",
   characteristics = "DataFrame",  
   intermediate = "character",
   otherParams = "listOrNULL"), contains = "StageParams"
 )
 
+#' Parameters for Classifier Prediction
+#' 
+#' Collects the function to be used for making predictions and any associated
+#' parameters.
+#' 
+#' The function specified must return either a factor vector of class
+#' predictions, or a numeric vector of scores for the second class, according
+#' to the levels of the class vector of the input data set, or a data frame
+#' which has two columns named class and score.
+#' 
+#' 
+#' @name PredictParams
+#' @rdname PredictParams-class
+#' @aliases PredictParams PredictParams-class PredictParams,missing-method
+#' PredictParams,characterOrFunction-method show,PredictParams-method
+#' @docType class
+#' @section Constructor: \describe{\item{}{
+#' \code{PredictParams(predictor, characteristics = DataFrame(), intermediate =
+#' character(0), ...)} Creates a PredictParams object which stores the function
+#' which will do the class prediction, if required, and parameters that the
+#' function will use. If the training function also makes predictions, this
+#' must be set to \code{NULL}.}
+#' \describe{ \item{\code{predictor}}{A character keyword referring to a registered classifier. See \code{\link{available}}
+#' for valid keywords.}
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing
+#' the characteristics of the predictor function used. First column must be
+#' named \code{"charateristic"} and second column must be named \code{"value"}.}
+#' \item{\code{intermediate}}{Character vector. Names of any
+#' variables created in prior stages in \code{\link{runTest}} that need to be
+#' passed to the prediction function.}
+#' \item{\code{...}}{Other arguments that \code{predictor} may use.} } }
+#' @section Summary:
+#' \code{predictParams} is a \code{PredictParams} object.
+#' \describe{
+#' \item{}{
+#'   \code{show(predictParams)}: Prints a short summary of what \code{predictParams} contains.
+#' }}
+#' @author Dario Strbenac
+#' @examples
+#' 
+#' # For prediction by trained object created by DLDA training function.
+#' predictParams <- PredictParams("DLDA")
+#' 
+#' @export
+#' @usage NULL
 setGeneric("PredictParams", function(predictor, ...)
 standardGeneric("PredictParams"))
 
-setMethod("PredictParams", "missing", function()
-{
-  new("PredictParams", predictor = DLDApredictInterface,
-      characteristics = S4Vectors::DataFrame(characteristic = "Predictor Name", value = "Diagonal LDA"),
-      intermediate = character(0), otherParams = NULL)
-})
-
-setMethod("PredictParams", c("functionOrNULL"),
+#' @usage NULL
+#' @rdname PredictParams-class
+#' @export
+setMethod("PredictParams", c("characterOrFunction"),
           function(predictor, characteristics = DataFrame(), intermediate = character(0), ...)
           {
-            if(missing(predictor))
-              stop("Either a function or NULL must be specified by 'predictor'.")
+            if(is.character(predictor))              
+              predictor <- .classifierKeywordToParams(predictor)[[2]]@predictor # Prediction function.
             others <- list(...)
             if(length(others) == 0) others <- NULL
             new("PredictParams", predictor = predictor, characteristics = characteristics,
                 intermediate = intermediate, otherParams = others)
           })
 
-#' Inspect Prediction Function Details
-#'
-#' @rdname PredictParams-class
-#' @param object An object of class \code{TrainParams} to inspect.
-#' @export
+#' @usage NULL
 setMethod("show", "PredictParams",
           function(object)
           {
@@ -581,6 +814,7 @@ setMethod("show", "PredictParams",
 
 setClassUnion("PredictParamsOrNULL", c("PredictParams", "NULL"))
 
+#' @exportClass ModellingParams
 setClass("ModellingParams", representation(
   balancing = "character",
   transformParams = "TransformParamsOrNULL",
@@ -590,9 +824,48 @@ setClass("ModellingParams", representation(
   doImportance = "logical"
 ))
 
+##### ModellingParams #####
+
+#' Parameters for Data Modelling Specification
+#' 
+#' Collects and checks necessary parameters required for data modelling. Apart
+#' from data transfomation that needs to be done within cross-validation (e.g.
+#' subtracting each observation from training set mean), feature selection, model training and
+#' prediction, this container also stores a setting for class imbalance
+#' rebalancing.
+#' 
+#' @name ModellingParams
+#' @rdname ModellingParams-class
+#' @aliases ModellingParams ModellingParams-class
+#' @docType class
+#' @param balancing Default: "downsample". A character value specifying what kind
+#' of class balancing to do, if any.
+#' @param transformParams Parameters used for feature transformation inside of C.V.
+#' specified by a \code{\link{TransformParams}} instance. Optional, can be \code{NULL}.
+#' @param selectParams Parameters used during feature selection specified
+#'   by a \code{\link{SelectParams}} instance.  By default, parameters for selection
+#'   based on differences in means of numeric data. Optional, can be \code{NULL}.
+#' @param trainParams Parameters for model training specified by a \code{\link{TrainParams}} instance.
+#'   By default, uses diagonal LDA.
+#' @param predictParams Parameters for model training specified by a \code{\link{PredictParams}} instance.
+#' By default, uses diagonal LDA.
+#' @param doImportance Default: \code{FALSE}. Whether or not to carry out removal of each feature, one at a time, which
+#' was chosen and then retrain and model and predict the test set, to measure the change in performance metric. Can
+#' also be set to TRUE, if required. Modelling run time will be noticeably longer.
+#' @author Dario Strbenac
+#' @examples
+#' 
+#'   #if(require(sparsediscrim))
+#'   #{
+#'      ModellingParams() # Default is differences in means selection and DLDA.
+#'      ModellingParams(selectParams = NULL, # No feature selection before training.
+#'                      trainParams = TrainParams("randomForest"),
+#'                      predictParams = PredictParams("randomForest"))
+#'   #}
+#' @export
 ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
-                            transformParams = NULL, selectParams = SelectParams(),
-                            trainParams = TrainParams(), predictParams = PredictParams(),
+                            transformParams = NULL, selectParams = SelectParams("t-test"),
+                            trainParams = TrainParams("DLDA"), predictParams = PredictParams("DLDA"),
                             doImportance = FALSE)
 {
   balancing <- match.arg(balancing)
@@ -612,7 +885,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' classes, the identifiers of features selected for each fold of each
 #' permutation or each hold-out classification, and performance metrics such as
 #' error rates. This class is not intended to be created by the user. It is
-#' created by \code{\link{crossValidate}}.
+#' created by \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}}.
 #' 
 #' @name ClassifyResult
 #' @rdname ClassifyResult-class
@@ -731,6 +1004,8 @@ setMethod("ClassifyResult", c("DataFrame", "character"),
                 predictions = predictions, actualOutcome = actualOutcome, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
           })
 
+#' @usage NULL
+#' @export
 setMethod("show", "ClassifyResult", function(object)
           {
             cat("An object of class 'ClassifyResult'.\n")

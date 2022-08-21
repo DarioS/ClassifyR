@@ -641,52 +641,22 @@ generateModellingParams <- function(assayIDs,
     if(!classifier %in% classifiers)
         stop(paste("Classifier must exactly match of these (be careful of case):", paste(classifiers, collapse = ", ")))
     
-    classifier <- switch(
-        classifier,
-        "randomForest" = RFparams(),
-        "randomSurvivalForest" = RSFparams(),
-        "GLM" = GLMparams(),
-        "elasticNetGLM" = elasticNetGLMparams(),
-        "SVM" = SVMparams(),
-        "DLDA" = DLDAparams(),
-        "naiveBayes" = naiveBayesParams(),
-        "mixturesNormals" = mixModelsParams(),
-        "kNN" = kNNparams(),
-        "CoxPH" = coxphParams(),
-        "CoxNet" = coxnetParams()
-    )
+    classifierParams <- .classifierKeywordToParams(classifier)
 
     selectionMethod <- unlist(selectionMethod)
 
-    selectionMethod <- ifelse(is.null(selectionMethod),
-                              "none",
-                              selectionMethod)
-
-    selectionMethodParam <- switch(
-        selectionMethod,
-        "none" = NULL,
-        "t-test" = differentMeansRanking,
-        "limma" = limmaRanking,
-        "edgeR" = edgeRranking,
-        "Bartlett" = bartlettRanking,
-        "Levene" = leveneRanking,
-        "DMD" = DMDranking,
-        "likelihoodRatio" = likelihoodRatioRanking,
-        "KS" = KolmogorovSmirnovRanking,
-        "KL" = KullbackLeiblerRanking,
-        "CoxPH" = coxphRanking
-    )
+    selectionMethod <- ifelse(is.null(selectionMethod), "none", selectionMethod)
 
     selectParams = SelectParams(
-        selectionMethodParam,
+        selectionMethod,
         tuneParams = list(nFeatures = nFeatures, performanceType = performanceType)
         )
 
     params <- ModellingParams(
         balancing = "none",
         selectParams = selectParams,
-        trainParams = classifier$trainParams,
-        predictParams = classifier$predictParams
+        trainParams = classifierParams$trainParams,
+        predictParams = classifierParams$predictParams
     )
 
     #if(multiViewMethod != "none") stop("I haven't implemented multiview yet.")
@@ -743,7 +713,7 @@ generateMultiviewParams <- function(assayIDs,
                                           multiViewMethod = "none")
 
         # Update selectParams to use
-        params@selectParams <- SelectParams(selectMulti,
+        params@selectParams <- SelectParams("selectMulti",
                                             params = paramsassays,
                                             characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "merge"),
                                             tuneParams = list(nFeatures = nFeatures[[1]],

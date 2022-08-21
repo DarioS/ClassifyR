@@ -6,7 +6,7 @@ RFparams <- function() {
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-# Random Surival Forest
+# Random Survival Forest
 RSFparams <- function() {
     trainParams <- TrainParams(rfsrcTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = seq(100, 500, 100)))
     predictParams <- PredictParams(rfsrcPredictInterface)

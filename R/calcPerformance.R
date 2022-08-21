@@ -5,14 +5,14 @@
 #' known classes and a vector of predicted classes determined outside of the
 #' ClassifyR package, a single metric value is calculated. If
 #' \code{calcCVperformance} is used, annotates the results of calling
-#' \code{\link{crossValidate}} with one of the user-specified performance measures.
+#' \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}} with one of the user-specified performance measures.
 #' 
 #' All metrics except Matthews Correlation Coefficient are suitable for
 #' evaluating classification scenarios with more than two classes and are
 #' reimplementations of those available from Intel DAAL.
 #' 
-#' If \code{\link{crossValidate}} was run in resampling mode, one performance
-#' measure is produced for every resampling. If the leave-k-out mode was used,
+#' \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}} was run in resampling mode, one performance
+#' measure is produced for every resampling. Otherwise, if the leave-k-out mode was used,
 #' then the predictions are concatenated, and one performance measure is
 #' calculated for all classifications.
 #' 

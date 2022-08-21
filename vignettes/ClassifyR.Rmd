@@ -42,7 +42,6 @@ Typically, each feature selection method or classifier originates from a differe
 
 **ClassifyR** provides a structured pipeline for cross-validated classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The driver functions *crossValidate* and *runTests* implements varieties of cross-validation. They are:
 
-* Ordinary k-fold cross-validation (runTests only)
 * Permutation of the order of samples followed by k-fold cross-validation (runTests only)
 * Repeated x% test set cross-validation
 * leave-k-out cross-validation
@@ -208,14 +207,28 @@ Function | Description | Before&nbsp;CV | During&nbsp;CV
 <span style="font-family: 'Courier New', monospace;">pairsDifferencesSelection</span> | Finds a set of pairs of features whose measurement inequalities can be used for predicting with | | ✔    
 <span style="font-family: 'Courier New', monospace;">kTSPclassifier</span> | Voting classifier that uses inequalities between pairs of features to vote for one of two classes | | ✔   
  
-### A Complete Example: Classifier Fitting and Performance Evaluation
+### Fine-grained Cross-validation and Modelling Using *runTests*
 
-Do fitting of a random forest classifier.
+For more control over the finer aspects of cross-validation of a single data set, *runTests* may be employed in place of *crossValidate*. For the variety of cross-validation, the parameters are specified by a *CrossValParams* object. The default setting is for 100 permutations and five folds and parameter tuning is done by resubstitution. It is also recommended to specify a *parallelParams* setting. On Linux and MacOS operating systems, it should be *MulticoreParam* and on Windows computers it should be *SnowParam*. Note that each of these have an option *RNGseed* and this **needs to be set by the user** because some classifiers or feature selection functions will have some element of randomisation. One example that works on all operating systems, but is best-suited to Windows is:
+
+```{r, eval = FALSE}
+CVparams <- CrossValParams(parallelParams = SnowParam(16, RNGseed = 123))
+CVparams
+```
+
+For the actual operations to do to the data to build a model of it, each of the stages should be specified by an object of class *ModellingParams*. This controls how class imbalance is handled (default is to downsample to the smallest class), any transformation that needs to be done inside of cross-validation (i.e. involving a computed value from the training set), any feature selection and the training and prediction functions to be used. The default is to do an ordinary t-test (two groups) or ANOVA (three or more groups) and classification using diagonal LDA.
+
+```{r}
+ModellingParams()
+```
+
+### runTests Driver Function of Cross-validated Classification
+
+*runTests* is the main function in **ClassifyR** which handles the sample splitting and parallelisation, if used, of cross-validation. To begin with, a simple classifier will be demonstrated. It uses a t-test or ANOVA ranking (depending on the number of classes) for feature ranking and DLDA for classification. This classifier relies on differences in means between classes. No parameters need to be specified, because this is the default classification of *runTests*. By default, the number of features is tuned by resubstitution on the training set.
 
 ```{r, tidy = FALSE}
-DMresults <- crossValidate(measurements, classes, nRepeats = 5,
-                           characteristicsLabel = "DM")
-DMresults
+crossValParams <- CrossValParams(permutations = 5)
+DMresults <- runTests(measurements, classes, crossValParams, verbose = 1)
 ```
 
 Here, 5 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing parallel processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
@@ -253,8 +266,10 @@ The error rate is about 20%. If only a vector of predictions and a vector of act
 The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heuristic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
-DDresults <- crossValidate(measurements, classes, selectionMethod = "KL",
-                           classifier = "naiveBayes", nRepeats = 5, characteristicsLabel = "DD")
+modellingParamsDD <- ModellingParams(selectParams = SelectParams("KL"),
+                                     trainParams = TrainParams("naiveBayes"),
+                                     predictParams = NULL)
+DDresults <- runTests(measurements, classes, crossValParams, modellingParamsDD, verbose = 1)
 DDresults
 ```
 
@@ -317,7 +332,25 @@ Once a cross-validated classification is complete, the usefulness of the feature
 
 ### Parameter Tuning
 
-Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. When a method is chosen, a range of common parameter values is automatically chosen to try and the resubstitution or nested cross-validation performance metrics are reported for each parameter value combination, as well as the the value combination chosen to be used for model building.
+Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by a list element named *nFeatures* and the performance type (e.g. Balanced Error) specified by a list elment named *performanceType*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
+
+Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
+
+```{r}
+tuneList <- list(cost = c(0.01, 0.1, 1, 10))
+SVMparams <- ModellingParams(trainParams = TrainParams("SVM", kernel = "linear", tuneParams = tuneList),
+                             predictParams = PredictParams("SVM"))
+SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
+```
+
+The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
+
+```{r}
+length(tunedParameters(SVMresults))
+tunedParameters(SVMresults)[1:5]
+```
+
+The cost value of 1 or 10 appears to often be chosen.
 
 ## Summary
 

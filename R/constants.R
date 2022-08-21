@@ -20,7 +20,8 @@
 # Nice-looking names for feature selection and classification functions, to automatically use
 # in a variety of performance plots.
 .ClassifyRenvir[["functionsTable"]] <- matrix(
-  c("bartlettRanking", "Bartlett Test",
+  c("subtractFromLocation", "Subtraction From Training Set Location",
+    "bartlettRanking", "Bartlett Test",
     "classifyInterface", "Poisson LDA",
     "differentMeansRanking", "Difference in Means",
     "DLDAtrainInterface", "Diagonal LDA",
@@ -43,7 +44,6 @@
     "previousSelection", "Previous Selection", 
     "previousTrained", "Previous Trained",
     "randomForestTrainInterface", "Random Forest",
-    "subtractFromLocation", "Location Subtraction",
     "SVMtrainInterface", "Support Vector Machine",
     "coxphTrainInterface", "Cox Proportional Hazards",
     "coxphRanking", "Cox Proportional Hazards",

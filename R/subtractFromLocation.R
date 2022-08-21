@@ -34,3 +34,4 @@ subtractFromLocation <- function(measurementsTrain, measurementsTest, location =
   
   list(transformedTrain, transformedTest)
 }
+attr(subtractFromLocation, "name") <- "subtractFromLocation"

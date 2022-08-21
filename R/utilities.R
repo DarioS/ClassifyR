@@ -529,6 +529,52 @@
   list(measurementsTrain = measurementsTrain, classesTrain = classesTrain)
 }
 
+.transformKeywordToFunction <- function(keyword)
+{
+  switch(
+        keyword,
+        "none" = NULL,
+        "diffLoc" = subtractFromLocation
+    )
+}
+
+.selectionKeywordToFunction <- function(keyword)
+{
+  switch(
+        keyword,
+        "none" = NULL,
+        "t-test" = differentMeansRanking,
+        "limma" = limmaRanking,
+        "edgeR" = edgeRranking,
+        "Bartlett" = bartlettRanking,
+        "Levene" = leveneRanking,
+        "DMD" = DMDranking,
+        "likelihoodRatio" = likelihoodRatioRanking,
+        "KS" = KolmogorovSmirnovRanking,
+        "KL" = KullbackLeiblerRanking,
+        "CoxPH" = coxphRanking,
+        "selectMulti" = selectMulti
+    )
+}
+
+.classifierKeywordToParams <- function(keyword)
+{
+    switch(
+        keyword,
+        "randomForest" = RFparams(),
+        "randomSurvivalForest" = RSFparams(),
+        "GLM" = GLMparams(),
+        "elasticNetGLM" = elasticNetGLMparams(),
+        "SVM" = SVMparams(),
+        "DLDA" = DLDAparams(),
+        "naiveBayes" = naiveBayesParams(),
+        "mixturesNormals" = mixModelsParams(),
+        "kNN" = kNNparams(),
+        "CoxPH" = coxphParams(),
+        "CoxNet" = coxnetParams()
+    )    
+}
+
 .dlda <- function(x, y, prior = NULL){ # Remove this once sparsediscrim is reinstated to CRAN.
   obj <- list()
   obj$labels <- y

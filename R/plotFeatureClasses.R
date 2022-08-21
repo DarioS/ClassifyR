@@ -356,12 +356,12 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
           {
             if(missing(useFeatures))
               stop("'useFeatures' must be specified by the user.")
-            if(!all(useFeatures[, 1] %in% c(names(measurements), "sampleInfo")))
-              stop("Some table names in 'useFeatures' are not assay names in 'measurements' or \"sampleInfo\".")  
+            if(!all(useFeatures[, 1] %in% c(names(measurements), "clinical")))
+              stop("Some table names in 'useFeatures' are not assay names in 'measurements' or \"clinical\".")  
             
-            assaysuseFeatures <- useFeatures[useFeatures[, 1] != "sampleInfo", ]
-            sampleInfouseFeatures <- useFeatures[useFeatures[, 1] == "sampleInfo", ]
-            measurements <- measurements[assaysuseFeatures[, 2], , assaysuseFeatures[, 1]]
+            assaysUseFeatures <- useFeatures[useFeatures[, 1] != "clinical", ]
+            clinicalUseFeatures <- useFeatures[useFeatures[, 1] == "clinical", ]
+            measurements <- measurements[assaysUseFeatures[, 2], , assaysUseFeatures[, 1]]
             classes <- MultiAssayExperiment::colData(measurements)[, classesColumn]
             
             if(!is.null(groupBy))
@@ -369,7 +369,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
               if(is.null(groupingName))
                 groupingName <- groupBy[2]
               groupingTable <- groupBy[1]
-              if(groupingTable == "sampleInfo")
+              if(groupingTable == "clinical")
               {
                 groupBy <- MultiAssayExperiment::colData(measurements)[, groupBy[2]]
               } else { # One of the omics tables.
@@ -387,7 +387,7 @@ setMethod("plotFeatureClasses", "MultiAssayExperiment",
             MultiAssayExperiment::colData(measurements) <- MultiAssayExperiment::colData(measurements)[colnames(MultiAssayExperiment::colData(measurements)) %in% sampleInfouseFeatures[, 2]]
             measurements <- MultiAssayExperiment::wideFormat(measurements, colDataCols = seq_along(MultiAssayExperiment::colData(measurements)), check.names = FALSE, collapse = ':')
             measurements <- measurements[, -1, drop = FALSE] # Remove sample IDs.
-            S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "sampleInfo", S4Vectors::mcols(measurements)[, "sourceName"])
+            S4Vectors::mcols(measurements)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(measurements)[, "sourceName"])
             colnames(S4Vectors::mcols(measurements))[1] <- "assay"
             S4Vectors::mcols(measurements)[, "feature"] <- S4Vectors::mcols(measurements)[, "rowname"]
             missingIndices <- is.na(S4Vectors::mcols(measurements)[, "feature"])
