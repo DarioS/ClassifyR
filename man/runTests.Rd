@@ -77,7 +77,7 @@ parallel is possible by leveraging the package \code{\link{BiocParallel}}.
     
     CVparams <- CrossValParams(permutations = 5)
     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
-    selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
+    selectParams <- SelectParams("t-test", tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
     runTests(measurements, classes, CVparams, modellingParams,
              DataFrame(characteristic = c("Assay Name", "Classifier Name"),

@@ -59,7 +59,7 @@
 #'   #{
 #'     data(asthma)
 #'     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
-#'     selectParams <- SelectParams(limmaRanking, tuneParams = tuneList)
+#'     selectParams <- SelectParams("limma", tuneParams = tuneList)
 #'     modellingParams <- ModellingParams(selectParams = selectParams)
 #'     trainIndices <- seq(1, nrow(measurements), 2)
 #'     testIndices <- seq(2, nrow(measurements), 2)
