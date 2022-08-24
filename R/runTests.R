@@ -82,7 +82,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParam
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
 
   originalFeatures <- colnames(measurements)
-  if("feature" %in% colnames(mcols(measurements))) originalFeatures <- mcols(measurements)[, c("assay", "feature")]                 
+  if("feature" %in% colnames(S4Vectors::mcols(measurements))) originalFeatures <- S4Vectors::mcols(measurements)[, c("assay", "feature")]                 
   splitDataset <- prepareData(measurements, outcome)
   measurements <- splitDataset[["measurements"]]
   outcome <- splitDataset[["outcome"]]
@@ -107,7 +107,7 @@ input data. Autmomatically reducing to smaller number.")
   characteristics <- characteristics
   verbose <- verbose
   # Make them all local variables, so they are passed to workers.
-  
+
   results <- bpmapply(function(trainingSamples, testSamples, setNumber)
   #results <- mapply(function(trainingSamples, testSamples, setNumber)
   {
