@@ -68,7 +68,7 @@
 #'             measurements[testIndices, ], classes[testIndices], modellingParams = modellingParams)
 #'   #}
 #' 
-#' @importFrom S4Vectors do.call
+#' @importFrom S4Vectors do.call mcols
 #' @usage NULL
 #' @export
 setGeneric("runTest", function(measurementsTrain, ...)
@@ -112,7 +112,7 @@ function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
     }
   }
   
-  if("feature" %in% colnames(mcols(measurementsTrain))) originalFeatures <- mcols(measurementsTrain)[, na.omit(match(c("assay", "feature"), colnames(mcols(measurementsTrain))))]    
+  if("feature" %in% colnames(S4Vectors::mcols(measurementsTrain))) originalFeatures <- S4Vectors::mcols(measurementsTrain)[, na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))]    
   else originalFeatures <- colnames(measurementsTrain)
     
   if(!is.null(modellingParams@selectParams) && max(modellingParams@selectParams@tuneParams[["nFeatures"]]) > ncol(measurementsTrain))
