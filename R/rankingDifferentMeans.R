@@ -8,7 +8,9 @@ differentMeansRanking <- function(measurementsTrain, classesTrain, verbose = 3)
   categorical <- sapply(measurementsTrain, class) %in% c("character", "factor")
   if(any(categorical)){
      pValues[categorical] <- sapply(which(categorical), function(featureIndex){
-      chisq.test(measurementsTrain[, featureIndex], classesTrain)$p.value
+       pval <- 1
+      if(length(unique(measurementsTrain[, featureIndex])>1)) pval <- chisq.test(measurementsTrain[, featureIndex], classesTrain)$p.value
+       pval
     })
   }
   
