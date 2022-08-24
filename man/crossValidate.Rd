@@ -11,45 +11,33 @@
 \alias{predict,ClassifyResult-method}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-crossValidate(
-  measurements,
-  classes,
-  nFeatures = 20,
-  selectionMethod = "t-test",
-  selectionOptimisation = "Resubstitution",
-  classifier = "randomForest",
-  multiViewMethod = "none",
-  dataCombinations = NULL,
-  nFolds = 5,
-  nRepeats = 20,
-  nCores = 1,
-  characteristicsLabel = NULL
-)
+crossValidate(measurements, outcome, ...)
 
 \S4method{crossValidate}{DataFrame}(
   measurements,
-  classes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  dataCombinations = NULL,
+  assayCombinations = NULL,
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
 \S4method{crossValidate}{MultiAssayExperiment}(
   measurements,
-  classes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  dataCombinations = NULL,
+  assayCombinations = NULL,
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
@@ -58,13 +46,13 @@ crossValidate(
 
 \S4method{crossValidate}{data.frame}(
   measurements,
-  classes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  dataCombinations = NULL,
+  assayCombinations = NULL,
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
@@ -73,13 +61,13 @@ crossValidate(
 
 \S4method{crossValidate}{matrix}(
   measurements,
-  classes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  dataCombinations = NULL,
+  assayCombinations = NULL,
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
@@ -88,13 +76,13 @@ crossValidate(
 
 \S4method{crossValidate}{list}(
   measurements,
-  classes,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  dataCombinations = NULL,
+  assayCombinations = NULL,
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
@@ -109,29 +97,32 @@ or a list of these objects containing the training data.  For a
 \code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
 the rows are features and the columns are samples, as is typical in Bioconductor.}
 
-\item{classes}{A vector of class labels of class \code{\link{factor}} of the
+\item{outcome}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
 column name in \code{colData(measurements)} if \code{measurements} is a \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-removed before training.}
+removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
+\code{measurements} for survival outcome.}
+
+\item{...}{Parameters passed into \code{\link{prepareData}}.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
-or datasets. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple datasets, 
-a different number of features will be used for each dataset. If a named list of vectors, the respective number of features will be optimised over. 
+or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
+a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 Set to NULL or "all" if all features should be used.}
 
-\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different datasets, 
-and performing multiview classification, the respective classification methods will be used on each dataset.}
+\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay.}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise nFeatures.}
 
-\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different datasets, 
-and performing multiview classification, the respective classification methods will be used on each dataset.}
+\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay.}
 
 \item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
 
-\item{dataCombinations}{A character vector or list of character vectors proposing the datasets or, in the case of a list, combination of datasets to use
-with each element being a vector of datasets to combine.}
+\item{assayCombinations}{A character vector or list of character vectors proposing the assays or, in the case of a list, combination of assays to use
+with each element being a vector of assays to combine.}
 
 \item{nFolds}{A numeric specifying the number of folds to use for cross-validation.}
 
@@ -150,17 +141,16 @@ An object of class \code{\link{ClassifyResult}}
 }
 \description{
 This function has been designed to facilitate the comparison of classification
- methods using cross-validation. A selection of typical 
-comparisons are implemented.
+methods using cross-validation. A selection of typical  comparisons are implemented.
 }
 \details{
-\code{classifier} can be any of the following implemented approaches - randomForest, elasticNet, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals. 
+\code{classifier} can be any of the following implemented approaches - randomForest, GLM, elasticNetGLM, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals.
 
 \code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
 
-\code{multiViewMethod} can take a few different values. Using \code{merge} will merge or bind the datasets after feature selection. 
- Using \code{prevlidation} will build prevalidated vectors on all the datasets except the clinical data. There must be a dataset called clinical.
- Using \code{pca} will perform pca on each dataset and then merge the top few components with the clinical data. There must be a dataset called clinical.
+\code{multiViewMethod} can take a few different values. Using \code{merge} will merge or bind the assays after feature selection. 
+ Using \code{prevalidation} will build prevalidated vectors on all the assays except the clinical data. There must be a assay called clinical.
+ Using \code{PCA} will perform Principal Components Analysis on each assay and then merge the top few components with the clinical data. There must be a assay called clinical.
 }
 \examples{
 
@@ -168,24 +158,24 @@ data(asthma)
 
 # Compare randomForest and SVM classifiers.
 result <- crossValidate(measurements, classes, classifier = c("randomForest", "SVM"))
-# performancePlot(result)
+performancePlot(result)
 
 
-# Compare performance of different datasets. 
-# First make a toy example dataset with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
+# Compare performance of different assays. 
+# First make a toy example assay with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
 # set.seed(51773)
 # measurements <- DataFrame(measurements, check.names = FALSE)
-# mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
+# mcols(measurements)$assay <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
 # mcols(measurements)$feature <- colnames(measurements)
 
-# We'll use different nFeatures for each dataset. We'll also use repeated cross-validation with 5 repeats for speed in the example.
+# We'll use different nFeatures for each assay. We'll also use repeated cross-validation with 5 repeats for speed in the example.
 # set.seed(51773)
 #result <- crossValidate(measurements, classes, nFeatures = c(clinical = 5, gene = 20, protein = 30), classifier = "randomForest", nRepeats = 5)
 # performancePlot(result)
 
-# Merge different datasets. But we will only do this for two combinations. If dataCombinations is not specified it would attempt all combinations.
+# Merge different assays. But we will only do this for two combinations. If assayCombinations is not specified it would attempt all combinations.
 # set.seed(51773)
-# resultMerge <- crossValidate(measurements, classes, dataCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
+# resultMerge <- crossValidate(measurements, classes, assayCombinations = list(c("clinical", "protein"), c("clinical", "gene")), multiViewMethod = "merge", nRepeats = 5)
 # performancePlot(resultMerge)
 
 

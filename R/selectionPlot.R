@@ -50,7 +50,9 @@
 #' name must be one of \code{"x"}, \code{"row"}, \code{"column"},
 #' \code{"fillColour"}, or \code{"lineColour"}. The value of each element must be a
 #' characteristic name, as stored in the \code{"characteristic"} column of the
-#' results' characteristics table. Only \code{"x"} is mandatory.
+#' results' characteristics table. Only \code{"x"} is mandatory. It is
+#' \code{"auto"} by default, which will identify a characteristic that has a unique
+#' value for each element of \code{results}.
 #' @param coloursList A named list of plot aspects and colours for the aspects.
 #' No elements are mandatory. If specified, each list element's name must be
 #' either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
@@ -85,12 +87,13 @@
 #' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
+#' @param ... Not used by end user.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+#'   predicted <- DataFrame(sample = sample(10, 100, replace = TRUE),
 #'                           class = rep(c("Healthy", "Cancer"), each = 50))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
 #'   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
@@ -132,10 +135,16 @@ standardGeneric("selectionPlot"))
 
 #' @rdname selectionPlot
 #' @export
+setMethod("selectionPlot", "ClassifyResult", function(results, ...) {
+    selectionPlot(list(assay = results), ...)
+})
+
+#' @rdname selectionPlot
+#' @export
 setMethod("selectionPlot", "list", 
           function(results,
                    comparison = "within", referenceLevel = NULL,
-                   characteristicsList = list(x = "Classifier Name"), coloursList = list(), orderingList = list(), binsList = list(),
+                   characteristicsList = list(x = "auto"), coloursList = list(), orderingList = list(), binsList = list(),
                    yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else if(comparison == "importance") "Variable Importance" else "Feature Selection Commonality",
                    yLabel = if(is.null(referenceLevel) && !comparison %in% c("size", "importance")) "Common Features (%)" else if(comparison == "size") "Set Size" else if(comparison == "importance") tail(names(results[[1]]@importance), 1) else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
@@ -148,6 +157,14 @@ setMethod("selectionPlot", "list",
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")              
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
+  if(characteristicsList[["x"]] == "auto")
+  {
+    characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
+    if(max(characteristicsCounts) == length(results))
+      characteristicsList[["x"]] <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
+    else
+      stop("No characteristic is present for all results but must be.")
+  }
   
   allFeaturesList <- lapply(results, function(result)
   {
@@ -236,12 +253,10 @@ setMethod("selectionPlot", "list",
                   } else {
                       summaryTable <- result@importance
                   }
-                 if("dataset" %in% colnames(summaryTable) && all(summaryTable[, "dataset"] == "dataset"))
-                   summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
-                 if("dataset" %in% colnames(summaryTable))
+                 if("assay" %in% colnames(summaryTable))
                  {
-                    summaryTable[, "feature"] <- paste(summaryTable[, "dataset"], summaryTable[, "feature"])
-                    summaryTable <- summaryTable[, -match("dataset", colnames(summaryTable))]
+                    summaryTable[, "feature"] <- paste(summaryTable[, "assay"], summaryTable[, "feature"])
+                    summaryTable <- summaryTable[, -match("assay", colnames(summaryTable))]
                   }
                   summaryTable
                 }))

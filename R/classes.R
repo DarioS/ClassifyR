@@ -12,96 +12,36 @@
 
 
 # Delete when sparsediscrim is restored to CRAN.
-#' Trained dlda Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name dlda-class
-#' @aliases dlda dlda-class
-#' @docType class
-#' @author Dario Strbenac
-#' @usage NULL
+# Trained dlda Object
 dlda <- function(x, ...) {
   UseMethod("dlda")
 }
-
 setOldClass("dlda")
 
-
-#' Trained pamr Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name pamrtrained-class
-#' @aliases pamrtrained pamrtrained-class
-#' @docType class
-#' @author Dario Strbenac
+# Trained pamr Object
 setOldClass("pamrtrained")
 
 
-#' Trained svm Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name svm-class
-#' @aliases svm svm-class
-#' @docType class
-#' @author Dario Strbenac
+# Trained svm Object
 setOldClass("svm")
 
-#' Trained multnet Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name multnet-class
-#' @aliases multnet multnet-class
-#' @docType class
-#' @author Dario Strbenac
+# Trained multnet Object
 setOldClass("multnet")
 
-#' @name coxnet-class
-#' @aliases coxnet coxnet-class
-#' @docType class
-#' @author Dario Strbenac
+# Trained coxnet Object
 setOldClass("coxnet")
 
-
-
-#' Trained randomForest Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name randomForest-class
-#' @aliases randomForest randomForest-class
-#' @docType class
-#' @author Dario Strbenac
+# Trained randomForest Object
 setOldClass("randomForest")
 
-
-#' Trained coxph Object
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name coxph-class
-#' @aliases coxph coxph-class
-#' @docType class
+# Trained coxph Object
 setOldClass("coxph")
 
-#' Survival Data Container
-#' 
-#' Enables S4 method dispatching on it.
-#' 
-#' 
-#' @name Surv-class
-#' @aliases Surv Surv-class
-#' @docType class
+# Survival Data Container
 setOldClass("Surv")
+
+# Survival Forest Data Container
+setOldClass("rfsrc")
 
 ################################################################################
 #
@@ -110,120 +50,26 @@ setOldClass("Surv")
 ################################################################################
 
 
-#' Union of A Function and NULL
-#' 
-#' Allows a slot to be either a function or empty.
-#' 
-#' 
-#' @name functionOrNULL-class
-#' @aliases functionOrNULL functionOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   PredictParams(NULL) # Training function does both tasks.
-#'   PredictParams(DLDApredictInterface)
-#' 
+# Union of A Function and NULL
 setClassUnion("functionOrNULL", c("function", "NULL"))
 
-#' Union of Functions and List of Functions
-#' 
-#' Allows a slot to be either a function or a list of functions.
-#' 
-#' 
-#' @name functionOrList-class
-#' @aliases functionOrList functionOrList-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   SelectParams(limmaRanking)
-#'   SelectParams(list(limmaRanking, differentMeansRanking)) # Ensemble selection.
-#' 
-setClassUnion("functionOrList", c("function", "list"))
+# Union of a Function and a List of Functions. Useful for allowing ensemble feature selection.
+setClassUnion("functionOrChraracterOrList", c("function", "character", "list"))
 
-
-#' Union of A Numeric Value and NULL
-#' 
-#' Allows a slot to be either a numeric value or empty. No constructor.
-#' 
-#' 
-#' @name numericOrNULL-class
-#' @aliases numericOrNULL numericOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
+# Union of A Numeric Value and NULL
 setClassUnion("numericOrNULL", c("numeric", "NULL"))
 
-
-#' Union of a Character and a DataFrame
-#' 
-#' Allows a slot to be either a character or a DataFrame.
-#' 
-#' 
-#' @name characterOrDataFrame-class
-#' @aliases characterOrDataFrame characterOrDataFrame-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   setClass("Selections", representation(features = "characterOrDataFrame"))
-#'   selections <- new("Selections", features = c("BRAF", "NRAS"))
-#'   featuresTable <- DataFrame(assay = c("RNA-seq", "Mass spectrometry"),
-#'                              feature = c("PD-1", "MITF"))
-#'   omicsSelections <- new("Selections", features = featuresTable)
+# Union of a Character and a DataFrame
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
-#' Union of a Surv class and a factor
-#' 
-#' Enables different functionality to be executed depending on whether
-#' input data dependent variable is survival or categorical classes.
-#' 
-#' 
-#' @name characterOrDataFrame-class
-#' @aliases characterOrDataFrame characterOrDataFrame-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   setClass("Selections", representation(features = "characterOrDataFrame"))
-#'   selections <- new("Selections", features = c("BRAF", "NRAS"))
-#'   featuresTable <- DataFrame(assay = c("RNA-seq", "Mass spectrometry"),
-#'                              feature = c("PD-1", "MITF"))
-#'   omicsSelections <- new("Selections", features = featuresTable)
+# Union of a Surv class and a factor for flexibility with sample outcome
 setClassUnion("factorOrSurv", c("factor", "Surv"))
 
-
-
-#' Union of a List and NULL
-#' 
-#' Allows a slot to be either a list or a NULL.
-#' 
-#' 
-#' @name listOrNULL-class
-#' @aliases listOrNULL listOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   setClass("EasyClassifier", representation(model = "listOrNULL"))
-#'   classifier <- new("EasyClassifier", model = NULL) # Optimistic classifier.
-#' 
+# Union of a List and NULL
 setClassUnion("listOrNULL", c("list", "NULL"))
 
-#' Union of NULL and DataFrame Class
-#' 
-#' Allows cross-validation to accept data as either a \code{DataFrame} (for a
-#' single data set) or \code{DataFrameList} (for a list of tables of related
-#' measurements, such as different projects measuring the same outcome and the
-#' same kind of measurements). No constructor.
-#' 
-#' 
-#' @name DataFrameOrNULL-class
-#' @aliases DataFrameOrNULL DataFrameOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
+# Union of NULL and DataFrame Class
 setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
-
 
 
 ################################################################################
@@ -234,6 +80,7 @@ setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 
 ##### CrossValParams #####
 
+# Parameters for Cross-validation Specification
 #' Parameters for Cross-validation Specification
 #' 
 #' Collects and checks necessary parameters required for cross-validation by
@@ -263,6 +110,10 @@ setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 #' \code{"Leave-k-Out"}. If set to 1, it is the traditional leave-one-out cross-validation,
 #' sometimes written as LOOCV.
 #' @param tuneMode Default: Resubstitution. The scheme to use for selecting any tuning parameters.
+#' @param adaptiveResamplingDelta Default: \code{NULL}. If not null, adaptive resampling of training
+#' samples is performed and this number is the difference in consecutive iterations that the
+#' class probability or risk of all samples must change less than for the iterative process to stop. 0.01
+#' was used in the original publication.
 #' @param parallelParams An instance of \code{\link{BiocParallelParam}} specifying
 #' the kind of parallelisation to use. Default is to use two cores less than the total number of
 #' cores the computer has, if it has four or more cores, otherwise one core, as is the
@@ -287,16 +138,17 @@ setClass("CrossValParams", representation(
     folds = "numericOrNULL",
     leave = "numericOrNULL",
     tuneMode = "character",
+    adaptiveResamplingDelta = "numericOrNULL",
     parallelParams = "BiocParallelParam"
 )
 )
 
-# CrossValParams constructor is an ordinary function for performance reasons.
+# CrossValParams constructor is an ordinary function and not S4 method for performance reasons.
 #' @export
 #' @rdname CrossValParams-class
 CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percentage Split", "Leave-k-Out", "k-Fold"),
                            permutations = 100, percentTest = 25, folds = 5, leave = 2,
-                           tuneMode = c("Resubstitution", "Nested CV", "none"), parallelParams = bpparam())
+                           tuneMode = c("Resubstitution", "Nested CV", "none"), adaptiveResamplingDelta = NULL, parallelParams = bpparam())
 {
   samplesSplits <- match.arg(samplesSplits)
   tuneMode <- match.arg(tuneMode)
@@ -319,45 +171,19 @@ CrossValParams <- function(samplesSplits = c("Permute k-Fold", "Permute Percenta
 
   new("CrossValParams", samplesSplits = samplesSplits, permutations = permutations,
       percentTest = percentTest, folds = folds, leave = leave, tuneMode = tuneMode,
-      parallelParams = parallelParams)
+      adaptiveResamplingDelta = adaptiveResamplingDelta, parallelParams = parallelParams)
 }
-
-
 
 ##### StageParams #####
 
-#' StageParams Virtual Class
-#' 
-#' A class for any one of \code{\link{TransformParams}},
-#' \code{\link{SelectParams}}, \code{\link{TrainParams}} or
-#' \code{\link{PredictParams}}. Allows a method to dispatch on any of the
-#' parameter objects specifying any stage of cross-validation.
-#' 
-#' 
-#' @name StageParams-class
-#' @aliases StageParams StageParams-class
-#' @author Dario Strbenac
+# StageParams Virtual Class. A class for any one of TransformParams,
+# SelectParams, TrainParams, PredictParams. Allows a method to dispatch on
+# any of the parameter objects specifying any stage of cross-validation.
+
 setClass("StageParams", representation("VIRTUAL"))
-
-
-#' Union of A StageParams Object and NULL
-#' @name StageParamsOrMissing-class
-#' @rdname StageParamsOrElse
-#' @aliases StageParamsOrMissing StageParamsOrMissing-class
-#' @author Dario Strbenac
 setClassUnion("StageParamsOrMissing", c("StageParams", "missing"))
 
-
-#' Union of A StageParams Object and NULL
-#' 
-#' StageParamsOrMissing: Allows a slot to be either a class that has StageParams as its virtual
-#' parent class or empty. No constructor.
-#' StageParamsOrMissingOrNULL: Allows a slot to be either a class that has StageParams as its virtual
-#' parent class or empty or NULL. No constructor.
-#' 
-#' @name StageParamsOrMissingOrNULL-class
-#' @rdname StageParamsOrElse
-#' @aliases StageParamsOrMissingOrNULL StageParamsOrMissingOrNULL-class
+# Union of a StageParams object and NULL for parameter that's optional.
 setClassUnion("StageParamsOrMissingOrNULL", c("StageParams", "missing", "NULL"))
 
 
@@ -370,36 +196,19 @@ setClass("TransformParams", representation(
   otherParams = "list"), contains = "StageParams"
 )
 
-#' Union of A TransformParams Object and NULL
-#' 
-#' Allows a slot to be either a TransformParams class object or empty. No
-#' constructor.
-#' 
-#' 
-#' @name TransformParamsOrNULL-class
-#' @aliases TransformParamsOrNULL TransformParamsOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   ModellingParams(transformParams = NULL)
-#'   ModellingParams(transformParams = TransformParams(subtractFromLocation),
-#'                   selectParams = SelectParams(leveneRanking))
-#' 
+# Union of a TransformParams object and NULL. 
 setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 
-
+# Parameters for Data Transformation within CV.
 #' Parameters for Data Transformation
 #' 
-#' Collects and checks necessary parameters required for transformation within CV. The
-#' empty constructor is for when no data transformation is desired. See
-#' \code{\link{subtractFromLocation}} for an example of such a function.
+#' Collects and checks necessary parameters required for transformation within CV.
 #' 
 #' 
 #' @name TransformParams
 #' @rdname TransformParams-class
 #' @aliases TransformParams TransformParams-class TransformParams,ANY-method
-#' TransformParams,function-method show,TransformParams-method
+#' TransformParams,character-method show,TransformParams-method
 #' @docType class
 #' @usage NULL
 #' @section Constructor:
@@ -409,8 +218,8 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 #' Creates a \code{TransformParams} object which stores the function which will do the
 #' transformation and parameters that the function will use.
 #' \describe{
-#' \item{\code{transform}}{A function which will do the transformation. The
-#' first argument must be a \code{\link{DataFrame}} object.}
+#' \item{\code{transform}}{A character keyword referring to a registered transformation function. See \code{\link{available}}
+#' for valid keywords.}
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of data transformation to be done. First column must be
 #' named \code{"charateristic"} and second column must be named \code{"value"}.
@@ -433,7 +242,7 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   transformParams <- TransformParams(subtractFromLocation, location = "median")
+#'   transformParams <- TransformParams("diffLoc", location = "median")
 #'   # Subtract all values from training set median, to obtain absolute deviations.
 #' 
 #' @export
@@ -444,19 +253,19 @@ standardGeneric("TransformParams"))
 #' @rdname TransformParams-class
 #' @usage NULL
 #' @export
-setMethod("TransformParams", "function",
+setMethod("TransformParams", "character",
           function(transform, characteristics = S4Vectors::DataFrame(), intermediate = character(0), ...)
           {
+            transform <- .transformKeywordToFunction(transform)
             if(ncol(characteristics) == 0 || !"Transform Name" %in% characteristics[, "characteristic"])
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == transform@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Transform Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(transform, "name"), "name"]))
             }
             new("TransformParams", transform = transform, characteristics = characteristics,
                 intermediate = intermediate, otherParams = list(...))
           })
 
 #' @usage NULL
-#' @rdname TransformParams-class
 #' @export
 setMethod("show", "TransformParams",
           function(object)
@@ -479,6 +288,7 @@ setMethod("show", "TransformParams",
 ##### FeatureSetCollection #####
 #' @docType class
 #' @exportClass FeatureSetCollection
+#' @rdname FeatureSetCollection
 setClass("FeatureSetCollection", representation(sets = "list"))
 #'
 #' Container for Storing A Collection of Sets
@@ -588,6 +398,7 @@ setMethod("length", c("FeatureSetCollection"),
 })
 
 #' @usage NULL
+#' @rdname FeatureSetCollection
 #' @export
 setMethod("show", "FeatureSetCollection",
           function(object)
@@ -660,41 +471,25 @@ setMethod("show", "FeatureSetCollection",
           }
 )
 
-#' @usage NULL
 #' @export
+#' @usage NULL
 setMethod("[", c("FeatureSetCollection", "numeric", "missing", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {
     new("FeatureSetCollection", sets = x@sets[i])
 })
 
-#' @usage NULL
 #' @export
+#' @usage NULL
 setMethod("[[", c("FeatureSetCollection", "ANY", "missing"),
     function(x, i, j, ...)
 {
     x@sets[[i]]
 })
 
-
-#' Union of a FeatureSetCollection and NULL
-#' 
-#' Allows a slot to be either a FeatureSetCollectionOrNULL object or empty.
-#' 
-#' 
-#' @name FeatureSetCollectionOrNULL-class
-#' @aliases FeatureSetCollectionOrNULL FeatureSetCollectionOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   TrainParams(DLDAtrainInterface, transform = NULL) # Use the input data as-is.
-#' 
 setClassUnion("FeatureSetCollectionOrNULL", c("FeatureSetCollection", "NULL"))
-
-
-
-
+setClassUnion("functionOrList", c("function", "list"))
+setClassUnion("characterOrList", c("character", "list"))
 
 ##### SelectParams #####
 
@@ -709,25 +504,9 @@ setClass("SelectParams", representation(
   otherParams = "listOrNULL"), contains = "StageParams"
 )
 
-
-#' Union of A SelectParams Object and NULL
-#' 
-#' Allows a slot to be either a SelectParams class object or empty. No
-#' constructor.
-#' 
-#' 
-#' @name SelectParamsOrNULL-class
-#' @aliases SelectParamsOrNULL SelectParamsOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   ModellingParams(selectParams = NULL)
-#'   ModellingParams(selectParams = SelectParams(differentMeansRanking))
-#' 
 setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 
-
+# Parameters for Feature Selection
 #' Parameters for Feature Selection
 #' 
 #' Collects and checks necessary parameters required for feature selection.
@@ -738,23 +517,16 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' @name SelectParams
 #' @rdname SelectParams-class
 #' @aliases SelectParams SelectParams-class SelectParams,missing-method
-#' SelectParams,functionOrList-method
+#' SelectParams,characterOrList-method
 #' @docType class
 #' @section Constructor:
-#' \describe{ \item{}{
-#' \code{SelectParams()} Creates a default \code{SelectParams} object. This uses either
-#' an ordinary t-test or ANOVA (depending on the number of classes) and tries the
-#' top 10 to top 100 features in increments of 10, and picks the number of features
-#' with the best resubstitution balanced error rate. Users should create an appropriate
-#' \code{SelectParams} object for the characteristics of their data.}
-#' \item{}{\preformatted{SelectParams(featureSelection, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
+#' \describe{
+#' \item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
 #' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
 #' object which stores the function(s) which will do the selection and parameters that the
 #' function will use.
-#' \describe{\item{\code{featureRanking}}{Either a function which will rank the features
-#' from most promising to least promising or a list of such functions. For a particular function,
-#' the first argument must be an \code{\link{DataFrame}} object. The function's return value must
-#' be a vector of indices.}
+#' \describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}
+#' for valid keywords.}
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
 #' of feature selection to be done. First column must be named \code{"charateristic"} and
 #' second column must be named \code{"value"}. If using wrapper functions for feature
@@ -786,10 +558,10 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' 
 #'   #if(require(sparsediscrim))
 #'   #{
-#'     SelectParams(differentMeansRanking)
+#'     SelectParams("KS")
 #'     
 #'     # Ensemble feature selection.
-#'     SelectParams(list(differentMeansRanking, pairsDifferencesRanking))
+#'     SelectParams(list("Bartlett", "Levene"))
 #'   #}
 #' 
 #' @export
@@ -800,27 +572,18 @@ standardGeneric("SelectParams"))
 #' @rdname SelectParams-class
 #' @usage NULL
 #' @export
-setMethod("SelectParams", "missing", function()
-{
-  new("SelectParams", featureRanking = differentMeansRanking,
-      characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "Difference in Means"),
-      minPresence = 1, intermediate = character(0), subsetToSelections = TRUE,
-      tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"))
-})
-#' @rdname SelectParams-class
-#' @usage NULL
-#' @export
-setMethod("SelectParams", c("functionOrList"),
+setMethod("SelectParams", c("characterOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
                    intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
           {
+            if(is.character(featureRanking)) featureRanking <- .selectionKeywordToFunction(featureRanking) else featureRanking <- lapply(featureRanking, .selectionKeywordToFunction)
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == featureRanking@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Selection Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(featureRanking, "name"), "name"]))
             }
             if(is.list(featureRanking) && (ncol(characteristics) == 0 || !"Ensemble Selection" %in% characteristics[, "characteristic"]))
             {
-              selectMethodNames <- unlist(lapply(featureRanking, function(rankingFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == rankingFunction@generic, "name"]))
+              selectMethodNames <- unlist(lapply(featureRanking, function(rankingFunction) .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(rankingFunction, "name"), "name"]))
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Ensemble Selection", value = paste(selectMethodNames, collapse = ", ")))
             }
             others <- list(...)
@@ -831,7 +594,7 @@ setMethod("SelectParams", c("functionOrList"),
                 tuneParams = tuneParams, otherParams = others)
           })
 
-#' @usage NULL
+#' @usage NULL 
 #' @rdname SelectParams-class
 #' @export
 setMethod("show", "SelectParams",
@@ -855,9 +618,6 @@ setMethod("show", "SelectParams",
             }
           })
 
-
-
-
 ##### TrainParams #####
 
 #' @exportClass TrainParams
@@ -867,43 +627,27 @@ setClass("TrainParams", representation(
   intermediate = "character",
   tuneParams = "listOrNULL",
   otherParams = "listOrNULL",
-  getFeatures = "functionOrNULL"
-), contains = "StageParams"
-)
-
+  getFeatures = "functionOrNULL"), contains = "StageParams")
 
 #' Parameters for Classifier Training
 #' 
 #' Collects and checks necessary parameters required for classifier training.
 #' The empty constructor is provided for convenience.
 #' 
-#' 
 #' @name TrainParams
 #' @rdname TrainParams-class
 #' @aliases TrainParams TrainParams-class TrainParams,missing-method
-#' TrainParams,function-method show,TrainParams-method
+#' TrainParams,characterOrFunction-method show,TrainParams-method
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{}{\code{TrainParams()} Creates a default \code{TrainParams} object.
-#' The classifier function is \code{dlda} for Diagonal LDA. Users should create
-#' an appropriate \code{TrainParams} object for the characteristics of their data,
-#' once they are familiar with this software.}
 #' \item{}{\preformatted{TrainParams(classifier, characteristics = DataFrame(),
 #' intermediate = character(0), getFeatures = NULL, ...)}
 #' Creates a \code{TrainParams} object which stores the function which will do the
 #' classifier building and parameters that the function will use.
 #' \describe{
-#' \item{\code{classifier}}{A function which will construct a classifier, and
-#' also possibly make the predictions. The first argument must be a
-#' \code{\link{DataFrame}} object. The second argument must be a vector of
-#' classes. If the function also makes predictions and the value of the
-#' \code{predictor} setting of \code{PredictParams} is therefore \code{NULL},
-#' the third argument must be a \code{DataFrame} of test data. The function
-#' must also accept a parameter named \code{verbose}. The function's return
-#' value can be either a trained classifier if the function only does training
-#' or a vector or data frame of class predictions if it also does prediction
-#' with the test set samples.}
+#' \item{\code{classifier}}{A character keyword referring to a registered classifier. See \code{\link{available}}
+#' for valid keywords.}
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of the classifier used. First column must be named \code{"charateristic"}
 #' and second column must be named \code{"value"}. If using wrapper functions for classifiers
@@ -929,31 +673,24 @@ setClass("TrainParams", representation(
 #' @examples
 #' 
 #' #if(require(sparsediscrim))
-#'   trainParams <- TrainParams(DLDAtrainInterface)
+#'   trainParams <- TrainParams("DLDA")
 #' 
 #' @usage NULL
 #' @export
 setGeneric("TrainParams", function(classifier, ...) standardGeneric("TrainParams"))
+setClassUnion("characterOrFunction", c("character", "function"))
 
 #' @usage NULL
 #' @rdname TrainParams-class
 #' @export
-setMethod("TrainParams", "missing", function()
-{
-  new("TrainParams", classifier = DLDAtrainInterface,
-      characteristics = S4Vectors::DataFrame(characteristic = "Classifier Name", value = "Diagonal LDA"),
-      intermediate = character(0), getFeatures = NULL)
-})
-
-#' @usage NULL
-#' @rdname TrainParams-class
-#' @export
-setMethod("TrainParams", c("function"),
+setMethod("TrainParams", c("characterOrFunction"),
           function(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(), intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)
           {
+            if(is.character(classifier))              
+              classifier <- .classifierKeywordToParams(classifier)[[1]]@classifier # Training function.              
             if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
             {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == classifier@generic, "name"]))
+              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(classifier, "name"), "name"]))
             }
             new("TrainParams", classifier = classifier, characteristics = characteristics,
                 intermediate = intermediate, getFeatures = getFeatures, tuneParams = tuneParams,
@@ -961,7 +698,6 @@ setMethod("TrainParams", c("function"),
           })
 
 #' @usage NULL
-#' @export
 setMethod("show", "TrainParams",
           function(object)
           {
@@ -978,20 +714,13 @@ setMethod("show", "TrainParams",
                 cat(otherInfo[rowIndex, "characteristic"], ": ", otherInfo[rowIndex, "value"], ".\n", sep = '')
               }
             }
-
-            if(!is.null(object@getFeatures))
-              cat("Selected Features Extracted By: ", object@getFeatures@generic, ".\n", sep = '')
           })
-
-
-
-
 
 ##### PredictParams #####
 
 #' @exportClass PredictParams
 setClass("PredictParams", representation(
-  predictor = "functionOrNULL",
+  predictor = "function",
   characteristics = "DataFrame",  
   intermediate = "character",
   otherParams = "listOrNULL"), contains = "StageParams"
@@ -1011,26 +740,23 @@ setClass("PredictParams", representation(
 #' @name PredictParams
 #' @rdname PredictParams-class
 #' @aliases PredictParams PredictParams-class PredictParams,missing-method
-#' PredictParams,functionOrNULL-method show,PredictParams-method
+#' PredictParams,characterOrFunction-method show,PredictParams-method
 #' @docType class
-#' @section Constructor: \describe{ \item{}{ \code{PredictParams()} Creates a
-#' default PredictParams object. This assumes that the object returned by the
-#' classifier has a list element named \code{"class"}.  } \item{}{
+#' @section Constructor: \describe{\item{}{
 #' \code{PredictParams(predictor, characteristics = DataFrame(), intermediate =
 #' character(0), ...)} Creates a PredictParams object which stores the function
 #' which will do the class prediction, if required, and parameters that the
 #' function will use. If the training function also makes predictions, this
-#' must be set to \code{NULL}.  } \describe{ \item{\code{predictor}}{Either
-#' \code{NULL} or a function to make predictions with. If it is a function,
-#' then the first argument must accept the classifier made in the training
-#' step.  The second argument must accept a \code{\link{DataFrame}} of new
-#' data.} \item{\code{characteristics}}{A \code{\link{DataFrame}} describing
+#' must be set to \code{NULL}.}
+#' \describe{ \item{\code{predictor}}{A character keyword referring to a registered classifier. See \code{\link{available}}
+#' for valid keywords.}
+#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing
 #' the characteristics of the predictor function used. First column must be
-#' named \code{"charateristic"} and second column must be named
-#' \code{"value"}.} \item{\code{intermediate}}{Character vector. Names of any
+#' named \code{"charateristic"} and second column must be named \code{"value"}.}
+#' \item{\code{intermediate}}{Character vector. Names of any
 #' variables created in prior stages in \code{\link{runTest}} that need to be
-#' passed to the prediction function.} \item{\code{...}}{Other arguments that
-#' \code{predictor} may use.} } }
+#' passed to the prediction function.}
+#' \item{\code{...}}{Other arguments that \code{predictor} may use.} } }
 #' @section Summary:
 #' \code{predictParams} is a \code{PredictParams} object.
 #' \describe{
@@ -1040,11 +766,8 @@ setClass("PredictParams", representation(
 #' @author Dario Strbenac
 #' @examples
 #' 
-#' predictParams <- PredictParams(predictor = DLDApredictInterface)
 #' # For prediction by trained object created by DLDA training function.
-#' PredictParams(predictor = NULL)
-#' # For when the training function also does prediction and directly returns the
-#' # predictions.
+#' predictParams <- PredictParams("DLDA")
 #' 
 #' @export
 #' @usage NULL
@@ -1054,25 +777,11 @@ standardGeneric("PredictParams"))
 #' @usage NULL
 #' @rdname PredictParams-class
 #' @export
-setMethod("PredictParams", "missing", function()
-{
-  new("PredictParams", predictor = DLDApredictInterface,
-      characteristics = S4Vectors::DataFrame(characteristic = "Predictor Name", value = "Diagonal LDA"),
-      intermediate = character(0), otherParams = NULL)
-})
-
-#' @usage NULL
-#' @rdname PredictParams-class
-#' @export
-setMethod("PredictParams", c("functionOrNULL"),
+setMethod("PredictParams", c("characterOrFunction"),
           function(predictor, characteristics = DataFrame(), intermediate = character(0), ...)
           {
-            if(missing(predictor))
-              stop("Either a function or NULL must be specified by 'predictor'.")
-            if(!is.null(predictor) && (ncol(characteristics) == 0 || !"Predictor Name" %in% characteristics[, "characteristic"]))
-            {
-              characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Predictor Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == predictor@generic, "name"]))
-            }
+            if(is.character(predictor))              
+              predictor <- .classifierKeywordToParams(predictor)[[2]]@predictor # Prediction function.
             others <- list(...)
             if(length(others) == 0) others <- NULL
             new("PredictParams", predictor = predictor, characteristics = characteristics,
@@ -1080,7 +789,6 @@ setMethod("PredictParams", c("functionOrNULL"),
           })
 
 #' @usage NULL
-#' @export
 setMethod("show", "PredictParams",
           function(object)
           {
@@ -1104,26 +812,6 @@ setMethod("show", "PredictParams",
               cat("Prediction is done by function specified to TrainParams.\n")
           })
 
-
-
-
-
-
-#' Union of A PredictParams Object and NULL
-#' 
-#' Allows a slot to be either a PredictParams class object or empty. No
-#' constructor. In other words, the training function specified also makes
-#' predictions with the test set.
-#' 
-#' 
-#' @name PredictParamsOrNULL
-#' @aliases PredictParamsOrNULL PredictParamsOrNULL-class
-#' @docType class
-#' @author Dario Strbenac
-#' @examples
-#' 
-#'   ModellingParams(trainParams = TrainParams(kNNinterface, k = 5), predictParams = NULL)
-#' 
 setClassUnion("PredictParamsOrNULL", c("PredictParams", "NULL"))
 
 #' @exportClass ModellingParams
@@ -1142,7 +830,7 @@ setClass("ModellingParams", representation(
 #' 
 #' Collects and checks necessary parameters required for data modelling. Apart
 #' from data transfomation that needs to be done within cross-validation (e.g.
-#' \code{\link{subtractFromLocation}}), feature selection, model training and
+#' subtracting each observation from training set mean), feature selection, model training and
 #' prediction, this container also stores a setting for class imbalance
 #' rebalancing.
 #' 
@@ -1171,13 +859,13 @@ setClass("ModellingParams", representation(
 #'   #{
 #'      ModellingParams() # Default is differences in means selection and DLDA.
 #'      ModellingParams(selectParams = NULL, # No feature selection before training.
-#'                      trainParams = TrainParams(randomForestTrainInterface),
-#'                      predictParams = PredictParams(randomForestPredictInterface))
+#'                      trainParams = TrainParams("randomForest"),
+#'                      predictParams = PredictParams("randomForest"))
 #'   #}
 #' @export
 ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
-                            transformParams = NULL, selectParams = SelectParams(),
-                            trainParams = TrainParams(), predictParams = PredictParams(),
+                            transformParams = NULL, selectParams = SelectParams("t-test"),
+                            trainParams = TrainParams("DLDA"), predictParams = PredictParams("DLDA"),
                             doImportance = FALSE)
 {
   balancing <- match.arg(balancing)
@@ -1186,16 +874,6 @@ ModellingParams <- function(balancing = c("downsample", "upsample", "none"),
       doImportance = doImportance)
 }
 
-
-#' Union of A ModellingParams Object and NULL
-#' 
-#' Allows a slot to be either a ModellingParams class object or empty. No
-#' constructor.
-#' 
-#' 
-#' @name ModellingParamsOrNULL-class
-#' @aliases ModellingParamsOrNULL ModellingParamsOrNULL-class
-#' @docType class
 setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 
 
@@ -1207,16 +885,15 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' classes, the identifiers of features selected for each fold of each
 #' permutation or each hold-out classification, and performance metrics such as
 #' error rates. This class is not intended to be created by the user. It is
-#' created by \code{\link{runTest}} or \code{\link{runTests}}.
+#' created by \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}}.
 #' 
 #' @name ClassifyResult
 #' @rdname ClassifyResult-class
 #' @aliases ClassifyResult ClassifyResult-class
 #' ClassifyResult,DataFrame,character,characterOrDataFrame-method
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
-#' allFeatureNames allFeatureNames,ClassifyResult-method
-#' predictions predictions,ClassifyResult-method actualOutcomes
-#' actualOutcomes,ClassifyResult-method features features,ClassifyResult-method
+#' predictions predictions,ClassifyResult-method actualOutcome
+#' actualOutcome,ClassifyResult-method features features,ClassifyResult-method
 #' models models,ClassifyResult-method performance
 #' performance,ClassifyResult-method tunedParameters
 #' tunedParameters,ClassifyResult-method totalPredictions
@@ -1225,7 +902,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' 
 #' @section Constructor:
 #' \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
+#'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 #' \describe{
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of classification done. First column must be named
@@ -1237,15 +914,13 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{originalFeatures}}{All feature names. Character vector
 #' or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
 #' of measurements on the same set of samples.}
-#' \item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-#' or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 #' \item{\code{chosenFeatures}}{Features selected at each fold. Character
 #' vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 #' \item{\code{models}}{All of the models fitted to the training data.}
 #' \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}
 #' \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 #' cross-validation iteration in which the prediction was made.}
-#' \item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+#' \item{\code{actualOutcome}}{The known class or survival data of each sample.}
 #' \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 #' \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 #' \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
@@ -1264,9 +939,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \describe{
 #' \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
 #' \describe{
-#' \item{\code{allFeatureNames(result)}}{Returns a vector of features present in the data set.}}
-#' \describe{
-#' \item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
+#' \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 #' \describe{
 #' \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
 #' \describe{
@@ -1291,21 +964,14 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #'   #if(require(sparsediscrim))
 #'   #{
 #'     data(asthma)
-#'     
-#'     LOOCVparams <- CrossValParams("Leave-k-Out", leave = 1)
-#'     modellingParams <- ModellingParams()
-#'     classified <-
-#'     runTests(measurements, classes, LOOCVparams, modellingParams,
-#'              DataFrame(characteristic = c("dataset", "classification"),
-#'                       value = c("Asthma", "Different Means"))
-#'              )
+#'     classified <- crossValidate(measurements, classes)
 #'     class(classified)
 #'   #}
 #'   
 #' @importFrom S4Vectors as.data.frame
 #' @usage NULL
 #' @export
-setGeneric("ClassifyResult", function(characteristics, originalNames, originalFeatures, ...)
+setGeneric("ClassifyResult", function(characteristics, originalNames, ...)
 standardGeneric("ClassifyResult"))
 
 #' @rdname ClassifyResult-class
@@ -1313,13 +979,13 @@ standardGeneric("ClassifyResult"))
 setClass("ClassifyResult", representation(
   characteristics = "DataFrame",
   originalNames = "character",
-  originalFeatures = "characterOrDataFrame",
+  originalFeatures = "characterOrDataFrame",    
   rankedFeatures = "listOrNULL",
   chosenFeatures = "listOrNULL",
-  actualOutcomes = "factorOrSurv",
+  actualOutcome = "factorOrSurv",
   models = "list",
   tune = "listOrNULL",
-  predictions = "data.frame",
+  predictions = "DataFrame",
   performance = "listOrNULL",
   importance = "DataFrameOrNULL",
   modellingParams = "ModellingParamsOrNULL",
@@ -1328,15 +994,14 @@ setClass("ClassifyResult", representation(
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("ClassifyResult", c("DataFrame", "character", "characterOrDataFrame"),
+setMethod("ClassifyResult", c("DataFrame", "character"),
           function(characteristics, originalNames, originalFeatures,
-                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)
+                   rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)
           {
-            new("ClassifyResult", characteristics = characteristics,
-                originalNames = originalNames, originalFeatures = originalFeatures,
+            new("ClassifyResult", characteristics = characteristics, originalNames = originalNames, originalFeatures = originalFeatures,
                 rankedFeatures = rankedFeatures, chosenFeatures = chosenFeatures,
                 models = models, tune = tunedParameters,
-                predictions = predictions, actualOutcomes = actualOutcomes, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
+                predictions = predictions, actualOutcome = actualOutcome, importance = importance, modellingParams = modellingParams, finalModel = finalModel)
           })
 
 #' @usage NULL
@@ -1371,7 +1036,7 @@ standardGeneric("sampleNames"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("sampleNames", c("ClassifyResult"),
+setMethod("sampleNames", "ClassifyResult",
           function(object)
           {
             object@originalNames
@@ -1401,7 +1066,7 @@ standardGeneric("chosenFeatureNames"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("chosenFeatureNames", c("ClassifyResult"),
+setMethod("chosenFeatureNames", "ClassifyResult",
           function(object)
           {
             object@chosenFeatures
@@ -1415,7 +1080,7 @@ standardGeneric("models"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("models", c("ClassifyResult"),
+setMethod("models", "ClassifyResult",
           function(object)
           {
             object@models
@@ -1429,7 +1094,7 @@ standardGeneric("predictions"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("predictions", c("ClassifyResult"),
+setMethod("predictions", "ClassifyResult",
           function(object)
           {
             object@predictions
@@ -1443,7 +1108,7 @@ standardGeneric("performance"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("performance", c("ClassifyResult"),
+setMethod("performance", "ClassifyResult",
           function(object)
           {
             object@performance
@@ -1451,16 +1116,16 @@ setMethod("performance", c("ClassifyResult"),
 
 #' @export
 #' @usage NULL
-setGeneric("actualOutcomes", function(object, ...)
-standardGeneric("actualOutcomes"))
+setGeneric("actualOutcome", function(object, ...)
+standardGeneric("actualOutcome"))
 
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("actualOutcomes", c("ClassifyResult"),
+setMethod("actualOutcome", "ClassifyResult",
           function(object)
           {
-            object@actualOutcomes
+            object@actualOutcome
           })
 
 #' @export
@@ -1484,7 +1149,7 @@ standardGeneric("totalPredictions"))
 #' @rdname ClassifyResult-class
 #' @usage NULL
 #' @export
-setMethod("totalPredictions", c("ClassifyResult"),
+setMethod("totalPredictions", "ClassifyResult",
           function(result)
           {
               nrow(predictions(result))

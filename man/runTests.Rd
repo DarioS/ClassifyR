@@ -7,18 +7,18 @@
 \alias{runTests,MultiAssayExperiment-method}
 \title{Reproducibly Run Various Kinds of Cross-Validation}
 \usage{
-\S4method{runTests}{matrix}(measurements, outcomes, ...)
+\S4method{runTests}{matrix}(measurements, outcome, ...)
 
 \S4method{runTests}{DataFrame}(
   measurements,
-  outcomes,
+  outcome,
   crossValParams = CrossValParams(),
   modellingParams = ModellingParams(),
   characteristics = S4Vectors::DataFrame(),
   verbose = 1
 )
 
-\S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomesColumns, ...)
+\S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomeColumns, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -30,7 +30,7 @@ are features.}
 \code{MultiAssayExperiment} method which are passed into and used by the
 \code{DataFrame} method.}
 
-\item{outcomes}{Either a factor vector of classes, a \code{\link{Surv}} object, or
+\item{outcome}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
 containing either classes or time and event information about survival.}
 
@@ -57,9 +57,9 @@ more lower-level functions print messages.}
 names of the data tables to be used. \code{"clinical"} is also a valid value
 and specifies that the clinical data table will be used.}
 
-\item{outcomesColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
+\item{outcomeColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-that contain(s)s the samples' outcomes to use for prediction.}
+that contain(s)s the samples' outcome to use for prediction.}
 }
 \value{
 An object of class \code{\link{ClassifyResult}}.
@@ -77,10 +77,10 @@ parallel is possible by leveraging the package \code{\link{BiocParallel}}.
     
     CVparams <- CrossValParams(permutations = 5)
     tuneList <- list(nFeatures = seq(5, 25, 5), performanceType = "Balanced Error")
-    selectParams <- SelectParams(differentMeansRanking, tuneParams = tuneList)
+    selectParams <- SelectParams("t-test", tuneParams = tuneList)
     modellingParams <- ModellingParams(selectParams = selectParams)
     runTests(measurements, classes, CVparams, modellingParams,
-             DataFrame(characteristic = c("Dataset Name", "Classifier Name"),
+             DataFrame(characteristic = c("Assay Name", "Classifier Name"),
                        value = c("Asthma", "Different Means"))
              )
   #}

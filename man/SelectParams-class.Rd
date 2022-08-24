@@ -5,7 +5,7 @@
 \alias{SelectParams}
 \alias{SelectParams-class}
 \alias{SelectParams,missing-method}
-\alias{SelectParams,functionOrList-method}
+\alias{SelectParams,characterOrList-method}
 \alias{show,SelectParams-method}
 \title{Parameters for Feature Selection}
 \description{
@@ -15,20 +15,13 @@ feature selection. The empty constructor is provided for convenience.
 }
 \section{Constructor}{
 
-\describe{ \item{}{
-\code{SelectParams()} Creates a default \code{SelectParams} object. This uses either
-an ordinary t-test or ANOVA (depending on the number of classes) and tries the
-top 10 to top 100 features in increments of 10, and picks the number of features
-with the best resubstitution balanced error rate. Users should create an appropriate
-\code{SelectParams} object for the characteristics of their data.}
-\item{}{\preformatted{SelectParams(featureSelection, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
+\describe{
+\item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
 subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
 object which stores the function(s) which will do the selection and parameters that the
 function will use.
-\describe{\item{\code{featureRanking}}{Either a function which will rank the features
-from most promising to least promising or a list of such functions. For a particular function,
-the first argument must be an \code{\link{DataFrame}} object. The function's return value must
-be a vector of indices.}
+\describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}
+for valid keywords.}
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
 of feature selection to be done. First column must be named \code{"charateristic"} and
 second column must be named \code{"value"}. If using wrapper functions for feature
@@ -64,10 +57,10 @@ this must be a list of lists, as long as \code{featureSelection}.} } } }
 
   #if(require(sparsediscrim))
   #{
-    SelectParams(differentMeansRanking)
+    SelectParams("KS")
     
     # Ensemble feature selection.
-    SelectParams(list(differentMeansRanking, pairsDifferencesRanking))
+    SelectParams(list("Bartlett", "Levene"))
   #}
 
 }

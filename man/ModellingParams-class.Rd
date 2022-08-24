@@ -9,9 +9,9 @@
 ModellingParams(
   balancing = c("downsample", "upsample", "none"),
   transformParams = NULL,
-  selectParams = SelectParams(),
-  trainParams = TrainParams(),
-  predictParams = PredictParams(),
+  selectParams = SelectParams("t-test"),
+  trainParams = TrainParams("DLDA"),
+  predictParams = PredictParams("DLDA"),
   doImportance = FALSE
 )
 }
@@ -39,7 +39,7 @@ also be set to TRUE, if required. Modelling run time will be noticeably longer.}
 \description{
 Collects and checks necessary parameters required for data modelling. Apart
 from data transfomation that needs to be done within cross-validation (e.g.
-\code{\link{subtractFromLocation}}), feature selection, model training and
+subtracting each observation from training set mean), feature selection, model training and
 prediction, this container also stores a setting for class imbalance
 rebalancing.
 }
@@ -49,8 +49,8 @@ rebalancing.
   #{
      ModellingParams() # Default is differences in means selection and DLDA.
      ModellingParams(selectParams = NULL, # No feature selection before training.
-                     trainParams = TrainParams(randomForestTrainInterface),
-                     predictParams = PredictParams(randomForestPredictInterface))
+                     trainParams = TrainParams("randomForest"),
+                     predictParams = PredictParams("randomForest"))
   #}
 }
 \author{

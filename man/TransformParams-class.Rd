@@ -5,13 +5,11 @@
 \alias{TransformParams}
 \alias{TransformParams-class}
 \alias{TransformParams,ANY-method}
-\alias{TransformParams,function-method}
+\alias{TransformParams,character-method}
 \alias{show,TransformParams-method}
 \title{Parameters for Data Transformation}
 \description{
-Collects and checks necessary parameters required for transformation within CV. The
-empty constructor is for when no data transformation is desired. See
-\code{\link{subtractFromLocation}} for an example of such a function.
+Collects and checks necessary parameters required for transformation within CV.
 }
 \section{Constructor}{
 
@@ -21,8 +19,8 @@ empty constructor is for when no data transformation is desired. See
 Creates a \code{TransformParams} object which stores the function which will do the
 transformation and parameters that the function will use.
 \describe{
-\item{\code{transform}}{A function which will do the transformation. The
-first argument must be a \code{\link{DataFrame}} object.}
+\item{\code{transform}}{A character keyword referring to a registered transformation function. See \code{\link{available}}
+for valid keywords.}
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 characteristics of data transformation to be done. First column must be
 named \code{"charateristic"} and second column must be named \code{"value"}.
@@ -47,7 +45,7 @@ function.}
 
 \examples{
 
-  transformParams <- TransformParams(subtractFromLocation, location = "median")
+  transformParams <- TransformParams("diffLoc", location = "median")
   # Subtract all values from training set median, to obtain absolute deviations.
 
 }

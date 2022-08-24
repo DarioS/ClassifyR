@@ -1,33 +1,20 @@
-
 setClass("pcaModel", slots = list(fullModel = "list"))
 
-
-setGeneric("pcaTrainInterface", function(measurements, classes, ...)
-{
-    standardGeneric("pcaTrainInterface")
-})
-
-
-setMethod("pcaTrainInterface", "DFrame",
-          function(measurements,
-                   classes,
-                   params,
-                   nFeatures,
-                   ...)
+pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
           {
               
               ###
               # Splitting measurements into a list of each of the datasets
               ###
-              assayTrain <- sapply(unique(mcols(measurements)[["dataset"]]), function(x) measurements[,mcols(measurements)[["dataset"]]%in%x], simplify = FALSE)
+              assayTrain <- sapply(unique(mcols(measurements)[["assay"]]), function(assay) measurements[, mcols(measurements)[["assay"]] %in% assay], simplify = FALSE)
               
-              if(! "clinical" %in% names(assayTrain)) stop("Must have a dataset called `clinical`")
+              if(!"clinical" %in% names(assayTrain)) stop("Must have an assay called \"clinical\".")
               
               # Create generic crossValParams just to get things working, might be used for optimising features in runTest later???
               CVparams <- CrossValParams(permutations = 1, folds = 10, parallelParams = SerialParam(RNGseed = .Random.seed[1]), tuneMode = "Resubstitution") 
               
               ###
-              # Run PCA for all datasets except clinical
+              # Run PCA for all assays except clinical
               ###
               usePCA<- names(assayTrain)[names(assayTrain)!="clinical"]
               assayPCA <- sapply(assayTrain[usePCA], function(assay){
@@ -50,7 +37,7 @@ setMethod("pcaTrainInterface", "DFrame",
               ###
               
               pcaVar <- S4Vectors::DataFrame(pcaVar)
-              mcols(pcaVar)$dataset = "pca"
+              mcols(pcaVar)$assay = "PCA"
               mcols(pcaVar)$feature = colnames(pcaVar)
             
               fullTrain = cbind(assayTrain[["clinical"]], pcaVar)
@@ -69,9 +56,9 @@ setMethod("pcaTrainInterface", "DFrame",
               
               runTestOutput = runTest(
                   fullTrain,
-                  classes = classes,
-                  training = seq_len(nrow(fullTrain)),
-                  testing = seq_len(nrow(fullTrain)),
+                  classes,
+                  fullTrain,
+                  classes,
                   modellingParams = finalModParam,
                   crossValParams = CVparams,
                   .iteration = 1,
@@ -92,32 +79,15 @@ setMethod("pcaTrainInterface", "DFrame",
               fullModel$modellingParams <- finalModParam
               fullModel <- new("pcaModel", fullModel = list(fullModel))
               fullModel
-              
-          })
+          }
 
-
-
-
-
-setGeneric("pcaPredictInterface", function(fullModel, test, ...)
-{
-    standardGeneric("pcaPredictInterface")
-})
-
-
-setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
-          function(fullModel,
-                   test,
-                   ...,
-                   returnType = "both",
-                   verbose = 0
-          )
+pcaPredictInterface <- function(fullModel, test, ..., returnType = "both", verbose = 0)
           {
               # Pull out my classification model
               fullModel <- fullModel@fullModel[[1]]
               
-              #Split my test data into a list of the different datasets
-              assayTest <- sapply(unique(mcols(test)[["dataset"]]), function(x) test[,mcols(test)[["dataset"]]%in%x], simplify = FALSE)
+              #Split my test data into a list of the different assays
+              assayTest <- sapply(unique(mcols(test)[["assay"]]), function(assay) test[, mcols(test)[["assay"]] %in% assay], simplify = FALSE)
               
               # Pull out my PCA models
               pcaModels <- fullModel$pcaModels
@@ -131,7 +101,7 @@ setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
               pcaVar <- do.call(cbind, pcaVar)
               
               pcaVar <- S4Vectors::DataFrame(pcaVar)
-              mcols(pcaVar)$dataset = "pca"
+              mcols(pcaVar)$assay = "PCA"
               mcols(pcaVar)$feature = colnames(pcaVar)
               
               # Merge my PCA stuff with my clinical data
@@ -148,4 +118,4 @@ setMethod("pcaPredictInterface", c("pcaModel", "DFrame"),
               finalPredictions <- do.call(predictParams@predictor, paramList)
 
               finalPredictions
-          })
+          }

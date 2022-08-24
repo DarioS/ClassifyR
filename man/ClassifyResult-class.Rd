@@ -8,12 +8,10 @@
 \alias{show,ClassifyResult-method}
 \alias{sampleNames}
 \alias{sampleNames,ClassifyResult-method}
-\alias{allFeatureNames}
-\alias{allFeatureNames,ClassifyResult-method}
 \alias{predictions}
 \alias{predictions,ClassifyResult-method}
-\alias{actualOutcomes}
-\alias{actualOutcomes,ClassifyResult-method}
+\alias{actualOutcome}
+\alias{actualOutcome,ClassifyResult-method}
 \alias{features}
 \alias{features,ClassifyResult-method}
 \alias{models}
@@ -24,6 +22,9 @@
 \alias{tunedParameters,ClassifyResult-method}
 \alias{totalPredictions}
 \alias{totalPredictions,ClassifyResult-method}
+\alias{ClassifyResult,DataFrame,character-method}
+\alias{allFeatureNames}
+\alias{allFeatureNames,ClassifyResult-method}
 \alias{chosenFeatureNames}
 \alias{chosenFeatureNames,ClassifyResult-method}
 \title{Container for Storing Classification Results}
@@ -32,12 +33,12 @@ Contains a list of models, table of actual sample classes and predicted
 classes, the identifiers of features selected for each fold of each
 permutation or each hold-out classification, and performance metrics such as
 error rates. This class is not intended to be created by the user. It is
-created by \code{\link{runTest}} or \code{\link{runTests}}.
+created by \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}}.
 }
 \section{Constructor}{
 
 \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
-              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcomes, importance = NULL, modellingParams = NULL, finalModel = NULL)}
+              rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 \describe{
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 characteristics of classification done. First column must be named
@@ -49,15 +50,13 @@ is not necessary to specify them.}
 \item{\code{originalFeatures}}{All feature names. Character vector
 or \code{\link{DataFrame}} with one row for each feature if the data set has multiple kinds
 of measurements on the same set of samples.}
-\item{\code{rankedFeatures}}{All features, from most to least important. Character vector
-or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{chosenFeatures}}{Features selected at each fold. Character
 vector or a data frame if data set has multiple kinds of measurements on the same set of samples.}
 \item{\code{models}}{All of the models fitted to the training data.}
 \item{\code{tunedParameters}}{Names of tuning parameters and the value chosen of each parameter.}
 \item{\code{predictions}}{A data frame containing sample IDs, predicted class or risk and information about the 
 cross-validation iteration in which the prediction was made.}
-\item{\code{actualOutcomes}}{The known class or survival data of each sample.}
+\item{\code{actualOutcome}}{The known class or survival data of each sample.}
 \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
 \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
@@ -80,9 +79,7 @@ most popular value of the parameter in cross-validation is used.}
 \describe{
 \item{\code{sampleNames(result)}}{Returns a vector of sample names present in the data set.}}
 \describe{
-\item{\code{allFeatureNames(result)}}{Returns a vector of features present in the data set.}}
-\describe{
-\item{\code{actualOutcomes(result)}}{Returns the known outcomes of each sample.}}
+\item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 \describe{
 \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
 \describe{
@@ -107,14 +104,7 @@ of predictions made during the cross-validation procedure.}}
   #if(require(sparsediscrim))
   #{
     data(asthma)
-    
-    LOOCVparams <- CrossValParams("Leave-k-Out", leave = 1)
-    modellingParams <- ModellingParams()
-    classified <-
-    runTests(measurements, classes, LOOCVparams, modellingParams,
-             DataFrame(characteristic = c("dataset", "classification"),
-                      value = c("Asthma", "Different Means"))
-             )
+    classified <- crossValidate(measurements, classes)
     class(classified)
   #}
   

@@ -34,11 +34,14 @@ vignette: >
 options(width = 130)
 ```
 
+## Installation
+
+Typically, each feature selection method or classifier originates from a different R package, which **ClassifyR** provides a wrapper around. By default, only high-performance t-test/F-test and random forest are installed. If you intend to compare between numerous different modelling methods, you should install all suggested packages at once by using the command `BiocManager::install("ClassifyR", dependencies = TRUE)`. This will take a few minutes, particularly on Linux, because each package will be compiled from source code.
+
 ## Overview
 
 **ClassifyR** provides a structured pipeline for cross-validated classification. Classification is viewed in terms of four stages, data transformation, feature selection, classifier training, and prediction. The driver functions *crossValidate* and *runTests* implements varieties of cross-validation. They are:
 
-* Ordinary k-fold cross-validation (runTests only)
 * Permutation of the order of samples followed by k-fold cross-validation (runTests only)
 * Repeated x% test set cross-validation
 * leave-k-out cross-validation
@@ -81,7 +84,7 @@ The *crossValidate* function offers a quick and simple way to start analysing a 
 
 Data Type | $n \times p$ | $p \times n$
 ----|:----:|:----:
-<span style="font-family: 'Courier New', monospace;">matrix</span> |  | ✔
+<span style="font-family: 'Courier New', monospace;">matrix</span> | ✔ | 
 <span style="font-family: 'Courier New', monospace;">data.frame</span> | ✔ | 
 <span style="font-family: 'Courier New', monospace;">DataFrame</span> | ✔ |
 <span style="font-family: 'Courier New', monospace;">MultiAssayExperiment</span> |  | ✔
@@ -106,35 +109,35 @@ performancePlot(result)
 
 *crossValidate* also allows data from multiple sources to be integrated into a single model. The integration method can be specified with *multiViewMethod* argument. In this example, suppose the first 10 variables in the asthma data set are from a certain source and the remaining 1990 variables are from a second source. To integrate multiple data sets, each variable must be labeled with the data set it came from. This is done in a different manner depending on the data type of *measurements*.
 
-If using Bioconductor's *DataFrame*, this can be specified using *mcols*. In the column metadata, each column must have a *dataset* and a *feature* name.
+If using Bioconductor's *DataFrame*, this can be specified using *mcols*. In the column metadata, each feature must have an *assay* and a *feature* name.
 
 ```{r}
 measurementsDF <- DataFrame(measurements)
 mcols(measurementsDF) <- data.frame(
-  dataset = rep(c("dataset_1", "dataset_2"), times = c(10, 1990)),
+  assay = rep(c("assay_1", "assay_2"), times = c(10, 1990)),
   feature = colnames(measurementsDF)
 )
 
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-performancePlot(result)
+performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```
 
-If using a list of *data.frame*s, the name of each element in the list will be used as the data set name.
+If using a list of *data.frame*s, the name of each element in the list will be used as the assay name.
 
-```{r, eval = FALSE}
+```{r}
 # Assigns first 10 variables to dataset_1, and the rest to dataset_2
 measurementsList <- list(
   (measurements |> as.data.frame())[1:10],
   (measurements |> as.data.frame())[11:2000]
 )
-names(measurementsList) <- c("dataset_1", "dataset_2")
+names(measurementsList) <- c("assay_1", "assay_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
                         nRepeats = 2, multiViewMethod = "merge")
 
-performancePlot(result)
+performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```
 
 ## A More Detailed Look at ClassifyR
@@ -226,7 +229,6 @@ ModellingParams()
 ```{r, tidy = FALSE}
 crossValParams <- CrossValParams(permutations = 5)
 DMresults <- runTests(measurements, classes, crossValParams, verbose = 1)
-DMresults
 ```
 
 Here, 5 permutations (non-default) and 5 folds cross-validation (default) is specified. For computers with more than 1 CPU, the number of cores to use can be given to *runTests* by using the argument *parallelParams*. The parameter *seed* is important to set for result reproducibility when doing a cross-validation such as this, because it employs randomisation to partition the samples into folds. Also, *RNGseed* is highly recommended to be set to the back-end specified to *BPPARAM* if doing parallel processing. The first seed mentioned does not work for parallel processes. For more details about *runTests* and the parameter classes used by it, consult the help pages of such functions.
@@ -238,10 +240,10 @@ The most frequently selected gene can be identified using the *distribution* fun
 ```{r, fig.height = 8, fig.width = 8, results = "hold", message = FALSE}
 selectionPercentages <- distribution(DMresults, plot = FALSE)
 head(selectionPercentages)
-sortedPercentages <- sort(selectionPercentages, decreasing = TRUE)
+sortedPercentages <- head(selectionPercentages[order(selectionPercentages, decreasing = TRUE)])
 head(sortedPercentages)
-mostChosen <- names(sortedPercentages)[1]
-bestGenePlot <- plotFeatureClasses(measurements, classes, mostChosen, dotBinWidth = 0.1,
+mostChosen <- sortedPercentages[1]
+bestGenePlot <- plotFeatureClasses(measurements, classes, names(mostChosen), dotBinWidth = 0.1,
                                    xAxisLabel = "Normalised Expression")
 ```
 
@@ -252,7 +254,7 @@ Classification error rates, as well as many other prediction performance measure
 See the documentation of *calcCVperformance* for a list of performance metrics which may be calculated.
 
 ```{r}
-DMresults <- calcCVperformance(DMresults, "Balanced Error")
+DMresults <- calcCVperformance(DMresults)
 DMresults
 performance(DMresults)
 ```
@@ -264,8 +266,8 @@ The error rate is about 20%. If only a vector of predictions and a vector of act
 The *samplesMetricMap* function allows the visual comparison of sample-wise error rate or accuracy measures from different *ClassifyResult* objects. Firstly, a classifier will be run that uses Kullback-Leibler divergence ranking and resubstitution error as a feature selection heuristic and a naive Bayes classifier for classification. This classification will use features that have either a change in location or in scale between classes.
 
 ```{r, tidy = FALSE}
-modellingParamsDD <- ModellingParams(selectParams = SelectParams(KullbackLeiblerRanking),
-                                     trainParams = TrainParams(naiveBayesKernel),
+modellingParamsDD <- ModellingParams(selectParams = SelectParams("KL"),
+                                     trainParams = TrainParams("naiveBayes"),
                                      predictParams = NULL)
 DDresults <- runTests(measurements, classes, crossValParams, modellingParamsDD, verbose = 1)
 DDresults
@@ -280,18 +282,16 @@ library(grid)
 DMresults <- calcCVperformance(DMresults, "Sample Error")
 DDresults <- calcCVperformance(DDresults, "Sample Error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
-errorPlot <- samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
-                              showXtickLabels = FALSE, plot = FALSE)
-grid.newpage()
-grid.draw(errorPlot)
+samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
+                              showXtickLabels = FALSE)
 ```
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
 
-More traditionally, the distirubition of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
+More traditionally, the distribution of performance values of each complete cross-validation can be visualised by *performancePlot* by providing them as a list to the function. The default is to draw box plots, but violin plots could also be made. The default performance metric to plot is balanced accuracy. If it's not already calculated for all classifications, as in this case for DD, it will be done automatically.
 
 ```{r}
-performancePlot(list(DMresults, DDresults))
+performancePlot(resultsList)
 ```
 
 We can observe that the spread of balanced accuracy rates is small, but slightly wider for the differential distribution classifier.
@@ -299,10 +299,7 @@ We can observe that the spread of balanced accuracy rates is small, but slightly
 The features being ranked and selected in the feature selection stage can be compared within and between classifiers by the plotting functions *rankingPlot* and *selectionPlot*. Consider the task of visually representing how consistent the feature rankings of the top 100 different features were for the differential distribution classifier for all 5 folds in the 5 cross-validations.
 
 ```{r}
-rankOverlaps <- rankingPlot(list(DDresults), topRanked = 1:100,
-                            xLabelPositions = c(1, seq(10, 100, 10)),
-                            plot = FALSE)
-rankOverlaps
+rankingPlot(DDresults, topRanked = 1:100, xLabelPositions = c(1, seq(10, 100, 10)))
 ```
 
 The top-ranked features are fairly similar between all pairs of the 20 cross-validations.
@@ -316,7 +313,7 @@ Some classifiers can output scores or probabilities representing how likely a sa
 By default, scores from different iterations of prediction are merged and one line is drawn per classification. Alternatively, setting *mode = "average"* will consider each iteration of prediction separately, average them and also calculate and draw confidence intervals. The default interval is a 95% interval and is customisable by setting *interval*.
 
 ```{r, fig.height = 5, fig.width = 6}
-ROCcurves <- ROCplot(list(DMresults, DDresults), fontSizes = c(24, 12, 12, 12, 12))
+ROCplot(resultsList, fontSizes = c(24, 12, 12, 12, 12))
 ```
 
 This ROC plot shows the classifiability of the asthma data set is high. Some examples of functions which output scores are *fisherDiscriminant*, *DLDApredictInterface*, and *SVMpredictInterface*.
@@ -341,8 +338,8 @@ Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to t
 
 ```{r}
 tuneList <- list(cost = c(0.01, 0.1, 1, 10))
-SVMparams <- ModellingParams(trainParams = TrainParams(SVMtrainInterface, kernel = "linear", tuneParams = tuneList),
-                             predictParams = PredictParams(SVMpredictInterface))
+SVMparams <- ModellingParams(trainParams = TrainParams("SVM", kernel = "linear", tuneParams = tuneList),
+                             predictParams = PredictParams("SVM"))
 SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
 ```
 

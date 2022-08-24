@@ -14,8 +14,8 @@
 #' If of type \code{\link{DataFrame}} or \code{\link{MultiAssayExperiment}}, the data set is subset
 #' to only those features of type \code{numeric}.
 #' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"sampleInfo"} is also a valid value
-#' and specifies that numeric variables from the sample information data table will be
+#' names of the data tables to be used. \code{"clinical"} is also a valid value
+#' and specifies that numeric variables from the clinical data table will be
 #' used.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
@@ -74,14 +74,14 @@ setMethod("getLocationsAndScales", "DataFrame", # Sample information data or one
                 c(location, scale))
 })
 
-# One or more omics data sets, possibly with sample information data.
+# One or more omics data sets, possibly with clinical data.
 #' @rdname getLocationsAndScales
 #' @export
 setMethod("getLocationsAndScales", "MultiAssayExperiment",
           function(measurements, targets = names(measurements), ...)
 {
-  if(!all(targets %in% c(names(measurements), "sampleInfo")))
-    stop("Some table names in 'targets' are not assay names in 'measurements' or \"sampleInfo\".")  
+  if(!all(targets %in% c(names(measurements), "clinical")))
+    stop("Some table names in 'targets' are not assay names in 'measurements' or \"clinical\".")  
             
   combinedData <- .MAEtoWideTable(measurements, targets, NULL)
   if(class(combinedData) == "list")

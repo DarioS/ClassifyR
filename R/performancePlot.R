@@ -15,20 +15,24 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName Default: "Balanced Accuracy". The name of the
-#' performance measure to make comparisons of. This is one of the names printed
+#' @param performanceName Default: "auto". The name of the
+#' performance measure or "auto". If the results are classification then
+#' balanced accuracy will be displayed. Otherwise, the results would be survival risk
+#' predictions and then C-index will be displayed. This is one of the names printed
 #' in the Performance Measures field when a \code{\link{ClassifyResult}} object is
-#' printed, or if none are stored, the performance metric will be calculated.
+#' printed, or if none are stored, the performance metric will be calculated automatically.
 #' @param characteristicsList A named list of characteristics. Each element's
 #' name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-#' \code{fillColour}, or \code{fillLine}. The value of each element must be a
+#' \code{"fillColour"}, or \code{"fillLine"}. The value of each element must be a
 #' characteristic name, as stored in the \code{"characteristic"} column of the
-#' results' characteristics table. Only \code{"x"} is mandatory.
+#' results' characteristics table. Only \code{"x"} is mandatory. It is
+#' \code{"auto"} by default, which will identify a characteristic that has a unique
+#' value for each element of \code{results}.
 #' @param coloursList A named list of plot aspects and colours for the aspects.
 #' No elements are mandatory. If specified, each list element's name must be
 #' either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 #' associated to fill or line by \code{characteristicsList} but this list is
-#' empty, a palette of colours will be automaticaly chosen.
+#' empty, a palette of colours will be automatically chosen.
 #' @param orderingList An optional named list. Any of the variables specified
 #' to \code{characteristicsList} can be the name of an element of this list and
 #' the value of the element is the order in which the factors should be
@@ -47,33 +51,32 @@
 #' @param rotate90 Logical. IF \code{TRUE}, the plot is horizontal.
 #' @param showLegend If \code{TRUE}, a legend is plotted next to the plot. If
 #' FALSE, it is hidden.
-#' @param plot Logical. IF \code{TRUE}, a plot is produced on the current
-#' graphics device.
+#' @param ... Not used by end user.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
-#'                           permutation = rep(1:2, each = 40),
-#'                           class = factor(rep(c("Healthy", "Cancer"), 40)))
+#'   predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+#'                          permutation = rep(1:2, each = 40),
+#'                          class = factor(rep(c("Healthy", "Cancer"), 40)))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
 #'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validation"),
 #'                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
-#'                             list(c(1:3), c(2, 5, 6), 1:4, 5:8),
+#'                             LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
+#'                             list(paste("Gene", 1:3), paste("Gene", c(2, 5, 6)), paste("Gene", 1:4), paste("Gene", 5:8)),
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   result1 <- calcCVperformance(result1, "Macro F1")
 #' 
-#'   predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+#'   predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
 #'                           permutation = rep(1:2, each = 40),
 #'                           class = factor(rep(c("Healthy", "Cancer"), 40)))
 #'                                
 #'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validation"),
 #'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+#'                             LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
 #'                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8)),
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   result2 <- calcCVperformance(result2, "Macro F1")
@@ -89,11 +92,17 @@ setGeneric("performancePlot", function(results, ...) standardGeneric("performanc
 
 #' @rdname performancePlot
 #' @export
-setMethod("performancePlot", "list", 
-          function(results, performanceName = "Balanced Accuracy",
-                   characteristicsList = list(x = "Classifier Name"), aggregate = character(), coloursList = list(), orderingList = list(),
+setMethod("performancePlot", "ClassifyResult", function(results, ...) {
+    performancePlot(list(assay = results), ...)
+})
+
+#' @rdname performancePlot
+#' @export
+setMethod("performancePlot", "list",
+          function(results, performanceName = "auto",
+                   characteristicsList = list(x = "auto"), aggregate = character(), coloursList = list(), orderingList = list(),
                    densityStyle = c("box", "violin"), yLimits = NULL, fontSizes = c(24, 16, 12, 12), title = NULL,
-                   margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE)
+                   margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
@@ -101,6 +110,16 @@ setMethod("performancePlot", "list",
     stop("The package 'scales' could not be found. Please install it.")
   densityStyle <- match.arg(densityStyle)
   densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
+  if(characteristicsList[["x"]] == "auto")
+  {
+    characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
+    if(max(characteristicsCounts) == length(results))
+      characteristicsList[["x"]] <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
+    else
+      stop("No characteristic is present for all results but must be.")
+  }
+  if(performanceName == "auto")
+      performanceName <- ifelse("risk" %in% colnames(results[[1]]@predictions), "C-index", "Balanced Accuracy")
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   performanceNames <- unlist(lapply(results, function(result)
@@ -112,6 +131,8 @@ setMethod("performancePlot", "list",
     warning(paste(performanceName, "not found in all elements of results. Calculating it now."))
     results <- lapply(results, function(result) calcCVperformance(result, performanceName))
   }
+  
+  ifelse(performanceName == "Matthews Correlation Coefficient", baseline <- 0, baseline <- 0.5)
  
   plotData <- do.call(rbind, mapply(function(result, index)
                     {
@@ -128,7 +149,7 @@ setMethod("performancePlot", "list",
                       summaryTable
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
-  plotData <- plotData[,!duplicated(colnames(plotData))]
+  plotData <- plotData[, !duplicated(colnames(plotData))]
 
   # Fill in any missing variables needed for ggplot2 code.
   if("fillColour" %in% names(characteristicsList))
@@ -147,8 +168,7 @@ setMethod("performancePlot", "list",
   legendPosition <- ifelse(showLegend == TRUE, "right", "none")
   characteristicsList <- lapply(characteristicsList, rlang::sym)
 
-  performancePlot <- ggplot2::ggplot() + 
-                          ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
+  performancePlot <- ggplot2::ggplot() + ggplot2::geom_hline(yintercept = baseline, linetype = 2)
 
   if(!is.null(yLimits)) performancePlot <- performancePlot + ggplot2::coord_cartesian(ylim = yLimits)
   if("fillColour" %in% names(characteristicsList))
@@ -173,9 +193,8 @@ setMethod("performancePlot", "list",
   if(rotate90 == TRUE) performancePlot <- performancePlot + ggplot2::coord_flip(ylim = yLimits)
   
   performancePlot <- performancePlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
-
-  if(plot == TRUE)
-    print(performancePlot)
+  performancePlot <- performancePlot + ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
   
+   
   performancePlot
 })

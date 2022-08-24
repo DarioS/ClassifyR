@@ -68,20 +68,20 @@
 #' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
+#' @param ... Not used by end user.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+#'   predicted <- DataFrame(sample = sample(10, 100, replace = TRUE),
 #'                           permutation = rep(1:2, each = 50),
 #'                           class = rep(c("Healthy", "Cancer"), each = 50))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
 #'   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
 #'   rankList <- list(allFeatures[1:100], allFeatures[c(15:6, 1:5, 16:100)],
 #'                    allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 61:100, 60:51)])
-#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
-#'                                                          "Cross-validation"),
+#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
 #'                             value = c("Melanoma", "t-test", "Diagonal LDA", "2 Permutations, 2 Folds")),
 #'                             LETTERS[1:10], allFeatures, rankList,
 #'                             list(rankList[[1]][1:15], rankList[[2]][1:15],
@@ -91,7 +91,7 @@
 #'   
 #'   predicted[, "class"] <- sample(predicted[, "class"])
 #'   rankList <- list(allFeatures[1:100], allFeatures[c(sample(20), 21:100)],
-#'                    allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
+#'   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
 #'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
 #'                                                          "Cross-validations"),
 #'                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
@@ -107,6 +107,12 @@
 #' @export
 setGeneric("rankingPlot", function(results, ...)
 standardGeneric("rankingPlot"))
+
+#' @rdname rankingPlot
+#' @export
+setMethod("rankingPlot", "ClassifyResult", function(results, ...) {
+    rankingPlot(list(assay = results), ...)
+})
 
 #' @rdname rankingPlot
 #' @export
@@ -127,7 +133,8 @@ setMethod("rankingPlot", "list",
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
 
-  nFeatures <- ifelse(is.null(ncol(results[[1]]@originalFeatures)), length(results[[1]]@originalFeatures), nrow(results[[1]]@originalFeatures)) 
+  originalFeatures <- allFeatureNames(results[[1]])
+  if(is.character(originalFeatures)) nFeatures <- length(originalFeatures) else nFeatures <- nrow(originalFeatures)
   error <- character()
   if(max(topRanked) > nFeatures)
     error <- paste("'topRanked' is as high as", max(topRanked))

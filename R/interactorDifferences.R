@@ -21,7 +21,7 @@
 #' name of the data table to be used.
 #' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-#' that contains the samples' outcomes to use for prediction.
+#' that contains each sample's outcome to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.

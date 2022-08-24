@@ -1,0 +1,21 @@
+# An Interface for randomForestSRC Package's rfsrc random forest survival Function
+rfsrcTrainInterface <- function(measurementsTrain, survivalTrain, mTryProportion = 0.5, ..., verbose = 3)
+{
+  if(!requireNamespace("randomForestSRC", quietly = TRUE))
+    stop("The package 'randomForestSRC' could not be found. Please install it.")
+  if(verbose == 3)
+    message("Fitting rfsrc classifier to training data and making predictions on test data.")
+    
+  bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[,1], time = survivalTrain[,2])
+  mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
+  randomForestSRC::rfsrc(Surv(event = event, time = time) ~ ., as.data.frame(bindedMeasurements), mtry = mtry, ...)
+}
+attr(rfsrcTrainInterface, "name") <- "rfsrcTrainInterface"
+
+# model is of class rfsrc
+rfsrcPredictInterface <- function(model, measurementsTest, ..., verbose = 3)
+{
+  predictedOutcome = predict(model, as.data.frame(measurementsTest), ...)$predicted
+  names(predictedOutcome) = rownames(measurementsTest)
+  predictedOutcome
+}

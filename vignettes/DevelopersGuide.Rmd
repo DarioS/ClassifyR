@@ -42,54 +42,21 @@ options(width = 130)
 
 ## Input Data Types
 
-Data used for predictive modelling can take many shapes and forms. To allow flexibility, each function that deals with input data before predictive modelling is carried out should accept three different data types:
-
-* *matrix*: Tabular data of one type, variables in columns.
-* [*DataFrame*](https://rdrr.io/bioc/S4Vectors/man/DataFrame-class.html?msclkid=d4c61dbecf2711eca5117852a38e18a4): Tabular data of one type, variables in columns.
-* [*MultiAssayExperiment*](http://bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/QuickStartMultiAssay.html): Llist-like structure of tablular data, variables in rows.
-
-The most general of these three is *DataFrame*. So, the design pattern used for all of the feature selection functions and model building functions is for the *matrix* and *MultiAssayExperiment* to convert the input data into a *DataFrame* object and for the *DataFrame* function to do all of the processing.
-
-
-```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("ClassifyRmethodsFlow.png"), 
-               style = 'margin-left: auto;margin-right: auto')
-```
+Data used for predictive modelling can take many shapes and forms. ClassifyR will ensure that any of the three valid input types of *matrix*, [*DataFrame*](https://rdrr.io/bioc/S4Vectors/man/DataFrame-class.html?msclkid=d4c61dbecf2711eca5117852a38e18a4) and [*MultiAssayExperiment*](http://bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/QuickStartMultiAssay.html) will be a *DataFrame* before it is sent to a modelling function.
 
 Importantly, ClassifyR implements a number of methods for classification using different kinds of changes in measurements between classes. Most classifiers work with features where the means are different. In addition to changes in means (DM), **ClassifyR** also allows for classification using differential variability (DV; changes in scale) and differential distribution (DD; changes in location and/or scale).
 
 ## Registering the Function
 
-**ClassifyR** keeps track of functions used for model building, to allow automated naming of axes labels or tick marks in a nice format. To do this, each function has a pretty name associated with it in the file *constants.R*. Simply find `.ClassifyRenvir[["functionsTable"]]` in that file, which is basically a two-column matrix stored in an environment and add your new function and its pretty name as an additional row of that matrix.
+**ClassifyR** keeps track of functions used for model building, to allow automated naming of axes labels or tick marks in a nice format. To do this, each function has a pretty name associated with it in the file *constants.R*. Firstly, find `.ClassifyRenvir[["functionsTable"]]` in that file, which is basically a two-column matrix stored in an environment and add your new function and its pretty name as an additional row of that matrix.
 
-There is also a convenience cross-validation function named `crossValidate`. It allows convenient specification of feature selection and modelling combinations with keywords. To add a new feature ranking method, edit the statement:
-
-```r
-selectionMethodParam <- switch(
-        selectionMethod,
-        "none" = differentMeansRanking,
-        "t-test" = differentMeansRanking,
-        "limma" = limmaRanking,
-        "edgeR" = edgeRranking,
-        "Bartlett" = bartlettRanking,
-        "Levene" = leveneRanking,
-        "DMD" = DMDranking,
-        "likelihoodRatio" = likelihoodRatioRanking,
-        "KS" = KolmogorovSmirnovRanking,
-        "KL" = KullbackLeiblerRanking,
-        "CoxPH" = coxphRanking
-    )
-```
-
-located in `crossValidate.R` by adding a new keyword and function pair. There is a similar statement in the same R file for modelling functions, in which a new classifier, for instance, would be added.
+Secondly, there is a convenience cross-validation function named `crossValidate`. It allows convenient specification of feature selection and modelling combinations with keywords. To add a new feature ranking method, add a new entry to `.selectionKeywordToFunction` in `utilities.R` by adding a new keyword and function pair. There is a similar statement in the same R file for modelling functions, in which a new classifier, for instance, would be added.
 
 ## Documenting the Function
 
-**ClassifyR** uses the Roxygen kind of documentation. Please document all paramters and include an example using a data set already in the package to demonstrate what the function does. See any of the existing R files for the structure of the documentation.
+Firstly, in the main vignette, there are a couple of tables summarising the feature selection and model building functions available. Add your function to the relevant table and put a tick mark in the appropriate column(s) to summarise what kind of analysis it offers.
 
-Secondly, in the main vignette, there are a couple of tables summarising the feature selection and model building functions available. Add your function to the relevant table.
-
-Thirdly, there is a `NEWS` file in `inst` folder. Add a new entry for the new functionality.
+Secondly, there is a `NEWS` file in `inst` folder. Add a new entry for the new functionality.
 
 ## Incorprating Changes into the Package
 
@@ -97,16 +64,9 @@ Please make a pull request at [ClassifyR's GitHub website](https://github.com/Sy
 
 ## Feature Ranking and Selection
 
-The various functions in **ClassifyR** for prioritising features return a ranking, from best to worst, of features because the package takes care of the actual feture selection process. Based on the specification of the range of values of top features to try, the set of variables with either the best resubstitution (default) or nested cross-validation performance is found by the private function `.doSelection`.
+The various functions in **ClassifyR** for prioritising features return a ranking, from best to worst, of features because the package takes care of the actual feature selection process. Based on the specification of the range of values of top features to try, the set of variables with either the best resubstitution (default) or nested cross-validation performance is found by the private function `.doSelection`.
 
-The input data may be one table or a collection of tables. The `DataFrame` variable type stores metadata about the variables in its columns. Therefore, the ranking function should check if the metadata exists and, if so, return a two-column representation of the ranked variables. Otherise, it returns a vector of ranked variables. The typical format for the last part of a feature ranking function is:
-
-```{r, eval = FALSE}
-  if(!is.null(S4Vectors::mcols(measurementsTrain))) # There is variable metadata.
-    S4Vectors::mcols(measurementsTrain)[order(pValues), ]
-  else # No variable metadata; a simple tabular data set.
-    colnames(measurementsTrain)[order(pValues)]
-```
+The input data may be one table or a collection of tables. The `DataFrame` variable type stores metadata about the variables in its columns. Therefore, the ranking function simply returns a numeric indices of the features ranked from best to worst.
 
 ## Model Training Function
 
@@ -114,7 +74,7 @@ The function can return a trained model of any type.
 
 ## Extractor Functions
 
-Sometimes, feature ranking / selection is not done before a model is trained. Also, some trained models do implicit feature selection, such as random forest. If a new modelling function has implicit feature selection, it also needs to be accompanied by a function to extract the selected features. See `forestFeatures` in `interfaceRandomForest.R` for one such example. The return value of such a function needs to be a list of length 2. The first element has all of the features, ranked from best to worst. The second element has only the selected features.
+Sometimes, feature ranking / selection is not done before a model is trained. Also, some trained models do implicit feature selection, such as random forest. If a new modelling function has implicit feature selection, it also needs to be accompanied by a function to extract the selected features. See `forestFeatures` in `interfaceRandomForest.R` for one such example. The return value of such a function needs to be a list of length 2. The first element has all of the features, ranked from best to worst. The second element has indicies corresponding only to the selected features.
 
 In the random forest example, the feature ranking is based on the variable importance score calculated by the random forest package (i.e. `randomForest::importance(forest)`) and the selection is based on the non-zero occurrence of a variable in the forest (i.e. `randomForest::varUsed(forest) > 0`). These two vectors are returned in a list for use by **ClassifyR**.
 

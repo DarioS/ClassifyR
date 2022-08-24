@@ -3,12 +3,15 @@
 \name{performancePlot}
 \alias{performancePlot}
 \alias{performancePlot,list-method}
+\alias{performancePlot,ClassifyResult-method}
 \title{Plot Performance Measures for Various Classifications}
 \usage{
+\S4method{performancePlot}{ClassifyResult}(results, ...)
+
 \S4method{performancePlot}{list}(
   results,
-  performanceName = "Balanced Accuracy",
-  characteristicsList = list(x = "Classifier Name"),
+  performanceName = "auto",
+  characteristicsList = list(x = "auto"),
   aggregate = character(),
   coloursList = list(),
   orderingList = list(),
@@ -18,23 +21,28 @@
   title = NULL,
   margin = grid::unit(c(1, 1, 1, 1), "lines"),
   rotate90 = FALSE,
-  showLegend = TRUE,
-  plot = TRUE
+  showLegend = TRUE
 )
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
 
-\item{performanceName}{Default: "Balanced Accuracy". The name of the
-performance measure to make comparisons of. This is one of the names printed
+\item{...}{Not used by end user.}
+
+\item{performanceName}{Default: "auto". The name of the
+performance measure or "auto". If the results are classification then
+balanced accuracy will be displayed. Otherwise, the results would be survival risk
+predictions and then C-index will be displayed. This is one of the names printed
 in the Performance Measures field when a \code{\link{ClassifyResult}} object is
-printed, or if none are stored, the performance metric will be calculated.}
+printed, or if none are stored, the performance metric will be calculated automatically.}
 
 \item{characteristicsList}{A named list of characteristics. Each element's
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
-\code{fillColour}, or \code{fillLine}. The value of each element must be a
+\code{"fillColour"}, or \code{"fillLine"}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
-results' characteristics table. Only \code{"x"} is mandatory.}
+results' characteristics table. Only \code{"x"} is mandatory. It is
+\code{"auto"} by default, which will identify a characteristic that has a unique
+value for each element of \code{results}.}
 
 \item{aggregate}{A character vector of the levels of
 \code{characteristicsList['x']} to aggregate to a single number by taking
@@ -45,7 +53,7 @@ leave-k-out, when k is small.}
 No elements are mandatory. If specified, each list element's name must be
 either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 associated to fill or line by \code{characteristicsList} but this list is
-empty, a palette of colours will be automaticaly chosen.}
+empty, a palette of colours will be automatically chosen.}
 
 \item{orderingList}{An optional named list. Any of the variables specified
 to \code{characteristicsList} can be the name of an element of this list and
@@ -72,9 +80,6 @@ titles of grouped plots, if any are produced. In other words, when
 
 \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If
 FALSE, it is hidden.}
-
-\item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current
-graphics device.}
 }
 \value{
 An object of class \code{ggplot} and a plot on the current graphics
@@ -93,26 +98,26 @@ calculated, and a barchart is plotted.
 }
 \examples{
 
-  predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
-                          permutation = rep(1:2, each = 40),
-                          class = factor(rep(c("Healthy", "Cancer"), 40)))
+  predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+                         permutation = rep(1:2, each = 40),
+                         class = factor(rep(c("Healthy", "Cancer"), 40)))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "t-test", "Differential Expression", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:9, 11:101)),
-                            list(c(1:3), c(2, 5, 6), 1:4, 5:8),
+                            LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
+                            list(paste("Gene", 1:3), paste("Gene", c(2, 5, 6)), paste("Gene", 1:4), paste("Gene", 5:8)),
                             list(function(oracle){}), NULL, predicted, actual)
   result1 <- calcCVperformance(result1, "Macro F1")
 
-  predicted <- data.frame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
+  predicted <- DataFrame(sample = sample(LETTERS[1:10], 80, replace = TRUE),
                           permutation = rep(1:2, each = 40),
                           class = factor(rep(c("Healthy", "Cancer"), 40)))
                                
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validation"),
                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-                            LETTERS[1:10], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
+                            LETTERS[1:10], paste("Gene", 1:100), list(paste("Gene", 1:100), paste("Gene", c(10:1, 11:100)), paste("Gene", 1:100), paste("Gene", 1:100)),
                             list(c(1:3), c(4:6), c(1, 6, 7, 9), c(5:8)),
                             list(function(oracle){}), NULL, predicted, actual)
   result2 <- calcCVperformance(result2, "Macro F1")

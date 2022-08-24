@@ -11,33 +11,33 @@
 Pair of Factor Vectors}
 \usage{
 \S4method{calcExternalPerformance}{factor,factor}(
-  actualOutcomes,
-  predictedOutcomes,
-  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+  actualOutcome,
+  predictedOutcome,
+  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient")
 )
 
 \S4method{calcExternalPerformance}{Surv,numeric}(
-  actualOutcomes,
-  predictedOutcomes,
+  actualOutcome,
+  predictedOutcome,
   performanceType = "C-index"
 )
 
 \S4method{calcCVperformance}{ClassifyResult}(
   result,
-  performanceType = c("Balanced Error", "Balanced Accuracy", "Error", "Accuracy",
+  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
     "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
     "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
-    "AUC", "C-index")
+    "AUC", "C-index", "Sample C-index")
 )
 }
 \arguments{
-\item{actualOutcomes}{A factor vector or survival information specifying each sample's known outcome.}
+\item{actualOutcome}{A factor vector or survival information specifying each sample's known outcome.}
 
-\item{predictedOutcomes}{A factor vector or survival information of the same length as \code{actualOutcomes} specifying each sample's predicted outcome.}
+\item{predictedOutcome}{A factor vector or survival information of the same length as \code{actualOutcome} specifying each sample's predicted outcome.}
 
-\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Error"}.
+\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Accuracy"}.
 Must be one of the following options:
 \itemize{
 \item{\code{"Error"}: Ordinary error rate.}
@@ -64,6 +64,7 @@ between -1 and 1 indicating how concordant the predicted classes are to the actu
 there are two classes.}
 \item{\code{"AUC"}: Area Under the Curve. An area ranging from 0 to 1, under the ROC.}
 \item{\code{"C-index"}: For survival data, the concordance index, for models which produce risk scores. Ranges from 0 to 1.}
+\item{\code{"Sample C-index"}: Per-individual C-index.}
 }}
 
 \item{result}{An object of class \code{\link{ClassifyResult}}.}
@@ -79,15 +80,15 @@ If \code{calcExternalPerformance} is used, such as when having a vector of
 known classes and a vector of predicted classes determined outside of the
 ClassifyR package, a single metric value is calculated. If
 \code{calcCVperformance} is used, annotates the results of calling
-\code{\link{runTests}} with one of the user-specified performance measures.
+\code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}} with one of the user-specified performance measures.
 }
 \details{
 All metrics except Matthews Correlation Coefficient are suitable for
 evaluating classification scenarios with more than two classes and are
 reimplementations of those available from Intel DAAL.
 
-If \code{\link{runTests}} was run in resampling mode, one performance
-measure is produced for every resampling. If the leave-k-out mode was used,
+\code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{runTest}} was run in resampling mode, one performance
+measure is produced for every resampling. Otherwise, if the leave-k-out mode was used,
 then the predictions are concatenated, and one performance measure is
 calculated for all classifications.
 
@@ -103,13 +104,12 @@ classifier predicts all samples as belonging to the majority class.
 }
 \examples{
 
-  predictTable <- data.frame(sample = paste("A", 1:10, sep = ''),
-                             class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
+  predictTable <- DataFrame(sample = paste("A", 1:10, sep = ''),
+                            class = factor(sample(LETTERS[1:2], 50, replace = TRUE)))
   actual <- factor(sample(LETTERS[1:2], 10, replace = TRUE))                             
-  result <- ClassifyResult(DataFrame(),
-                           paste("A", 1:10, sep = ''), paste("Gene", 1:50, sep = ''),
-                           list(1:50, 1:50), list(1:5, 6:15), list(function(oracle){}), NULL,
-                           predictTable, actual)
+  result <- ClassifyResult(DataFrame(characteristic = "Data Set", value = "Example"),
+                           paste("A", 1:10, sep = ''), paste("Gene", 1:50), list(paste("Gene", 1:50), paste("Gene", 1:50)), list(paste("Gene", 1:5), paste("Gene", 1:10)),
+                           list(function(oracle){}), NULL, predictTable, actual)
   result <- calcCVperformance(result) 
   performance(result)
 

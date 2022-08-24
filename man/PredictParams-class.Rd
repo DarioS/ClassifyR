@@ -5,7 +5,7 @@
 \alias{PredictParams}
 \alias{PredictParams-class}
 \alias{PredictParams,missing-method}
-\alias{PredictParams,functionOrNULL-method}
+\alias{PredictParams,characterOrFunction-method}
 \alias{show,PredictParams-method}
 \title{Parameters for Classifier Prediction}
 \description{
@@ -19,24 +19,21 @@ to the levels of the class vector of the input data set, or a data frame
 which has two columns named class and score.
 }
 \section{Constructor}{
- \describe{ \item{}{ \code{PredictParams()} Creates a
-default PredictParams object. This assumes that the object returned by the
-classifier has a list element named \code{"class"}.  } \item{}{
+ \describe{\item{}{
 \code{PredictParams(predictor, characteristics = DataFrame(), intermediate =
 character(0), ...)} Creates a PredictParams object which stores the function
 which will do the class prediction, if required, and parameters that the
 function will use. If the training function also makes predictions, this
-must be set to \code{NULL}.  } \describe{ \item{\code{predictor}}{Either
-\code{NULL} or a function to make predictions with. If it is a function,
-then the first argument must accept the classifier made in the training
-step.  The second argument must accept a \code{\link{DataFrame}} of new
-data.} \item{\code{characteristics}}{A \code{\link{DataFrame}} describing
+must be set to \code{NULL}.}
+\describe{ \item{\code{predictor}}{A character keyword referring to a registered classifier. See \code{\link{available}}
+for valid keywords.}
+\item{\code{characteristics}}{A \code{\link{DataFrame}} describing
 the characteristics of the predictor function used. First column must be
-named \code{"charateristic"} and second column must be named
-\code{"value"}.} \item{\code{intermediate}}{Character vector. Names of any
+named \code{"charateristic"} and second column must be named \code{"value"}.}
+\item{\code{intermediate}}{Character vector. Names of any
 variables created in prior stages in \code{\link{runTest}} that need to be
-passed to the prediction function.} \item{\code{...}}{Other arguments that
-\code{predictor} may use.} } }
+passed to the prediction function.}
+\item{\code{...}}{Other arguments that \code{predictor} may use.} } }
 }
 
 \section{Summary}{
@@ -50,11 +47,8 @@ passed to the prediction function.} \item{\code{...}}{Other arguments that
 
 \examples{
 
-predictParams <- PredictParams(predictor = DLDApredictInterface)
 # For prediction by trained object created by DLDA training function.
-PredictParams(predictor = NULL)
-# For when the training function also does prediction and directly returns the
-# predictions.
+predictParams <- PredictParams("DLDA")
 
 }
 \author{

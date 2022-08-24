@@ -5,7 +5,7 @@
 \title{A function to generate a ModellingParams object}
 \usage{
 generateModellingParams(
-  datasetIDs,
+  assayIDs,
   measurements,
   nFeatures,
   selectionMethod,
@@ -15,7 +15,7 @@ generateModellingParams(
 )
 }
 \arguments{
-\item{datasetIDs}{A vector of data set identifiers as long at the number of data sets.}
+\item{assayIDs}{A vector of data set identifiers as long at the number of data sets.}
 
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
 or a list of these objects containing the training data.  For a
@@ -23,17 +23,17 @@ or a list of these objects containing the training data.  For a
 the rows are features and the columns are samples, as is typical in Bioconductor.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
-or datasets. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple datasets, 
-a different number of features will be used for each dataset. If a named list of vectors, the respective number of features will be optimised over. 
+or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
+a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 Set to NULL or "all" if all features should be used.}
 
-\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different datasets, 
-and performing multiview classification, the respective classification methods will be used on each dataset.}
+\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay.}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise nFeatures.}
 
-\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different datasets, 
-and performing multiview classification, the respective classification methods will be used on each dataset.}
+\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay.}
 
 \item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
 }
@@ -45,12 +45,12 @@ A function to generate a ModellingParams object
 }
 \examples{
 data(asthma)
-# First make a toy example dataset with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
+# First make a toy example assay with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
 set.seed(51773)
 measurements <- DataFrame(measurements, check.names = FALSE) 
-mcols(measurements)$dataset <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
+mcols(measurements)$assay <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
 mcols(measurements)$feature <- colnames(measurements)
-modellingParams <- generateModellingParams(datasetIDs = c("clinical", "gene", "protein"),
+modellingParams <- generateModellingParams(assayIDs = c("clinical", "gene", "protein"),
                                           measurements = measurements, 
                                           nFeatures = list(clinical = 10, gene = 10, protein = 10),
                                           selectionMethod = list(clinical = "t-test", gene = "t-test", protein = "t-test"),

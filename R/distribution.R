@@ -36,8 +36,7 @@
 #'   #if(require(sparsediscrim))
 #'   #{
 #'     data(asthma)
-#'     CVparams <- CrossValParams(permutations = 5)
-#'     result <- runTests(measurements, classes, CVparams, ModellingParams())
+#'     result <- crossValidate(measurements, classes, nRepeats = 5)
 #'     featureDistribution <- distribution(result, "features", summaryType = "count",
 #'                                         plotType = "histogram", binwidth = 1)
 #'     print(head(featureDistribution))
@@ -86,7 +85,7 @@ setMethod("distribution", "ClassifyResult",
   {
     errors <- by(allPredictions, allPredictions[, "sample"], function(samplePredicitons)
               {
-                sampleClass <- rep(actualOutcomes(result)[samplePredicitons[1, 1]], nrow(samplePredicitons))
+                sampleClass <- rep(actualOutcome(result)[samplePredicitons[1, 1]], nrow(samplePredicitons))
                 confusion <- table(samplePredicitons[, 2], sampleClass)
                 (confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)]) /
                 (sum(diag(confusion)) + confusion[upper.tri(confusion)] + confusion[lower.tri(confusion)])
@@ -103,7 +102,7 @@ setMethod("distribution", "ClassifyResult",
       allFeaturesText <- allFeatures
     } else if(is(chosenFeatures[[1]], "DataFrame")) {
       allFeatures <- do.call(rbind, chosenFeatures)
-      allFeaturesText <- paste(allFeatures[, "dataset"], allFeatures[, "feature"], sep = ':')
+      allFeaturesText <- paste(allFeatures[, "assay"], allFeatures[, "feature"], sep = ':')
     } else if("Pairs" %in% class(chosenFeatures[[1]])) {
       allFeatures <- do.call(c, unname(chosenFeatures))
       allFeaturesText <- paste(first(allFeatures), second(allFeatures), sep = ', ')
@@ -153,7 +152,7 @@ setMethod("distribution", "ClassifyResult",
     if(isPairs) # Make it DataFrame for counting of the occurrences.
       allFeatures <- as(allFeatures, "DataFrame")
     
-    summaryTable <- aggregate(list(count = rep(1, nrow(allFeatures))), as.data.frame(allFeatures), length)
+    summaryTable <- aggregate(list(count = rep(1, nrow(allFeatures))), as.data.frame(allFeatures, optional = TRUE), length)
     
     if(summaryType == "percentage")
     {
@@ -166,9 +165,7 @@ setMethod("distribution", "ClassifyResult",
       pairsSummary <- S4Vectors::Pairs(summaryTable[, "first"], summaryTable[, "second"], summaryTable[, 3])
       colnames(mcols(pairsSummary)) <- colnames(summaryTable[, 3])
       return(pairsSummary)
-    } else { # A table of dataset and feature.
-      if(all(summaryTable[, "dataset"] == "dataset")) # Just return a vector and get rid of unnecessary dataset.
-        summaryTable <- setNames(summaryTable[, 3], summaryTable[, 2])
+    } else { # A table of assay and feature.
       summaryTable
     }
   }

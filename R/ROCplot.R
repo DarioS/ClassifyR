@@ -41,8 +41,6 @@
 #' Otherwise a character name can be provided.
 #' @param xLabel Label to be used for the x-axis of false positive rate.
 #' @param yLabel Label to be used for the y-axis of true positive rate.
-#' @param plot Logical. If \code{TRUE}, a plot is produced on the current
-#' graphics device.
 #' @param showAUC Logical. If \code{TRUE}, the AUC value of each result is
 #' added to its legend text.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
@@ -50,30 +48,28 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- do.call(rbind, list(data.frame(data.frame(sample = LETTERS[c(1, 8, 15, 3, 11, 20, 19, 18)],
-#'                                Healthy = c(0.89, 0.68, 0.53, 0.76, 0.13, 0.20, 0.60, 0.25),
-#'                                Cancer = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75),
+#'   predicted <- do.call(rbind, list(DataFrame(data.frame(sample = LETTERS[seq(1, 20, 2)],
+#'                                Healthy = c(0.89, 0.68, 0.53, 0.76, 0.13, 0.20, 0.60, 0.25, 0.10, 0.30),
+#'                                Cancer = c(0.11, 0.32, 0.47, 0.24, 0.87, 0.80, 0.40, 0.75, 0.90, 0.70),
 #'                                fold = 1)),
-#'                     data.frame(sample = LETTERS[c(11, 18, 15, 4, 6, 10, 11, 12)],
-#'                                Healthy = c(0.45, 0.56, 0.33, 0.56, 0.33, 0.20, 0.60, 0.40),
-#'                                Cancer = c(0.55, 0.44, 0.67, 0.44, 0.67, 0.80, 0.40, 0.60),
+#'                     DataFrame(sample = LETTERS[seq(2, 20, 2)],
+#'                                Healthy = c(0.45, 0.56, 0.33, 0.56, 0.65, 0.33, 0.20, 0.60, 0.40, 0.80),
+#'                                Cancer = c(0.55, 0.44, 0.67, 0.44, 0.35, 0.67, 0.80, 0.40, 0.60, 0.20),
 #'                                fold = 2)))
 #'   actual <- factor(c(rep("Healthy", 10), rep("Cancer", 10)), levels = c("Healthy", "Cancer"))
-#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
-#'                                                          "Cross-validation"),
-#'                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:20], LETTERS[10:1],
-#'                             list(1:100, c(1:9, 11:101)), list(sample(10, 10), sample(10, 10)),
+#'   result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
+#'                             value = c("Melanoma", "t-test", "Random Forest", "2-fold")),
+#'                             LETTERS[1:20], paste("Gene", LETTERS[1:10]), list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
+#'                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   
 #'   predicted[c(2, 6), "Healthy"] <- c(0.40, 0.60)
 #'   predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
-#'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
-#'                                                          "Cross-validation"),
-#'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
-#'                             LETTERS[1:20], LETTERS[10:1], list(1:100, c(1:5, 11:105)),
-#'                             list(sample(10, 10), sample(10, 10)), list(function(oracle){}),
-#'                             NULL, predicted, actual)
+#'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
+#'                                       value = c("Example", "Bartlett Test", "Differential Variability", "2-fold")),
+#'                             LETTERS[1:20], paste("Gene", LETTERS[1:10]), list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
+#'                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
+#'                             list(function(oracle){}), NULL, predicted, actual)
 #'   ROCplot(list(result1, result2), plotTitle = "Cancer ROC")
 #'
 #' @usage NULL
@@ -86,8 +82,7 @@ setMethod("ROCplot", "list",
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "Classifier Name", lineColours = NULL,
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
-                   plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate",
-                   plot = TRUE, showAUC = TRUE)
+                   plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate", showAUC = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
@@ -96,7 +91,7 @@ setMethod("ROCplot", "list",
   mode <- match.arg(mode)
                       
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
-  distinctClasses <- levels(actualOutcomes(results[[1]]))
+  distinctClasses <- levels(actualOutcome(results[[1]]))
   numberDistinctClasses <- length(distinctClasses)
   comparisonName <- comparison
   comparisonValues <- sapply(results, function(result) result@characteristics[match(comparisonName, result@characteristics[, "characteristic"]), "value"])
@@ -122,7 +117,7 @@ setMethod("ROCplot", "list",
 
     allPRlist <- lapply(predictionsList, function(predictions)
     {
-      actualClasses <- actualOutcomes(result)[match(predictions[, "sample"], sampleNames(result))]
+      actualClasses <- actualOutcome(result)[match(predictions[, "sample"], sampleNames(result))]
       do.call(rbind, lapply(levels(actualClasses), function(class)
       {
         totalPositives <- sum(actualClasses == class)
@@ -242,9 +237,6 @@ setMethod("ROCplot", "list",
                                                   left = grid::textGrob(yLabel, gp = grid::gpar(fontsize = fontSizes[2]), rot = 90),
                                                   bottom = grid::textGrob(xLabel, gp = grid::gpar(fontsize = fontSizes[2])))))
   }
-
-  if(plot == TRUE)
-    grid::grid.draw(ROCplot)
   
   ROCplot
 })

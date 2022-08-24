@@ -1,90 +1,85 @@
-# RandomForest
-rfParams <- function() {
-    trainParams = TrainParams(
-        randomForestTrainInterface
-    )
-    
-    predictParams = PredictParams(predictor = randomForestPredictInterface,
-                                             returnType = "both")
+# Random Forest
+RFparams <- function() {
+    trainParams <- TrainParams(randomForestTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = seq(100, 500, 100)))
+    predictParams <- PredictParams(randomForestPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-# ElatsicNet
-elasticParams <- function() {
-    trainParams = TrainParams(elasticNetGLMtrainInterface)
-    
-    predictParams = PredictParams(predictor = elasticNetGLMpredictInterface,
-                                             returnType = "both")
-    
+# Random Survival Forest
+RSFparams <- function() {
+    trainParams <- TrainParams(rfsrcTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = seq(100, 500, 100)))
+    predictParams <- PredictParams(rfsrcPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-# Logistic Params
-logisticParams <- function() {
-    trainParams = TrainParams(logisticTrainInterface)
-    predictParams = PredictParams(predictor = logisticPredictInterface)
+# k Nearest Neighbours
+kNNparams <- function() {
+    trainParams <- TrainParams(kNNinterface, tuneParams = list(k = 1:5))
+    predictParams <- NULL
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
+# Ordinary GLM
+GLMparams <- function() {
+    trainParams <- TrainParams(GLMtrainInterface)
+    predictParams <- PredictParams(GLMpredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-svmParams = function() {
-    trainParams = TrainParams(SVMtrainInterface)
-    predictParams = PredictParams(predictor = SVMpredictInterface,
-                                             returnType = "both")
+# Elastic net GLM
+elasticNetGLMparams <- function() {
+    trainParams <- TrainParams(elasticNetGLMtrainInterface)
+    predictParams <- PredictParams(elasticNetGLMpredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-DLDAParams = function() {
-    trainParams = TrainParams(DLDAtrainInterface)
-    predictParams = PredictParams(predictor = DLDApredictInterface,
-                                             returnType = "both")
+# Support Vector Machine
+SVMparams = function() {
+    trainParams <- TrainParams(SVMtrainInterface, tuneParams = list(kernel = c("linear", "polynomial", "radial", "sigmoid"), cost = 10^(-3:3)))
+    predictParams <- PredictParams(SVMpredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-naiveBayesParams = function() {
-    trainParams = TrainParams(naiveBayesKernel)
-    predictParams = PredictParams(
-        predictor = NULL,
-        weighted = "weighted",
-        weight = "height difference",
-        returnType = "both"
-    )
-    return(list(trainParams = trainParams, predictParams = predictParams))
-}
-
-mixModelsParams = function() {
-    trainParams = TrainParams(mixModelsTrain)
-    predictParams = PredictParams(mixModelsPredict)
-    return(list(trainParams = trainParams, predictParams = predictParams))
-}
-
-elasticNetPreval = function() {
-    trainParams = TrainParams(elasticNetGLMtrainInterfacePreval)
-    
-    predictParams = PredictParams(predictor = elasticNetGLMpredictInterface,
-                                             returnType = "both")
-    
+# Diagonal Linear Discriminant Analysis
+DLDAparams = function() {
+    trainParams <- TrainParams(DLDAtrainInterface)
+    predictParams <- PredictParams(DLDApredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
+# naive Bayes Kernel
+naiveBayesParams <- function() {
+    trainParams <- TrainParams(naiveBayesKernel, tuneParams = list(difference = c("unweighted", "weighted")))
+    predictParams <- NULL
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
 
-coxphParams = function() {
-    trainParams = TrainParams(coxphTrainInterface)
-    predictParams = PredictParams(predictor = coxphPredictInterface)
+# Mixtures of Normals
+mixModelsParams <- function() {
+    trainParams <- TrainParams(mixModelsTrain, nbCluster = 1:2)
+    predictParams <- PredictParams(mixModelsPredict)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-
-coxnetParams = function() {
-    trainParams = TrainParams(coxnetTrainInterface)
-    predictParams = PredictParams(predictor = coxnetPredictInterface)
+# Cox Proportional Hazards Model for Survival
+coxphParams <- function() {
+    trainParams <- TrainParams(coxphTrainInterface)
+    predictParams <- PredictParams(predictor = coxphPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
+# Cox Proportional Hazards Model with Elastic Net for Survival
+coxnetParams <- function() {
+    trainParams <- TrainParams(coxnetTrainInterface)
+    predictParams <- PredictParams(coxnetPredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}

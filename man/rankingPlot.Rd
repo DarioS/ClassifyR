@@ -3,8 +3,11 @@
 \name{rankingPlot}
 \alias{rankingPlot}
 \alias{rankingPlot,list-method}
+\alias{rankingPlot,ClassifyResult-method}
 \title{Plot Pair-wise Overlap of Ranked Features}
 \usage{
+\S4method{rankingPlot}{ClassifyResult}(results, ...)
+
 \S4method{rankingPlot}{list}(
   results,
   topRanked = seq(10, 100, 10),
@@ -12,8 +15,8 @@
   referenceLevel = NULL,
   characteristicsList = list(),
   orderingList = list(),
-  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts =
-    c(24, 16, 12, 12, 12, 16)),
+  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts = c(24,
+    16, 12, 12, 12, 16)),
   lineColours = NULL,
   xLabelPositions = seq(10, 100, 10),
   yMax = 100,
@@ -29,6 +32,8 @@
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+
+\item{...}{Not used by end user.}
 
 \item{topRanked}{A sequence of thresholds of number of the best features to
 use for overlapping.}
@@ -119,15 +124,14 @@ the relevant options to \code{parallelParams}.
 }
 \examples{
 
-  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+  predicted <- DataFrame(sample = sample(10, 100, replace = TRUE),
                           permutation = rep(1:2, each = 50),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
   rankList <- list(allFeatures[1:100], allFeatures[c(15:6, 1:5, 16:100)],
                    allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 61:100, 60:51)])
-  result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
-                                                         "Cross-validation"),
+  result1 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
                             value = c("Melanoma", "t-test", "Diagonal LDA", "2 Permutations, 2 Folds")),
                             LETTERS[1:10], allFeatures, rankList,
                             list(rankList[[1]][1:15], rankList[[2]][1:15],
@@ -137,7 +141,7 @@ the relevant options to \code{parallelParams}.
   
   predicted[, "class"] <- sample(predicted[, "class"])
   rankList <- list(allFeatures[1:100], allFeatures[c(sample(20), 21:100)],
-                   allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
+  allFeatures[c(1:9, 11, 10, 12:100)], allFeatures[c(1:50, 60:51, 61:100)])
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name",
                                                          "Cross-validations"),
                             value = c("Melanoma", "t-test", "Random Forest", "2 Permutations, 2 Folds")),

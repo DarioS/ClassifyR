@@ -3,13 +3,16 @@
 \name{selectionPlot}
 \alias{selectionPlot}
 \alias{selectionPlot,list-method}
+\alias{selectionPlot,ClassifyResult-method}
 \title{Plot Pair-wise Overlap, Variable Importance or Selection Size Distribution of Selected Features}
 \usage{
+\S4method{selectionPlot}{ClassifyResult}(results, ...)
+
 \S4method{selectionPlot}{list}(
   results,
   comparison = "within",
   referenceLevel = NULL,
-  characteristicsList = list(x = "Classifier Name"),
+  characteristicsList = list(x = "auto"),
   coloursList = list(),
   orderingList = list(),
   binsList = list(),
@@ -32,6 +35,8 @@
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
 
+\item{...}{Not used by end user.}
+
 \item{comparison}{Default: within. The aspect of the experimental design to
 compare. Can be any characteristic that all results share or either one of
 the special values \code{"within"} to compare between all pairwise
@@ -48,7 +53,9 @@ level has the average pairwise overlap calculated to all other levels.}
 name must be one of \code{"x"}, \code{"row"}, \code{"column"},
 \code{"fillColour"}, or \code{"lineColour"}. The value of each element must be a
 characteristic name, as stored in the \code{"characteristic"} column of the
-results' characteristics table. Only \code{"x"} is mandatory.}
+results' characteristics table. Only \code{"x"} is mandatory. It is
+\code{"auto"} by default, which will identify a characteristic that has a unique
+value for each element of \code{results}.}
 
 \item{coloursList}{A named list of plot aspects and colours for the aspects.
 No elements are mandatory. If specified, each list element's name must be
@@ -138,7 +145,7 @@ the last bin using \code{\link{cut}}.
 }
 \examples{
 
-  predicted <- data.frame(sample = sample(10, 100, replace = TRUE),
+  predicted <- DataFrame(sample = sample(10, 100, replace = TRUE),
                           class = rep(c("Healthy", "Cancer"), each = 50))
   actual <- factor(rep(c("Healthy", "Cancer"), each = 5))
   allFeatures <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))

@@ -13,21 +13,23 @@
 #' a matrix of pre-calculated metrics, for backwards compatibility.
 #' @param classes If \code{results} is a matrix, this is a factor vector of the
 #' same length as the number of columns that \code{results} has.
-#' @param comparison Default: Classifier Name. The aspect of the experimental
+#' @param comparison Default: "Classifier Name". The aspect of the experimental
 #' design to compare. Can be any characteristic that all results share.
-#' @param metric The sample-wise metric to plot.
+#' @param metric Default: "Sample Error". The sample-wise metric to plot.
 #' @param featureValues If not NULL, can be a named factor or named numeric
-#' vector specifying some variable of interest to plot underneath the class
-#' bar.
+#' vector specifying some variable of interest to plot underneath the above the
+#' heatmap.
 #' @param featureName A label describing the information in
 #' \code{featureValues}. It must be specified if \code{featureValues} is.
-#' @param metricColours A vector of colours for metric levels.
+#' @param metricColours If the outcome is categorical, a list of vectors of colours
+#' for metric levels for each class. If the outcome is numeric, such as a risk score,
+#' then a single vector of colours for the metric levels for all samples.
 #' @param classColours Either a vector of colours for class levels if both
 #' classes should have same colour, or a list of length 2, with each component
 #' being a vector of the same length. The vector has the colour gradient for
 #' each class.
 #' @param groupColours A vector of colours for group levels. Only useful if
-#' \code{groups} is not NULL.
+#' \code{featureValues} is not NULL.
 #' @param fontSizes A vector of length 5. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the size of the
@@ -48,7 +50,7 @@
 #' @author Dario Strbenac
 #' @examples
 #' 
-#'   predicted <- data.frame(sample = LETTERS[sample(10, 100, replace = TRUE)],
+#'   predicted <- DataFrame(sample = LETTERS[sample(10, 100, replace = TRUE)],
 #'                           class = rep(c("Healthy", "Cancer"), each = 50))
 #'   actual <- factor(rep(c("Healthy", "Cancer"), each = 5), levels = c("Healthy", "Cancer"))
 #'   features <- sapply(1:100, function(index) paste(sample(LETTERS, 3), collapse = ''))
@@ -86,13 +88,14 @@ standardGeneric("samplesMetricMap"))
 setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = "Classifier Name",
-                   metric = c("Sample Error", "Sample Accuracy"),
+                   metric = c("Sample Error", "Sample Accuracy", "Sample C-index"),
                    featureValues = NULL, featureName = NULL,
                    metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
                                         c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
                    classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
                    fontSizes = c(24, 16, 12, 12, 12),
-                   mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
+                   mapHeight = 4, title = switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` = "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison"),
+                   showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
                    yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"), plot = TRUE)
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
@@ -113,13 +116,15 @@ setMethod("samplesMetricMap", "list",
                      result@characteristics[useRow, "value"]
                     })  
   metric <- match.arg(metric)
-  metricText <- switch(metric, `Sample Error` = "Error", `Sample Accuracy` = "Accuracy")
+  metricText <- switch(metric, `Sample Error` = "Error", `Sample Accuracy` = "Accuracy", `Sample C-index` = "C-index")
   
   allCalculated <- all(sapply(results, function(result) metric %in% names(performance(result))))
   if(!allCalculated)
     stop("One or more classification results lack the calculated sample-specific metric.")
   if(!is.null(featureValues) && is.null(featureName))
     stop("featureValues is specified by featureNames isn't. Specify both.")
+  if(!is.null(featureValues) && is.null(names(featureValues)))
+    stop("featureValues vector must be named with sample IDs.")
   comparisonValuesCounts <- table(compareFactor)
   if(any(comparisonValuesCounts > 1))
     stop("Some classification results have same the comparison value. Check that each
@@ -128,41 +133,53 @@ setMethod("samplesMetricMap", "list",
   
   nColours <- if(is.list(metricColours)) length(metricColours[[1]]) else length(metricColours)
   metricBinEnds <- seq(0, 1, 1/nColours)
-  knownClasses <- actualOutcomes(results[[1]])
 
   metricValues <- lapply(results, function(result)
   {
     sampleMetricValues <- result@performance[[metric]]
     cut(sampleMetricValues, metricBinEnds, include.lowest = TRUE)
   })
-  classedMetricValues <- lapply(metricValues, function(metricSet)
+  
+  if(metric != "Sample C-index")
   {
-    metricSet <- factor(paste(knownClasses, metricSet, sep = ','),
-                       levels = c(t(outer(levels(knownClasses), levels(metricSet), paste, sep = ','))))
-  })
+    knownClasses <- actualOutcome(results[[1]])
+    classedMetricValues <- lapply(metricValues, function(metricSet)
+    {
+      metricSet <- factor(paste(knownClasses, metricSet, sep = ','),
+                         levels = c(t(outer(levels(knownClasses), levels(metricSet), paste, sep = ','))))
+    })
+  } else {knownClasses <- NULL}
 
   meanMetricCategory <- colMeans(do.call(rbind, metricValues))
-  if(metric == "error")
+  if(metric == "Sample Error")
     meanMetricCategory <- meanMetricCategory * -1 # For sorting purposes.
+  
   if(is.null(featureValues))
-  {    
-    ordering <- order(knownClasses, meanMetricCategory)
+  {
+    if(metric != "Sample C-index") # Sort within each class.
+      ordering <- order(knownClasses, meanMetricCategory)
+    else # Sort all samples together.
+      ordering <- order(meanMetricCategory)    
   } else {
     featureValues <- featureValues[match(sampleNames(results[[1]]), names(featureValues))]
-    ordering <- order(knownClasses, featureValues, meanMetricCategory)
+    if(metric != "Sample C-index") # Sort within each class.
+      ordering <- order(knownClasses, featureValues, meanMetricCategory)
+    else # Sort all samples together.
+      ordering <- order(featureValues, meanMetricCategory)
   }
-  
-  knownClasses <- knownClasses[ordering]
+  if(metric != "Sample C-index")
+    knownClasses <- knownClasses[ordering]
   if(!is.null(featureValues))
     featureValues <- featureValues[ordering]
   
-  metricValues <- lapply(metricValues, function(resultmetricValues) resultmetricValues[ordering])
-  classedMetricValues <- lapply(classedMetricValues, function(resultmetricValues) resultmetricValues[ordering])
+  metricValues <- lapply(metricValues, function(resultMetricValues) resultMetricValues[ordering])
+  if(metric != "Sample C-index") classedMetricValues <- lapply(classedMetricValues, function(resultmetricValues) resultmetricValues[ordering])
   
   plotData <- data.frame(name = factor(rep(sampleNames(results[[1]])[ordering], length(results)), levels = sampleNames(results[[1]])[ordering]),
                          type = factor(rep(compareFactor, sapply(metricValues, length)), levels = rev(compareFactor)),
-                         class = rep(knownClasses, length(results)),
                          Metric = unlist(metricValues))
+  
+  if(metric != "Sample C-index") plotData <- cbind(plotData, class = rep(knownClasses, length(results)))
 
   originalLegends <- showLegends                       
   originalmetricColours <- metricColours
@@ -173,16 +190,19 @@ setMethod("samplesMetricMap", "list",
     plotData[, "Metric"] <- unlist(classedMetricValues)
   }                         
   
-  classData <- data.frame(Class = knownClasses)
-  classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
-    ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL) +
-    ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
-    ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "npc"),
-                                                   legend.title = ggplot2::element_text(size = fontSizes[4]),
-                                                   legend.text = ggplot2::element_text(size = fontSizes[5]),
-                                                   legend.position = ifelse(showLegends, "right", "none"),
-                                                   legend.key.size = legendSize)
+  if(metric != "Sample C-index")
+  {
+    classData <- data.frame(Class = knownClasses)
+    classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
+      ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL) +
+      ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
+      ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "npc"),
+                                                     legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                                     legend.text = ggplot2::element_text(size = fontSizes[5]),
+                                                     legend.position = ifelse(showLegends, "right", "none"),
+                                                     legend.key.size = legendSize)
+  }
   
   if(!is.null(featureValues))
   {
@@ -200,11 +220,11 @@ setMethod("samplesMetricMap", "list",
                                                      legend.key.size = legendSize)
     } else # Numeric data about the samples.
     {
-      featureValuesData <- data.frame(Class = knownClasses, measurements = featureValues)
+      featureValuesData <- data.frame(measurements = featureValues, Class = 1)
+      if(metric != "Sample C-index") featureValuesData[, "Class"] <- knownClasses
       featureValuesPlot <- ggplot2::ggplot(featureValuesData, environment = environment()) +
       ggplot2::geom_point(ggplot2::aes(x = 1:length(featureValues), y = measurements, colour = Class)) +
-      ggplot2::scale_colour_manual(values = classColours) +
-      ggplot2::scale_x_continuous(breaks = NULL, limits = c(1, length(featureValues))) +
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(add = 0.5), breaks = NULL, limits = c(1, length(featureValues))) +
       ggplot2::scale_y_continuous(breaks = c(min(featureValues), max(featureValues))) +
       ggplot2::labs(x = featureName, y = '') + ggplot2::theme(plot.margin = grid::unit(c(0, 0, 1, 0), "lines"),
                                                      axis.text = ggplot2::element_text(colour = "black"),
@@ -214,7 +234,9 @@ setMethod("samplesMetricMap", "list",
                                                      legend.position = ifelse(showLegends, "right", "none"),
                                                      legend.key.size = legendSize, panel.background = ggplot2::element_blank(),
                                                      panel.border = ggplot2::element_rect(colour = "black", fill = "transparent")
-                                                     )      
+                                                     )
+      if(metric != "Sample C-index")
+          featureValuesPlot <- featureValuesPlot + ggplot2::scale_colour_manual(values = classColours)
     }
   }
                                                    
@@ -231,17 +253,25 @@ setMethod("samplesMetricMap", "list",
                    legend.text = ggplot2::element_text(size = fontSizes[5]),
                    legend.position = ifelse(showLegends, "right", "none"),
                    legend.key.size = legendSize) + ggplot2::labs(x = xAxisLabel, y = yAxisLabel)
-
-  classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
+  if(metric != "Sample C-index")
+    classGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot))
   metricGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot))
   if(!is.null(featureValues))
     featureValuesGrob <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(featureValuesPlot))
     
   if(!is.null(featureValues))
-    commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]], featureValuesGrob[["widths"]])
-  else
-    commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]])
-  classGrob[["widths"]] <- commonWidth
+  {
+    if(metric != "Sample C-index")      
+      commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]], featureValuesGrob[["widths"]])
+    else
+      commonWidth <- grid::unit.pmax(metricGrob[["widths"]], featureValuesGrob[["widths"]])
+  } else {
+    if(metric != "Sample C-index")  
+      commonWidth <- grid::unit.pmax(classGrob[["widths"]], metricGrob[["widths"]])
+    else
+      commonWidth <- metricGrob[["widths"]]
+  }
+  if(metric != "Sample C-index") classGrob[["widths"]] <- commonWidth
   metricGrob[["widths"]] <- commonWidth
   if(!is.null(featureValues))
     featureValuesGrob[["widths"]] <- commonWidth
@@ -250,17 +280,18 @@ setMethod("samplesMetricMap", "list",
   {
     showLegends <- TRUE
     metricColours <- originalmetricColours
-
-    classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
-      ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
-      ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
-      ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
-      ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "lines"),
-                                                     legend.title = ggplot2::element_text(size = fontSizes[4]),
-                                                     legend.text = ggplot2::element_text(size = fontSizes[5]),
-                                                     legend.position = ifelse(showLegends, "right", "none"),
-                                                     legend.key.size = legendSize)
-    classGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot)) 
+    if(metric != "Sample C-index")
+    {  classesPlot <- ggplot2::ggplot(classData, ggplot2::aes(1:length(knownClasses), factor(1)), environment = environment()) +
+        ggplot2::scale_fill_manual(values = classColours) + ggplot2::geom_tile(ggplot2::aes(fill = Class)) +
+        ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL, limits = c(1, length(knownClasses))) +
+        ggplot2::scale_y_discrete(expand = c(0, 0), breaks = NULL) +
+        ggplot2::labs(x = '', y = '') + ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0.01, 0), "lines"),
+                                                       legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                                       legend.text = ggplot2::element_text(size = fontSizes[5]),
+                                                       legend.position = ifelse(showLegends, "right", "none"),
+                                                       legend.key.size = legendSize)
+      classGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(classesPlot)) 
+    }
     
     if(!is.null(featureValues) && is.factor(featureValues))
     {
@@ -275,10 +306,10 @@ setMethod("samplesMetricMap", "list",
                                                        legend.key.size = legendSize)
       featureValuesGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(featureValuesPlot))     
     } else {featureValuesGrobUnused <- grid::grob()}
-    
+
     plotData[, "Metric"] <- unlist(metricValues)
     classLegend <- NULL
-    if(is.list(metricColours))
+    if(is.list(metricColours) && metric != "Sample C-index")
       classLegend <- paste(levels(knownClasses)[1], NULL)
     metricPlot <- ggplot2::ggplot(plotData, ggplot2::aes(name, type)) + ggplot2::geom_tile(ggplot2::aes(fill = Metric)) +
       ggplot2::scale_fill_manual(name = paste(classLegend, metricText, sep = ''),
@@ -297,14 +328,24 @@ setMethod("samplesMetricMap", "list",
     
     metricGrobUnused <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(metricPlot))
     if(!is.null(featureValues) && is.factor(featureValues))
-      commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], metricGrobUnused[["widths"]], featureValuesGrobUnused[["widths"]])                   
-    else
-      commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], metricGrobUnused[["widths"]])                   
-    metricGrobUnused[["widths"]] <- commonWidth  
-    classGrobUnused[["widths"]] <- commonWidth
+    {
+      if(metric != "Sample C-index")         
+        commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], metricGrobUnused[["widths"]], featureValuesGrobUnused[["widths"]])                   
+      else
+        commonWidth <- grid::unit.pmax(metricGrobUnused[["widths"]], featureValuesGrobUnused[["widths"]])                   
+    } else {
+      if(metric != "Sample C-index")    
+        commonWidth <- grid::unit.pmax(classGrobUnused[["widths"]], metricGrobUnused[["widths"]])                   
+      else
+        commonWidth <- metricGrobUnused[["widths"]]
+    }
+    metricGrobUnused[["widths"]] <- commonWidth
+    if(metric != "Sample C-index")   
+      classGrobUnused[["widths"]] <- commonWidth
     if(!is.null(featureValues) && is.factor(featureValues))
       featureValuesGrobUnused[["widths"]] <- commonWidth
-    classLegend <- classGrobUnused[["grobs"]][[which(sapply(classGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
+    if(metric != "Sample C-index") 
+      classLegend <- classGrobUnused[["grobs"]][[which(sapply(classGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     if(!is.null(featureValues) && is.factor(featureValues))
       featureValuesLegend <- featureValuesGrobUnused[["grobs"]][[which(sapply(featureValuesGrobUnused[["grobs"]], function(grob) grob[["name"]]) == "guide-box")]]
     else
@@ -334,18 +375,26 @@ setMethod("samplesMetricMap", "list",
   
   if(showLegends == TRUE)
   {
-    classesHeight <- grid::unit(1 / (mapHeight + 1), "npc")
+    annosHeight <- grid::unit(1 / (mapHeight + 1), "npc")
     if(!is.null(featureValues) && is.factor(featureValues))
-      legendWidth <- max(sum(classLegend[["widths"]]), sum(firstLegend[["widths"]]), sum(featureValuesLegend[["widths"]]))
-    else
-      legendWidth <- max(sum(classLegend[["widths"]]), sum(firstLegend[["widths"]]))
+    {
+      if(metric != "Sample C-index") 
+        legendWidth <- max(sum(classLegend[["widths"]]), sum(firstLegend[["widths"]]), sum(featureValuesLegend[["widths"]]))
+      else
+        legendWidth <- max(sum(firstLegend[["widths"]]), sum(featureValuesLegend[["widths"]]))          
+    } else {
+      if(metric != "Sample C-index")         
+        legendWidth <- max(sum(classLegend[["widths"]]), sum(firstLegend[["widths"]]))
+      else
+        legendWidth <- sum(firstLegend[["widths"]])
+    }
     featureValuesHeight <- grid::unit(0, "cm")
     if(!is.null(featureValues))
     {
       if(is.factor(featureValues))
         featureValuesHeight <- featureValuesLegend[["heights"]][3]
       else
-        featureValuesHeight <- classesHeight
+        featureValuesHeight <- annosHeight
     }
     
     if(is.list(metricColours))
@@ -354,7 +403,8 @@ setMethod("samplesMetricMap", "list",
       legendHeight <- (grid::unit(1, "npc") - featureValuesHeight) * (mapHeight / (mapHeight + 1))
     
     widths <- grid::unit.c(unit(1, "npc") - legendWidth, legendWidth)
-    heights <- grid::unit.c(unit(1 / (mapHeight + 1), "npc"), featureValuesHeight, legendHeight)
+    if(metric != "Sample C-index") classesHeight <-  unit(1 / (mapHeight + 1), "npc") else classesHeight <-  unit(0, "npc")
+    heights <- grid::unit.c(classesHeight, featureValuesHeight, legendHeight)
     if(is.list(metricColours))
     {
       heights <- grid::unit.c(heights, legendHeight)
@@ -369,12 +419,16 @@ setMethod("samplesMetricMap", "list",
     heights <- grid::unit.c(grid::unit(1 / (mapHeight + 1), "npc"), featureValuesHeight, grid::unit(1, "npc") - featureValuesHeight - grid::unit(1 / (mapHeight + 1), "npc"))
   }
   
-  classLegend[["vp"]][["valid.just"]] <- c(0.7, 0.5)
+  if(metric != "Sample C-index")
+    classLegend[["vp"]][["valid.just"]] <- c(0.7, 0.5)
   if(!is.null(featureValues) && is.factor(featureValues))
     featureValuesLegend[["vp"]][["valid.just"]] <- c(0.7, 0.33)
 
   grobTable <- gtable::gtable(widths, heights)
-  grobTable <- gtable::gtable_add_grob(grobTable, classGrob, 1, 1)
+  if(metric != "Sample C-index")
+    grobTable <- gtable::gtable_add_grob(grobTable, classGrob, 1, 1)
+  else
+    grobTable <- gtable::gtable_add_grob(grobTable, grid::grob(), 1, 1)
   if(!is.null(featureValues))
     grobTable <- gtable::gtable_add_grob(grobTable, featureValuesGrob, 2, 1)
   else
@@ -390,8 +444,9 @@ setMethod("samplesMetricMap", "list",
     grobTable <- gtable::gtable_add_grob(grobTable, metricGrob, 3, 1)
   }
   if(showLegends == TRUE)
-  {  
-    grobTable <- gtable::gtable_add_grob(grobTable, classLegend, 1, 2)
+  {
+    if(metric != "Sample C-index")
+      grobTable <- gtable::gtable_add_grob(grobTable, classLegend, 1, 2)
     grobTable <- gtable::gtable_add_grob(grobTable, featureValuesLegend, 2, 2)
   }
   if(showLegends == TRUE && !is.list(metricColours))
