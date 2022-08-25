@@ -9,8 +9,8 @@
   results,
   mode = c("merge", "average"),
   interval = 95,
-  comparison = "Classifier Name",
-  lineColours = NULL,
+  comparison = "auto",
+  lineColours = "auto",
   lineWidth = 1,
   fontSizes = c(24, 16, 12, 12, 12),
   labelPositions = seq(0, 1, 0.2),
@@ -33,14 +33,14 @@ averaged ROC curve.}
 \item{interval}{Default: 95 (percent). The percent confidence interval to
 draw around the averaged ROC curve, if mode is \code{"each"}.}
 
-\item{comparison}{The aspect of the experimental design to compare. Can be
+\item{comparison}{Default: \code{"auto"}. The aspect of the experimental design to compare. Can be
 any characteristic that all results share. If the data set has two classes,
 then the slot name with factor levels to be used for colouring the lines.
 Otherwise, it specifies the variable used for plot facetting.}
 
-\item{lineColours}{A vector of colours for different levels of the
+\item{lineColours}{Default: \code{"auto"}. A vector of colours for different levels of the
 comparison parameter, or if there are three or more classes, the classes.
-If \code{NULL}, a default colour palette is automatically generated.}
+If \code{"auto"}, a default colour palette is automatically generated.}
 
 \item{lineWidth}{A single number controlling the thickness of lines drawn.}
 
@@ -71,7 +71,7 @@ device, if \code{plot} is \code{TRUE}.
 }
 \description{
 Creates one ROC plot or multiple ROC plots for a list of ClassifyResult
-objects.  One plot is created if the data set has two classes and multiple
+objects. One plot is created if the data set has two classes and multiple
 plots are created if the data set has three or more classes.
 }
 \details{
@@ -103,7 +103,7 @@ considered simultaneously, to calculate one curve per classification.
   predicted[c(2, 6), "Healthy"] <- c(0.40, 0.60)
   predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
-                                      value = c("Example", "Bartlett Test", "Differential Variability", "2-fold")),
+                                      value = c("Melanoma", "Bartlett Test", "Differential Variability", "2-fold")),
                             LETTERS[1:20], paste("Gene", LETTERS[1:10]), list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
                             list(function(oracle){}), NULL, predicted, actual)

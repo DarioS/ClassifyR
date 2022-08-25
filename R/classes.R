@@ -641,13 +641,15 @@ setClass("TrainParams", representation(
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{}{\preformatted{TrainParams(classifier, characteristics = DataFrame(),
-#' intermediate = character(0), getFeatures = NULL, ...)}
+#' \item{}{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
+#' intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}
 #' Creates a \code{TrainParams} object which stores the function which will do the
 #' classifier building and parameters that the function will use.
 #' \describe{
 #' \item{\code{classifier}}{A character keyword referring to a registered classifier. See \code{\link{available}}
 #' for valid keywords.}
+#' \item{\code{balancing}}{Default: \code{"downsample"}. A keyword specifying how to handle class imbalance for data sets with categorical outcome.
+#' Valid values are \code{"downsample"}, \code{"upsample"} and \code{"none"}.}
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
 #' characteristics of the classifier used. First column must be named \code{"charateristic"}
 #' and second column must be named \code{"value"}. If using wrapper functions for classifiers
@@ -656,6 +658,9 @@ setClass("TrainParams", representation(
 #' \item{\code{intermediate}}{Character vector. Names of any variables created
 #' in prior stages by \code{\link{runTest}} that need to be passed to
 #' \code{classifier}.}
+#' \item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of
+#' the list are the names of the parameters and the vectors are the values of the parameters to try. All possible
+#' combinations are generated.}
 #' \item{\code{getFeatures}}{A function may be specified that extracts the selected
 #' features from the trained model. This is relevant if using a classifier that does
 #' feature selection within training (e.g. random forest). The function must return a

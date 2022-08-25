@@ -15,7 +15,7 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName Default: "auto". The name of the
+#' @param performanceName Default: \code{"auto"}. The name of the
 #' performance measure or "auto". If the results are classification then
 #' balanced accuracy will be displayed. Otherwise, the results would be survival risk
 #' predictions and then C-index will be displayed. This is one of the names printed

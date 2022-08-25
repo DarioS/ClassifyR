@@ -29,7 +29,7 @@
 
 \item{...}{Not used by end user.}
 
-\item{performanceName}{Default: "auto". The name of the
+\item{performanceName}{Default: \code{"auto"}. The name of the
 performance measure or "auto". If the results are classification then
 balanced accuracy will be displayed. Otherwise, the results would be survival risk
 predictions and then C-index will be displayed. This is one of the names printed
