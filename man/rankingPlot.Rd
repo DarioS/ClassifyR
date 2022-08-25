@@ -15,8 +15,8 @@
   referenceLevel = NULL,
   characteristicsList = list(),
   orderingList = list(),
-  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts = c(24,
-    16, 12, 12, 12, 16)),
+  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts =
+    c(24, 16, 12, 12, 12, 16)),
   lineColours = NULL,
   xLabelPositions = seq(10, 100, 10),
   yMax = 100,

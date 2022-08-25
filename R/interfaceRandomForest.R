@@ -36,6 +36,6 @@ randomForestPredictInterface <- function(forest, measurementsTest, ..., returnTy
 forestFeatures <- function(forest)
                   {
                     rankedFeaturesIndices <- order(randomForest::importance(forest), decreasing = TRUE)
-                    selectedFeaturesIndices <- which(randomForest::varUsed(forest) > 0)
+                    selectedFeaturesIndices <- randomForest::varUsed(forest, count = FALSE)
                     list(rankedFeaturesIndices, selectedFeaturesIndices)
                   }

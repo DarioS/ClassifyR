@@ -167,7 +167,7 @@ input data. Autmomatically reducing to smaller number.")
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
  
     topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose),
-                            error = function(error) error[["message"]]) 
+                            error = function(error) error[["message"]])
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
     
     rankedFeaturesIndices <- topFeatures[[1]] # Extract for result object.
@@ -186,10 +186,11 @@ input data. Autmomatically reducing to smaller number.")
     modellingParams@trainParams <- .addIntermediates(modellingParams@trainParams)
   if(!is.null(tuneDetailsSelect))
   {
-    avoidTune <- match(colnames(tuneDetailsSelect), names(modellingParams@trainParams@tuneParams))
+    tuneDetailsSelectUse <- tuneDetailsSelect[["tuneCombinations"]][tuneDetailsSelect[["bestIndex"]], , drop = FALSE]
+    avoidTune <- match(colnames(tuneDetailsSelectUse), names(modellingParams@trainParams@tuneParams))
     if(any(!is.na(avoidTune)))
     {
-      modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneDetailsSelect[!is.na(avoidTune)])
+      modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneDetailsSelectUse[!is.na(avoidTune)])
       modellingParams@trainParams@tuneParams <- modellingParams@trainParams@tuneParams[-na.omit(avoidTune)]
       if(length(modellingParams@trainParams@tuneParams) == 0) modellingParams@trainParams@tuneParams <- NULL
     }
@@ -209,7 +210,7 @@ input data. Autmomatically reducing to smaller number.")
     if(length(extras) > 0)
       extrasList <- mget(setdiff(names(extras), "..."))
 
-    rankedChosenList <- do.call(modellingParams@trainParams@getFeatures, c(trained[1], extrasList))
+    rankedChosenList <- do.call(modellingParams@trainParams@getFeatures, c(unname(trained[1]), extrasList))
     rankedFeaturesIndices <- rankedChosenList[[1]]
     selectedFeaturesIndices <- rankedChosenList[[2]]
   }
@@ -304,8 +305,8 @@ input data. Autmomatically reducing to smaller number.")
   } else { # runTest executed by the end user. Create a ClassifyResult object.
     # Only one training, so only one tuning choice, which can be summarised in characteristics.
     modParamsList <- list(modellingParams@transformParams, modellingParams@selectParams, modellingParams@trainParams, modellingParams@predictParams)
-    if(!is.null(tuneDetails)) characteristics <- rbind(characteristics, data.frame(characteristic = colnames(tuneDetails),
-                                                                                   value = unlist(tuneDetails)))
+    if(!is.null(tuneDetails)) characteristics <- rbind(characteristics, data.frame(characteristic = colnames(tuneDetails[["tuneCombinations"]]),
+                                                                                   value = unlist(tuneDetails[["tuneCombinations"]][tuneDetails[["bestIndex"]], ])))
     autoCharacteristics <- do.call(rbind, lapply(modParamsList, function(stageParams) if(!is.null(stageParams) && !is(stageParams, "PredictParams")) stageParams@characteristics))
     characteristics <- .filterCharacteristics(characteristics, autoCharacteristics)
     characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Cross-validation", value = "Independent Set"))

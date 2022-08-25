@@ -193,14 +193,14 @@
     if(attr(featureRanking, "name") == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
-    if(tuneMode == "none") # Actually selection not ranking.
+    if(tuneMode == "none") # No parameters to choose between.
         return(list(NULL, rankings[[1]], NULL))
     
     tuneParamsTrain <- list(topN = topNfeatures)
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
-    bestPerformers <- sapply(rankings, function(rankingsVariety)
+    allPerformanceTables <- lapply(rankings, function(rankingsVariety)
     {
       # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
       performances <- sapply(1:nrow(tuneCombosTrain), function(rowIndex)
@@ -240,20 +240,22 @@
        })
 
         bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
-        c(bestOne, performances[bestOne])
+        list(data.frame(tuneCombosTrain, performance = performances), bestOne)
       })
 
-      tunePick <- ifelse(betterValues == "lower", which.min(bestPerformers[2, ])[1], which.max(bestPerformers[2, ])[1])
+      tablesBestMetrics <- sapply(allPerformanceTables, function(tableIndexPair) tableIndexPair[[1]][tableIndexPair[[2]], "performance"])
+      tunePick <- ifelse(betterValues == "lower", which.min(tablesBestMetrics)[1], which.max(tablesBestMetrics)[1])
       
       if(verbose == 3)
          message("Features selected.")
       
-      tuneRow <- tuneCombosTrain[bestPerformers[1, tunePick], , drop  = FALSE]
-      if(ncol(tuneRow) > 1) tuneDetails <- tuneRow[, -1, drop = FALSE] else tuneDetails <- NULL
+      tuneDetails <- allPerformanceTables[[tunePick]] # List of length 2.
       
       rankingUse <- rankings[[tunePick]]
-      selectionIndices <- rankingUse[1:tuneRow[, "topN"]]
+      selectionIndices <- rankingUse[1:(tuneDetails[[1]][tuneDetails[[2]], "topN"])]
       
+      names(tuneDetails) <- c("tuneCombinations", "bestIndex")
+      colnames(tuneDetails[[1]])[ncol(tuneDetails[[1]])] <- performanceType
       list(ranked = rankingUse, selected = selectionIndices, tune = tuneDetails)
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresIndiciesLists <- mapply(function(selector, selParams)
@@ -296,8 +298,7 @@
       
       list(NULL, selectionIndices, NULL)
     } else { # Previous selection
-      selectedFeatures <- 
-      list(NULL, selectionIndices, NULL)
+      selectedFeatures <- list(NULL, selectionIndices, NULL)
     }
 }
 
@@ -315,7 +316,7 @@
 # within the same function, so test samples are also passed in case they are needed.
 .doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose)
 {
-  tuneChosen <- NULL
+  tuneDetails <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams))
   {
     performanceType <- modellingParams@trainParams@tuneParams[["performanceType"]]
@@ -346,9 +347,14 @@
         median(performances(result)[[performanceType]])
       }
     })
+    allPerformanceTable <- data.frame(tuneCombos, performances)
+    colnames(allPerformanceTable)[ncol(allPerformanceTable)] <- performanceType
+    
     betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
     bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
     tuneChosen <- tuneCombos[bestOne, , drop = FALSE]
+    tuneDetails <- list(tuneCombos, bestOne)
+    names(tuneDetails) <- c("tuneCombinations", "bestIndex")
     modellingParams@trainParams@otherParams <- tuneChosen
   }
 
@@ -367,7 +373,7 @@
   if(verbose >= 2)
     message("Training completed.")  
   
-  list(model = trained, tune = tuneChosen)
+  list(model = trained, tune = tuneDetails)
 }
 
 # Creates a function call to a prediction function.
@@ -566,6 +572,7 @@
         "GLM" = GLMparams(),
         "elasticNetGLM" = elasticNetGLMparams(),
         "SVM" = SVMparams(),
+        "NSC" = NSCparams(),
         "DLDA" = DLDAparams(),
         "naiveBayes" = naiveBayesParams(),
         "mixturesNormals" = mixModelsParams(),
