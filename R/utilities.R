@@ -1,60 +1,3 @@
-# Function to convert a MultiAssayExperiment object into a flat DataFrame table, to enable it
-# to be used in typical model building functions.
-# Returns a list with a covariate table and and outcome vector/table, or just a covariate table
-# in the case the input is a test data set.
-.MAEtoWideTable <- function(measurements, outcomeColumns, useFeatures)
-{
-  clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))    
-  if("clinical" %in% useFeatures[, 1])
-  {
-    clinicalRows <- useFeatures[, 1] == "clinical"      
-    clinicalColumns <- useFeatures[clinicalRows, 2]
-    useFeatures <- useFeatures[!clinicalRows, ]
-  } else {
-    clinicalColumns <- NULL
-  }
-  
-  if(nrow(useFeatures) > 0)
-  {
-    measurements <- measurements[, , unique(useFeatures[, 1])]
-  
-    # Get all desired measurements tables and clinical columns (other than the columns representing outcome).
-    # These form the independent variables to be used for making predictions with.
-    # Variable names will have names like RNA_BRAF for traceability.
-    dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(clinicalColumns, outcomeColumns))
-    rownames(dataTable) <- dataTable[, "primary"]
-    S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
-    colnames(S4Vectors::mcols(dataTable))[1] <- "assay"
-            
-    # Sample information variable names not included in column metadata of wide table but only as row names of it.
-    # Create a combined column named "feature" which has feature names of the assays as well as the clinical.
-    S4Vectors::mcols(dataTable)[, "feature"] <- as.character(S4Vectors::mcols(dataTable)[, "rowname"])
-    missingIndices <- is.na(S4Vectors::mcols(dataTable)[, "feature"])
-    S4Vectors::mcols(dataTable)[missingIndices, "feature"] <- colnames(dataTable)[missingIndices]
-    
-    # Finally, a column annotation recording variable name and which table it originated from for all of the source tables.
-    S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("assay", "feature")]
-    
-    # Subset to only the desired features.
-    useFeaturesSubset <- useFeatures[useFeatures[, 2] != "all", ]
-    if(nrow(useFeaturesSubset) > 0)
-    {
-      uniqueAssays <- unique(useFeatures[, 1])
-      for(filterAssay in uniqueAssays)
-      {
-        dropFeatures <- S4Vectors::mcols(dataTable)[, "assay"] == filterAssay &
-                        !S4Vectors::mcols(dataTable)[, "feature"] %in% useFeatures[useFeatures[, 1] == filterAssay, 2]
-        dataTable <- dataTable[, !dropFeatures]
-      }
-    }
-    dataTable <- dataTable[, -match("primary", colnames(dataTable))]
-  } else { # Must have only been clinical data.
-    dataTable <- MultiAssayExperiment::colData(measurements)
-    S4Vectors::mcols(dataTable) <- DataFrame(assay = "clinical", feature = colnames(dataTable))
-  }
-  dataTable
-}
-
 # Creates two lists of lists. First has training samples, second has test samples for a range
 # of different cross-validation schemes.
 #' @import utils
@@ -193,14 +136,14 @@
     if(attr(featureRanking, "name") == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
-    if(tuneMode == "none") # Actually selection not ranking.
+    if(tuneMode == "none") # No parameters to choose between.
         return(list(NULL, rankings[[1]], NULL))
     
     tuneParamsTrain <- list(topN = topNfeatures)
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
-    bestPerformers <- sapply(rankings, function(rankingsVariety)
+    allPerformanceTables <- lapply(rankings, function(rankingsVariety)
     {
       # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
       performances <- sapply(1:nrow(tuneCombosTrain), function(rowIndex)
@@ -240,20 +183,22 @@
        })
 
         bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
-        c(bestOne, performances[bestOne])
+        list(data.frame(tuneCombosTrain, performance = performances), bestOne)
       })
 
-      tunePick <- ifelse(betterValues == "lower", which.min(bestPerformers[2, ])[1], which.max(bestPerformers[2, ])[1])
+      tablesBestMetrics <- sapply(allPerformanceTables, function(tableIndexPair) tableIndexPair[[1]][tableIndexPair[[2]], "performance"])
+      tunePick <- ifelse(betterValues == "lower", which.min(tablesBestMetrics)[1], which.max(tablesBestMetrics)[1])
       
       if(verbose == 3)
          message("Features selected.")
       
-      tuneRow <- tuneCombosTrain[bestPerformers[1, tunePick], , drop  = FALSE]
-      if(ncol(tuneRow) > 1) tuneDetails <- tuneRow[, -1, drop = FALSE] else tuneDetails <- NULL
+      tuneDetails <- allPerformanceTables[[tunePick]] # List of length 2.
       
       rankingUse <- rankings[[tunePick]]
-      selectionIndices <- rankingUse[1:tuneRow[, "topN"]]
+      selectionIndices <- rankingUse[1:(tuneDetails[[1]][tuneDetails[[2]], "topN"])]
       
+      names(tuneDetails) <- c("tuneCombinations", "bestIndex")
+      colnames(tuneDetails[[1]])[ncol(tuneDetails[[1]])] <- performanceType
       list(ranked = rankingUse, selected = selectionIndices, tune = tuneDetails)
     } else if(is.list(featureRanking)) { # It is a list of functions for ensemble selection.
       featuresIndiciesLists <- mapply(function(selector, selParams)
@@ -296,8 +241,7 @@
       
       list(NULL, selectionIndices, NULL)
     } else { # Previous selection
-      selectedFeatures <- 
-      list(NULL, selectionIndices, NULL)
+      selectedFeatures <- list(NULL, selectionIndices, NULL)
     }
 }
 
@@ -315,7 +259,7 @@
 # within the same function, so test samples are also passed in case they are needed.
 .doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose)
 {
-  tuneChosen <- NULL
+  tuneDetails <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams))
   {
     performanceType <- modellingParams@trainParams@tuneParams[["performanceType"]]
@@ -328,7 +272,7 @@
       modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, as.list(tuneCombos[rowIndex, ]))
       if(crossValParams@tuneMode == "Resubstitution")
       {
-        result <- runTest(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
+        result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
         
@@ -346,9 +290,14 @@
         median(performances(result)[[performanceType]])
       }
     })
+    allPerformanceTable <- data.frame(tuneCombos, performances)
+    colnames(allPerformanceTable)[ncol(allPerformanceTable)] <- performanceType
+    
     betterValues <- .ClassifyRenvir[["performanceInfoTable"]][.ClassifyRenvir[["performanceInfoTable"]][, "type"] == performanceType, "better"]
     bestOne <- ifelse(betterValues == "lower", which.min(performances)[1], which.max(performances)[1])
     tuneChosen <- tuneCombos[bestOne, , drop = FALSE]
+    tuneDetails <- list(tuneCombos, bestOne)
+    names(tuneDetails) <- c("tuneCombinations", "bestIndex")
     modellingParams@trainParams@otherParams <- tuneChosen
   }
 
@@ -367,7 +316,7 @@
   if(verbose >= 2)
     message("Training completed.")  
   
-  list(model = trained, tune = tuneChosen)
+  list(model = trained, tune = tuneDetails)
 }
 
 # Creates a function call to a prediction function.
@@ -566,6 +515,7 @@
         "GLM" = GLMparams(),
         "elasticNetGLM" = elasticNetGLMparams(),
         "SVM" = SVMparams(),
+        "NSC" = NSCparams(),
         "DLDA" = DLDAparams(),
         "naiveBayes" = naiveBayesParams(),
         "mixturesNormals" = mixModelsParams(),

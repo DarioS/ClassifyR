@@ -76,6 +76,7 @@
     "GLM", "Logistic regression.",
     "elasticNetGLM", "Elastic net GLM multinomial regression.",
     "SVM", "Support Vector Machine.",
+    "NSC", "Nearest Shrunken Centroids.",
     "naiveBayes", "Naive Bayes kernel feature voting classifier.",
     "mixturesNormals", "Mixture of normals feature voting classifier.",
     "CoxPH", "Cox proportional hazards.",
@@ -93,3 +94,5 @@
     ),
   ncol = 2, byrow = TRUE, dimnames = list(NULL, c("multiViewMethod Keyword", "Description"))
 ) |> as.data.frame()
+
+.ClassifyRenvir[["prepareDataFormals"]] <- c("useFeatures", "maxMissingProp", "topNvariance")

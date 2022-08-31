@@ -119,7 +119,7 @@ mcols(measurementsDF) <- data.frame(
 )
 
 result <- crossValidate(measurementsDF, classes, classifier = "SVM", nFolds = 5,
-                        nRepeats = 2, multiViewMethod = "merge")
+                        nRepeats = 3, multiViewMethod = "merge")
 
 performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```
@@ -135,7 +135,7 @@ measurementsList <- list(
 names(measurementsList) <- c("assay_1", "assay_2")
 
 result <- crossValidate(measurementsList, classes, classifier = "SVM", nFolds = 5,
-                        nRepeats = 2, multiViewMethod = "merge")
+                        nRepeats = 3, multiViewMethod = "merge")
 
 performancePlot(result, characteristicsList = list(x = "Assay Name"))
 ```

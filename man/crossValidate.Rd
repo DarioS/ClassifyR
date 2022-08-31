@@ -8,7 +8,12 @@
 \alias{crossValidate,data.frame-method}
 \alias{crossValidate,MultiAssayExperiment-method}
 \alias{crossValidate,list-method}
-\alias{predict,ClassifyResult-method}
+\alias{train.matrix}
+\alias{train.data.frame}
+\alias{train.DataFrame}
+\alias{train.list}
+\alias{train.MultiAssayExperiment}
+\alias{predict.trainedByClassifyR}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
 crossValidate(measurements, outcome, ...)
@@ -21,7 +26,7 @@ crossValidate(measurements, outcome, ...)
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  assayCombinations = NULL,
+  assayCombinations = "all",
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
@@ -31,17 +36,18 @@ crossValidate(measurements, outcome, ...)
 
 \S4method{crossValidate}{MultiAssayExperiment}(
   measurements,
-  outcome,
+  outcomeColumns,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  assayCombinations = NULL,
+  assayCombinations = "all",
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
 \S4method{crossValidate}{data.frame}(
@@ -52,11 +58,12 @@ crossValidate(measurements, outcome, ...)
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  assayCombinations = NULL,
+  assayCombinations = "all",
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
 \S4method{crossValidate}{matrix}(
@@ -67,11 +74,12 @@ crossValidate(measurements, outcome, ...)
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  assayCombinations = NULL,
+  assayCombinations = "all",
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
 \S4method{crossValidate}{list}(
@@ -82,29 +90,43 @@ crossValidate(measurements, outcome, ...)
   selectionOptimisation = "Resubstitution",
   classifier = "randomForest",
   multiViewMethod = "none",
-  assayCombinations = NULL,
+  assayCombinations = "all",
   nFolds = 5,
   nRepeats = 20,
   nCores = 1,
-  characteristicsLabel = NULL
+  characteristicsLabel = NULL,
+  ...
 )
 
-\S4method{predict}{ClassifyResult}(object, newData)
+train.matrix(x, outcomeTrain, ...)
+
+train.data.frame(x, outcomeTrain, ...)
+
+train.DataFrame(
+  x,
+  outcomeTrain,
+  classifier = "randomForest",
+  multiViewMethod = "none",
+  assayIDs = "all",
+  ...
+)
+
+train.list(x, outcomeTrain, ...)
+
+train.MultiAssayExperiment(x, outcomeColumns, ...)
+
+\method{predict}{trainedByClassifyR}(object, newData, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
-or a list of these objects containing the training data.  For a
-\code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
-the rows are features and the columns are samples, as is typical in Bioconductor.}
+or a list of these objects containing the data.}
 
 \item{outcome}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
-column name in \code{measurements} if it is a \code{\link{DataFrame}} or the
-column name in \code{colData(measurements)} if \code{measurements} is a \code{\link{MultiAssayExperiment}}. If a column name, that column will be
-removed before training. Or a \code{\link{Surv}} object or a character vector of length 2 or 3 specifying the time and event columns in
-\code{measurements} for survival outcome.}
+column name in \code{measurements} if it is a \code{\link{DataFrame}}. Or a \code{\link{Surv}} object or a character vector of
+length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome.}
 
-\item{...}{Parameters passed into \code{\link{prepareData}}.}
+\item{...}{Parameters passed into \code{\link{prepareData}} which control subsetting and filtering of input data.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
@@ -122,7 +144,7 @@ and performing multiview classification, the respective classification methods w
 \item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
 
 \item{assayCombinations}{A character vector or list of character vectors proposing the assays or, in the case of a list, combination of assays to use
-with each element being a vector of assays to combine.}
+with each element being a vector of assays to combine. Special value \code{"all"} means all possible subsets of assays.}
 
 \item{nFolds}{A numeric specifying the number of folds to use for cross-validation.}
 
@@ -132,25 +154,36 @@ with each element being a vector of assays to combine.}
 
 \item{characteristicsLabel}{A character specifying an additional label for the cross-validation run.}
 
-\item{object}{A trained model to predict with.}
+\item{outcomeColumns}{If \code{measurements} is a \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.}
 
-\item{newData}{The data to use to make predictions with.}
+\item{x}{Same as \code{measurements} but only training samples.}
+
+\item{outcomeTrain}{For the \code{train} function, either a factor vector of classes, a \code{\link{Surv}} object, or
+a character string, or vector of such strings, containing column name(s) of column(s)
+containing either classes or time and event information about survival.}
+
+\item{assayIDs}{A character vector for assays to train with. Special value \code{"all"}
+uses all assays in the input object.}
+
+\item{object}{A fitted model or a list of such models.}
+
+\item{newData}{For the \code{predict} function, an object of type \code{matrix}, \code{data.frame}
+\code{DataFrame}, \code{list} (of matrices or data frames) or \code{MultiAssayExperiment} containing
+the data to make predictions with with either a fitted model created by \code{train} or the final model
+stored in a \code{\link{ClassifyResult}} object.}
 }
 \value{
 An object of class \code{\link{ClassifyResult}}
 }
 \description{
 This function has been designed to facilitate the comparison of classification
-methods using cross-validation. A selection of typical  comparisons are implemented.
+methods using cross-validation. A selection of typical comparisons are implemented. The \code{train} function
+is a convenience method for training on one data set and predicting on an independent validation data set.
 }
 \details{
-\code{classifier} can be any of the following implemented approaches - randomForest, GLM, elasticNetGLM, logistic, SVM, DLDA, kNN, naiveBayes, mixturesNormals.
-
-\code{selectionMethod} can be any of the following implemented approaches -  none, t-test, limma, edgeR, NSC, Bartlett, Levene, DMD, likelihoodRatio, KS or KL.
-
-\code{multiViewMethod} can take a few different values. Using \code{merge} will merge or bind the assays after feature selection. 
- Using \code{prevalidation} will build prevalidated vectors on all the assays except the clinical data. There must be a assay called clinical.
- Using \code{PCA} will perform Principal Components Analysis on each assay and then merge the top few components with the clinical data. There must be a assay called clinical.
+\code{classifier} can be any a keyword for any of the implemented approaches as shown by \code{available()}.
+\code{selectionMethod} can be a keyword for any of the implemented approaches as shown by \code{available("selectionMethod")}.
+\code{multiViewMethod} can be a keyword for any of the implemented approaches as shown by \code{available("multiViewMethod")}.
 }
 \examples{
 

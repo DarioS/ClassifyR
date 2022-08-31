@@ -70,11 +70,11 @@
 #' \code{FALSE}, the x-axis labels are hidden.
 #' @param showYtickLabels Logical. Default: \code{TRUE}. If set to
 #' \code{FALSE}, the y-axis labels are hidden.
-#' @param xLabelPositions Either "auto" or a vector of values. The positions of
-#' labels on the x-axis.  If "auto", the placement of labels is automatically
+#' @param xLabelPositions Either \code{"auto"} or a vector of values. The positions of
+#' labels on the x-axis.  If \code{"auto"}, the placement of labels is automatically
 #' calculated.
-#' @param yLabelPositions Either "auto" or a vector of values. The positions of
-#' labels on the y-axis.  If "auto", the placement of labels is automatically
+#' @param yLabelPositions Either \code{"auto"} or a vector of values. The positions of
+#' labels on the y-axis.  If \code{"auto"}, the placement of labels is automatically
 #' calculated.
 #' @param fontSizes A vector of length 5. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
