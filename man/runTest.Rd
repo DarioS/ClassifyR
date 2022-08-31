@@ -17,26 +17,20 @@
   crossValParams = CrossValParams(),
   modellingParams = ModellingParams(),
   characteristics = S4Vectors::DataFrame(),
+  ...,
   verbose = 1,
   .iteration = NULL
 )
 
-\S4method{runTest}{MultiAssayExperiment}(
-  measurementsTrain,
-  measurementsTest,
-  targets = names(measurements),
-  outcomeColumns,
-  ...
-)
+\S4method{runTest}{MultiAssayExperiment}(measurementsTrain, measurementsTest, outcomeColumns, ...)
 }
 \arguments{
 \item{measurementsTrain}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
 or \code{\link{MultiAssayExperiment}} containing the training data. For a
 \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.}
 
-\item{...}{Variables not used by the \code{matrix} nor the
-\code{MultiAssayExperiment} method which are passed into and used by the
-\code{DataFrame} method.}
+\item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+are passed into and used by the \code{DataFrame} method or passed onwards to \code{\link{prepareData}}.}
 
 \item{outcomeTrain}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
@@ -45,7 +39,7 @@ containing either classes or time and event information about survival.}
 \item{measurementsTest}{Same data type as \code{measurementsTrain}, but only the test
 samples.}
 
-\item{outcomeTest}{Same data type as \code{outcomeTrain}, but only the test
+\item{outcomeTest}{Same data type as \code{outcomeTrain}, but for only the test
 samples.}
 
 \item{crossValParams}{An object of class \code{\link{CrossValParams}},
@@ -70,11 +64,6 @@ more lower-level functions print messages.}
 
 \item{.iteration}{Not to be set by a user. This value is used to keep track
 of the cross-validation iteration, if called by \code{\link{runTests}}.}
-
-\item{targets}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that numeric variables from the clinical data table will be
-used.}
 
 \item{outcomeColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}

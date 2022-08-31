@@ -1,7 +1,7 @@
 #' Plot Receiver Operating Curve Graphs for Classification Results
 #' 
 #' Creates one ROC plot or multiple ROC plots for a list of ClassifyResult
-#' objects.  One plot is created if the data set has two classes and multiple
+#' objects. One plot is created if the data set has two classes and multiple
 #' plots are created if the data set has three or more classes.
 #' 
 #' The scores stored in the results should be higher if the sample is more
@@ -21,13 +21,13 @@
 #' averaged ROC curve.
 #' @param interval Default: 95 (percent). The percent confidence interval to
 #' draw around the averaged ROC curve, if mode is \code{"each"}.
-#' @param comparison The aspect of the experimental design to compare. Can be
+#' @param comparison Default: \code{"auto"}. The aspect of the experimental design to compare. Can be
 #' any characteristic that all results share. If the data set has two classes,
 #' then the slot name with factor levels to be used for colouring the lines.
 #' Otherwise, it specifies the variable used for plot facetting.
-#' @param lineColours A vector of colours for different levels of the
+#' @param lineColours Default: \code{"auto"}. A vector of colours for different levels of the
 #' comparison parameter, or if there are three or more classes, the classes.
-#' If \code{NULL}, a default colour palette is automatically generated.
+#' If \code{"auto"}, a default colour palette is automatically generated.
 #' @param lineWidth A single number controlling the thickness of lines drawn.
 #' @param fontSizes A vector of length 5. The first number is the size of the
 #' title.  The second number is the size of the axes titles and AUC text, if it
@@ -66,7 +66,7 @@
 #'   predicted[c(2, 6), "Healthy"] <- c(0.40, 0.60)
 #'   predicted[c(2, 6), "Cancer"] <- c(0.60, 0.40)
 #'   result2 <- ClassifyResult(DataFrame(characteristic = c("Data Set", "Selection Name", "Classifier Name", "Cross-validation"),
-#'                                       value = c("Example", "Bartlett Test", "Differential Variability", "2-fold")),
+#'                                       value = c("Melanoma", "Bartlett Test", "Differential Variability", "2-fold")),
 #'                             LETTERS[1:20], paste("Gene", LETTERS[1:10]), list(paste("Gene", LETTERS[1:10]), paste("Gene", LETTERS[c(5:1, 6:10)])),
 #'                             list(paste("Gene", LETTERS[1:3]), paste("Gene", LETTERS[1:5])),
 #'                             list(function(oracle){}), NULL, predicted, actual)
@@ -80,7 +80,7 @@ setGeneric("ROCplot", function(results, ...) standardGeneric("ROCplot"))
 #' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,
-                   comparison = "Classifier Name", lineColours = NULL,
+                   comparison = "auto", lineColours = "auto",
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
                    plotTitle = "ROC", legendTitle = NULL, xLabel = "False Positive Rate", yLabel = "True Positive Rate", showAUC = TRUE)
 {
@@ -89,7 +89,15 @@ setMethod("ROCplot", "list",
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
   mode <- match.arg(mode)
-                      
+  characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
+  if(comparison == "auto")
+  {
+    if(max(characteristicsCounts) == length(results))
+      comparison <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
+    else
+      stop("No characteristic is present for all results but must be.")
+  }
+               
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   distinctClasses <- levels(actualOutcome(results[[1]]))
   numberDistinctClasses <- length(distinctClasses)
@@ -181,8 +189,8 @@ setMethod("ROCplot", "list",
   else
     lineColour <- comparison
   
-  if(is.null(lineColours))
-      lineColours <- scales::hue_pal()(ifelse(lineColour == "class", numberDistinctClasses, length(unique(comparisonValues))))
+  if(lineColours == "auto")
+      lineColours <- scales::hue_pal()(ifelse(lineColour == "class", numberDistinctClasses, max(characteristicsCounts)))
   if(is.null(legendTitle))
     legendTitle <- ifelse(lineColour == "class", "Class", comparisonName)
   
@@ -207,8 +215,6 @@ setMethod("ROCplot", "list",
   comparison <- rlang::sym(comparison)
   ROCplots <- lapply(plotDataSets, function(plotData)
               {
-
-
                 ROCplot <- ggplot2::ggplot(plotData, ggplot2::aes(x = FPR, y = TPR, colour = !!lineColour)) +
                            ggplot2::geom_line(size = lineWidth) + ggplot2::xlab(NULL) + ggplot2::ylab(NULL) + ggplot2::labs(colour = legendTitle) + ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, size = lineWidth, colour = "black") + ggplot2::scale_x_continuous(breaks = labelPositions, limits = c(0, 1)) +  ggplot2::scale_y_continuous(breaks = labelPositions, limits = c(0, 1)) +
                            ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), legend.position = c(1, 0), legend.justification = c(1, 0), legend.background = ggplot2::element_rect(fill = "transparent"), legend.title = ggplot2::element_text(size = fontSizes[4], hjust = 0), legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::guides(colour = ggplot2::guide_legend(title.hjust = 0.5)) + ggplot2::scale_colour_manual(values = lineColours)

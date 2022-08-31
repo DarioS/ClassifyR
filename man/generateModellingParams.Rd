@@ -18,9 +18,7 @@ generateModellingParams(
 \item{assayIDs}{A vector of data set identifiers as long at the number of data sets.}
 
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
-or a list of these objects containing the training data.  For a
-\code{matrix} and \code{data.frame}, the rows are samples and the columns are features. For a \code{data.frame} or \code{\link{MultiAssayExperiment}} assay
-the rows are features and the columns are samples, as is typical in Bioconductor.}
+or a list of these objects containing the data.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 

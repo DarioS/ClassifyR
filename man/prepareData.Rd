@@ -17,13 +17,7 @@
   topNvariance = NULL
 )
 
-\S4method{prepareData}{MultiAssayExperiment}(
-  measurements,
-  outcomeColumns = NULL,
-  useFeatures = data.frame(assay = names(measurements), feature = rep("all",
-    length(measurements))),
-  ...
-)
+\S4method{prepareData}{MultiAssayExperiment}(measurements, outcomeColumns = NULL, useFeatures = "all", ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -63,7 +57,7 @@ and the second element is the outcomes to use for modelling.
 Input data could be of matrix, MultiAssayExperiment, or DataFrame format and this
 function will prepare a DataFrame of features and a vector of outcomes and help
 to exclude nuisance features such as dates or unique sample identifiers from
-future modelling.
+subsequent modelling.
 }
 \author{
 Dario Strbenac

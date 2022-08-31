@@ -15,10 +15,11 @@
   crossValParams = CrossValParams(),
   modellingParams = ModellingParams(),
   characteristics = S4Vectors::DataFrame(),
+  ...,
   verbose = 1
 )
 
-\S4method{runTests}{MultiAssayExperiment}(measurements, targets = names(measurements), outcomeColumns, ...)
+\S4method{runTests}{MultiAssayExperiment}(measurements, outcomeColumns, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -26,9 +27,8 @@ or \code{\link{MultiAssayExperiment}} containing all of the data. For a
 \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns
 are features.}
 
-\item{...}{Variables not used by the \code{matrix} nor the
-\code{MultiAssayExperiment} method which are passed into and used by the
-\code{DataFrame} method.}
+\item{...}{Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+are passed into and used by the \code{DataFrame} method or passed onwards to \code{\link{prepareData}}.}
 
 \item{outcome}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
@@ -52,10 +52,6 @@ and this can be left blank.}
 \item{verbose}{Default: 1. A number between 0 and 3 for the amount of
 progress messages to give.  A higher number will produce more messages as
 more lower-level functions print messages.}
-
-\item{targets}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-names of the data tables to be used. \code{"clinical"} is also a valid value
-and specifies that the clinical data table will be used.}
 
 \item{outcomeColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}

@@ -104,7 +104,7 @@ of predictions made during the cross-validation procedure.}}
   #if(require(sparsediscrim))
   #{
     data(asthma)
-    classified <- crossValidate(measurements, classes)
+    classified <- crossValidate(measurements, classes, nRepeats = 5)
     class(classified)
   #}
   
