@@ -1,47 +1,6 @@
 ##### Table of contents #####
-# Set old classes
 # Create union of classes
 # Set generic accessors
-
-################################################################################
-#
-# Set old classes
-#
-################################################################################
-
-
-
-# Delete when sparsediscrim is restored to CRAN.
-# Trained dlda Object
-dlda <- function(x, ...) {
-  UseMethod("dlda")
-}
-setOldClass("dlda")
-
-# Trained pamr Object
-setOldClass("pamrtrained")
-
-
-# Trained svm Object
-setOldClass("svm")
-
-# Trained multnet Object
-setOldClass("multnet")
-
-# Trained coxnet Object
-setOldClass("coxnet")
-
-# Trained randomForest Object
-setOldClass("randomForest")
-
-# Trained coxph Object
-setOldClass("coxph")
-
-# Survival Data Container
-setOldClass("Surv")
-
-# Survival Forest Data Container
-setOldClass("rfsrc")
 
 ################################################################################
 #
@@ -63,6 +22,7 @@ setClassUnion("numericOrNULL", c("numeric", "NULL"))
 setClassUnion("characterOrDataFrame", c("character", "DataFrame"))
 
 # Union of a Surv class and a factor for flexibility with sample outcome
+setOldClass("Surv")
 setClassUnion("factorOrSurv", c("factor", "Surv"))
 
 # Union of a List and NULL
@@ -71,6 +31,9 @@ setClassUnion("listOrNULL", c("list", "NULL"))
 # Union of NULL and DataFrame Class
 setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 
+# Tabular data
+setClassUnion("tabular", c("data.frame", "DataFrame", "matrix"))
+setClassUnion("tabularOrList", c("tabular", "list"))
 
 ################################################################################
 #

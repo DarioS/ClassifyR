@@ -15,8 +15,8 @@
   referenceLevel = NULL,
   characteristicsList = list(),
   orderingList = list(),
-  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts =
-    c(24, 16, 12, 12, 12, 16)),
+  sizesList = list(lineWidth = 1, pointSize = 2, legendLinesPointsSize = 1, fonts = c(24,
+    16, 12, 12, 12, 16)),
   lineColours = NULL,
   xLabelPositions = seq(10, 100, 10),
   yMax = 100,
@@ -26,7 +26,6 @@
     paste("Average Common Features with", referenceLevel, "(\%)"),
   margin = grid::unit(c(1, 1, 1, 1), "lines"),
   showLegend = TRUE,
-  plot = TRUE,
   parallelParams = bpparam()
 )
 }
@@ -87,9 +86,6 @@ palette will be used.}
 
 \item{showLegend}{If \code{TRUE}, a legend is plotted next to the plot. If
 FALSE, it is hidden.}
-
-\item{plot}{Logical. If \code{TRUE}, a plot is produced on the current
-graphics device.}
 
 \item{parallelParams}{An object of class \code{\link{MulticoreParam}} or
 \code{\link{SnowParam}}.}

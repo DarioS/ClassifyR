@@ -19,7 +19,7 @@
 #' containing either classes or time and event information about survival.
 #' @param measurementsTest Same data type as \code{measurementsTrain}, but only the test
 #' samples.
-#' @param outcomeTest Same data type as \code{outcomeTrain}, but only the test
+#' @param outcomeTest Same data type as \code{outcomeTrain}, but for only the test
 #' samples.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
 #' specifying the kind of cross-validation to be done, if nested
@@ -27,16 +27,11 @@
 #' @param modellingParams An object of class \code{\link{ModellingParams}},
 #' specifying the class rebalancing, transformation (if any), feature selection
 #' (if any), training and prediction to be done on the data set.
-#' @param targets If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that numeric variables from the clinical data table will be
-#' used.
 #' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
 #' that contain(s) the samples' outcome to use for prediction.
-#' @param ... Variables not used by the \code{matrix} nor the
-#' \code{MultiAssayExperiment} method which are passed into and used by the
-#' \code{DataFrame} method.
+#' @param ... Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+#' are passed into and used by the \code{DataFrame} method or passed onwards to \code{\link{prepareData}}.
 #' @param characteristics A \code{\link{DataFrame}} describing the
 #' characteristics of the classification used. First column must be named
 #' \code{"charateristic"} and second column must be named \code{"value"}.
@@ -71,8 +66,7 @@
 #' @importFrom S4Vectors do.call mcols
 #' @usage NULL
 #' @export
-setGeneric("runTest", function(measurementsTrain, ...)
-           standardGeneric("runTest"))
+setGeneric("runTest", function(measurementsTrain, ...) standardGeneric("runTest"))
 
 #' @rdname runTest
 #' @export
@@ -91,7 +85,7 @@ setMethod("runTest", "matrix", # Matrix of numeric measurements.
 setMethod("runTest", "DataFrame", # Sample information data or one of the other inputs, transformed.
 function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
          crossValParams = CrossValParams(), # crossValParams might be used for tuning optimisation.
-         modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), verbose = 1, .iteration = NULL)
+         modellingParams = ModellingParams(), characteristics = S4Vectors::DataFrame(), ..., verbose = 1, .iteration = NULL)
 {
   if(is.null(.iteration)) # Not being called by runTests but by user. So, check the user input.
   {
@@ -100,7 +94,7 @@ function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest,
     if(any(is.na(measurementsTrain)))
       stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")                
     
-    splitDatasetTrain <- prepareData(measurementsTrain, outcomeTrain)
+    splitDatasetTrain <- prepareData(measurementsTrain, outcomeTrain, ...)
       
     # Rebalance the class sizes of the training samples by either downsampling or upsampling
     # or leave untouched if balancing is none.
@@ -223,6 +217,8 @@ input data. Autmomatically reducing to smaller number.")
     predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
                                 error = function(error) error[["message"]]
                                 )
+    
+        predictedOutcome <- .doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose)
 
     if(is.character(predictedOutcome)) # An error occurred.
       return(predictedOutcome) # Return early.
@@ -328,24 +324,34 @@ input data. Autmomatically reducing to smaller number.")
     }
 
     ClassifyResult(characteristics, allSamples, originalFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, S4Vectors::DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable)
+                   list(models), tuneDetails, S4Vectors::DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable, modellingParams, list(models))
   }  
 })
 
 #' @rdname runTest
 #' @export
 setMethod("runTest", c("MultiAssayExperiment"),
-          function(measurementsTrain, measurementsTest, targets = names(measurements), outcomeColumns, ...)
+          function(measurementsTrain, measurementsTest, outcomeColumns, ...)
 {
-  omicsTargets <- setdiff(targets, "clinical")
-  if(length(omicsTargets) > 0)
-  {
-    if(any(anyReplicated(measurements[, , omicsTargets])))
-      stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
+  prepArgsTrain <- list(measurementsTrain, outcomeColumns)
+  prepArgsTest <- list(measurementsTest, outcomeColumns)
+  extraInputs <- list(...)
+  if(length(extraInputs) > 0)
+    prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+  if(length(prepExtras) > 0)
+  {      
+    prepArgsTrain <- append(prepArgsTrain, extraInputs[prepExtras])
+    prepArgsTest <- append(prepArgsTest, extraInputs[prepExtras])
   }
+  measurementsAndOutcomeTrain <- do.call(prepareData, prepArgs)
+  measurementsAndOutcomeTest <- do.call(prepareData, prepArgs)
   
-  tablesAndClassesTrain <- .MAEtoWideTable(measurementsTrain, targets, outcomeColumns, restrict = NULL)
-  tablesAndClassesTest <- .MAEtoWideTable(measurementsTest, targets, outcomeColumns, restrict = NULL)
-  runTest(tablesAndClassesTrain[["dataTable"]], tablesAndClassesTrain[["outcome"]],
-          tablesAndClassesTest[["dataTable"]], tablesAndClassesTest[["outcome"]], ...)            
+  runTestArgs <- list(measurementsAndOutcomeTrain[["measurements"]], measurementsAndOutcomeTrain[["outcome"]],
+                      measurementsAndOutcomeTest[["measurements"]], measurementsAndOutcomeTest[["outcome"]])
+  if(length(extraInputs) > 0 && (length(prepExtras) == 0 || length(extraInputs[-prepExtras]) > 0))
+  {
+    if(length(prepExtras) == 0) runTestArgs <- append(runTestArgs, extraInputs) else
+    runTestArgs <- append(runTestArgs, extraInputs[-prepExtras])
+  }
+  do.call(runTest, runTestArgs)
 })

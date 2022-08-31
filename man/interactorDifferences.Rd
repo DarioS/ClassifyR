@@ -17,7 +17,7 @@ Based on Known Sub-networks}
   verbose = 3
 )
 
-\S4method{interactorDifferences}{MultiAssayExperiment}(measurements, target = NULL, classesColumn, ...)
+\S4method{interactorDifferences}{MultiAssayExperiment}(measurements, useFeatures = "all", ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -37,12 +37,10 @@ returned.}
 progress messages to give.  This function only prints progress messages if
 the value is 3.}
 
-\item{target}{If \code{measurements} is a \code{MultiAssayExperiment}, the
-name of the data table to be used.}
-
-\item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-that contains each sample's outcome to use for prediction.}
+\item{useFeatures}{If \code{measurements} is a \code{MultiAssayExperiment},
+\code{"all"} or a two-column table of features to use. If a table, the first column must have
+assay names and the second column must have feature names found for that assay.
+\code{"clinical"} is also a valid assay name and refers to the clinical data table.}
 }
 \value{
 An object of class \code{\link{DataFrame}} with one column for each

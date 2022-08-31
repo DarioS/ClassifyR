@@ -64,8 +64,6 @@
 #' @param margin The margin to have around the plot.
 #' @param showLegend If \code{TRUE}, a legend is plotted next to the plot. If
 #' FALSE, it is hidden.
-#' @param plot Logical. If \code{TRUE}, a plot is produced on the current
-#' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
 #' @param ... Not used by end user.
@@ -126,7 +124,7 @@ setMethod("rankingPlot", "list",
                    title = if(comparison[1] == "within") "Feature Ranking Stability" else "Feature Ranking Commonality",
                    yLabel = if(is.null(referenceLevel)) "Average Common Features (%)" else paste("Average Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"),
-                   showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
+                   showLegend = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")
@@ -290,9 +288,6 @@ setMethod("rankingPlot", "list",
                                           shape = ggplot2::guide_legend(override.aes = list(size = sizesList[["legendLinesPointsSize"]])))
   
   overlapPlot <- overlapPlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = sizesList[["fontSizes"]][6]))
-  
-  if(plot == TRUE)
-    print(overlapPlot)
   
   overlapPlot
 })

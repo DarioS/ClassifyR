@@ -17,11 +17,10 @@
 #' @param featurePairs A object of type \code{\link{Pairs}}.
 #' @param absolute If TRUE, then the absolute values of the differences are
 #' returned.
-#' @param target If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' name of the data table to be used.
-#' @param classesColumn If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-#' names of the class column in the table extracted by \code{colData(multiAssayExperiment)}
-#' that contains each sample's outcome to use for prediction.
+#' @param useFeatures If \code{measurements} is a \code{MultiAssayExperiment},
+#' \code{"all"} or a two-column table of features to use. If a table, the first column must have
+#' assay names and the second column must have feature names found for that assay.
+#' \code{"clinical"} is also a valid assay name and refers to the clinical data table.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -94,8 +93,8 @@ setMethod("interactorDifferences", "DataFrame", # Possibly mixed data types.
 #' @rdname interactorDifferences
 #' @export
 setMethod("interactorDifferences", "MultiAssayExperiment", # Pick one numeric table from the data set.
-          function(measurements, target = NULL, classesColumn, ...)
+          function(measurements, useFeatures = "all", ...)
 {
-  tablesAndClasses <- .MAEtoWideTable(measurements, target, classesColumn)
-  interactorDifferences(tablesAndClasses[["dataTable"]], ...)
+  measurementsDF <- prepareData(measurements, useFeatures = useFeatures)[["measurements"]]
+  interactorDifferences(measurementsDF, ...)
 })

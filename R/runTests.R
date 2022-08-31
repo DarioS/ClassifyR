@@ -26,15 +26,11 @@
 #' package.  Transformation, selection and prediction functions provided by
 #' this package will cause the characteristics to be automatically determined
 #' and this can be left blank.
-#' @param targets If \code{measurements} is a \code{MultiAssayExperiment}, the
-#' names of the data tables to be used. \code{"clinical"} is also a valid value
-#' and specifies that the clinical data table will be used.
 #' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 #' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
 #' that contain(s)s the samples' outcome to use for prediction.
-#' @param ... Variables not used by the \code{matrix} nor the
-#' \code{MultiAssayExperiment} method which are passed into and used by the
-#' \code{DataFrame} method.
+#' @param ... Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
+#' are passed into and used by the \code{DataFrame} method or passed onwards to \code{\link{prepareData}}.
 #' @param verbose Default: 1. A number between 0 and 3 for the amount of
 #' progress messages to give.  A higher number will produce more messages as
 #' more lower-level functions print messages.
@@ -72,7 +68,7 @@ setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix
 #' @rdname runTests
 #' @export
 setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
-           characteristics = S4Vectors::DataFrame(), verbose = 1)
+           characteristics = S4Vectors::DataFrame(), ..., verbose = 1)
 {
   # Get out the outcome if inside of data table.           
   if(is.null(rownames(measurements)))
@@ -83,7 +79,7 @@ setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParam
 
   originalFeatures <- colnames(measurements)
   if("feature" %in% colnames(S4Vectors::mcols(measurements))) originalFeatures <- S4Vectors::mcols(measurements)[, c("assay", "feature")]                 
-  splitDataset <- prepareData(measurements, outcome)
+  splitDataset <- prepareData(measurements, outcome, ...)
   measurements <- splitDataset[["measurements"]]
   outcome <- splitDataset[["outcome"]]
   
@@ -172,23 +168,32 @@ input data. Autmomatically reducing to smaller number.")
   if(!is.null(results[[1]][["importance"]]))
     importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
+  fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+  
   ClassifyResult(characteristics, rownames(measurements), originalFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams)
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams, list(fullResult$models))
 })
 
 #' @rdname runTests
+#' @import MultiAssayExperiment methods
 #' @export
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, targets = names(measurements), outcomeColumns, ...)
+          function(measurements, outcomeColumns, ...)
 {
-  omicsTargets <- setdiff(targets, "clinical")
-  if(length(omicsTargets) > 0)
-  {
-    if(any(anyReplicated(measurements[, , omicsTargets])))
-      stop("Data set contains replicates. Please provide remove or average replicate observations and try again.")
-  }
+  prepArgs <- list(measurements, outcomeColumns)              
+  extraInputs <- list(...)
+  if(length(extraInputs) > 0)
+    prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+  if(length(prepExtras) > 0)
+    prepArgs <- append(prepArgs, extraInputs[prepExtras])
+  measurementsAndOutcome <- do.call(prepareData, prepArgs)
   
-  tablesAndOutcome <- .MAEtoWideTable(measurements, targets, outcomeColumns, restrict = NULL)
-  runTests(tablesAndOutcome[["dataTable"]], tablesAndOutcome[["outcome"]], ...)            
+  runTestsArgs <- list(measurementsAndOutcome[["measurements"]], measurementsAndOutcome[["outcome"]])
+  if(length(extraInputs) > 0 && (length(prepExtras) == 0 || length(extraInputs[-prepExtras]) > 0))
+  {
+    if(length(prepExtras) == 0) runTestsArgs <- append(runTestsArgs, extraInputs) else
+    runTestsArgs <- append(runTestsArgs, extraInputs[-prepExtras])
+  }
+  do.call(runTests, runTestsArgs)
 })
