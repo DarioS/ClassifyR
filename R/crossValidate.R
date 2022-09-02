@@ -854,14 +854,17 @@ simplifyResults <- function(results, values = c("assay", "classifier", "selectio
 }
 
 #' @rdname crossValidate
+#' @importFrom generics train
+#' @method train matrix
 #' @export
-train.matrix <-function(x, outcomeTrain, ...)
+train.matrix <- function(x, outcomeTrain, ...)
                {
                  x <- DataFrame(x, check.names = FALSE)
                  train(x, outcomeTrain, ...)
                }
 
 #' @rdname crossValidate
+#' @method train data.frame
 #' @export
 train.data.frame <- function(x, outcomeTrain, ...)
                     {
@@ -872,20 +875,26 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @param assayIDs A character vector for assays to train with. Special value \code{"all"}
 #' uses all assays in the input object.
+#' @method train DataFrame
 #' @export
 train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiViewMethod = "none", assayIDs = "all", ...) # ... for prepareData.
                    {
               prepArgs <- list(x, outcomeTrain)
               extraInputs <- list(...)
+              prepExtras <- numeric()
               if(length(extraInputs) > 0)
                 prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
               if(length(prepExtras) > 0)
                 prepArgs <- append(prepArgs, extraInputs[prepExtras])
               measurementsAndOutcome <- do.call(prepareData, prepArgs)
+              measurements <- measurementsAndOutcome[["measurements"]]
+              outcomeTrain <- measurementsAndOutcome[["outcome"]]
               
               classifier <- cleanClassifier(classifier = classifier, measurements = measurements)
-              if(assayIDs == "all") assayIDs <- unique(mcols(x)[, "assay"])
+              if(assayIDs == "all") assayIDs <- unique(mcols(measurements)[, "assay"])
               if(is.null(assayIDs)) assayIDs <- 1
+              names(assayIDs) <- assayIDs
+              names(classifier) <- classifier
 
               if(multiViewMethod == "none"){
                   resClassifier <-
@@ -897,10 +906,10 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
                                   if(assayIndex != 1) measurementsUse <- measurements[, mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   
                                   classifierParams <- .classifierKeywordToParams(classifierForAssay)
-                                  modellingParams <- ModellingParams(balancing = "none", selectParams = "none",
+                                  modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                                                trainParams = classifierParams$trainParams, predictParams = classifierParams$predictParams)
                                   
-                                  .doTrain(measurementsUse, outcomeTrain, NULL, NULL, modellingParams, verbose = 0)[["model"]]
+                                  .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = 0)[["model"]]
                                   ## train model
                           },
                           simplify = FALSE)
@@ -908,8 +917,13 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
                       simplify = FALSE)
 
                   models <- unlist(resClassifier, recursive = FALSE)
-                  names(models) <- assayIDs
-                  class(models) <- c(class(models), "listOfModels")
+                  if(length(models) == 1) {
+                      model <- models[[1]]
+                      class(model) <- c(class(model), "trainedByClassifyR")
+                      models <- NULL
+                  } else {
+                      class(models) <- c(class(models), "listOfModels", "trainedByClassifyR")
+                  }
               }
 
               ################################
@@ -919,7 +933,8 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
               ### Merging or binding to combine data
               if(multiViewMethod == "merge"){
                   measurementsUse <- measurements[, mcols(measurements)[["assay"]] %in% assayIDs]
-                  .doTrain(measurementsUse, outcomeTrain, NULL, NULL, modellingParams, verbose = 0)[["model"]]
+                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                  class(model) <- c("trainedByClassifyR", class(model))
               }
 
 
@@ -941,7 +956,8 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
                                     selectParams = NULL,
                                     trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
                                     predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics))
-                 .doTrain(measurementsUse, outcomeTrain, NULL, NULL, modellingParams, verbose = 0)[["model"]]
+                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                 class(model) <- c("trainedByClassifyR", class(model))
               }
               
               ### Principal Components Analysis to combine data
@@ -956,11 +972,14 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
                 modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                    trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
                                    predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics))
-                .doTrain(measurementsUse, outcomeTrain, NULL, NULL, modellingParams, verbose = 0)[["model"]]
+                model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                class(model) <- c("trainedByClassifyR", class(model))
               }
+              if(missing(models) || is.null(models)) return(model) else return(models)
           }
 
 #' @rdname crossValidate
+#' @method train list
 #' @export
 # Each of the first four variables are named lists with names of assays.
 train.list <- function(x, outcomeTrain, ...)
@@ -997,11 +1016,13 @@ train.list <- function(x, outcomeTrain, ...)
 }
 
 #' @rdname crossValidate
+#' @method train MultiAssayExperiment
 #' @export
 train.MultiAssayExperiment <- function(x, outcomeColumns, ...)
           {
               prepArgs <- list(x, outcomeColumns)
               extraInputs <- list(...)
+              prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
                 prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
               if(length(prepExtras) > 0)
@@ -1021,7 +1042,7 @@ train.MultiAssayExperiment <- function(x, outcomeColumns, ...)
 #' \code{DataFrame}, \code{list} (of matrices or data frames) or \code{MultiAssayExperiment} containing
 #' the data to make predictions with with either a fitted model created by \code{train} or the final model
 #' stored in a \code{\link{ClassifyResult}} object.
-
+#' @method predict trainedByClassifyR
 #' @export
 predict.trainedByClassifyR <- function(object, newData, ...)
 {

@@ -191,7 +191,7 @@ input data. Autmomatically reducing to smaller number.")
   }
   
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
-  trained <- tryCatch(.doTrain(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose),
+  trained <- tryCatch(.doTrain(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, crossValParams, modellingParams, verbose),
                       error = function(error) error[["message"]])
   if(is.character(trained)) return(trained) # An error occurred.
   
@@ -238,7 +238,7 @@ input data. Autmomatically reducing to smaller number.")
     {
       measurementsTrainLess1 <- measurementsTrain[, -selectedIndex, drop = FALSE]
       measurementsTestLess1 <- measurementsTest[, -selectedIndex, drop = FALSE]
-      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomeTrain, measurementsTestLess1, outcomeTest, modellingParams, verbose),
+      modelWithoutOne <- tryCatch(.doTrain(measurementsTrainLess1, outcomeTrain, measurementsTestLess1, outcomeTest, crossValParams, modellingParams, verbose),
                                   error = function(error) error[["message"]])
       if(!is.null(modellingParams@predictParams))
       predictedOutcomeWithoutOne <- tryCatch(.doTest(modelWithoutOne[["model"]], measurementsTestLess1, modellingParams@predictParams, verbose),

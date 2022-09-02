@@ -106,7 +106,6 @@
   tuneParams <- modellingParams@selectParams@tuneParams
   performanceType <- tuneParams[["performanceType"]]
   topNfeatures <- tuneParams[["nFeatures"]]
-  tuneMode <- ifelse("tuneMode" %in% names(tuneParams), tuneParams[["tuneMode"]], crossValParams@tuneMode)
   tuneParams <- tuneParams[-match(c("performanceType", "nFeatures"), names(tuneParams))] # Only used as evaluation metric.
   
   # Make selectParams NULL, since we are currently doing selection and it shouldn't call
@@ -136,7 +135,7 @@
     if(attr(featureRanking, "name") == "previousSelection") # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
-    if(tuneMode == "none") # No parameters to choose between.
+    if(crossValParams@tuneMode == "none") # No parameters to choose between.
         return(list(NULL, rankings[[1]], NULL))
     
     tuneParamsTrain <- list(topN = topNfeatures)
@@ -257,7 +256,7 @@
 
 # Code to create a function call to a training function. Might also do training and testing
 # within the same function, so test samples are also passed in case they are needed.
-.doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, modellingParams, verbose)
+.doTrain <- function(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, crossValParams, modellingParams, verbose)
 {
   tuneDetails <- NULL
   if(!is.null(modellingParams@trainParams@tuneParams) && is.null(modellingParams@selectParams))
@@ -278,10 +277,10 @@
         
         predictions <- result[["predictions"]]
         if(class(predictions) == "data.frame")
-          predictedOutcome <- predictions[, "outcome"]
+          predictedOutcome <- predictions[, colnames(predictions) %in% c("class", "risk")]
         else
           predictedOutcome <- predictions
-        calcExternalPerformance(outcomeTest, predictedOutcome, performanceType)
+        calcExternalPerformance(outcomeTrain, predictedOutcome, performanceType)
       } else {
         result <- runTests(measurementsTrain, outcomeTrain,
                            crossValParams, modellingParams,
