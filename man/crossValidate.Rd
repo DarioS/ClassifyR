@@ -98,11 +98,11 @@ crossValidate(measurements, outcome, ...)
   ...
 )
 
-train.matrix(x, outcomeTrain, ...)
+\method{train}{matrix}(x, outcomeTrain, ...)
 
-train.data.frame(x, outcomeTrain, ...)
+\method{train}{data.frame}(x, outcomeTrain, ...)
 
-train.DataFrame(
+\method{train}{DataFrame}(
   x,
   outcomeTrain,
   classifier = "randomForest",
@@ -111,9 +111,9 @@ train.DataFrame(
   ...
 )
 
-train.list(x, outcomeTrain, ...)
+\method{train}{list}(x, outcomeTrain, ...)
 
-train.MultiAssayExperiment(x, outcomeColumns, ...)
+\method{train}{MultiAssayExperiment}(x, outcomeColumns, ...)
 
 \method{predict}{trainedByClassifyR}(object, newData, ...)
 }
