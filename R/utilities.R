@@ -300,7 +300,7 @@
     modellingParams@trainParams@otherParams <- tuneChosen
   }
 
-  if(attr(modellingParams@trainParams@classifier, "name") != "previousTrained")
+    if (!"previousTrained" %in% attr(modellingParams@trainParams@classifier, "name")) 
     # Don't name these first two variables. Some classifier functions might use classesTrain and others use outcomeTrain.
     paramList <- list(measurementsTrain, outcomeTrain)
   else # Don't pass the measurements and classes, because a pre-existing classifier is used.
