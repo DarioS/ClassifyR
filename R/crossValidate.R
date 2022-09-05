@@ -689,12 +689,13 @@ generateMultiviewParams <- function(assayIDs,
                                           classifier = classifier,
                                           multiViewMethod = "none")
 
+        performanceType <- ifelse(classifier %in% c("CoxPH", "CoxNet", "randomSurvivalForest"), "C-index", "Balanced Accuracy")
         # Update selectParams to use
         params@selectParams <- SelectParams("selectMulti",
                                             params = paramsAssays,
                                             characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "merge"),
                                             tuneParams = list(nFeatures = nFeatures[[1]],
-                                                              performanceType = "Balanced Error",
+                                                              performanceType = performanceType,
                                                               tuneMode = "none")
         )
         return(params)
