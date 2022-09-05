@@ -380,8 +380,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
 
 # This expects that each table is about the same set of samples and thus
 # has the same number of rows as every other table.
-#' @rdname crossValidate
-#' @importFrom S4Vectors combineRows                                                             
+#' @rdname crossValidate                                                            
 #' @export
 setMethod("crossValidate", "list",
           function(measurements,
