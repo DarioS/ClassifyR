@@ -426,12 +426,9 @@ setMethod("crossValidate", "list",
               }, df_list, names(df_list))
               
               
-              # combined_df <- do.call("cbind", df_list) was adding the list names to the colnames
+              combined_df <- do.call("cbind", df_list) 
+              colnames(combined_df) <- mcols(combined_df)$feature
 
-                combined_df <- df_list[[1]]
-                for(i in names(df_list)[-1]){
-                    combined_df <- S4Vectors::combineRows(combined_df, df_list[[i]], use.names=FALSE)
-                }
 
               
               crossValidate(measurements = combined_df,
