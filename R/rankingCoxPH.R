@@ -81,6 +81,26 @@ fastCox <- function(X, y, learnind, criterion, ...) {
 
 # equivalent to genefilter::rowttests for the cox model.  This is much faster
 # than calling coxph for each row of a ##igh-dimensional matrix.
+
+######################################
+######################################
+#' A function to perform fast cox proportional hazard model tests
+#'
+#' @param x matrix with variables as columns.
+#' @param y matrix with first column as time and second column as event.
+#' @param option whether to use the fast or slow method.
+#'
+#' @return CrossValParams object
+#' @export
+#'
+#' @examples
+#' data(asthma)
+#' time <- ppois(nrow(measurements),100)
+#' status <- sample(c(0,1), nrow(measurements), replace = TRUE)
+#' x = measurements
+#' y = cbind(time, status)
+#' output <- colCoxTests(x, y, "fast")
+#' @export
 colCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
   option <- match.arg(option)
   if (identical(option, "fast")) {
