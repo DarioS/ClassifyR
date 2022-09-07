@@ -218,8 +218,6 @@ input data. Autmomatically reducing to smaller number.")
                                 error = function(error) error[["message"]]
                                 )
     
-        predictedOutcome <- .doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose)
-
     if(is.character(predictedOutcome)) # An error occurred.
       return(predictedOutcome) # Return early.
     
