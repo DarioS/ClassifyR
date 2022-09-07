@@ -100,7 +100,7 @@ fastCox <- function(X, y, learnind, criterion, ...) {
 #'
 #' @examples
 #' data(asthma)
-#' time <- ppois(nrow(measurements),100)
+#' time <- rpois(nrow(measurements),100)
 #' status <- sample(c(0,1), nrow(measurements), replace = TRUE)
 #' x = measurements
 #' y = cbind(time, status)
