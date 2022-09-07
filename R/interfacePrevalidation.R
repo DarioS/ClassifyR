@@ -18,6 +18,7 @@ extractPrevalidation = function(assayPreval){ #}, startingCol) {
     use <- which(names(assayPreval)!="clinical")
     
     assayPreval <- sapply(assayPreval[use], function(x){
+        if(is.null(ncol(x)))x <- data.frame(sample = names(x), x)
         if(!"sample"%in%colnames(x))x <- data.frame(sample = rownames(x), x)
         x[order(x$sample),]}, simplify = FALSE)
     
