@@ -22,8 +22,10 @@ extractPrevalidation = function(assayPreval){ #}, startingCol) {
         x[order(x$sample),]}, simplify = FALSE)
     
     vec <- sapply(assayPreval, function(x){
-        x[,!colnames(x) %in% c("sample", "permutation", "fold", "class")][,-1]
-        }, simplify = TRUE)
+        x <- x[,!colnames(x) %in% c("sample", "permutation", "fold", "class"), drop = FALSE]
+        if(ncol(x)>1)return(as.matrix(x[,-1, drop = FALSE]))
+        as.matrix(x)
+    }, simplify = TRUE)
     rownames(vec) <- assayPreval[[1]]$sample
     vec
 }
