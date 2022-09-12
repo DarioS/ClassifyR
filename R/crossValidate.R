@@ -102,7 +102,7 @@ setMethod("crossValidate", "DataFrame",
               outcome <- measurementsAndOutcome[["outcome"]]
               
               # Which data-types or data-views are present?
-              assayIDs <- unique(mcols(measurements)[, "assay"])
+              assayIDs <- unique(mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
               
               checkData(measurements, outcome)
@@ -450,7 +450,7 @@ setMethod("crossValidate", "list",
 ######################################
 cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else obsFeatures <- ncol(measurements)
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
@@ -467,7 +467,7 @@ cleanNFeatures <- function(nFeatures, measurements){
 ######################################
 cleanSelectionMethod <- function(selectionMethod, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else return(list(selectionMethod))
 
@@ -483,7 +483,7 @@ cleanSelectionMethod <- function(selectionMethod, measurements){
 ######################################
 cleanClassifier <- function(classifier, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else return(list(classifier))
 

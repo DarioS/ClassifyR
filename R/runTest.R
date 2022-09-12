@@ -272,7 +272,7 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(!is.null(rankedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)))
+      if(is.null(S4Vectors::mcols(measurementsTrain)) || !"assay" %in% colnames(S4Vectors::mcols(measurementsTrain)))
       {
         rankedFeatures <- originalFeatures[rankedFeaturesIndices]
       } else {
@@ -282,7 +282,8 @@ input data. Autmomatically reducing to smaller number.")
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain))){
+      if(is.null(S4Vectors::mcols(measurementsTrain)) || !"assay" %in% colnames(S4Vectors::mcols(measurementsTrain)))
+      {
         selectedFeatures <- originalFeatures[selectedFeaturesIndices]
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))  
