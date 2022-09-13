@@ -3,8 +3,11 @@
 \name{ROCplot}
 \alias{ROCplot}
 \alias{ROCplot,list-method}
+\alias{ROCplot,ClassifyResult-method}
 \title{Plot Receiver Operating Curve Graphs for Classification Results}
 \usage{
+\S4method{ROCplot}{ClassifyResult}(results, ...)
+
 \S4method{ROCplot}{list}(
   results,
   mode = c("merge", "average"),

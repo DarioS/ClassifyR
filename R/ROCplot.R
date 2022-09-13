@@ -78,6 +78,12 @@ setGeneric("ROCplot", function(results, ...) standardGeneric("ROCplot"))
 
 #' @rdname ROCplot
 #' @export
+setMethod("ROCplot", "ClassifyResult", function(results, ...) {
+    ROCplot(list(assay = results), ...)
+})
+
+#' @rdname ROCplot
+#' @export
 setMethod("ROCplot", "list", 
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "auto", lineColours = "auto",

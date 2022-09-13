@@ -17,8 +17,7 @@
 #' design to compare. Can be any characteristic that all results share.
 #' @param metric Default: "Sample Error". The sample-wise metric to plot.
 #' @param featureValues If not NULL, can be a named factor or named numeric
-#' vector specifying some variable of interest to plot above the
-#' heatmap.
+#' vector specifying some variable of interest to plot above the heatmap.
 #' @param featureName A label describing the information in
 #' \code{featureValues}. It must be specified if \code{featureValues} is.
 #' @param metricColours If the outcome is categorical, a list of vectors of colours
