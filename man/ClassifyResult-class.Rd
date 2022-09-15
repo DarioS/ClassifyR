@@ -16,6 +16,8 @@
 \alias{features,ClassifyResult-method}
 \alias{models}
 \alias{models,ClassifyResult-method}
+\alias{finalModel}
+\alias{finalModel,ClassifyResult-method}
 \alias{performance}
 \alias{performance,ClassifyResult-method}
 \alias{tunedParameters}
@@ -82,6 +84,8 @@ most popular value of the parameter in cross-validation is used.}
 \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 \describe{
 \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
+\describe{
+\item{\code{finalModel(result)}}{A deployable model fitted on all of the data for use on future data.}}
 \describe{
 \item{\code{chosenFeatureNames(result)}}{A \code{list} of the features selected for each training.}}
 \describe{

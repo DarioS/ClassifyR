@@ -252,7 +252,7 @@ input data. Autmomatically reducing to smaller number.")
         predictedOutcome <- predictedOutcome[, na.omit(match(c("class", "risk"), colnames(predictedOutcome)))]
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomeTest, predictedOutcome, performanceType), 2)
      
-    if(is.null(S4Vectors::mcols(measurementsTrain)))
+    if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
     {
       selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
     } else {
@@ -272,22 +272,22 @@ input data. Autmomatically reducing to smaller number.")
   {
     if(!is.null(rankedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)) || !"assay" %in% colnames(S4Vectors::mcols(measurementsTrain)))
+      if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
-        rankedFeatures <- originalFeatures[rankedFeaturesIndices]
+        rankedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices]
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))          
-        rankedFeatures <- originalFeatures[rankedFeaturesIndices, featureColumns]
+        rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns]
       }
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)) || !"assay" %in% colnames(S4Vectors::mcols(measurementsTrain)))
+      if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
-        selectedFeatures <- originalFeatures[selectedFeaturesIndices]
+        selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))  
-        selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
+        selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, ]
       }
     } else { selectedFeatures <- NULL}
   } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 

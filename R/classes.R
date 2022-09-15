@@ -862,8 +862,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' show,ClassifyResult-method sampleNames sampleNames,ClassifyResult-method
 #' predictions predictions,ClassifyResult-method actualOutcome
 #' actualOutcome,ClassifyResult-method features features,ClassifyResult-method
-#' models models,ClassifyResult-method performance
-#' performance,ClassifyResult-method tunedParameters
+#' models models,ClassifyResult-method finalModel finalModel,ClassifyResult-method
+#' performance performance,ClassifyResult-method tunedParameters
 #' tunedParameters,ClassifyResult-method totalPredictions
 #' totalPredictions,ClassifyResult-method
 #' @docType class
@@ -910,6 +910,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{actualOutcome(result)}}{Returns the known outcome of each sample.}}
 #' \describe{
 #' \item{\code{models(result)}}{A \code{list} of the models fitted for each training.}}
+#' \describe{
+#' \item{\code{finalModel(result)}}{A deployable model fitted on all of the data for use on future data.}}
 #' \describe{
 #' \item{\code{chosenFeatureNames(result)}}{A \code{list} of the features selected for each training.}}
 #' \describe{
@@ -1052,6 +1054,20 @@ setMethod("models", "ClassifyResult",
           function(object)
           {
             object@models
+          })
+
+#' @export
+#' @usage NULL
+setGeneric("finalModel", function(object, ...)
+standardGeneric("finalModel"))
+
+#' @rdname ClassifyResult-class
+#' @usage NULL
+#' @export
+setMethod("finalModel", "ClassifyResult",
+          function(object)
+          {
+            object@finalModel
           })
 
 #' @export

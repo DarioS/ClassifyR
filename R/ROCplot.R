@@ -43,6 +43,8 @@
 #' @param yLabel Label to be used for the y-axis of true positive rate.
 #' @param showAUC Logical. If \code{TRUE}, the AUC value of each result is
 #' added to its legend text.
+#' @param ... Parameters not used by the \code{ClassifyResult} method but passed to
+#' the \code{list} method.
 #' @return An object of class \code{ggplot} and a plot on the current graphics
 #' device, if \code{plot} is \code{TRUE}.
 #' @author Dario Strbenac
