@@ -184,8 +184,9 @@ setMethod("runTests", c("MultiAssayExperiment"),
 {
   prepArgs <- list(measurements, outcomeColumns)              
   extraInputs <- list(...)
+  prepExtras <- numeric()
   if(length(extraInputs) > 0)
-    prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+    prepExtras <- which(names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
   if(length(prepExtras) > 0)
     prepArgs <- append(prepArgs, extraInputs[prepExtras])
   measurementsAndOutcome <- do.call(prepareData, prepArgs)

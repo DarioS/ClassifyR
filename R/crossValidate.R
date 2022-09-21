@@ -303,7 +303,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
               measurementsAndOutcome <- prepareData(measurements, outcomeColumns, ...)
 
               crossValidate(measurements = measurementsAndOutcome[["measurements"]],
-                            outcome = measurementsAndOutcomeoutcome[["outcome"]], 
+                            outcome = measurementsAndOutcome[["outcome"]], 
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,

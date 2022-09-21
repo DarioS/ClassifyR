@@ -254,10 +254,14 @@ input data. Autmomatically reducing to smaller number.")
      
     if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
     {
-      selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
+      if(is.null(modellingParams@trainParams@getFeatures))
+      selectedFeatures <- originalFeatures[selectedFeaturesIndices]
+      else selectedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices] 
     } else {
       featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))
-      selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]
+      if(is.null(modellingParams@trainParams@getFeatures))
+      selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
+      else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]
     }
     importanceTable <- S4Vectors::DataFrame(selectedFeatures, performanceChanges)
     if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
@@ -274,20 +278,28 @@ input data. Autmomatically reducing to smaller number.")
     {
       if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
-        rankedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices]
+        if(is.null(modellingParams@trainParams@getFeatures))          
+          rankedFeatures <- originalFeatures[rankedFeaturesIndices]
+        else rankedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices]            
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))          
-        rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns]
+        if(is.null(modellingParams@trainParams@getFeatures))
+          rankedFeatures <- originalFeatures[rankedFeaturesIndices, ]
+        else rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns]
       }
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
       if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
-        selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
+        if(is.null(modellingParams@trainParams@getFeatures))
+          selectedFeatures <- originalFeatures[selectedFeaturesIndices]
+        else selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))  
-        selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, ]
+        if(is.null(modellingParams@trainParams@getFeatures))
+          selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
+        else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]
       }
     } else { selectedFeatures <- NULL}
   } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 
@@ -335,6 +347,7 @@ setMethod("runTest", c("MultiAssayExperiment"),
   prepArgsTrain <- list(measurementsTrain, outcomeColumns)
   prepArgsTest <- list(measurementsTest, outcomeColumns)
   extraInputs <- list(...)
+  prepExtras <- numeric()
   if(length(extraInputs) > 0)
     prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
   if(length(prepExtras) > 0)
