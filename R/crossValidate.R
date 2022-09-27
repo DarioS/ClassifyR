@@ -624,10 +624,10 @@ generateModellingParams <- function(assayIDs,
 
     selectionMethod <- ifelse(is.null(selectionMethod), "none", selectionMethod)
 
-    selectParams = SelectParams(
-        selectionMethod,
-        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType)
-        )
+    if(selectionMethod != "none")
+        selectParams <- SelectParams(selectionMethod,
+                        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType))
+    else selectParams <- NULL
 
     params <- ModellingParams(
         balancing = "none",
