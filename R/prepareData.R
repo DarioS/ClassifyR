@@ -57,6 +57,7 @@ setMethod("prepareData", "DataFrame",
   # Won't ever be true if input data was MultiAssayExperiment because wideFormat already produces valid names.  
   if(all.equal(colnames(measurements), make.names(colnames(measurements))) != TRUE)
   {
+    warning("Unsafe feature names in input data. Converted into safe names.")
     mcols(measurements)$feature <- colnames(measurements) # Save the originals.
     colnames(measurements) <- make.names(colnames(measurements)) # Ensure column names are safe names.
   }
