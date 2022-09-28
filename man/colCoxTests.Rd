@@ -2,28 +2,29 @@
 % Please edit documentation in R/rankingCoxPH.R
 \name{colCoxTests}
 \alias{colCoxTests}
-\title{A function to perform fast cox proportional hazard model tests}
+\title{A function to perform fast or standard Cox proportional hazard model tests.}
 \usage{
-colCoxTests(X, y, option = c("fast", "slow"), ...)
+colCoxTests(measurements, outcome, option = c("fast", "slow"), ...)
 }
 \arguments{
-\item{y}{matrix with first column as time and second column as event.}
+\item{measurements}{matrix with variables as columns.}
 
-\item{option}{whether to use the fast or slow method.}
+\item{outcome}{matrix with first column as time and second column as event.}
 
-\item{x}{matrix with variables as columns.}
+\item{option}{Default: \code{"fast"}. Whether to use the fast or slow method.}
+
+\item{...}{Not currently used.}
 }
 \value{
 CrossValParams object
 }
 \description{
-A function to perform fast cox proportional hazard model tests
+A function to perform fast or standard Cox proportional hazard model tests.
 }
 \examples{
 data(asthma)
-time <- rpois(nrow(measurements),100)
+time <- rpois(nrow(measurements), 100)
 status <- sample(c(0,1), nrow(measurements), replace = TRUE)
-x = measurements
-y = cbind(time, status)
-output <- colCoxTests(x, y, "fast")
+outcome <- cbind(time, status)
+output <- colCoxTests(measurements, outcome, "fast")
 }
