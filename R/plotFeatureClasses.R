@@ -171,6 +171,12 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
     groupBy <- list(legends = factor(groupBy, levels = levelsOrder),
                     facets = factor(paste(groupingName, "is", groupBy), levels = paste(groupingName, "is", levelsOrder)))
   }
+  if(is.character(classes) || is.integer(classes))
+    classes <- measurements[, classes] # Otherwise an independent factor.
+  if(is.character(classes)) classes <- factor(classes)
+
+  if(length(colours) != length(levels(classes)))
+    colours <- scales::hue_pal()(length(levels(classes)))
   
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")

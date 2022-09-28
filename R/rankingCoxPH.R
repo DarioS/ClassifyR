@@ -1,16 +1,21 @@
 # Ranking of Survival-associated Features with coxph Statistic
 coxphRanking <- function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
-  if(any(sapply(measurementsTrain, class) %in% c("character", "factor")))
+  
+  pValues <- rep(NA, ncol(measurementsTrain))
+  names(pValues) <- colnames(measurementsTrain)
+  
+  isCat <- sapply(measurementsTrain, class) %in% c("character", "factor")
+  if(any(isCat))
   {
-    pValues <- apply(measurementsTrain, 2, function(featureColumn){
+    pValues[isCat] <- apply(measurementsTrain[,isCat, drop = FALSE], 2, function(featureColumn){
       fit <- survival::coxph(survivalTrain ~ featureColumn)
       s <- summary(fit)
       s$waldtest["pvalue"]
     })
   } else {
-    tests <- colCoxTests(as.matrix(measurementsTrain), survivalTrain)
-    pValues <- tests[colnames(measurementsTrain), "p.value"]
+    tests <- colCoxTests(as.matrix(measurementsTrain[,!isCat, drop = FALSE]), survivalTrain)
+    pValues[!isCat] <- tests[colnames(measurementsTrain), "p.value"]
   }
   order(pValues) # From smallest to largest.
 }
@@ -79,30 +84,49 @@ fastCox <- function(X, y, learnind, criterion, ...) {
   new("VarSelOut", varsel = crit, criterion = criterion)
 }
 
-# equivalent to genefilter::rowttests for the cox model.  This is much faster
-# than calling coxph for each row of a ##igh-dimensional matrix.
-colCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
-  option <- match.arg(option)
-  if (identical(option, "fast")) {
-    X <- (as.matrix(X))  #make variables columns
-    time <- y[, 1]
-    status <- y[, 2]
+# Equivalent to genefilter::rowttests for the cox model. This is much faster
+# than calling coxph for each row of a high-dimensional matrix.
+
+######################################
+######################################
+#' A function to perform fast or standard Cox proportional hazard model tests.
+#'
+#' @param measurements matrix with variables as columns.
+#' @param outcome matrix with first column as time and second column as event.
+#' @param option Default: \code{"fast"}. Whether to use the fast or slow method.
+#' @param ... Not currently used.
+#'
+#' @return CrossValParams object
+#' @export
+#'
+#' @examples
+#' data(asthma)
+#' time <- rpois(nrow(measurements), 100)
+#' status <- sample(c(0,1), nrow(measurements), replace = TRUE)
+#' outcome <- cbind(time, status)
+#' output <- colCoxTests(measurements, outcome, "fast")
+#' @export
+colCoxTests <- function(measurements, outcome, option = c("fast", "slow"), ...) {
+  option <- match.arg(option) # Error if not either of the two above options.
+  if (option == "fast") {
+    measurements <- as.matrix(measurements)  #make variables columns
+    time <- outcome[, 1]
+    status <- outcome[, 2]
     sorted <- order(time)
     time <- time[sorted]
     status <- status[sorted]
-    X <- X[sorted, ]
+    measurements <- measurements[sorted, ]
     ## method for handling ties (alternative 'breslow')
     method <- "efron"
     ## compute columnwise coxmodels
-    out <- coxmatC(X,time,status)
+    out <- coxmatC(measurements, time, status)
     ## compute p-values and return them
     output <- data.frame(coef = out$coefs, se.coef = out$coefs/out$zscores, 
-                         p.value = (1 - 
-                                      pnorm(abs(out$zscores))) * 2) 
-    rownames(output) <- colnames(X)
-  } else if (identical(option, "slow")) {
-    output <- (apply(X, 2, function(xrow) {
-      fit <- try(coxph(y ~ xrow))
+                         p.value = (1 - pnorm(abs(out$zscores))) * 2)
+    rownames(output) <- colnames(measurements)
+  } else {
+    output <- (apply(measurements, 2, function(measurementsFeature) {
+      fit <- try(coxph(outcome ~ measurementsFeature))
       if (class(fit) == "try-error") {
         c(NA, NA)
       } else {
@@ -110,11 +134,10 @@ colCoxTests <- function(X, y, option = c("fast", "slow"), ...) {
       }
     }))
     colnames(output) <- c("coef", "se.coef", "p.value")
-    rownames(output) <- rownames(X)
+    rownames(output) <- rownames(measurements)
     output <- data.frame(output)
-  } else stop("rowCoxTests: option should be fast or slow.")
+  }
   return(output)
-  ### dataframe with two columns: coef = Cox regression
-  ###coefficients, p.value =
-  ### Wald Test p-values.  Rows correspond to the rows of X.
+  ### dataframe with two columns: coef = Cox regression coefficients, p.value = Wald Test p-values.
+  ### Rows correspond to the rows of measurements.
 }

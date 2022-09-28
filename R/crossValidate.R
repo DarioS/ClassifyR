@@ -102,7 +102,7 @@ setMethod("crossValidate", "DataFrame",
               outcome <- measurementsAndOutcome[["outcome"]]
               
               # Which data-types or data-views are present?
-              assayIDs <- unique(mcols(measurements)[, "assay"])
+              assayIDs <- unique(mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
               
               checkData(measurements, outcome)
@@ -303,7 +303,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
               measurementsAndOutcome <- prepareData(measurements, outcomeColumns, ...)
 
               crossValidate(measurements = measurementsAndOutcome[["measurements"]],
-                            outcome = measurementsAndOutcomeoutcome[["outcome"]], 
+                            outcome = measurementsAndOutcome[["outcome"]], 
                             nFeatures = nFeatures,
                             selectionMethod = selectionMethod,
                             selectionOptimisation = selectionOptimisation,
@@ -380,7 +380,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
 
 # This expects that each table is about the same set of samples and thus
 # has the same number of rows as every other table.
-#' @rdname crossValidate
+#' @rdname crossValidate                                                            
 #' @export
 setMethod("crossValidate", "list",
           function(measurements,
@@ -425,7 +425,10 @@ setMethod("crossValidate", "list",
               }, df_list, names(df_list))
               
               
-              combined_df <- do.call(cbind, df_list)
+              combined_df <- do.call("cbind", df_list) 
+              colnames(combined_df) <- mcols(combined_df)$feature
+
+
               
               crossValidate(measurements = combined_df,
                             outcome = outcome, 
@@ -447,7 +450,7 @@ setMethod("crossValidate", "list",
 ######################################
 cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else obsFeatures <- ncol(measurements)
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
@@ -464,7 +467,7 @@ cleanNFeatures <- function(nFeatures, measurements){
 ######################################
 cleanSelectionMethod <- function(selectionMethod, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else return(list(selectionMethod))
 
@@ -480,7 +483,7 @@ cleanSelectionMethod <- function(selectionMethod, measurements){
 ######################################
 cleanClassifier <- function(classifier, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)))
+    if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else return(list(classifier))
 
@@ -621,10 +624,10 @@ generateModellingParams <- function(assayIDs,
 
     selectionMethod <- ifelse(is.null(selectionMethod), "none", selectionMethod)
 
-    selectParams = SelectParams(
-        selectionMethod,
-        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType)
-        )
+    if(selectionMethod != "none")
+        selectParams <- SelectParams(selectionMethod,
+                        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType))
+    else selectParams <- NULL
 
     params <- ModellingParams(
         balancing = "none",
@@ -686,12 +689,13 @@ generateMultiviewParams <- function(assayIDs,
                                           classifier = classifier,
                                           multiViewMethod = "none")
 
+        performanceType <- ifelse(classifier %in% c("CoxPH", "CoxNet", "randomSurvivalForest"), "C-index", "Balanced Accuracy")
         # Update selectParams to use
         params@selectParams <- SelectParams("selectMulti",
                                             params = paramsAssays,
                                             characteristics = S4Vectors::DataFrame(characteristic = "Selection Name", value = "merge"),
                                             tuneParams = list(nFeatures = nFeatures[[1]],
-                                                              performanceType = "Balanced Error",
+                                                              performanceType = performanceType,
                                                               tuneMode = "none")
         )
         return(params)
