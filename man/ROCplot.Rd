@@ -3,8 +3,11 @@
 \name{ROCplot}
 \alias{ROCplot}
 \alias{ROCplot,list-method}
+\alias{ROCplot,ClassifyResult-method}
 \title{Plot Receiver Operating Curve Graphs for Classification Results}
 \usage{
+\S4method{ROCplot}{ClassifyResult}(results, ...)
+
 \S4method{ROCplot}{list}(
   results,
   mode = c("merge", "average"),
@@ -23,6 +26,9 @@
 }
 \arguments{
 \item{results}{A list of \code{\link{ClassifyResult}} objects.}
+
+\item{...}{Parameters not used by the \code{ClassifyResult} method but passed to
+the \code{list} method.}
 
 \item{mode}{Default: "merge". Whether to merge all predictions of all
 iterations of cross-validation into one set or keep them separate. Keeping

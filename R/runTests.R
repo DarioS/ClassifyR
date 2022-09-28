@@ -78,7 +78,8 @@ setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParam
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
 
   originalFeatures <- colnames(measurements)
-  if("feature" %in% colnames(S4Vectors::mcols(measurements))) originalFeatures <- S4Vectors::mcols(measurements)[, c("assay", "feature")]                 
+  if("assay" %in% colnames(S4Vectors::mcols(measurements)))
+      originalFeatures <- S4Vectors::mcols(measurements)[, c("assay", "feature")]                 
   splitDataset <- prepareData(measurements, outcome, ...)
   measurements <- splitDataset[["measurements"]]
   outcome <- splitDataset[["outcome"]]
@@ -183,8 +184,9 @@ setMethod("runTests", c("MultiAssayExperiment"),
 {
   prepArgs <- list(measurements, outcomeColumns)              
   extraInputs <- list(...)
+  prepExtras <- numeric()
   if(length(extraInputs) > 0)
-    prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+    prepExtras <- which(names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
   if(length(prepExtras) > 0)
     prepArgs <- append(prepArgs, extraInputs[prepExtras])
   measurementsAndOutcome <- do.call(prepareData, prepArgs)

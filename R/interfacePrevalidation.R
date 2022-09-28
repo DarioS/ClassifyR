@@ -18,12 +18,15 @@ extractPrevalidation = function(assayPreval){ #}, startingCol) {
     use <- which(names(assayPreval)!="clinical")
     
     assayPreval <- sapply(assayPreval[use], function(x){
+        if(is.null(ncol(x)))x <- data.frame(sample = names(x), x)
         if(!"sample"%in%colnames(x))x <- data.frame(sample = rownames(x), x)
         x[order(x$sample),]}, simplify = FALSE)
     
     vec <- sapply(assayPreval, function(x){
-        x[,!colnames(x) %in% c("sample", "permutation", "fold", "class")][,-1]
-        }, simplify = TRUE)
+        x <- x[,!colnames(x) %in% c("sample", "permutation", "fold", "class"), drop = FALSE]
+        if(ncol(x)>1)return(as.matrix(x[,-1, drop = FALSE]))
+        as.matrix(x)
+    }, simplify = TRUE)
     rownames(vec) <- assayPreval[[1]]$sample
     vec
 }

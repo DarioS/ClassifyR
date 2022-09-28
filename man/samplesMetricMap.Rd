@@ -61,8 +61,7 @@ design to compare. Can be any characteristic that all results share.}
 \item{metric}{Default: "Sample Error". The sample-wise metric to plot.}
 
 \item{featureValues}{If not NULL, can be a named factor or named numeric
-vector specifying some variable of interest to plot underneath the above the
-heatmap.}
+vector specifying some variable of interest to plot above the heatmap.}
 
 \item{featureName}{A label describing the information in
 \code{featureValues}. It must be specified if \code{featureValues} is.}

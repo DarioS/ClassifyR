@@ -40,7 +40,9 @@ elasticNetGLMparams <- function() {
 
 # Support Vector Machine
 SVMparams = function() {
-    trainParams <- TrainParams(SVMtrainInterface, tuneParams = list(kernel = c("linear", "polynomial", "radial", "sigmoid"), cost = 10^(-3:3), performanceType = "Balanced Error"))
+    trainParams <- TrainParams(SVMtrainInterface,
+                   tuneParams = list(kernel = c("linear", "polynomial", "radial", "sigmoid"),
+                                     cost = 10^(-3:3), performanceType = "Balanced Error"))
     predictParams <- PredictParams(SVMpredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
