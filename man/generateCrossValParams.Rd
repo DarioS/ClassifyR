@@ -13,7 +13,7 @@ generateCrossValParams(nRepeats, nFolds, nCores, selectionOptimisation)
 
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
 
-\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise nFeatures.}
+\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
 }
 \value{
 CrossValParams object

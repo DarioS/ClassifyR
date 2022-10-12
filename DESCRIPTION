@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 3.1.19
-Date: 2022-09-28
+Version: 3.1.20
+Date: 2022-10-07
 Author: Dario Strbenac, Ellis Patrick, John Ormerod, Graham Mann, Jean Yang
 Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
 VignetteBuilder: knitr
@@ -14,7 +14,8 @@ Depends: R (>= 4.1.0), generics, methods, S4Vectors, MultiAssayExperiment, BiocP
 Imports: grid, genefilter, utils, dplyr, tidyr, rlang, randomForest
 Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 3.0.0), gridExtra (>= 2.0.0), cowplot,
         BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
-        scales, e1071, rmarkdown, IRanges, robustbase, glmnet, class, randomForestSRC
+        scales, e1071, rmarkdown, IRanges, robustbase, glmnet, class, randomForestSRC,
+        MatrixModels, xgboost
 Description: The software formalises a framework for classification in R.
              There are four stages; Data transformation, feature selection, classifier training,
              and prediction. The requirements of variable types and names are
@@ -59,6 +60,7 @@ Collate:
     'interfaceRandomForest.R'
     'interfaceRandomForestSurvival.R'
     'interfaceSVM.R'
+    'interfaceXGB.R'
     'performancePlot.R'
     'plotFeatureClasses.R'
     'prepareData.R'

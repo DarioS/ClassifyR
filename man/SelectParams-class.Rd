@@ -17,7 +17,7 @@ feature selection. The empty constructor is provided for convenience.
 
 \describe{
 \item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
-subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
+subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)} Creates a \code{SelectParams}
 object which stores the function(s) which will do the selection and parameters that the
 function will use.
 \describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}

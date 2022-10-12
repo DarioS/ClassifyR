@@ -140,6 +140,7 @@
     
     tuneParamsTrain <- list(topN = topNfeatures)
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
+    tuneParamsTrain <- tuneParamsTrain[-match("performanceType", names(tuneParamsTrain))]
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
     allPerformanceTables <- lapply(rankings, function(rankingsVariety)
@@ -511,6 +512,7 @@
         keyword,
         "randomForest" = RFparams(),
         "randomSurvivalForest" = RSFparams(),
+        "XGB" = XGBparams(),
         "GLM" = GLMparams(),
         "elasticNetGLM" = elasticNetGLMparams(),
         "SVM" = SVMparams(),

@@ -485,7 +485,7 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' @section Constructor:
 #' \describe{
 #' \item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
-#' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)} Creates a \code{SelectParams}
+#' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)} Creates a \code{SelectParams}
 #' object which stores the function(s) which will do the selection and parameters that the
 #' function will use.
 #' \describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}
@@ -537,7 +537,7 @@ standardGeneric("SelectParams"))
 #' @export
 setMethod("SelectParams", c("characterOrList"),
           function(featureRanking, characteristics = DataFrame(), minPresence = 1, 
-                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Error"), ...)
+                   intermediate = character(0), subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)
           {
             if(is.character(featureRanking)) featureRanking <- .selectionKeywordToFunction(featureRanking) else featureRanking <- lapply(featureRanking, .selectionKeywordToFunction)
             if(!is.list(featureRanking) && (ncol(characteristics) == 0 || !"Selection Name" %in% characteristics[, "characteristic"]))
@@ -655,15 +655,23 @@ setClassUnion("characterOrFunction", c("character", "function"))
 setMethod("TrainParams", c("characterOrFunction"),
           function(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(), intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)
           {
-            if(is.character(classifier))              
-              classifier <- .classifierKeywordToParams(classifier)[[1]]@classifier # Training function.              
+            extras <- list(...)              
+            if(is.character(classifier))
+            {
+              trainParams <- .classifierKeywordToParams(classifier)[[1]] # Get a default params object.
+              if(is.null(getFeatures) && !is.null(trainParams@getFeatures))
+                getFeatures <- trainParams@getFeatures
+              classifier <- trainParams@classifier # Training function.
+            }
             if(ncol(characteristics) == 0 || !"Classifier Name" %in% characteristics[, "characteristic"])
             {
               characteristics <- rbind(characteristics, S4Vectors::DataFrame(characteristic = "Classifier Name", value = .ClassifyRenvir[["functionsTable"]][.ClassifyRenvir[["functionsTable"]][, "character"] == attr(classifier, "name"), "name"]))
             }
+            
+            if(length(extras) == 0) extras <- NULL
             new("TrainParams", classifier = classifier, characteristics = characteristics,
                 intermediate = intermediate, getFeatures = getFeatures, tuneParams = tuneParams,
-                otherParams = list(...))
+                otherParams = extras)
           })
 
 #' @usage NULL

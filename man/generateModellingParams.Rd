@@ -10,6 +10,7 @@ generateModellingParams(
   nFeatures,
   selectionMethod,
   selectionOptimisation,
+  performanceType = "auto",
   classifier,
   multiViewMethod = "none"
 )
@@ -28,7 +29,10 @@ Set to NULL or "all" if all features should be used.}
 \item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective classification methods will be used on each assay.}
 
-\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise nFeatures.}
+\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
+
+\item{performanceType}{Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Any one of the
+options described in \code{\link{calcPerformance}} may otherwise be specified.}
 
 \item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective classification methods will be used on each assay.}

@@ -164,7 +164,7 @@ Although being a cross-validation framework, a number of popular feature selecti
 
 In the following tables, a function that is used when no function is explicitly specified by the user is shown as <span style="padding:4px; border:2px dashed #e64626;">functionName</span>.
 
-The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features, based on a criterion such as balanced error rate, for example.
+The functions below produce a ranking, of which different size subsets are tried and the classifier performance evaluated, to select a best subset of features, based on a criterion such as balanced accuracy rate, for example.
 
 Function | Description | DM | DV | DD
 ----|---------------------------|----|----|----
@@ -189,6 +189,8 @@ Function(s) | Description | DM | DV | DD
 <span style="font-family: 'Courier New', monospace;">mixModelsTrain</span>, <span style="font-family: 'Courier New', monospace;">mixModelsPredict</span> | Feature-wise mixtures of normals and voting | ✔ | ✔ | ✔ 
 <span style="font-family: 'Courier New', monospace;">naiveBayesKernel</span> | Feature-wise kernel density estimation and voting | ✔ | ✔ | ✔ 
 <span style="font-family: 'Courier New', monospace;">randomForestTrainInterface</span>, <span style="font-family: 'Courier New', monospace;">randomForestPredictInterface</span> | Wrapper for randomForest's functions <span style="font-family: 'Courier New', monospace;">randomForest</span> and <span style="font-family: 'Courier New', monospace;">predict</span> | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">extremeGradientBoostingTrainInterface</span>, <span style="font-family: 'Courier New', monospace;">extremeGradientBoostingPredictInterface</span> | Wrapper for xgboost's functions <span style="font-family: 'Courier New', monospace;">xgboost</span> and <span style="font-family: 'Courier New', monospace;">predict</span> | ✔ | ✔ | ✔ 
+<span style="font-family: 'Courier New', monospace;">kNNinterface</span> | Wrapper for class's function <span style="font-family: 'Courier New', monospace;">knn</span> | ✔ | ✔ | ✔ 
 <span style="font-family: 'Courier New', monospace;">SVMtrainInterface</span>, <span style="font-family: 'Courier New', monospace;">SVMpredictInterface</span> | Wrapper for e1071's functions <span style="font-family: 'Courier New', monospace;">svm</span> and <span style="font-family: 'Courier New', monospace;">predict.svm</span> | ✔ | ✔ †| ✔ †
 
 \* If ordinary numeric measurements have been transformed to absolute deviations using <span style="font-family: 'Courier New', monospace;">subtractFromLocation</span>.<br>
@@ -249,7 +251,7 @@ bestGenePlot <- plotFeatureClasses(measurements, classes, names(mostChosen), dot
 
 The means of the abundance levels of `r names(sortedPercentages)[1]` are substantially different between the people with and without asthma. *plotFeatureClasses* can also plot categorical data, such as may be found in a clinical data table, as a bar chart.
 
-Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced error rate is calculated considering all samples, each of which was in the test set once. The balanced error rate is defined as the average of the classification errors of each class.
+Classification error rates, as well as many other prediction performance measures, can be calculated with *calcCVperformance*. Next, the balanced accuracy rate is calculated considering all samples, each of which was in the test set once. The balanced accuracy rate is defined as the average rate of the correct classifications of each class.
 
 See the documentation of *calcCVperformance* for a list of performance metrics which may be calculated.
 
@@ -332,7 +334,7 @@ Once a cross-validated classification is complete, the usefulness of the feature
 
 ### Parameter Tuning
 
-Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by a list element named *nFeatures* and the performance type (e.g. Balanced Error) specified by a list elment named *performanceType*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
+Some feature ranking methods or classifiers allow the choosing of tuning parameters, which controls some aspect of their model learning. An example of doing parameter tuning with a linear SVM is presented. This particular SVM has a single tuning parameter, the cost. Higher values of this parameter penalise misclassifications more. Moreover, feature selection happens by using a feature ranking function and then trying a range of top-ranked features to see which gives the best performance, the range being specified by a list element named *nFeatures* and the performance type (e.g. Balanced Accuracy) specified by a list element named *performanceType*. Therefore, some kind of parameter tuning always happens, even if the feature ranking or classifier function does not have any explicit tuning parameters.
 
 Tuning is achieved in ClassifyR by providing a variable called *tuneParams* to the SelectParams or TrainParams constructor. *tuneParams* is a named list, with the names being the names of the tuning variables, except for one which is named *"performanceType"* and specifies the performance metric to use for picking the parameter values. Any of the non-sample-specific performance metrics which *calcCVperformance* calculates can be optimised.
 
@@ -343,7 +345,7 @@ SVMparams <- ModellingParams(trainParams = TrainParams("SVM", kernel = "linear",
 SVMresults <- runTests(measurements, classes, crossValParams, SVMparams)
 ```
 
-The chosen values of the parameters are stored for every validation, and can be accessed with the *tunedParameters* function.
+The index of chosen of the parameters, as well as all combinations of parameters and their associated performance metric, are stored for every validation, and can be accessed with the *tunedParameters* function.
 
 ```{r}
 length(tunedParameters(SVMresults))

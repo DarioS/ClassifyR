@@ -2,6 +2,29 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 3.2.0}{\itemize{
+  \item
+  Fast Cox survival analysis.
+  \item
+  Simple parameter sets, as used by crossVaildate, now come with tuning parameter grid as standard.
+  \item
+  Wrappers are greatly simplified. Now, there is only one method for a data frame and they are not exported because they are not used directly by the end-user anyway.
+  \item
+  \code{prepareData} function to filter and subset input data using common ways, such as missingness and variability.
+  \item
+  Invalid column names of data (e.g. spaces, hyphens) are converted into safe names before modelling but converted back into original names for tracking ranked and selected features.
+  \item
+  \code{available} function shows the keywords corresponding to transformation, selection, classifier functions.
+  \item
+  More functions have automatically-selected parameters based on input data, reducing required user-specified parameters.
+  \item
+  New classifiers added for random survival forests and extreme gradient boosting.
+  \item
+  Adaptive sampling for modelling with uncertainty of class labels can be enabled with \code{adaptiveResamplingDelta}.
+  \item
+  Parameter tuning fixed to only use samples from the training set.
+}}
+
 \section{Version 3.0.0}{\itemize{
   \item
   Now supports survival models and their evaluation, in addition to existing classification functionality.
