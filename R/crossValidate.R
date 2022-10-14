@@ -912,18 +912,32 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @param assayIDs A character vector for assays to train with. Special value \code{"all"}
 #' uses all assays in the input object.
+#' @param performanceType Performance metric to optimise if classifier has any tuning parameters.
 #' @method train DataFrame
 #' @export
-train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiViewMethod = "none", assayIDs = "all", ...) # ... for prepareData.
+train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", performanceType = "auto",
+                            multiViewMethod = "none", assayIDs = "all", ...) # ... for prepareData.
                    {
               prepArgs <- list(x, outcomeTrain)
               extraInputs <- list(...)
               prepExtras <- numeric()
               if(length(extraInputs) > 0)
-                prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+                prepExtras <- which(names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
               if(length(prepExtras) > 0)
                 prepArgs <- append(prepArgs, extraInputs[prepExtras])
               measurementsAndOutcome <- do.call(prepareData, prepArgs)
+              
+              # Ensure performance type is one of the ones that can be calculated by the package.
+              if(!performanceType %in% c("auto", .ClassifyRenvir[["performanceTypes"]]))
+                stop(paste("performanceType must be one of", paste(c("auto", .ClassifyRenvir[["performanceTypes"]]), collapse = ", "), "but is", performanceType))
+              
+              if(performanceType == "auto")
+              {
+                if(is.character(outcomeTrain) && (length(outcomeTrain) == 1 || length(outcomeTrain) == nrow(x)) || is.factor(outcomeTrain))
+                  performanceType <- "Balanced Accuracy"
+                else performanceType <- "C-index"
+              }
+              
               measurements <- measurementsAndOutcome[["measurements"]]
               outcomeTrain <- measurementsAndOutcome[["outcome"]]
               
@@ -939,11 +953,13 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
                           # Loop over assays
                           sapply(classifier[[assayIndex]], function(classifierForAssay) {
                               # Loop over classifiers
+                              
                                   measurementsUse <- measurements
                                   if(assayIndex != 1) measurementsUse <- measurements[, mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   
                                   classifierParams <- .classifierKeywordToParams(classifierForAssay)
-                                  classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
+                                  if(!is.null(classifierParams$trainParams@tuneParams))
+                                    classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
                                   modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                                                trainParams = classifierParams$trainParams, predictParams = classifierParams$predictParams)
                                   
@@ -1019,7 +1035,6 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", multiV
 #' @rdname crossValidate
 #' @method train list
 #' @export
-# Each of the first four variables are named lists with names of assays.
 train.list <- function(x, outcomeTrain, ...)
               {
                 # Check data type is valid
@@ -1062,13 +1077,13 @@ train.MultiAssayExperiment <- function(x, outcomeColumns, ...)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
-                prepExtras <- which(names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+                prepExtras <- which(names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
               if(length(prepExtras) > 0)
                 prepArgs <- append(prepArgs, extraInputs[prepExtras])
               measurementsAndOutcome <- do.call(prepareData, prepArgs)
               trainArgs <- list(measurementsAndOutcome[["measurements"]], measurementsAndOutcome[["outcome"]])
               if(length(extraInputs) > 0)
-                trainExtras <- which(!names(extrasInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
+                trainExtras <- which(!names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
               if(length(trainExtras) > 0)
                 trainArgs <- append(trainArgs, extraInputs[trainExtras])
               do.call(train, trainArgs)
@@ -1101,10 +1116,8 @@ predict.trainedByClassifyR <- function(object, newData, ...)
               # Some classifiers dangerously use positional matching rather than column name matching.
               # newData columns are sorted so that the right column ordering is guaranteed.
             } else {stop("'newData' is not one of the valid data types. It is of type ", class(newData), '.')}
-  if(is(object, "ClassifyResult"))
-  {
-    object@modellingParams@predictParams@predictor(object@finalModel[[1]], newData)
-  } else if (is(object, "listOfModels")) { # Object is itself a trained model and it is assumed that a predict method is defined for it.
-    mapply(function(model, assay) predict(model, assay), object, newData, SIMPLIFY = FALSE)
-  } else predict(object, newData)
+
+    if (is(object, "listOfModels")) 
+         mapply(function(model, assay) predict(model, assay), object, newData, SIMPLIFY = FALSE)
+    else predict(object, newData) # Object is itself a trained model and it is assumed that a predict method is defined for it.
 }

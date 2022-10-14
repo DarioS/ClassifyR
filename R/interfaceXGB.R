@@ -1,5 +1,5 @@
 # An Interface for xgboost Package's xgboost Function
-extremeGradientBoostingTrainInterface <- function(measurementsTrain, outcomesTrain, mTryProportion = 0.5, nrounds = 10, ..., verbose = 3)
+extremeGradientBoostingTrainInterface <- function(measurementsTrain, outcomeTrain, mTryProportion = 0.5, nrounds = 10, ..., verbose = 3)
 {
   if(!requireNamespace("xgboost", quietly = TRUE))
     stop("The package 'xgboost' could not be found. Please install it.")
@@ -12,22 +12,22 @@ extremeGradientBoostingTrainInterface <- function(measurementsTrain, outcomesTra
   
   isClassification <- FALSE
   numClasses <- NULL
-  if(is(outcomesTrain, "Surv")) # xgboost only knows about numeric vectors.
+  if(is(outcomeTrain, "Surv")) # xgboost only knows about numeric vectors.
   {
-    time <- outcomesTrain[, "time"]
-    event <- as.numeric(outcomesTrain[, "status"])
+    time <- outcomeTrain[, "time"]
+    event <- as.numeric(outcomeTrain[, "status"])
     if(max(event) == 2) event <- event - 1
-    outcomesTrain <- time * ifelse(event == 1, 1, -1) # Negative for censoring.
+    outcomeTrain <- time * ifelse(event == 1, 1, -1) # Negative for censoring.
     objective <- "survival:cox"
   } else { # Classification task.
     isClassification <- TRUE
-    classes <- levels(outcomesTrain)
+    classes <- levels(outcomeTrain)
     numClasses <- length(classes)
     objective <- "multi:softprob"
-    outcomesTrain <- as.numeric(outcomesTrain) - 1 # Classes are represented as 0, 1, 2, ...
+    outcomeTrain <- as.numeric(outcomeTrain) - 1 # Classes are represented as 0, 1, 2, ...
   }
   
-  trained <- xgboost::xgboost(measurementsTrain, outcomesTrain, objective = objective, nrounds = nrounds,
+  trained <- xgboost::xgboost(measurementsTrain, outcomeTrain, objective = objective, nrounds = nrounds,
                               num_class = numClasses, colsample_bynode = mTryProportion, verbose = 0, ...)
   if(isClassification)
   {

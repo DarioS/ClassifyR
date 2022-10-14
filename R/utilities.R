@@ -167,7 +167,7 @@
           result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
-          
+
           predictions <- result[["predictions"]]
           # Classifiers will use a column "class" and survival models will use a column "risk".
           if(class(predictions) == "data.frame")
@@ -222,6 +222,7 @@
                             measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
+
           predictions <- result[["predictions"]]
           if(class(predictions) == "data.frame")
             predictedOutcome <- predictions[, "class"]
@@ -275,7 +276,7 @@
         result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
-        
+
         predictions <- result[["predictions"]]
         if(class(predictions) == "data.frame")
           predictedOutcome <- predictions[, colnames(predictions) %in% c("class", "risk")]
@@ -580,7 +581,8 @@
   obj
 }
 
-.predict <- function(object, newdata, ...) { # Remove once sparsediscrim is reinstated to CRAN.
+#' @method predict dlda
+predict.dlda <- function(object, newdata, ...) { # Remove once sparsediscrim is reinstated to CRAN.
   if (!inherits(object, "dlda"))  {
     stop("object not of class 'dlda'")
   }

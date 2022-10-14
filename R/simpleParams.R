@@ -1,6 +1,6 @@
 # Random Forest
 RFparams <- function() {
-    trainParams <- TrainParams(randomForestTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = seq(100, 500, 100)),
+    trainParams <- TrainParams(randomForestTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)),
                                getFeatures = forestFeatures)
     predictParams <- PredictParams(randomForestPredictInterface)
     

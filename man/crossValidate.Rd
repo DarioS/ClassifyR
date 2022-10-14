@@ -111,6 +111,7 @@ crossValidate(measurements, outcome, ...)
   x,
   outcomeTrain,
   classifier = "randomForest",
+  performanceType = "auto",
   multiViewMethod = "none",
   assayIDs = "all",
   ...
@@ -143,8 +144,7 @@ and performing multiview classification, the respective classification methods w
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
 
-\item{performanceType}{Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Any one of the
-options described in \code{\link{calcPerformance}} may otherwise be specified.}
+\item{performanceType}{Performance metric to optimise if classifier has any tuning parameters.}
 
 \item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective classification methods will be used on each assay.}
