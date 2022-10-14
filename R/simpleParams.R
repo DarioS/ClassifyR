@@ -1,6 +1,6 @@
 # Random Forest
 RFparams <- function() {
-    trainParams <- TrainParams(randomForestTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)),
+    trainParams <- TrainParams(randomForestTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), num.trees = c(10, seq(100, 500, 100))),
                                getFeatures = forestFeatures)
     predictParams <- PredictParams(randomForestPredictInterface)
     
@@ -9,14 +9,14 @@ RFparams <- function() {
 
 # Random Survival Forest
 RSFparams <- function() {
-    trainParams <- TrainParams(rfsrcTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = seq(100, 500, 100)))
+    trainParams <- TrainParams(rfsrcTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), ntree = c(10, seq(100, 500, 100))),
+                               getFeatures = rfsrcFeatures)
     predictParams <- PredictParams(rfsrcPredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
-XGBparams <- function()
-{
+XGBparams <- function() {
     trainParams <- TrainParams(extremeGradientBoostingTrainInterface, tuneParams = list(mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00), nrounds = c(5, 10, 15)),
                                getFeatures = XGBfeatures)
     predictParams <- PredictParams(extremeGradientBoostingPredictInterface)
