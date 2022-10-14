@@ -945,7 +945,7 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
               if(assayIDs == "all") assayIDs <- unique(mcols(measurements)[, "assay"])
               if(is.null(assayIDs)) assayIDs <- 1
               names(assayIDs) <- assayIDs
-              names(classifier) <- classifier
+              names(classifier) <- assayIDs
 
               if(multiViewMethod == "none"){
                   resClassifier <-
@@ -1050,7 +1050,7 @@ train.list <- function(x, outcomeTrain, ...)
                   stop("All datasets must have the same samples")
               
                 # Check the number of outcome is the same
-                if (!all(sapply(x, nrow) == length(x)) && !is.character(x))
+                if (!all(sapply(x, nrow) == length(outcomeTrain)) && !is.character(outcomeTrain))
                   stop("outcome must have same number of samples as measurements")
               
               df_list <- sapply(x, S4Vectors::DataFrame)
@@ -1065,6 +1065,7 @@ train.list <- function(x, outcomeTrain, ...)
               
               # Each list of tabular data has been collapsed into a DataFrame.
               # Will be subset to relevant assayIDs inside the DataFrame method.
+              
               train(combined_df, outcomeTrain, ...)
 }
 
@@ -1115,7 +1116,7 @@ predict.trainedByClassifyR <- function(object, newData, ...)
               newData <- prepareData(newData, useFeatures = allFeatureNames(object))
               # Some classifiers dangerously use positional matching rather than column name matching.
               # newData columns are sorted so that the right column ordering is guaranteed.
-            } else {stop("'newData' is not one of the valid data types. It is of type ", class(newData), '.')}
+            }
 
     if (is(object, "listOfModels")) 
          mapply(function(model, assay) predict(model, assay), object, newData, SIMPLIFY = FALSE)

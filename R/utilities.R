@@ -140,9 +140,9 @@
     
     tuneParamsTrain <- list(topN = topNfeatures)
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
-    tuneParamsTrain <- tuneParamsTrain[-match("performanceType", names(tuneParamsTrain))]
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
+    
     allPerformanceTables <- lapply(rankings, function(rankingsVariety)
     {
       # Creates a matrix. Columns are top n features, rows are varieties (one row if None).
