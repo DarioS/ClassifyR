@@ -6,9 +6,10 @@ rfsrcTrainInterface <- function(measurementsTrain, survivalTrain, mTryProportion
   if(verbose == 3)
     message("Fitting rfsrc classifier to training data and making predictions on test data.")
     
-  bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[,1], time = survivalTrain[,2])
+  bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[, 1], time = survivalTrain[, 2])
   mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
-  randomForestSRC::rfsrc(Surv(event = event, time = time) ~ ., as.data.frame(bindedMeasurements), mtry = mtry, ...)
+  randomForestSRC::rfsrc(Surv(time, event) ~ ., data = as.data.frame(bindedMeasurements), mtry = mtry,
+                          var.used = "all.trees", importance = TRUE, ...)
 }
 attr(rfsrcTrainInterface, "name") <- "rfsrcTrainInterface"
 
@@ -19,3 +20,10 @@ rfsrcPredictInterface <- function(model, measurementsTest, ..., verbose = 3)
   names(predictedOutcome) = rownames(measurementsTest)
   predictedOutcome
 }
+
+rfsrcFeatures <- function(forest)
+                  {
+                    rankedFeaturesIndices <- order(forest[["importance"]], decreasing = TRUE)
+                    selectedFeaturesIndices <- which(forest[["var.used"]] > 0)
+                    list(rankedFeaturesIndices, selectedFeaturesIndices)
+                  }

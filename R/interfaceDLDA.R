@@ -29,7 +29,7 @@ DLDApredictInterface <- function(model, measurementsTest, returnType = c("both",
     message("Predicting classes using trained DLDA classifier.")
   
   #predict(model, as.matrix(test))
-  predictions <- .predict(model, as.matrix(measurementsTest)) # Copy located in utilities.R.
+  predictions <- predict(model, as.matrix(measurementsTest)) # Copy located in utilities.R.
 
   switch(returnType, class = predictions[["class"]], # Factor vector.
          score = predictions[["posterior"]][, model[["groups"]]], # Numeric matrix.

@@ -24,6 +24,7 @@ crossValidate(measurements, outcome, ...)
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
+  performanceType = "auto",
   classifier = "randomForest",
   multiViewMethod = "none",
   assayCombinations = "all",
@@ -40,6 +41,7 @@ crossValidate(measurements, outcome, ...)
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
+  performanceType = "auto",
   classifier = "randomForest",
   multiViewMethod = "none",
   assayCombinations = "all",
@@ -56,6 +58,7 @@ crossValidate(measurements, outcome, ...)
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
+  performanceType = "auto",
   classifier = "randomForest",
   multiViewMethod = "none",
   assayCombinations = "all",
@@ -72,6 +75,7 @@ crossValidate(measurements, outcome, ...)
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
+  performanceType = "auto",
   classifier = "randomForest",
   multiViewMethod = "none",
   assayCombinations = "all",
@@ -88,6 +92,7 @@ crossValidate(measurements, outcome, ...)
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
+  performanceType = "auto",
   classifier = "randomForest",
   multiViewMethod = "none",
   assayCombinations = "all",
@@ -106,6 +111,7 @@ crossValidate(measurements, outcome, ...)
   x,
   outcomeTrain,
   classifier = "randomForest",
+  performanceType = "auto",
   multiViewMethod = "none",
   assayIDs = "all",
   ...
@@ -136,7 +142,9 @@ Set to NULL or "all" if all features should be used.}
 \item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective classification methods will be used on each assay.}
 
-\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise nFeatures.}
+\item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
+
+\item{performanceType}{Performance metric to optimise if classifier has any tuning parameters.}
 
 \item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective classification methods will be used on each assay.}

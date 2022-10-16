@@ -17,6 +17,8 @@
                                                     ncol = 2, byrow = TRUE, dimnames = list(NULL, c("type", "better"))
 ) |> as.data.frame()
 
+.ClassifyRenvir[["performanceTypes"]] <- .ClassifyRenvir[["performanceInfoTable"]][, "type"]
+
 # Nice-looking names for feature selection and classification functions, to automatically use
 # in a variety of performance plots.
 .ClassifyRenvir[["functionsTable"]] <- matrix(
@@ -49,7 +51,8 @@
     "coxphRanking", "Cox Proportional Hazards",
     "coxnetTrainInterface", "Penalised Cox Proportional Hazards",
     #"NEMOEtrainInterface", "Nutrition-Ecotype Mixture of Experts",
-    "rfsrcTrainInterface", "Random Survival Forest"),
+    "rfsrcTrainInterface", "Random Survival Forest",
+    "extremeGradientBoostingTrainInterface", "Extreme Gradient Boosting"),
   ncol = 2, byrow = TRUE, dimnames = list(NULL, c("character", "name"))
 ) |> as.data.frame()
 
@@ -81,7 +84,8 @@
     "mixturesNormals", "Mixture of normals feature voting classifier.",
     "CoxPH", "Cox proportional hazards.",
     "CoxNet", "Penalised Cox proportional hazards.",
-    "randomSurvivalForest", "Random survival forest."
+    "randomSurvivalForest", "Random survival forest.",
+    "XGB", "Extreme gradient booster."
     ),
   ncol = 2, byrow = TRUE, dimnames = list(NULL, c("classifier Keyword", "Description"))
 ) |> as.data.frame()
