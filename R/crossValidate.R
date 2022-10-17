@@ -118,8 +118,6 @@ setMethod("crossValidate", "DataFrame",
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
-              
-              checkData(measurements, outcome)
 
               # Check that other variables are in the right format and fix
               nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -184,17 +182,12 @@ Using an ordinary GLM instead.")
                                       characteristicsLabel = characteristicsLabel
                                   )
                               },
-
                               simplify = FALSE)
                           },
-
                           simplify = FALSE)
                       },
-
                       simplify = FALSE)
-
                   result <- unlist(unlist(resClassifier))
-
               }
 
               ################################
@@ -558,24 +551,6 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
 }
 ######################################
 
-
-
-######################################
-######################################
-checkData <- function(measurements, outcome){
-    if(is.null(rownames(measurements)))
-        stop("'measurements' DataFrame must have sample identifiers as its row names.")
-    if(any(is.na(measurements)))
-        stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")
-
-    # !!!  Need to check mcols has assay NUm
-
-}
-######################################
-
-
-
-######################################
 ######################################
 #' A function to generate a ModellingParams object
 #'
@@ -643,9 +618,10 @@ generateModellingParams <- function(assayIDs,
     knownClassifiers <- .ClassifyRenvir[["classifyKeywords"]][, "classifier Keyword"]
     if(!classifier %in% knownClassifiers)
         stop(paste("Classifier must exactly match of these (be careful of case):", paste(knownClassifiers, collapse = ", ")))
-    
+
     classifierParams <- .classifierKeywordToParams(classifier)
-    classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
+    if(!is.null(classifierParams$trainParams@tuneParams))
+      classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
 
     selectionMethod <- unlist(selectionMethod)
 
@@ -833,11 +809,6 @@ CV <- function(measurements = NULL,
                characteristicsLabel = NULL)
 
 {
-    # Check that data is in the right format
-    if(!is.null(measurements))
-      checkData(measurements, outcome)
-    else
-      checkData(x, x)
     # Check that other variables are in the right format and fix
     nFeatures <- cleanNFeatures(nFeatures = nFeatures,
                                 measurements = measurements)

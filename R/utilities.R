@@ -139,6 +139,12 @@
         return(list(NULL, rankings[[1]], NULL))
     
     tuneParamsTrain <- list(topN = topNfeatures)
+    performanceIndex <- match("performanceType", names(modellingParams@trainParams@tuneParams))
+    if(!is.na(performanceIndex))
+    {
+      performanceType <- modellingParams@trainParams@tuneParams[["performanceType"]]
+      modellingParams@trainParams@tuneParams <- modellingParams@trainParams@tuneParams[-performanceIndex]
+    }
     tuneParamsTrain <- append(tuneParamsTrain, modellingParams@trainParams@tuneParams)
     tuneCombosTrain <- expand.grid(tuneParamsTrain, stringsAsFactors = FALSE)  
     modellingParams@trainParams@tuneParams <- NULL
