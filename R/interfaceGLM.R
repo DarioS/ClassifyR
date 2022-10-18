@@ -11,6 +11,7 @@ GLMtrainInterface <- function(measurementsTrain, classesTrain, ..., verbose = 3)
     } else {fitData <- measurementsTrain}
   glm(class ~ . + 0, family = binomial, data = fitData, ...)
 }
+attr(GLMtrainInterface, "name") <- "GLMtrainInterface"
 
 # model is of class glm.
 GLMpredictInterface <- function(model, measurementsTest, returnType = c("both", "class", "score"),

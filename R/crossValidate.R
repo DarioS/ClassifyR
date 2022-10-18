@@ -10,8 +10,8 @@
 #' @param outcome A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 #' column name in \code{measurements} if it is a \code{\link{DataFrame}}. Or a \code{\link{Surv}} object or a character vector of
-#' length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome.
-#' @param outcomeColumns If \code{measurements} is a \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.
+#' length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome. If \code{measurements} is a
+#' \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.
 #' @param outcomeTrain For the \code{train} function, either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival.
@@ -118,8 +118,6 @@ setMethod("crossValidate", "DataFrame",
               # Which data-types or data-views are present?
               assayIDs <- unique(mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
-              
-              checkData(measurements, outcome)
 
               # Check that other variables are in the right format and fix
               nFeatures <- cleanNFeatures(nFeatures = nFeatures,
@@ -184,17 +182,12 @@ Using an ordinary GLM instead.")
                                       characteristicsLabel = characteristicsLabel
                                   )
                               },
-
                               simplify = FALSE)
                           },
-
                           simplify = FALSE)
                       },
-
                       simplify = FALSE)
-
                   result <- unlist(unlist(resClassifier))
-
               }
 
               ################################
@@ -207,7 +200,6 @@ Using an ordinary GLM instead.")
 
                   # The below loops over different combinations of assays and merges them together.
                   # This allows someone to answer which combinations of the assays might be most useful.
-
 
                   if(!is.list(assayCombinations) && assayCombinations == "all") assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
 
@@ -243,7 +235,6 @@ Using an ordinary GLM instead.")
                       assayCombinations <- assayCombinations[sapply(assayCombinations, function(combination) "clinical" %in% combination, simplify = TRUE)]
                       if(length(assayCombinations) == 0) stop("No assayCombinations with \"clinical\" data")
                   }
-
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
@@ -306,7 +297,7 @@ Using an ordinary GLM instead.")
 # One or more omics data sets, possibly with clinical data.
 setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
-                   outcomeColumns, 
+                   outcome, 
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -319,7 +310,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    nCores = 1,
                    characteristicsLabel = NULL, ...)
           {
-              measurementsAndOutcome <- prepareData(measurements, outcomeColumns, ...)
+              measurementsAndOutcome <- prepareData(measurements, outcome, ...)
 
               crossValidate(measurements = measurementsAndOutcome[["measurements"]],
                             outcome = measurementsAndOutcome[["outcome"]], 
@@ -558,24 +549,6 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
 }
 ######################################
 
-
-
-######################################
-######################################
-checkData <- function(measurements, outcome){
-    if(is.null(rownames(measurements)))
-        stop("'measurements' DataFrame must have sample identifiers as its row names.")
-    if(any(is.na(measurements)))
-        stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")
-
-    # !!!  Need to check mcols has assay NUm
-
-}
-######################################
-
-
-
-######################################
 ######################################
 #' A function to generate a ModellingParams object
 #'
@@ -643,9 +616,10 @@ generateModellingParams <- function(assayIDs,
     knownClassifiers <- .ClassifyRenvir[["classifyKeywords"]][, "classifier Keyword"]
     if(!classifier %in% knownClassifiers)
         stop(paste("Classifier must exactly match of these (be careful of case):", paste(knownClassifiers, collapse = ", ")))
-    
+
     classifierParams <- .classifierKeywordToParams(classifier)
-    classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
+    if(!is.null(classifierParams$trainParams@tuneParams))
+      classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
 
     selectionMethod <- unlist(selectionMethod)
 
@@ -715,6 +689,7 @@ generateMultiviewParams <- function(assayIDs,
                                           nFeatures = nFeatures,
                                           selectionMethod = selectionMethod,
                                           selectionOptimisation = "none",
+                                          performanceType = performanceType,
                                           classifier = classifier,
                                           multiViewMethod = "none")
 
@@ -833,11 +808,6 @@ CV <- function(measurements = NULL,
                characteristicsLabel = NULL)
 
 {
-    # Check that data is in the right format
-    if(!is.null(measurements))
-      checkData(measurements, outcome)
-    else
-      checkData(x, x)
     # Check that other variables are in the right format and fix
     nFeatures <- cleanNFeatures(nFeatures = nFeatures,
                                 measurements = measurements)
@@ -1072,9 +1042,9 @@ train.list <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @method train MultiAssayExperiment
 #' @export
-train.MultiAssayExperiment <- function(x, outcomeColumns, ...)
+train.MultiAssayExperiment <- function(x, outcome, ...)
           {
-              prepArgs <- list(x, outcomeColumns)
+              prepArgs <- list(x, outcome)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
