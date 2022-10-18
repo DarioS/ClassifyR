@@ -13,7 +13,10 @@
 #' are features.
 #' @param outcome Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
-#' containing either classes or time and event information about survival.
+#' containing either classes or time and event information about survival. If
+#' \code{measurements} is a \code{MultiAssayExperiment}, the names of the column (class) or
+#' columns (survival) in the table extracted by \code{colData(data)} that contain(s) the samples'
+#' outcome to use for prediction.
 #' @param crossValParams An object of class \code{\link{CrossValParams}},
 #' specifying the kind of cross-validation to be done.
 #' @param modellingParams An object of class \code{\link{ModellingParams}},
@@ -26,9 +29,6 @@
 #' package.  Transformation, selection and prediction functions provided by
 #' this package will cause the characteristics to be automatically determined
 #' and this can be left blank.
-#' @param outcomeColumns If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-#' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-#' that contain(s)s the samples' outcome to use for prediction.
 #' @param ... Variables not used by the \code{matrix} nor the \code{MultiAssayExperiment} method which
 #' are passed into and used by the \code{DataFrame} method or passed onwards to \code{\link{prepareData}}.
 #' @param verbose Default: 1. A number between 0 and 3 for the amount of
@@ -70,9 +70,11 @@ setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix
 setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = S4Vectors::DataFrame(), ..., verbose = 1)
 {
-  # Get out the outcome if inside of data table.           
   if(is.null(rownames(measurements)))
-    stop("'measurements' DataFrame must have sample identifiers as its row names.")
+  {
+    warning("'measurements' DataFrame must have sample identifiers as its row names. Generating generic ones.")
+    rownames(measurements) <- paste("Sample", seq_len(nrow(measurements)))
+  }
   
   if(any(is.na(measurements)))
     stop("Some data elements are missing and classifiers don't work with missing data. Consider imputation or filtering.")            
@@ -93,7 +95,7 @@ input data. Autmomatically reducing to smaller number.")
   
   # Element names of the list returned by runTest, in order.
   resultTypes <- c("ranked", "selected", "models", "testSet", "predictions", "tune", "importance")
-  
+
   # Create all partitions of training and testing sets.
   samplesSplits <- .samplesSplits(crossValParams, outcome)
   splitsTestInfo <- .splitsTestInfo(crossValParams, samplesSplits)
@@ -112,6 +114,7 @@ input data. Autmomatically reducing to smaller number.")
       message("Processing sample set ", setNumber, '.')
     
     # crossValParams is needed at least for nested feature tuning.
+    
     runTest(measurements[trainingSamples, , drop = FALSE], outcome[trainingSamples],
             measurements[testSamples, , drop = FALSE], outcome[testSamples],
             crossValParams, modellingParams, characteristics, verbose,
@@ -180,9 +183,9 @@ input data. Autmomatically reducing to smaller number.")
 #' @import MultiAssayExperiment methods
 #' @export
 setMethod("runTests", c("MultiAssayExperiment"),
-          function(measurements, outcomeColumns, ...)
+          function(measurements, outcome, ...)
 {
-  prepArgs <- list(measurements, outcomeColumns)              
+  prepArgs <- list(measurements, outcome)              
   extraInputs <- list(...)
   prepExtras <- numeric()
   if(length(extraInputs) > 0)

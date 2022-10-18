@@ -165,11 +165,13 @@ setMethod("prepareData", "MultiAssayExperiment",
   if(!all(useFeatures[, "assay"] %in% c(names(measurements), "clinical")))
     stop("Some assay names in first column of 'useFeatures' are not assay names in 'measurements' or \"clinical\".")
 
-  clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))
+  clinicalColumnsDataset <- colnames(MultiAssayExperiment::colData(measurements))
   if("clinical" %in% useFeatures[, "assay"])
   {
     clinicalRows <- useFeatures[, "assay"] == "clinical"      
     clinicalColumns <- useFeatures[clinicalRows, "feature"]
+    if(length(clinicalColumns) == 1 && clinicalColumns == "all")
+      clinicalColumns <- setdiff(clinicalColumnsDataset, outcomeColumns)
     useFeatures <- useFeatures[!clinicalRows, ]
   } else {
     clinicalColumns <- NULL
@@ -178,7 +180,6 @@ setMethod("prepareData", "MultiAssayExperiment",
   if(nrow(useFeatures) > 0)
   {
     measurements <- measurements[, , unique(useFeatures[, "assay"])]
-  
     # Get all desired measurements tables and clinical columns (other than the columns representing outcome).
     # These form the independent variables to be used for making predictions with.
     # Variable names will have names like RNA_BRAF for traceability.

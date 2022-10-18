@@ -37,7 +37,7 @@ crossValidate(measurements, outcome, ...)
 
 \S4method{crossValidate}{MultiAssayExperiment}(
   measurements,
-  outcomeColumns,
+  outcome,
   nFeatures = 20,
   selectionMethod = "t-test",
   selectionOptimisation = "Resubstitution",
@@ -119,7 +119,7 @@ crossValidate(measurements, outcome, ...)
 
 \method{train}{list}(x, outcomeTrain, ...)
 
-\method{train}{MultiAssayExperiment}(x, outcomeColumns, ...)
+\method{train}{MultiAssayExperiment}(x, outcome, ...)
 
 \method{predict}{trainedByClassifyR}(object, newData, ...)
 }
@@ -130,7 +130,8 @@ or a list of these objects containing the data.}
 \item{outcome}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 column name in \code{measurements} if it is a \code{\link{DataFrame}}. Or a \code{\link{Surv}} object or a character vector of
-length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome.}
+length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome. If \code{measurements} is a
+\code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.}
 
 \item{...}{Parameters passed into \code{\link{prepareData}} which control subsetting and filtering of input data.}
 
@@ -161,8 +162,6 @@ with each element being a vector of assays to combine. Special value \code{"all"
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
 
 \item{characteristicsLabel}{A character specifying an additional label for the cross-validation run.}
-
-\item{outcomeColumns}{If \code{measurements} is a \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 

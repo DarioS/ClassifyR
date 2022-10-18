@@ -10,8 +10,8 @@
 #' @param outcome A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 #' column name in \code{measurements} if it is a \code{\link{DataFrame}}. Or a \code{\link{Surv}} object or a character vector of
-#' length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome.
-#' @param outcomeColumns If \code{measurements} is a \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.
+#' length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome. If \code{measurements} is a
+#' \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.
 #' @param outcomeTrain For the \code{train} function, either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival.
@@ -201,7 +201,6 @@ Using an ordinary GLM instead.")
                   # The below loops over different combinations of assays and merges them together.
                   # This allows someone to answer which combinations of the assays might be most useful.
 
-
                   if(!is.list(assayCombinations) && assayCombinations == "all") assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
 
                   result <- sapply(assayCombinations, function(assayIndex){
@@ -236,7 +235,6 @@ Using an ordinary GLM instead.")
                       assayCombinations <- assayCombinations[sapply(assayCombinations, function(combination) "clinical" %in% combination, simplify = TRUE)]
                       if(length(assayCombinations) == 0) stop("No assayCombinations with \"clinical\" data")
                   }
-
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
@@ -299,7 +297,7 @@ Using an ordinary GLM instead.")
 # One or more omics data sets, possibly with clinical data.
 setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
-                   outcomeColumns, 
+                   outcome, 
                    nFeatures = 20,
                    selectionMethod = "t-test",
                    selectionOptimisation = "Resubstitution",
@@ -312,7 +310,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    nCores = 1,
                    characteristicsLabel = NULL, ...)
           {
-              measurementsAndOutcome <- prepareData(measurements, outcomeColumns, ...)
+              measurementsAndOutcome <- prepareData(measurements, outcome, ...)
 
               crossValidate(measurements = measurementsAndOutcome[["measurements"]],
                             outcome = measurementsAndOutcome[["outcome"]], 
@@ -691,6 +689,7 @@ generateMultiviewParams <- function(assayIDs,
                                           nFeatures = nFeatures,
                                           selectionMethod = selectionMethod,
                                           selectionOptimisation = "none",
+                                          performanceType = performanceType,
                                           classifier = classifier,
                                           multiViewMethod = "none")
 
@@ -1043,9 +1042,9 @@ train.list <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @method train MultiAssayExperiment
 #' @export
-train.MultiAssayExperiment <- function(x, outcomeColumns, ...)
+train.MultiAssayExperiment <- function(x, outcome, ...)
           {
-              prepArgs <- list(x, outcomeColumns)
+              prepArgs <- list(x, outcome)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
