@@ -51,11 +51,17 @@ setMethod("prepareData", "matrix",
 setMethod("prepareData", "DataFrame",
   function(measurements, outcome, useFeatures = "all", maxMissingProp = 0.0, topNvariance = NULL)
 {
+  if(is.null(rownames(measurements)))
+  {
+    warning("'measurements' DataFrame must have sample identifiers as its row names. Generating generic ones.")
+    rownames(measurements) <- paste("Sample", seq_len(nrow(measurements)))
+  }      
+            
   if(useFeatures != "all") # Subset to only the desired ones.
     measurements <- measurements[, useFeatures]
 
   # Won't ever be true if input data was MultiAssayExperiment because wideFormat already produces valid names.  
-  if(all.equal(colnames(measurements), make.names(colnames(measurements))) != TRUE)
+  if(!all(colnames(measurements) == make.names(colnames(measurements))))
   {
     warning("Unsafe feature names in input data. Converted into safe names.")
     mcols(measurements)$feature <- colnames(measurements) # Save the originals.
@@ -114,7 +120,7 @@ setMethod("prepareData", "DataFrame",
     else # Three columns. Therefore, counting process data.
       outcome <- survival::Surv(outcome[, 1], outcome[, 2], outcome[, 3])
   }
-  
+
   # Remove samples with indeterminate outcome.
   dropSamples <- which(is.na(outcome) | is.null(outcome))
   if(length(dropSamples) > 0)
@@ -125,8 +131,9 @@ setMethod("prepareData", "DataFrame",
   
   # Remove features with more missingness than allowed.
   nSamples <- nrow(measurements)
-  dropFeatures <- which(apply(measurements, 2, function(featureMeasurements) sum(is.na(featureMeasurements)))
-                        / nrow(measurements) > maxMissingProp)
+  measurementsMatrix <- as.matrix(measurements) # For speed of calculation.
+  dropFeatures <- which(apply(measurementsMatrix, 2, function(featureMeasurements) sum(is.na(featureMeasurements)))
+                        / nrow(measurementsMatrix) > maxMissingProp)
   if(length(dropFeatures) > 0)
     measurements <- measurements[, -dropFeatures]
   
@@ -158,11 +165,13 @@ setMethod("prepareData", "MultiAssayExperiment",
   if(!all(useFeatures[, "assay"] %in% c(names(measurements), "clinical")))
     stop("Some assay names in first column of 'useFeatures' are not assay names in 'measurements' or \"clinical\".")
 
-  clinicalColumns <- colnames(MultiAssayExperiment::colData(measurements))
+  clinicalColumnsDataset <- colnames(MultiAssayExperiment::colData(measurements))
   if("clinical" %in% useFeatures[, "assay"])
   {
     clinicalRows <- useFeatures[, "assay"] == "clinical"      
     clinicalColumns <- useFeatures[clinicalRows, "feature"]
+    if(length(clinicalColumns) == 1 && clinicalColumns == "all")
+      clinicalColumns <- setdiff(clinicalColumnsDataset, outcomeColumns)
     useFeatures <- useFeatures[!clinicalRows, ]
   } else {
     clinicalColumns <- NULL
@@ -171,7 +180,6 @@ setMethod("prepareData", "MultiAssayExperiment",
   if(nrow(useFeatures) > 0)
   {
     measurements <- measurements[, , unique(useFeatures[, "assay"])]
-  
     # Get all desired measurements tables and clinical columns (other than the columns representing outcome).
     # These form the independent variables to be used for making predictions with.
     # Variable names will have names like RNA_BRAF for traceability.

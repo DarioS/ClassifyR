@@ -19,7 +19,7 @@
   verbose = 1
 )
 
-\S4method{runTests}{MultiAssayExperiment}(measurements, outcomeColumns, ...)
+\S4method{runTests}{MultiAssayExperiment}(measurements, outcome, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -32,7 +32,10 @@ are passed into and used by the \code{DataFrame} method or passed onwards to \co
 
 \item{outcome}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
-containing either classes or time and event information about survival.}
+containing either classes or time and event information about survival. If
+\code{measurements} is a \code{MultiAssayExperiment}, the names of the column (class) or
+columns (survival) in the table extracted by \code{colData(data)} that contain(s) the samples'
+outcome to use for prediction.}
 
 \item{crossValParams}{An object of class \code{\link{CrossValParams}},
 specifying the kind of cross-validation to be done.}
@@ -52,10 +55,6 @@ and this can be left blank.}
 \item{verbose}{Default: 1. A number between 0 and 3 for the amount of
 progress messages to give.  A higher number will produce more messages as
 more lower-level functions print messages.}
-
-\item{outcomeColumns}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
-names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
-that contain(s)s the samples' outcome to use for prediction.}
 }
 \value{
 An object of class \code{\link{ClassifyResult}}.
