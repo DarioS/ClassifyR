@@ -124,16 +124,8 @@ setMethod("crossValidate", "DataFrame",
                                           measurements = measurements)
               selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod,
                                                       measurements = measurements)
-              if(any(nFeatures == 1) && classifier == "elasticNetGLM")
-              {
-                  options(warn = 1)
-                  warning("Elastic Net GLM requires two or more features as input but there is only one.
-Using an ordinary GLM instead.")
-                  classifier <- "GLM"
-              }
-              
               classifier <- cleanClassifier(classifier = classifier,
-                                            measurements = measurements)
+                                            measurements = measurements, nFeatures = nFeatures)
               
               ##!!!!! Do something with data combinations
 
@@ -236,7 +228,7 @@ Using an ordinary GLM instead.")
                       if(length(assayCombinations) == 0) stop("No assayCombinations with \"clinical\" data")
                   }
 
-                  result <- sapply(assayCombinations, function(assayIndex){
+                  result <- sapply(assayCombinations[2], function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
                          outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
@@ -471,9 +463,9 @@ cleanNFeatures <- function(nFeatures, measurements){
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
     else obsFeatures <- ncol(measurements)
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
-    if(is.null(names(nFeatures)) & length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
-    if(is.null(names(nFeatures)) & length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(x, nFeatures), simplify = FALSE)
-    #if(is.null(names(nFeatures)) & length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the assays.")
+    if(is.null(names(nFeatures)) && length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
+    if(is.null(names(nFeatures)) && length(nFeatures) > 1) nFeatures <- sapply(obsFeatures, function(x)pmin(x, nFeatures), simplify = FALSE)
+    #if(is.null(names(nFeatures)) && length(nFeatures) > 1) stop("nFeatures needs to be a named numeric vector or list with the same names as the assays.")
     if(!is.null(names(obsFeatures)) && !all(names(obsFeatures) %in% names(nFeatures))) stop("nFeatures needs to be a named numeric vector or list with the same names as the assays.")
     if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "numeric")) nFeatures <- as.list(pmin(obsFeatures, nFeatures[names(obsFeatures)]))
     if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(nFeatures)) & is(nFeatures, "list")) nFeatures <- mapply(pmin, nFeatures[names(obsFeatures)], obsFeatures, SIMPLIFY = FALSE)
@@ -498,7 +490,7 @@ cleanSelectionMethod <- function(selectionMethod, measurements){
 
 ######################################
 ######################################
-cleanClassifier <- function(classifier, measurements){
+cleanClassifier <- function(classifier, measurements, nFeatures){
     #### Clean up
     if(!is.null(mcols(measurements)$assay))
       obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
@@ -509,9 +501,19 @@ cleanClassifier <- function(classifier, measurements){
     #if(is.null(names(classifier)) & length(classifier) > 1) stop("classifier needs to be a named character vector or list with the same names as the assays.")
     if(!is.null(names(obsFeatures)) && !all(names(obsFeatures) %in% names(classifier))) stop("classifier needs to be a named character vector or list with the same names as the assays.")
     if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(classifier)) & is(classifier, "character")) classifier <- as.list(classifier[names(obsFeatures)])
+    
+    nFeatures <- nFeatures[names(classifier)]
+    checkENs <- which(classifier == "elasticNetGLM")
+    if(length(checkENs) > 0)
+    {
+      replacements <- sapply(checkENs, function(checkEN) ifelse(any(nFeatures[[checkEN]] == 1), "GLM", "elasticNetGLM"))
+      classifier[checkENs] <- replacements
+      if(any(replacements) == "GLM")    
+        warning("Elastic Net GLM requires two or more features as input but there is only one.
+Using an ordinary GLM instead.")
+    }
     classifier
 }
-
 
 ######################################
 ######################################
@@ -808,14 +810,6 @@ CV <- function(measurements = NULL,
                characteristicsLabel = NULL)
 
 {
-    # Check that other variables are in the right format and fix
-    nFeatures <- cleanNFeatures(nFeatures = nFeatures,
-                                measurements = measurements)
-    selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod,
-                                            measurements = measurements)
-    classifier <- cleanClassifier(classifier = classifier,
-                                  measurements = measurements)
-
     # Which data-types or data-views are present?
     if(is.null(characteristicsLabel)) characteristicsLabel <- "none"
 
@@ -841,7 +835,7 @@ CV <- function(measurements = NULL,
     characteristics <- S4Vectors::DataFrame(characteristic = c(if(!is.null(assayText)) "Assay Name" else NULL, "Classifier Name", "Selection Name", "multiViewMethod", "characteristicsLabel"), value = c(if(!is.null(assayText)) paste(assayText, collapse = ", ") else NULL, paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
 
     if(!is.null(measurements))
-    { # Cross-validation.        
+    { # Cross-validation.
       classifyResults <- runTests(measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
       fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
     } else { # Independent training and testing.

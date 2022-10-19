@@ -49,6 +49,7 @@ extremeGradientBoostingPredictInterface <- function(booster, measurementsTest, .
   # Convert to one-hot encoding as xgboost doesn't understand factors. Need to get rid of intercept afterwards.
   measurementsTest <- MatrixModels::model.Matrix(~ 0 + ., data = measurementsTest, sparse = TRUE)
   scores <- predict(booster, measurementsTest, reshape = TRUE)
+  colnames(scores) <- attr(booster, "classes")
   if(!is.null(attr(booster, "classes"))) # It is a classification task.
   {
     classPredictions <- attr(booster, "classes")[apply(scores, 1, function(sampleRow) which.max(sampleRow)[1])]
