@@ -193,7 +193,7 @@ setMethod("crossValidate", "DataFrame",
                   # The below loops over different combinations of assays and merges them together.
                   # This allows someone to answer which combinations of the assays might be most useful.
 
-                  if(!is.list(assayCombinations) && assayCombinations == "all") assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
+                  if(!is.list(assayCombinations) && assayCombinations[1] == "all") assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
 
                   result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
@@ -221,14 +221,14 @@ setMethod("crossValidate", "DataFrame",
                   # This allows someone to answer which combinations of the assays might be most useful.
 
 
-                  if(!is.list(assayCombinations) && assayCombinations == "all")
+                  if(!is.list(assayCombinations) && assayCombinations[1] == "all")
                   {
                       assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
                       assayCombinations <- assayCombinations[sapply(assayCombinations, function(combination) "clinical" %in% combination, simplify = TRUE)]
                       if(length(assayCombinations) == 0) stop("No assayCombinations with \"clinical\" data")
                   }
 
-                  result <- sapply(assayCombinations[2], function(assayIndex){
+                  result <- sapply(assayCombinations, function(assayIndex){
                       CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
                          outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
@@ -255,7 +255,7 @@ setMethod("crossValidate", "DataFrame",
                   # This allows someone to answer which combinations of the assays might be most useful.
 
 
-                  if(!is.list(assayCombinations) && assayCombinations == "all"){
+                  if(!is.list(assayCombinations) && assayCombinations[1] == "all"){
                       assayCombinations <- do.call("c", sapply(seq_along(assayIDs),function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
                       assayCombinations <- assayCombinations[sapply(assayCombinations, function(combination) "clinical" %in% combination, simplify = TRUE)]
                       if(length(assayCombinations) == 0) stop("No assayCombinations with \"clinical\" data")
