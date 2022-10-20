@@ -115,9 +115,12 @@ naiveBayesKernel <- function(measurementsTrain, classesTrain, measurementsTest,
 
     data.frame(class = factor(classPredicted, levels = levels(classesTrain)), t(classScores), check.names = FALSE)
   }))
-
-  switch(returnType, class = predictions[, "class"],
-         score = predictions[, 2:ncol(predictions)],
+  
+  classPredictions <- predictions[, "class"]
+  classScores <- predictions[, 2:ncol(predictions)]
+  rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
+  switch(returnType, class = classPredictions,
+         score = classScores,
          both = predictions)
 }
 attr(naiveBayesKernel, "name") <- "naiveBayesKernel"

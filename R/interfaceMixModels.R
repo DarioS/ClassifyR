@@ -149,12 +149,14 @@ mixModelsPredict <- function(models, measurementsTest, difference = c("unweighte
       classScores <- classScores / sum(classScores) # Make different feature selection sizes comparable.
       classPredicted <- names(classScores)[which.max(classScores)]
     }
-
     data.frame(class = factor(classPredicted, levels = classesNames), t(classScores), check.names = FALSE)
   }))
 
-  switch(returnType, class = predictions[, "class"],
-         score = predictions[, colnames(predictions) %in% classesNames],
+  classPredictions <- predictions[, "class"]
+  classScores <- predictions[, colnames(predictions) %in% classesNames]
+  rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
+  switch(returnType, class = classPredictions,
+         score = classScores,
          both = data.frame(class = predictions[, "class"], predictions[, colnames(predictions) %in% classesNames, drop = FALSE], check.names = FALSE)
   )
 }
