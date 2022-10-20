@@ -10,6 +10,6 @@ kNNinterface <- function(measurementsTrain, classesTrain, measurementsTest, ...,
   if(verbose == 3)
     message("Fitting k Nearest Neighbours classifier to data and predicting classes.")
   
-  class::knn(as.matrix(measurementsTrain), as.matrix(measurementsTest), classesTrain, ...)
+  setNames(class::knn(as.matrix(measurementsTrain), as.matrix(measurementsTest), classesTrain, ...), rownames(measurementsTest))
 }
 attr(kNNinterface, "name") <- "kNNinterface"
