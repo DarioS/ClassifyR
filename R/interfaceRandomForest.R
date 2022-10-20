@@ -23,6 +23,7 @@ randomForestPredictInterface <- function(forest, measurementsTest, ..., returnTy
   classPredictions <- predict(forest, measurementsTest)$predictions
   classScores <- predict(forest, measurementsTest, predict.all = TRUE)[[1]]
   classScores <- t(apply(classScores, 1, function(sampleRow) table(factor(classes[sampleRow], levels = classes)) / forest$forest$num.trees))
+  rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
   switch(returnType, class = classPredictions,
          score = classScores,
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))

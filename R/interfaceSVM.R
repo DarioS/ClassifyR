@@ -38,7 +38,7 @@ SVMpredictInterface <- function(model, measurementsTest, returnType = c("both", 
   # e1071 uses attributes to pass back probabilities. Make them a standalone variable.
   classScores <- attr(classPredictions, "probabilities")[, model[["levels"]], drop = FALSE]
   attr(classPredictions, "probabilities") <- NULL
-  
+  rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
   switch(returnType, class = classPredictions, score = classScores,
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
 }

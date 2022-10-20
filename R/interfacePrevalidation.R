@@ -31,15 +31,6 @@ extractPrevalidation = function(assayPreval){ #}, startingCol) {
     vec
 }
 
-# Use to pull out the names of features in a ClassifyR model - XYZ: Could Ditch if we really wanted to
-featurePuller = function(classifyObject) {
-    if ("selectResult" %in% slotNames(classifyObject)) {
-        features = classifyObject@selectResult@chosenFeatures
-    } else{
-        features = classifyObject@originalFeatures
-    }
-}
-
 setClass("prevalModel", slots = list(fullModel = "list"))
 
 prevalTrainInterface <- function(measurements, classes, params, ...)
