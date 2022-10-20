@@ -39,6 +39,6 @@ coxnetPredictInterface <- function(model, measurementsTest, survivalTest = NULL,
   model$offset <- TRUE
   
   survScores <- predict(model, testMatrix, s = lambda, type = "response", newoffset = offset)
-  
+  rownames(survScores) <- rownames(measurementsTest)
   survScores[, 1]
 }

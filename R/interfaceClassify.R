@@ -14,6 +14,7 @@ classifyInterface <- function(countsTrain, classesTrain, countsTest, ...,
   classPredictions <- predicted[["ytehat"]]
   classScores <- predicted[["discriminant"]]
   colnames(classScores) <- levels(classesTrain)
+  rownames(classScores) <- names(classPredictions) <- rownames(countsTest)
   switch(returnType, class = classPredictions, # Factor vector.
          score = classScores, # Numeric matrix.
          both = data.frame(class = classPredictions, classScores, check.names = FALSE))
