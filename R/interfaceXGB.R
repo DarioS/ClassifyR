@@ -32,11 +32,10 @@ extremeGradientBoostingTrainInterface <- function(measurementsTrain, outcomeTrai
   }
 
   if(isClassification)
-  {
     attr(trained, "classes") <- classes # Useful for factor predictions in predict method.
-    attr(trained, "featureNames") <- colnames(measurementsTrain)
-    attr(trained, "featureGroups") <- measurementsTrain@assign
-  }
+  attr(trained, "featureNames") <- colnames(measurementsTrain)
+  attr(trained, "featureGroups") <- measurementsTrain@assign
+
   trained
 }
 attr(extremeGradientBoostingTrainInterface, "name") <- "extremeGradientBoostingTrainInterface"
