@@ -19,16 +19,18 @@ extremeGradientBoostingTrainInterface <- function(measurementsTrain, outcomeTrai
     if(max(event) == 2) event <- event - 1
     outcomeTrain <- time * ifelse(event == 1, 1, -1) # Negative for censoring.
     objective <- "survival:cox"
+    trained <- xgboost::xgboost(measurementsTrain, outcomeTrain, objective = objective, nrounds = nrounds,
+                                colsample_bynode = mTryProportion, verbose = 0, ...)
   } else { # Classification task.
     isClassification <- TRUE
     classes <- levels(outcomeTrain)
     numClasses <- length(classes)
     objective <- "multi:softprob"
     outcomeTrain <- as.numeric(outcomeTrain) - 1 # Classes are represented as 0, 1, 2, ...
-  }
-  
-  trained <- xgboost::xgboost(measurementsTrain, outcomeTrain, objective = objective, nrounds = nrounds,
+    trained <- xgboost::xgboost(measurementsTrain, outcomeTrain, objective = objective, nrounds = nrounds,
                               num_class = numClasses, colsample_bynode = mTryProportion, verbose = 0, ...)
+  }
+
   if(isClassification)
   {
     attr(trained, "classes") <- classes # Useful for factor predictions in predict method.
