@@ -64,7 +64,7 @@ setMethod("prepareData", "DataFrame",
   if(!all(colnames(measurements) == make.names(colnames(measurements))))
   {
     warning("Unsafe feature names in input data. Converted into safe names.")
-    mcols(measurements)$feature <- colnames(measurements) # Save the originals.
+    S4Vectors::mcols(measurements)$feature <- colnames(measurements) # Save the originals.
     colnames(measurements) <- make.names(colnames(measurements)) # Ensure column names are safe names.
   }
       

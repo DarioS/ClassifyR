@@ -81,8 +81,8 @@ prevalTrainInterface <- function(measurements, classes, params, ...)
               #fullTrain = cbind(assayTrain[["clinical"]][,selectedFeaturesClinical], prevalidationTrain[rownames(assayTrain[["clinical"]]), , drop = FALSE])
               
               prevalidationTrain <- S4Vectors::DataFrame(prevalidationTrain)
-              mcols(prevalidationTrain)$assay = "prevalidation"
-              mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
+              S4Vectors::mcols(prevalidationTrain)$assay = "prevalidation"
+              S4Vectors::mcols(prevalidationTrain)$feature = colnames(prevalidationTrain)
               
               
               ###
@@ -142,7 +142,7 @@ prevalTrainInterface <- function(measurements, classes, params, ...)
 prevalPredictInterface <- function(fullModel, test, ..., returnType = "both", verbose = 0)
           {
               fullModel <- fullModel@fullModel[[1]]
-              assayTest <- sapply(unique(mcols(test)[["assay"]]), function(assay) test[, mcols(test)[["assay"]] %in% assay], simplify = FALSE)
+              assayTest <- sapply(unique(S4Vectors::mcols(test)[["assay"]]), function(assay) test[, S4Vectors::mcols(test)[["assay"]] %in% assay], simplify = FALSE)
               
               prevalidationModels <- fullModel$prevalidationModels
               modelPredictionFunctions <- fullModel$modellingParams
@@ -157,8 +157,8 @@ prevalPredictInterface <- function(fullModel, test, ..., returnType = "both", ve
                   extractPrevalidation()
               
               prevalidationPredict <- S4Vectors::DataFrame(prevalidationPredict)
-              mcols(prevalidationPredict)$assay = "prevalidation"
-              mcols(prevalidationPredict)$feature = colnames(prevalidationPredict)
+              S4Vectors::mcols(prevalidationPredict)$assay = "prevalidation"
+              S4Vectors::mcols(prevalidationPredict)$feature = colnames(prevalidationPredict)
               
               fullTest = cbind(assayTest[["clinical"]], prevalidationPredict[rownames(assayTest[["clinical"]]), , drop = FALSE])
               
