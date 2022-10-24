@@ -37,8 +37,8 @@ pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
               ###
               
               pcaVar <- S4Vectors::DataFrame(pcaVar)
-              mcols(pcaVar)$assay = "PCA"
-              mcols(pcaVar)$feature = colnames(pcaVar)
+              S4Vectors::mcols(pcaVar)$assay = "PCA"
+              S4Vectors::mcols(pcaVar)$feature = colnames(pcaVar)
             
               fullTrain = cbind(assayTrain[["clinical"]], pcaVar)
               
@@ -87,7 +87,7 @@ pcaPredictInterface <- function(fullModel, test, ..., returnType = "both", verbo
               fullModel <- fullModel@fullModel[[1]]
               
               #Split my test data into a list of the different assays
-              assayTest <- sapply(unique(mcols(test)[["assay"]]), function(assay) test[, mcols(test)[["assay"]] %in% assay], simplify = FALSE)
+              assayTest <- sapply(unique(S4Vectors::mcols(test)[["assay"]]), function(assay) test[, S4Vectors::mcols(test)[["assay"]] %in% assay], simplify = FALSE)
               
               # Pull out my PCA models
               pcaModels <- fullModel$pcaModels
@@ -101,8 +101,8 @@ pcaPredictInterface <- function(fullModel, test, ..., returnType = "both", verbo
               pcaVar <- do.call(cbind, pcaVar)
               
               pcaVar <- S4Vectors::DataFrame(pcaVar)
-              mcols(pcaVar)$assay = "PCA"
-              mcols(pcaVar)$feature = colnames(pcaVar)
+              S4Vectors::mcols(pcaVar)$assay = "PCA"
+              S4Vectors::mcols(pcaVar)$feature = colnames(pcaVar)
               
               # Merge my PCA stuff with my clinical data
               fullTest = cbind(assayTest[["clinical"]], pcaVar)

@@ -116,7 +116,7 @@ setMethod("crossValidate", "DataFrame",
               }
               
               # Which data-types or data-views are present?
-              assayIDs <- unique(mcols(measurements)$assay)
+              assayIDs <- unique(S4Vectors::mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
 
               # Check that other variables are in the right format and fix
@@ -158,7 +158,7 @@ setMethod("crossValidate", "DataFrame",
                                   # Loop over selectors
                                   set.seed(seed)
                                   measurementsUse <- measurements
-                                  if(assayIndex != 1) measurementsUse <- measurements[, mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
+                                  if(assayIndex != 1) measurementsUse <- measurements[, S4Vectors::mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   CV(
                                       measurements = measurementsUse, outcome = outcome,
                                       assayIDs = assayIndex,
@@ -196,7 +196,7 @@ setMethod("crossValidate", "DataFrame",
                   if(!is.list(assayCombinations) && assayCombinations[1] == "all") assayCombinations <- do.call("c", sapply(seq_along(assayIDs), function(nChoose) combn(assayIDs, nChoose, simplify = FALSE)))
 
                   result <- sapply(assayCombinations, function(assayIndex){
-                      CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
+                      CV(measurements = measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIndex],
                          outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
@@ -229,7 +229,7 @@ setMethod("crossValidate", "DataFrame",
                   }
 
                   result <- sapply(assayCombinations, function(assayIndex){
-                      CV(measurements = measurements[, mcols(measurements)[["assay"]] %in% assayIndex],
+                      CV(measurements = measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIndex],
                          outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
@@ -263,7 +263,7 @@ setMethod("crossValidate", "DataFrame",
 
 
                   result <- sapply(assayCombinations, function(assayIndex){
-                      CV(measurements = measurements[, mcols(measurements)$assay %in% assayIndex],
+                      CV(measurements = measurements[, S4Vectors::mcols(measurements)$assay %in% assayIndex],
                          outcome = outcome, assayIDs = assayIndex,
                          nFeatures = nFeatures[assayIndex],
                          selectionMethod = selectionMethod[assayIndex],
@@ -427,14 +427,14 @@ setMethod("crossValidate", "list",
               df_list <- sapply(measurements, S4Vectors::DataFrame, check.names = FALSE)
               
               df_list <- mapply(function(meas, nam){
-                  mcols(meas)$assay <- nam
-                  mcols(meas)$feature <- colnames(meas)
+                  S4Vectors::mcols(meas)$assay <- nam
+                  S4Vectors::mcols(meas)$feature <- colnames(meas)
                   meas
               }, df_list, names(df_list))
               
               
               combined_df <- do.call("cbind", df_list) 
-              colnames(combined_df) <- mcols(combined_df)$feature
+              colnames(combined_df) <- S4Vectors::mcols(combined_df)$feature
 
 
               
@@ -459,8 +459,8 @@ setMethod("crossValidate", "list",
 ######################################
 cleanNFeatures <- function(nFeatures, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)$assay))
-      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
+    if(!is.null(S4Vectors::mcols(measurements)$assay))
+      obsFeatures <- unlist(as.list(table(S4Vectors::mcols(measurements)[, "assay"])))
     else obsFeatures <- ncol(measurements)
     if(is.null(nFeatures) || length(nFeatures) == 1 && nFeatures == "all") nFeatures <- as.list(obsFeatures)
     if(is.null(names(nFeatures)) && length(nFeatures) == 1) nFeatures <- as.list(pmin(obsFeatures, nFeatures))
@@ -476,8 +476,8 @@ cleanNFeatures <- function(nFeatures, measurements){
 ######################################
 cleanSelectionMethod <- function(selectionMethod, measurements){
     #### Clean up
-    if(!is.null(mcols(measurements)$assay))
-      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
+    if(!is.null(S4Vectors::mcols(measurements)$assay))
+      obsFeatures <- unlist(as.list(table(S4Vectors::mcols(measurements)[, "assay"])))
     else return(list(selectionMethod))
 
     if(is.null(names(selectionMethod)) & length(selectionMethod) == 1 & !is.null(names(obsFeatures))) selectionMethod <- sapply(names(obsFeatures), function(x) selectionMethod, simplify = FALSE)
@@ -492,8 +492,8 @@ cleanSelectionMethod <- function(selectionMethod, measurements){
 ######################################
 cleanClassifier <- function(classifier, measurements, nFeatures){
     #### Clean up
-    if(!is.null(mcols(measurements)$assay))
-      obsFeatures <- unlist(as.list(table(mcols(measurements)[, "assay"])))
+    if(!is.null(S4Vectors::mcols(measurements)$assay))
+      obsFeatures <- unlist(as.list(table(S4Vectors::mcols(measurements)[, "assay"])))
     else return(list(classifier))
 
     if(is.null(names(classifier)) & length(classifier) == 1 & !is.null(names(obsFeatures))) classifier <- sapply(names(obsFeatures), function(x)classifier, simplify = FALSE)
@@ -599,7 +599,7 @@ generateModellingParams <- function(assayIDs,
 
 
 
-    if(length(assayIDs) > 1) obsFeatures <- sum(mcols(measurements)[, "assay"] %in% assayIDs)
+    if(length(assayIDs) > 1) obsFeatures <- sum(S4Vectors::mcols(measurements)[, "assay"] %in% assayIDs)
     else obsFeatures <- ncol(measurements)
 
 
@@ -670,7 +670,7 @@ generateMultiviewParams <- function(assayIDs,
         if(length(classifier) > 1) classifier <- classifier[[1]]
 
         # Split measurements up by assay.
-        assayTrain <- sapply(assayIDs, function(assayID) if(assayID == 1) measurements else measurements[, mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
+        assayTrain <- sapply(assayIDs, function(assayID) if(assayID == 1) measurements else measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
 
         # Generate params for each assay. This could be extended to have different selectionMethods for each type
         paramsAssays <- mapply(generateModellingParams,
@@ -709,7 +709,7 @@ generateMultiviewParams <- function(assayIDs,
     if(multiViewMethod == "prevalidation"){
 
         # Split measurements up by assay.
-        assayTrain <- sapply(assayIDs, function(assayID) measurements[, mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
+        assayTrain <- sapply(assayIDs, function(assayID) measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
 
         # Generate params for each assay. This could be extended to have different selectionMethods for each type
         paramsAssays <- mapply(generateModellingParams,
@@ -738,7 +738,7 @@ generateMultiviewParams <- function(assayIDs,
     if(multiViewMethod == "prevalidation"){
 
         # Split measurements up by assay.
-        assayTrain <- sapply(assayIDs, function(assayID) measurements[, mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
+        assayTrain <- sapply(assayIDs, function(assayID) measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
 
         # Generate params for each assay. This could be extended to have different selectionMethods for each type
         paramsAssays <- mapply(generateModellingParams,
@@ -768,7 +768,7 @@ generateMultiviewParams <- function(assayIDs,
     if(multiViewMethod == "PCA"){
 
         # Split measurements up by assay.
-        assayTrain <- sapply(assayIDs, function(assayID) measurements[, mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
+        assayTrain <- sapply(assayIDs, function(assayID) measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
 
         # Generate params for each assay. This could be extended to have different selectionMethods for each type
         paramsClinical <-  list(clinical = generateModellingParams(
@@ -906,7 +906,7 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
               outcomeTrain <- measurementsAndOutcome[["outcome"]]
               
               classifier <- cleanClassifier(classifier = classifier, measurements = measurements)
-              if(assayIDs == "all") assayIDs <- unique(mcols(measurements)[, "assay"])
+              if(assayIDs == "all") assayIDs <- unique(S4Vectors::mcols(measurements)[, "assay"])
               if(is.null(assayIDs)) assayIDs <- 1
               names(assayIDs) <- assayIDs
               names(classifier) <- assayIDs
@@ -919,7 +919,7 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
                               # Loop over classifiers
                               
                                   measurementsUse <- measurements
-                                  if(assayIndex != 1) measurementsUse <- measurements[, mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
+                                  if(assayIndex != 1) measurementsUse <- measurements[, S4Vectors::mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   
                                   classifierParams <- .classifierKeywordToParams(classifierForAssay)
                                   if(!is.null(classifierParams$trainParams@tuneParams))
@@ -950,7 +950,7 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
 
               ### Merging or binding to combine data
               if(multiViewMethod == "merge"){
-                  measurementsUse <- measurements[, mcols(measurements)[["assay"]] %in% assayIDs]
+                  measurementsUse <- measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIDs]
                   model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
                   class(model) <- c("trainedByClassifyR", class(model))
               }
@@ -959,7 +959,7 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
               ### Prevalidation to combine data
               if(multiViewMethod == "prevalidation"){
                 # Split measurements up by assay.
-                 assayTrain <- sapply(assayIDs, function(assayID) measurements[, mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
+                 assayTrain <- sapply(assayIDs, function(assayID) measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
 
                # Generate params for each assay. This could be extended to have different selectionMethods for each type
                  paramsAssays <- mapply(generateModellingParams,
@@ -980,10 +980,10 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
               
               ### Principal Components Analysis to combine data
               if(multiViewMethod == "PCA"){
-                measurementsUse <- measurements[, mcols(measurements)[["assay"]] %in% assayIDs]
+                measurementsUse <- measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIDs]
                 paramsClinical <-  list(clinical = generateModellingParams(
                                         assayIDs = "clinical",
-                                        measurements = measurements[, mcols(measurements)[["assay"]] == "clinical"],
+                                        measurements = measurements[, S4Vectors::mcols(measurements)[["assay"]] == "clinical"],
                                         classifier = classifier["clinical"],
                                         multiViewMethod = "none"))
                 
@@ -1020,8 +1020,8 @@ train.list <- function(x, outcomeTrain, ...)
               df_list <- sapply(x, S4Vectors::DataFrame)
               
               df_list <- mapply(function(meas, nam){
-                  mcols(meas)$assay <- nam
-                  mcols(meas)$feature <- colnames(meas)
+                  S4Vectors::mcols(meas)$assay <- nam
+                  S4Vectors::mcols(meas)$feature <- colnames(meas)
                   meas
               }, df_list, names(df_list))
               
@@ -1070,8 +1070,8 @@ predict.trainedByClassifyR <- function(object, newData, ...)
   } else if(is.list(newData) && !is(object, "listOfModels")) # Don't check all those conditions that train function does.
   { # Merge the list of data tables and keep track of assay names in columns' metadata.
     newData <- mapply(function(meas, nam){
-               mcols(meas)$assay <- nam
-               mcols(meas)$feature <- colnames(meas)
+               S4Vectors::mcols(meas)$assay <- nam
+               S4Vectors::mcols(meas)$feature <- colnames(meas)
                meas
                }, newData, names(newData))
     newData <- do.call(cbind, newData)
