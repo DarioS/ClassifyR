@@ -135,6 +135,10 @@ input data. Autmomatically reducing to smaller number.")
   {
     warning(paste(sum(resultErrors),  "cross-validations, but not all, had an error and have been removed from the results."))
     results <- results[!resultErrors]
+    iterationID <- do.call(paste, as.data.frame(splitsTestInfo))
+    iterationIDlevels <- unique(iterationID)
+    errorRows <- iterationID %in% iterationIDlevels[which(resultErrors)]
+    splitsTestInfo <- splitsTestInfo[!errorRows, ]
   }
   
   validationText <- .validationText(crossValParams)
