@@ -1,0 +1,8 @@
+---
+title: "Test Article"
+author: Test Test <br>
+        The University of Sydney, Australia.
+output: BiocStyle::html_document
+---
+
+Hello.
