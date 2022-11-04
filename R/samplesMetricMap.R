@@ -13,7 +13,7 @@
 #' a matrix of pre-calculated metrics, for backwards compatibility.
 #' @param classes If \code{results} is a matrix, this is a factor vector of the
 #' same length as the number of columns that \code{results} has.
-#' @param comparison Default: "Classifier Name". The aspect of the experimental
+#' @param comparison Default: "auto". The aspect of the experimental
 #' design to compare. Can be any characteristic that all results share.
 #' @param metric Default: "Sample Error". The sample-wise metric to plot.
 #' @param featureValues If not NULL, can be a named factor or named numeric
@@ -84,9 +84,15 @@ standardGeneric("samplesMetricMap"))
 
 #' @rdname samplesMetricMap
 #' @export
+setMethod("samplesMetricMap", "ClassifyResult", function(results, ...) {
+    samplesMetricMap(list(assay = results), ...)
+})
+
+#' @rdname samplesMetricMap
+#' @export
 setMethod("samplesMetricMap", "list", 
           function(results,
-                   comparison = "Classifier Name",
+                   comparison = "auto",
                    metric = c("Sample Error", "Sample Accuracy", "Sample C-index"),
                    featureValues = NULL, featureName = NULL,
                    metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
@@ -103,6 +109,20 @@ setMethod("samplesMetricMap", "list",
     stop("The package 'gridExtra' could not be found. Please install it.")       
   if(!requireNamespace("gtable", quietly = TRUE))
     stop("The package 'gtable' could not be found. Please install it.")
+  
+  characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
+  if(comparison == "auto")
+  {
+    if(max(characteristicsCounts) == length(results))
+    { # Choose a characteristic which varies the most across the results.
+      candidates <- names(characteristicsCounts)[characteristicsCounts == length(results)]
+      allCharacteristics <- do.call(rbind, lapply(results, function(result) result@characteristics))
+      distinctValues <- by(allCharacteristics[, "value"], allCharacteristics[, "characteristic"], function(values) length(unique(values)))
+      comparison <- names(distinctValues)[which.max(distinctValues)][1]
+    } else {
+      stop("No characteristic is present for all results but must be.")
+    }
+  }
   resultsWithComparison <- sum(sapply(results, function(result) any(result@characteristics[, "characteristic"] == comparison)))
   if(resultsWithComparison < length(results))
     stop("Not all results have comparison characteristic ", comparison, ' but need to.')
