@@ -1,0 +1,15 @@
+pandoc: '2.18'
+pkgdown: 2.0.6
+pkgdown_sha: ~
+articles:
+  ClassifyR: ClassifyR.html
+  DevelopersGuide: DevelopersGuide.html
+  incorporateNew: incorporateNew.html
+  introduction: introduction.html
+  multiViewMethods: multiViewMethods.html
+  performanceEvaluation: performanceEvaluation.html
+last_built: 2022-11-08T05:18Z
+urls:
+  reference: https://sydneybiox.github.io/ClassifyR/reference
+  article: https://sydneybiox.github.io/ClassifyR/articles
+

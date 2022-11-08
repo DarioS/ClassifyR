@@ -3,5 +3,8 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-vignettes/test.Rmd
+vignettes/introduction.Rmd
+vignettes/performanceEvaluation.Rmd
+vignettes/multiViewMethods.Rmd
+vignettes/incorporateNew.Rmd
 ^\.github$

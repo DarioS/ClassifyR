@@ -1,0 +1,13 @@
+---
+title: "Multi-view Methods for Modelling of Multiple Data Views"
+author: John Citizen <br>
+        The University of Sydney, Australia.
+output: 
+    BiocStyle::html_document:
+        css: style.css
+        toc: false
+---
+
+## Introduction
+
+Placeholder.

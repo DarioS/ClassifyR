@@ -4,31 +4,12 @@ author: Dario Strbenac, Ellis Patrick, Graham Mann, Jean Yang, John Ormerod <br>
         The University of Sydney, Australia.
 output: 
   BiocStyle::html_document:
+    css: style.css
     toc: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{An Introduction to the ClassifyR Package}
 ---
-
-<style>
-    body .main-container {
-        max-width: 1600px;
-    }
-    p {
-      padding: 20px;
-    }
-    .table {
-      border: 2px solid #e64626;
-    }
-    .table>thead>tr>th
-    {
-     border-bottom: 2px solid #e64626;
-     border-right: 1px solid black;
-    }
-    .table>tbody>tr>td {
-     border-right: 1px solid black;
-    }    
-</style>
 
 ```{r, echo = FALSE, results = "asis"}
 options(width = 130)
@@ -50,7 +31,7 @@ Driver functions can use parallel processing capabilities in R to speed up cross
 
 
 ```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("ClassifyRprocedure.png"), 
+htmltools::img(src = knitr::image_uri("images/ClassifyRprocedure.png"), 
                style = 'margin-left: auto;margin-right: auto')
 ```
 
@@ -90,7 +71,7 @@ Data Type | $n \times p$ | $p \times n$
 <span style="font-family: 'Courier New', monospace;">MultiAssayExperiment</span> |  | ✔
 <span style="font-family: 'Courier New', monospace;">list</span> of <span style="font-family: 'Courier New', monospace;">data.frame</span>s | ✔ | 
 
-*crossValidate* must also be supplied with *outcomes*, which represents the prediction to be made in a variety of possible ways.
+*crossValidate* must also be supplied with *outcome*, which represents the prediction to be made in a variety of possible ways.
 
 * A *factor* that contains the class label for each observation. *classes* must be of length $n$.
 * A *character* of length 1 that matches a column name in a data frame which holds the classes. The classes will automatically be removed before training is done.

@@ -1,0 +1,13 @@
+---
+title: "Creating a Wrapper for New Functionality and Registering It"
+author: John Citizen <br>
+        The University of Sydney, Australia.
+output: 
+    BiocStyle::html_document:
+        css: style.css
+        toc: false
+---
+
+## Introduction
+
+Placeholder.

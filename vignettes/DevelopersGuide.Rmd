@@ -87,7 +87,7 @@ If there is such a function, (for some classifiers, one function does both train
 The function must accept a list of `ClassifyResult` elements, the container class which stores all of the useful information about a cross-validation after it has completed. For accessors to use to access class slots, please see `?ClassifyResult`.
 
 ```{r, echo = FALSE}
-htmltools::img(src = knitr::image_uri("accessors.png"), 
+htmltools::img(src = knitr::image_uri("images/accessors.png"), 
                style = 'margin-left: auto;margin-right: auto')
 ```
 
