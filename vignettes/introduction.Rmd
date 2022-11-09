@@ -42,6 +42,10 @@ So, `MultiAssayExperiment` is the only data type to require the features be in r
 
 For single-cell RNA sequencing data, [scFeatures](https://academic.oup.com/bioinformatics/article/38/20/4745/6678979) is recommended for transforming the per-cell data into different per-person biological views.
 
+## Data Preparation
+
+A convenience function `prepareData` is first run on input data provided to `crossValidate` or `runTests` and their counterpart functions for independent training and validation data set modelling. Basically, all prediction functions need non-missing values for test samples and the default is to remove any feature which has any missing value for any sample, although this can be changed by increasing `maxMissingProp` from zero. For features which have a small proportion of missing value, it is recommended to impute values to replace the missing values by instead of discarding the feature before using ClassifyR. A second preparation which could be used is to subset numeric input features to the most variable features as a way of reducing the dimensionality of the input data set. `topNvariance` is an integer of the top number of features that will be kept for modelling. By default, no most variable feature filtering is used and all features are used in modelling.
+
 ## The Four Stages of Cross-validation
 
 ### Data Transformation

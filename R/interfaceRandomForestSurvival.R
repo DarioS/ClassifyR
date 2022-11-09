@@ -5,9 +5,11 @@ rfsrcTrainInterface <- function(measurementsTrain, survivalTrain, mTryProportion
     stop("The package 'randomForestSRC' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting rfsrc classifier to training data and making predictions on test data.")
-    
-  bindedMeasurements <- cbind(measurementsTrain, event = survivalTrain[, 1], time = survivalTrain[, 2])
+
+  # Surv objects store survival information as a two-column table, time and event, in that order.    
+  bindedMeasurements <- cbind(measurementsTrain, time = survivalTrain[, 1], event = survivalTrain[, 2])
   mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
+  browser()
   randomForestSRC::rfsrc(Surv(time, event) ~ ., data = as.data.frame(bindedMeasurements), mtry = mtry,
                           var.used = "all.trees", importance = TRUE, ...)
 }

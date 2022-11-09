@@ -1,4 +1,15 @@
 url: https://sydneybiox.github.io/ClassifyR/
+urls:
+  reference: https://sydneybiox.github.io/ClassifyR/reference
+  article: https://sydneybiox.github.io/ClassifyR/articles
 template:
   bootstrap: 5
-
+articles:
+- title: Menu
+  contents:
+    - introduction
+    - performanceEvaluation
+    - multiViewMethods
+    - incorporateNew
+    - ClassifyR
+    - DevelopersGuide

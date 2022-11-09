@@ -26,15 +26,17 @@ or assays. If a numeric vector these will be optimised over using \code{selectio
 a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 Set to NULL or "all" if all features should be used.}
 
-\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
-and performing multiview classification, the respective classification methods will be used on each assay.}
+\item{selectionMethod}{Default: "auto". A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"} t-test (two categories) / F-test (three or more categories) ranking
+and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
 
 \item{performanceType}{Performance metric to optimise if classifier has any tuning parameters.}
 
-\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
-and performing multiview classification, the respective classification methods will be used on each assay.}
+\item{classifier}{Default: \code{"auto"}. A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, then a random forest is used for a classification
+task or Cox proportional hazards model for a survival task.}
 
 \item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
 }

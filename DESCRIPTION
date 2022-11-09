@@ -3,10 +3,19 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 3.3.1
-Date: 2022-10-25
-Author: Dario Strbenac, Ellis Patrick, Sourish Iyengar, Harry Robertson, Andy Tran, John Ormerod, Graham Mann, Jean Yang
-Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
+Version: 3.3.2
+Date: 2022-11-09
+Authors@R: 
+    c(
+    person(given = "Dario", family = "Strbenac", email = "dario.strbenac@sydney.edu.au", role = c("aut", "cre")),
+    person(given = "Ellis", family = "Patrick", role = "aut"),
+    person(given = "Sourish", family = "Iyengar", role = "aut"),
+    person(given = "Harry", family = "Robertson", role = "aut"),
+    person(given = "Andy", family = "Tran", role = "aut"),
+    person(given = "John", family = "Ormerod", role = "aut"),
+    person(given = "Graham", family = "Mann", role = "aut"),
+    person(given = "Jean", family = "Yang", email = "jean.yang@sydney.edu.au", role = "aut")
+    )
 VignetteBuilder: knitr
 Encoding: UTF-8
 biocViews: Classification, Survival

@@ -34,7 +34,8 @@ are passed into and used by the \code{DataFrame} method or passed onwards to \co
 
 \item{outcomeTrain}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
-containing either classes or time and event information about survival.}
+containing either classes or time and event information about survival. If column names
+of survival information, time must be in first column and event status in the second.}
 
 \item{measurementsTest}{Same data type as \code{measurementsTrain}, but only the test
 samples.}

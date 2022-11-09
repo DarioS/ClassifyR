@@ -16,7 +16,8 @@
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
 #' @param outcomeTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
-#' containing either classes or time and event information about survival.
+#' containing either classes or time and event information about survival. If column names
+#' of survival information, time must be in first column and event status in the second.
 #' @param measurementsTest Same data type as \code{measurementsTrain}, but only the test
 #' samples.
 #' @param outcomeTest Same data type as \code{outcomeTrain}, but for only the test
