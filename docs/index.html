@@ -76,16 +76,30 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-The software formalises a framework for classification in R.
-             There are four stages; Data transformation, feature selection, classifier training,
-             and prediction. The requirements of variable types and names are
-             fixed, but specialised variables for functions can also be provided.
-             The classification framework is wrapped in a driver loop, that
-             reproducibly carries out a number of cross-validation schemes.
-             Functions for differential expression, differential variability,
-             and differential distribution are included. Additional functions
-             may be developed by the user, by creating an interface to the framework.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="classifyr-performance-evaluation-for-multi-view-data-sets-and-seamless-integration-with-multiassayexperiment-and-bioconductor">ClassifyR: Performance evaluation for multi-view data sets and seamless integration with MultiAssayExperiment and Bioconductor<a class="anchor" aria-label="anchor" href="#classifyr-performance-evaluation-for-multi-view-data-sets-and-seamless-integration-with-multiassayexperiment-and-bioconductor"></a>
+</h1></div>
+<p><img src="reference/figures/ClassifyRsticker.png" align="right"></p>
+<p>ClassifyR’s performance evaluation focuses on model stability and interpretability. Based on repeated cross-validation, it is possible to evaluate feature selection stability and also per-sample prediction accuracy. Also, multiple omics data assays on the same samples are becoming more popular and ClassifyR supports a range of multi-view methods to evaluate which data view is the most predictive and combine data views to evaluate if multiple views provide superior predictive performance to a single data view.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>The recommended method of installing ClassifyR is by using Bioconductor’s BiocManager installer:</p>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BiocManager</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"ClassifyR"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
+<p>The above code will install all packages that provide feature selection or model-building functionality. If only one or two methods are desired then the dependencies option could be omitted and those packages providing functionality installed manually.</p>
+</div>
+<div class="section level2">
+<h2 id="website">Website<a class="anchor" aria-label="anchor" href="#website"></a>
+</h2>
+<p>Please visit <a href="https://sydneybiox.github.io/ClassifyR/">the ClassifyR website</a> to view the main vignette as well as articles that provide more in-depth explanations for various aspects of the package. Details of performance evaluation, multi-view methods and contributing a wrapper for a new algorithm to the package are provided.</p>
+</div>
+<div class="section level2">
+<h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
+</h2>
+<p>Strbenac D., Mann, G.J., Ormerod, J.T., and Yang, J. Y. H. (2015) ClassifyR: An R package for performance assessment of classification with applications to transcriptomics, <em>Bioinformatics</em>.</p>
+</div>
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
