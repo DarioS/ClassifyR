@@ -1,6 +1,6 @@
 # ClassifyR: Performance evaluation for multi-view data sets and seamless integration with MultiAssayExperiment and Bioconductor
 
-<img src="inst/ClassifyRsticker.png" align="right">
+<img src="man/figures/ClassifyRsticker.png" align="right" width=250 style="margin-left: 10px;">
 
 ClassifyR's performance evaluation focuses on model stability and interpretability. Based on repeated cross-validation, it is possible to evaluate feature selection stability and also per-sample prediction accuracy. Also, multiple omics data assays on the same samples are becoming more popular and ClassifyR supports a range of multi-view methods to evaluate which data view is the most predictive and combine data views to evaluate if multiple views provide superior predictive performance to a single data view.
 
