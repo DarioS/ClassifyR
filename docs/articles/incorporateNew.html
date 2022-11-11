@@ -58,10 +58,12 @@
 
 
 
-<script src="incorporateNew_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Creating a Wrapper for New Functionality and Registering It</h1>
-                        <h4 data-toc-skip class="author">John Citizen <br> The University of Sydney, Australia.</h4>
+                        <h4 data-toc-skip class="author">Dario Strbenac
+<br> The University of Sydney, Australia.</h4>
             
       
       
@@ -73,7 +75,72 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Placeholder.</p>
+<p>There might be a new transformation / selection / modelling algorithm
+that’s not a part of ClassifyR but might be useful to others. This guide
+explains the necessary steps to perform before making a pull request to
+get new functionality added.</p>
+<p>The core framework dispatches the data as a <code>DataFrame</code>
+object, so the new function should be able to accept such a variable
+type as its first argument.</p>
+</div>
+<div class="section level2">
+<h2 id="steps-to-add-a-new-function">Steps to Add a New Function<a class="anchor" aria-label="anchor" href="#steps-to-add-a-new-function"></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li>Define an ordinary R function and attach a name to it. This will be
+useful in automated annotation of modelling results later. A basic
+outline is:</li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">newFancyClassifier</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">measurementsTrain</span>, <span class="va">classesTrain</span>, <span class="va">alpha</span>, <span class="va">...</span>, <span class="va">verbose</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">{</span></span>
+<span>  <span class="co"># Build a model.  </span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">newFancyClassifier</span>, <span class="st">"name"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"newFancyClassifier"</span></span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>Open the file constants.R. In the
+<code>.ClassifyRenvir[["functionsTable"]]</code> two-column matrix, add
+a row specifying the function name and a nice title to use for plot
+labelling. For example,</li>
+</ol>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>.ClassifyRenvir[[<span class="st">"functionsTable"</span>]] <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    ...        ...</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">"newFancyClassifier"</span>, <span class="st">"Fancy Classifier"</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    ...        ...</span></code></pre></div>
+<ol start="3" style="list-style-type: decimal">
+<li>Add a keyword that users will use when the want to use the function
+in cross-validation to one of the keywords two-column matrices along
+with a short one-sentence description. In the example, the new function
+is a classifier, so it is added to the end of the
+<code>"classifyKeywords"</code> matrix.</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>.ClassifyRenvir[[<span class="st">"classifyKeywords"</span>]] <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    ...        ...</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">"fancy"</span>, <span class="st">"Very good classifier that predicts amazingly well."</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    ...        ...</span></code></pre></div>
+<ol start="4" style="list-style-type: decimal">
+<li><p>Depending on what kind of functionality the new function
+provides, add an entry into either
+<code>.selectionKeywordToFunction</code> or
+<code>.classifierKeywordToParams</code> functions in utilities.R. The
+first function maps a feature selection keyword to a wrapper function
+and the second maps a classifier keyword into a pair of
+<code>TrainParams</code> and <code>PredictParams</code> objects, which
+specify the functions of training and prediction stages.</p></li>
+<li><p>If the function is a classifier, open simpleParams.R and define
+the <code>TrainParams</code> and <code>PredictParams</code> parameter
+sets there. If the classifier has any tuning parameters, it would be
+good to specify a small range of values to try, since crossValidate for
+simplicity doesn’t allow anything other than a keyword to be specified
+by the user.</p></li>
+<li><p>Open the vignette in vignettes/ClassifyR.Rmd and look for the
+section heading #### Provided Methods for Feature Selection and
+Classification. Add the new function to the appropriate table.</p></li>
+</ol>
+<p>Now that the new function is defined and described, users will be
+able to discover it using <code><a href="../reference/available.html">available()</a></code> at the R command line
+and results will automatically store nice names for the functions used
+and they will automatically be able to be shown in plots.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
