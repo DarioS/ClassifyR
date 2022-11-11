@@ -1,5 +1,5 @@
 ---
-title: "An Introduction to **ClassifyR**"
+title: "Getting Started with ClassifyR"
 author: Dario Strbenac, Ellis Patrick, Graham Mann, Jean Yang, John Ormerod <br>
         The University of Sydney, Australia.
 output: 
