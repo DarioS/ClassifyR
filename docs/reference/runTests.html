@@ -10,7 +10,7 @@ parallel is possible by leveraging the package BiocParallel."><!-- mathjax --><s
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-dark"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
@@ -92,7 +92,8 @@ a character string, or vector of such strings, containing column name(s) of colu
 containing either classes or time and event information about survival. If
 <code>measurements</code> is a <code>MultiAssayExperiment</code>, the names of the column (class) or
 columns (survival) in the table extracted by <code>colData(data)</code> that contain(s) the samples'
-outcome to use for prediction.</p></dd>
+outcome to use for prediction. If column names of survival information, time must be in first
+column and event status in the second.</p></dd>
 
 
 <dt>crossValParams</dt>
@@ -148,8 +149,6 @@ more lower-level functions print messages.</p></dd>
 <span class="r-in"><span>             <span class="fu">DataFrame</span><span class="op">(</span>characteristic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Assay Name"</span>, <span class="st">"Classifier Name"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                       value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Asthma"</span>, <span class="st">"Different Means"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>             <span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Processing sample set 10.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Processing sample set 20.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> An object of class 'ClassifyResult'.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Characteristics:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    characteristic                   value</span>

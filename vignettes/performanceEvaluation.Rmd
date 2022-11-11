@@ -10,4 +10,16 @@ output:
 
 ## Introduction
 
-Placeholder.
+Model building and prediction can be evaluated using a variety of performance metrics. For test sample predictions, their accuracy and stability may be of interest. When repeated cross-validation is done, it is possible to consider the prediction performance for each test set but also for each sample. This could identify a subset of samples which have unstable prediction accuracy or are consistently incorrectly predicted. In terms of features, their selection stability can be evaluated between repetitions within a cross-validation and also between different cross-validations using different feature selection algorithms. In the following sections, each available performance metric is defined and recommendations about using it made.
+
+## Prediction Performance
+
+All performance metrics are calculated by the `calcCVperformance` function which expects an object of class `ClassifyResult` as input. It is also possible to calculate a performance metric with a pair of factor vectors, one of known classes and the other of predicted classes, by using `calcExternalPerformance`.
+
+### Error and Accuracy and Balanced Versions
+
+Error is simply the proportion of test samples whose class was incorrectly predicted and accuracy is the proportion correctly predicted. Often, the data set will have substantial class imbalance and these metrics may appear much better than the classifier really performs if the classifier simply predicts all samples to belong to the majority class. For this reason, balanced error and balanced accuracy are preferable because they are robust to class imbalance if it is present. Balanced accuracy is the default performance metric of ClassifyR's performance function. Mathematically, the balanced versions of error and accuracy are defined as:
+
+$$
+Balanced\,Accuracy = \frac{1}{|classes|} \sum_{c = 1}^{|classes|}{I(samples\in class_c)} \times \frac{predictions = class}{|class_c|}
+$$
