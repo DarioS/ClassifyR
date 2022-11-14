@@ -1,6 +1,6 @@
 ---
 title: "Performance Evaluation of Fitted Models"
-author: John Citizen <br>
+author: Dario Strbenac <br>
         The University of Sydney, Australia.
 output: 
     BiocStyle::html_document:
@@ -14,12 +14,79 @@ Model building and prediction can be evaluated using a variety of performance me
 
 ## Prediction Performance
 
-All performance metrics are calculated by the `calcCVperformance` function which expects an object of class `ClassifyResult` as input. It is also possible to calculate a performance metric with a pair of factor vectors, one of known classes and the other of predicted classes, by using `calcExternalPerformance`.
+All performance metrics are calculated by the `calcCVperformance` function which expects an object of class `ClassifyResult` as input. It is also possible to calculate a performance metric with a pair of factor vectors, one of known classes and the other of predicted classes, or a pair of survival information stored in a `Surv` object and predicted risk scores by using `calcExternalPerformance`. See the function documentation for a vector of keywords for specifying a performance metric.
 
-### Error and Accuracy and Balanced Versions
+Firstly, a description metrics for categorical outcomes will be provided. Then, the metrics for survival outcomes.
 
-Error is simply the proportion of test samples whose class was incorrectly predicted and accuracy is the proportion correctly predicted. Often, the data set will have substantial class imbalance and these metrics may appear much better than the classifier really performs if the classifier simply predicts all samples to belong to the majority class. For this reason, balanced error and balanced accuracy are preferable because they are robust to class imbalance if it is present. Balanced accuracy is the default performance metric of ClassifyR's performance function. Mathematically, the balanced versions of error and accuracy are defined as:
+### Categorical Outcomes
+
+Outcomes may either be a class label or probabilities or scores for a sample belonging to each of the classes.
+
+### Error and Accuracy and Their Balanced Versions
+
+Error is simply the proportion of test samples whose class was incorrectly predicted and accuracy is the proportion correctly predicted. Often, the data set will have substantial class imbalance and these metrics may appear much better than the classifier really performs if the classifier simply predicts all samples to belong to the majority class. For this reason, balanced error and balanced accuracy are preferable because they are robust to class imbalance if it is present. Balanced accuracy is the default performance metric of ClassifyR's performance function. The balanced versions simply calculate the performance metric within each class and then average the results. As an example, let's consider a data set with eight cats and two dogs and a poorly performing classifier which predicts all ten samples as being cats (i.e. the majority class).
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/balancedAccuracy.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+The balanced accuracy is $\frac{8}{8} = 1$ for cats and $\frac{0}{2} = 0$ for dogs and the average of those is $0.5$. In other words, the classifier is no better than predicting classes at random. However, if the ordinary accuracy was calculated, it would misleadingly imply that the classifier was quite accurate, since accuracy would be $\frac{8}{10} = 0.8$.
+
+#### Precision and Recall, Macro and Micro Versions
+
+Precision is the proportion of samples predicted to belong to a particular class that truly belong to it out of all of the samples predicted to belong to that class. Recall is the proportion of samples belonging to a class that were predicted to belong to it. These metrics can be combined in different ways.
+
+Macro averaging computes the metric for each class separately and then divides by the number of classes, so the set of predictions for each class contribute equally to the average. Micro averaging aggregates the performance metric numerator for all classes and separately the denominator for all classes, before dividing, so classes predicted more often contribute more strongly to the final value.
+
+As an example, consider a different data set to before with cats, dog and fish.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/microMacro.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+The dogs are a small class compared to cats and fish. Macro and micro precision somewhat differ. Let $TD$, $TC$ and $TF$, be the number of **T**rue (i.e. correct) predictions of dogs, cats and fish respectively. Let $AD$, $AC$ and $AF$, be the number of **A**ll predictions of dogs, cats and fish respectively.
 
 $$
-Balanced\,Accuracy = \frac{1}{|classes|} \sum_{c = 1}^{|classes|}{I(samples\in class_c)} \times \frac{predictions = class}{|class_c|}
+\begin{aligned}
+Precision_{macro} & = \frac{\frac{TC}{AC} + \frac{TD}{AD} + \frac{TF}{AF}}{3} \\
+& = \frac{\frac{8}{12} + \frac{2}{2} + \frac{2}{2}}{3} \\
+& = 0.89
+\\ \\
+Precision_{micro} & = \frac{TC + TD + TF}{AC + AD + AF} \\
+& = \frac{8 + 2 + 2}{12 + 2 + 2} \\
+& = 0.75
+\end{aligned}
 $$
+
+It can be observed that micro precision is more influenced by the cat predictions since there are many of them.
+
+#### Combinations of Precision and Recall: F1 Score and Matthews Correlation Coefficient
+
+The formulae of F1 score and Matthews Correlation Coefficient are fairly complicated and will not be shown. Basically, the key differences between them are that
+
+* F1 score ranges from 0 to 1 whereas Matthews Correlation Coefficient ranges from -1 to 1.
+* F1 score may appear high when a classifier performs poorly but there is class imbalance but Matthews Correlation Coefficient is robust to class imbalance.
+* F1 score is applicable to data sets with three or more classes but Matthews Correlation Coefficient is only for two-class data sets.
+
+#### Are Under the Curve
+
+Many modelling methods can return a table of class probabilities or scores for each sample belonging to each class. For each class, the samples are ordered in decreasing order of the predicted probability and each sample adds to either the true positive rate or false positive rate as it is considered in turn. This generates a curve (really a step function) with the true positive rate on the y-axis and false positive rate on the x-axis. The area underneath this is calculated for each class and averaged to one number for an overall classification performance. A classifier that's doing no better than guessing at random will have and AUC value of 0.5 and the best value is 1.0.
+
+### Survival Outcomes
+
+Predicted outcomes are some kind of risk score.
+
+#### C-index and Sample-wise C-index
+
+The concordance index, typically written as C-index, is based on pair-wise comparisons of samples. It ranges from 0 to 1 with an uninformative model expected to have a C-index of 0.5. A schematic illustration from [*Korean Journal of Radiology*](https://kjronline.org/DOIx.php?id=10.3348/kjr.2021.0223) is:
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/Cindex.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+So, if both samples being compared are censored, they can't be evaluated. Also, if the sample with the earlier followup time is censored but the later sample is not, the pair also can't be evaluated. For the comparable pairs, the C-index is simply the number of pairs whose risk scores are agreeable with their actual followup times.
+
+ClassifyR extends C-index to the level of the individual with its unique sample-wise C-index calculation. This performance metric calculates a C-index for each individual in the test set which allows the identification of those individuals who are hard to predict accurately and might be able to be linked to interesting underlying biology or clinical data.
