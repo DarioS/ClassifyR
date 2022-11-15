@@ -114,6 +114,15 @@ setMethod("calcExternalPerformance", c("Surv", "numeric"),
           })
 
 #' @rdname calcPerformance
+#' @exportMethod calcExternalPerformance
+setMethod("calcExternalPerformance", c("factor", "tabular"), # table has class probabilities per sample.
+          function(actualOutcome, predictedOutcome, performanceType = "AUC")
+          {
+            performanceType <- match.arg(performanceType)
+            .calcPerformance(actualOutcome, predictedOutcome, performanceType = performanceType)[["values"]]
+          })
+
+#' @rdname calcPerformance
 #' @usage NULL
 #' @export
 setGeneric("calcCVperformance", function(result, ...)
