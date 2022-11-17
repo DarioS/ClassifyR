@@ -44,6 +44,8 @@
 #' @param legendSize The size of the boxes in the legends.
 #' @param plot Logical. IF \code{TRUE}, a plot is produced on the current
 #' graphics device.
+#' @param ... Parameters not used by the \code{ClassifyResult} method that does
+#' list-packaging but used by the main \code{list} method.
 #' @return A plot is produced and a grob is returned that can be saved to a
 #' graphics device.
 #' @author Dario Strbenac

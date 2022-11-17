@@ -58,6 +58,9 @@
 \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be
 a matrix of pre-calculated metrics, for backwards compatibility.}
 
+\item{...}{Parameters not used by the \code{ClassifyResult} method that does
+list-packaging but used by the main \code{list} method.}
+
 \item{comparison}{Default: "auto". The aspect of the experimental
 design to compare. Can be any characteristic that all results share.}
 

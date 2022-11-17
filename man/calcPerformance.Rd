@@ -7,6 +7,7 @@
 \alias{calcExternalPerformance,factor,factor-method}
 \alias{calcExternalPerformance,Surv,numeric-method}
 \alias{calcCVperformance,ClassifyResult-method}
+\alias{calcExternalPerformance,factor,tabular-method}
 \title{Add Performance Calculations to a ClassifyResult Object or Calculate for a
 Pair of Factor Vectors}
 \usage{
@@ -22,6 +23,12 @@ Pair of Factor Vectors}
   actualOutcome,
   predictedOutcome,
   performanceType = "C-index"
+)
+
+\S4method{calcExternalPerformance}{factor,tabular}(
+  actualOutcome,
+  predictedOutcome,
+  performanceType = "AUC"
 )
 
 \S4method{calcCVperformance}{ClassifyResult}(
