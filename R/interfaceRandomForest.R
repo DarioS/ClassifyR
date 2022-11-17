@@ -6,9 +6,11 @@ randomForestTrainInterface <- function(measurementsTrain, outcomeTrain, mTryProp
   if(verbose == 3)
     message("Fitting random forest classifier to training data.")
   mtry <- round(mTryProportion * ncol(measurementsTrain)) # Number of features to try.
-      
   # Convert to base data.frame as randomForest doesn't understand DataFrame.
-  ranger::ranger(x = as(measurementsTrain, "data.frame"), y = outcomeTrain, mtry = mtry, importance = "impurity_corrected", ...)
+  fittedModel <- ranger::ranger(x = as(measurementsTrain, "data.frame"), y = outcomeTrain, mtry = mtry, ...)
+  forImportance <- ranger::ranger(x = as(measurementsTrain, "data.frame"), y = outcomeTrain, mtry = mtry, importance = "impurity_corrected", ...)
+  attr(fittedModel, "forImportance") <- forImportance
+  fittedModel
 }
 attr(randomForestTrainInterface, "name") <- "randomForestTrainInterface"
     
@@ -37,7 +39,8 @@ randomForestPredictInterface <- function(forest, measurementsTest, ..., returnTy
 
 forestFeatures <- function(forest)
                   {
-                    rankedFeaturesIndices <- order(ranger::importance(forest), decreasing = TRUE)
-                    selectedFeaturesIndices <- which(ranger::importance(forest) > 0)
+                    forImportance <- attr(forest, "forImportance")
+                    rankedFeaturesIndices <- order(ranger::importance(forImportance), decreasing = TRUE)
+                    selectedFeaturesIndices <- which(ranger::importance(forImportance) > 0)
                     list(rankedFeaturesIndices, selectedFeaturesIndices)
                   }

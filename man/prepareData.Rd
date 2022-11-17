@@ -31,7 +31,8 @@ are features.}
 
 \item{outcome}{Either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
-containing either classes or time and event information about survival.}
+containing either classes or time and event information about survival. If column names
+of survival information, time must be in first column and event status in the second.}
 
 \item{useFeatures}{If \code{measurements} is a \code{MultiAssayExperiment},
 a two-column table of features to use. The first column must have assay names

@@ -1,2 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+vignettes/introduction.Rmd
+vignettes/performanceEvaluation.Rmd
+vignettes/multiViewMethods.Rmd
+vignettes/incorporateNew.Rmd
+^\.github$

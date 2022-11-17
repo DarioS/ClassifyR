@@ -1,0 +1,122 @@
+---
+title: "Introduction to the Concepts of ClassifyR"
+author: Dario Strbenac <br>
+        The University of Sydney, Australia.
+output: 
+    BiocStyle::html_document:
+        css: style.css
+        toc: false
+---
+
+**Audience**: This guide is a suitable starting place for anyone who is just beginning to use ClassifyR.
+
+## Purpose
+
+ClassifyR is a modelling and evaluation framework for data sets which often have multiple kinds of measurements made on each individual, as is common in the field of bioinformatics. Despite its name, it also allows model building and evaluation of survival data. Unlike other more generic modelling frameworks, it has seamless integration with such a data set structure. Firstly, it allows the input of commonly-used data formats in the Bioconductor bioinformatics community such as [MultiAssayExperiment](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) and [DataFrame](https://bioconductor.org/packages/release/bioc/html/S4Vectors.html). `MultiAssayExperiment` is a good way to store multiple assays on the same samples and `DataFrame` is ideal for storing mixed features (i.e. numerical and categorical), such as clinicopathological data, because it also allows metadata about the columns (features) to be stored.
+
+Secondly, use of the modelling functions with one assay or multiple assays follows the same syntax for ease of use. The data conversion into a flat table required for a typical modelling function is handled internally. Similarly, whether a data set has one assay and requires a relatively simple analysis or has multiple assays and requires more complex evaluation of each assay or various methods of combining assays (e.g. concatenation, prevalidation) can both be similarly evaluated by ClassifyR.
+
+Lastly, ClassifyR allows more than just evaluation of test set predictions in its evaluation. A focus of the evaluation is stability and interpretability. An example of how each of these are addressed is feature selection stability over repeated cross-validation and sample-wise error rate calculation after cross-validation to help identify subsets of samples that are difficult to classify and suggest an interesting subgroup of individuals.
+
+## `crossValidate` and `runTests`: Two Ways to Perform Cross-Validation
+
+Two functions are provided to enable running of cross-validation. In most cases, `crossValidate` is recommended. It provides an easier interface with a limited number of options that are specified as simple parameters whereas `runTests` expects the user to create S4 parameter set objects using classes such as `TrainParams` and `PredictParams`. For example, `crossValidate` offers only repeat-and-fold and leave-one-out cross-validation whereas `runTests` additionally offers leave-*k*-out and Monte Carlo cross-validation. Also, `crossValidate` is designed for multi-view data set evaluation whereas `runTests` has limited support for such data, only concatenating different assays into a table. One other key difference is that `crossValidate` uses a prespecified range of performance tuning values whereas `runTests` expects tuning parameters to be specified by the user.
+
+So, unless some less widely-used form of cross-validation is desired, `crossValidate` is the function to use.
+
+One special case is when there is a discovery data set and a validation data set which have been predetermined by a research project. Training is done only on the discovery set and predictions are made only on the validation set. In this case, the `train` and `predict` pair of functions can be used or the `runTest` function if more control of model building parameter settings is desired.
+
+## Data Input Formats
+
+There are a variety of allowed input data formats. Let *n* denote the number of samples and *p* denote the number of features of an assay.
+
+Data Type | $n \times p$ | $p \times n$ | Only in `crossValidate`
+----|:----:|:----:|:----:
+<span style="font-family: 'Courier New', monospace;">matrix</span> | ✔ | |
+<span style="font-family: 'Courier New', monospace;">data.frame</span> | ✔ | ✔ | ✔    
+<span style="font-family: 'Courier New', monospace;">DataFrame</span> | ✔ | |
+<span style="font-family: 'Courier New', monospace;">MultiAssayExperiment</span> |  | ✔ |
+<span style="font-family: 'Courier New', monospace;">list</span> of tabular data | ✔ | | ✔    
+
+So, `MultiAssayExperiment` is the only data type to require the features be in rows and samples in columns whereas all others have the opposite expectation.
+
+For single-cell RNA sequencing data, [scFeatures](https://academic.oup.com/bioinformatics/article/38/20/4745/6678979) is recommended for transforming the per-cell data into different per-person biological views.
+
+## Data Preparation
+
+A convenience function `prepareData` is first run on input data provided to `crossValidate` or `runTests` and their counterpart functions for independent training and validation data set modelling. Basically, all prediction functions need non-missing values for test samples and the default is to remove any feature which has any missing value for any sample, although this can be changed by increasing `maxMissingProp` from zero. For features which have a small proportion of missing value, it is recommended to impute values to replace the missing values by instead of discarding the feature before using ClassifyR. A second preparation which could be used is to subset numeric input features to the most variable features as a way of reducing the dimensionality of the input data set. `topNvariance` is an integer of the top number of features that will be kept for modelling. By default, no most variable feature filtering is used and all features are used in modelling.
+
+## The Four Stages of Cross-validation
+
+### Data Transformation
+
+This typically is done before cross-validation. The only situation in which it would be done within cross-validation is if some value derived from all of the samples needs to be calculated but using samples from the test set avoided. For example $log_2$-scaling the data for a particular sample uses no information from other samples, so it shouldn't be done within cross-validation. However, subtracting each feature's measurements from a location, such as the mean or the median, should be done at this stage by specifying that `subtractFromLocation` be used.
+
+### Feature Selection
+
+This is recommended in most cases. In a typical data set, a small number of features, if any, will be predictive of the outcome of each sample. Providing a large number of uninformative features to most classifiers is widely known to degrade their predictive performance. By default, a t-test ranking and choice of top-*p* features based on resubstitution error rate is used to select features, but the full set of approaches can be seen at the R command line by running:
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+suppressPackageStartupMessages(library(ClassifyR))
+options(width = 140)
+```
+
+```{r}
+library(ClassifyR)
+available("selectionMethod")
+```
+
+Some model training methods perform implicit feature selection. It has been suggested by experts in the field that [feature selection can be harmful for classifiers which can identify complex non-linear relationships between variables](https://stats.stackexchange.com/questions/200823/does-it-makes-sense-to-use-feature-selection-before-random-forest#comment384626_200959) that feature selection methods could not detect and would discard important features. There's no hard rule that applies to every data set, so it might be worthwhile to try modelling with and without feature selection.
+
+### Model Training
+
+This stage involves fitting a model to the training data partition and a variety of models are provided with the package. Apart from multivariate naive Bayes voting and multivariate mixtures of normals voting, the others are wrappers around functionality provided by other R packages.
+
+```{r}
+available("classifier")
+```
+
+### Model Testing
+
+Finally, a fitted model is used to predict the classes on samples not used in training.
+
+## Cross-validation Varieties
+
+A number of different cross-validation schemes can be chosen. The choice depends on the goals of the study and the computational running time desired. Next, each scheme will be illustrated visually and its characteristics described.
+
+### Repeated Resampling and Folding
+
+This is the default approach. It repeatedly resamples without replacement and divides the orderings of samples into folds. Below is illustrated repeated 5-fold cross-validation.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/permuteFold.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+The benefit of this approach is that each sample is predicted multiple times using slightly different models trained on slightly different training sets, so it gives an indication of sample prediction stability (see [Performance Evaluation](evaluatePerformance.html) guide for more details).
+
+Ordinary *k*-fold cross-validation is effectively the case of repeated cross-validation with the number of repeats being 1.
+
+### Leave-*k*-out
+
+All possible combinations of *k* samples are determined and each combination is used as the test set once with the remainder of samples used as the training set. Below is illustrated leave-2-out cross-validation.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/leave2out.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+Using `crossValidate`, only leave-1-out cross-validation is possible because it a special case of *k*-fold cross-validation with *k* being set to the number of samples in the data set (i.e. `nRepeats = nrow(tabularData)`). Cross-validation settings for `runTests` are specified by a creating a `CrossValParams` object, so any value of *k* is possible.
+
+If leave-1-out cross-validation is used, each sample appears in the test set once and the stability of predictions can't be evaluated, although the cross-validation will finish relatively quickly.
+
+### Repeated Resampling and Percentage Split
+
+Also called Monte Carlo cross-validation, this scheme repeatedly resamples to get new permutations and partitions the samples into a fixed percentage being the test set and the remainder the training set. If $x \%$ are assigned to the test set each time, the the number of times a sample will appear in the test set is a random number but will be approximately $x \div 100 \times nRepeats$ times.  Below is illustrated 30% test set cross-validation.
+
+```{r, echo = FALSE}
+htmltools::img(src = knitr::image_uri("images/permutePercentSplit.png"), 
+               style = 'margin-left: auto;margin-right: auto')
+```
+
+Next, the article about Performance Evaluation is recommended reading. Please choose it from the Articles menu above.

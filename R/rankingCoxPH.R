@@ -4,7 +4,7 @@ coxphRanking <- function(measurementsTrain, survivalTrain, verbose = 3) # Clinic
   
   pValues <- rep(NA, ncol(measurementsTrain))
   names(pValues) <- colnames(measurementsTrain)
-  
+
   isCat <- sapply(measurementsTrain, class) %in% c("character", "factor")
   if(any(isCat))
   {

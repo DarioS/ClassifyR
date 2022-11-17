@@ -131,7 +131,8 @@ or a list of these objects containing the data.}
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
 column name in \code{measurements} if it is a \code{\link{DataFrame}}. Or a \code{\link{Surv}} object or a character vector of
 length 2 or 3 specifying the time and event columns in \code{measurements} for survival outcome. If \code{measurements} is a
-\code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.}
+\code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.  If column names
+of survival information, time must be in first column and event status in the second.}
 
 \item{...}{Parameters passed into \code{\link{prepareData}} which control subsetting and filtering of input data.}
 
@@ -140,15 +141,17 @@ or assays. If a numeric vector these will be optimised over using \code{selectio
 a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 Set to NULL or "all" if all features should be used.}
 
-\item{selectionMethod}{A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
-and performing multiview classification, the respective classification methods will be used on each assay.}
+\item{selectionMethod}{Default: "auto". A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"} t-test (two categories) / F-test (three or more categories) ranking
+and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
 
 \item{performanceType}{Performance metric to optimise if classifier has any tuning parameters.}
 
-\item{classifier}{A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
-and performing multiview classification, the respective classification methods will be used on each assay.}
+\item{classifier}{Default: \code{"auto"}. A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
+and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, then a random forest is used for a classification
+task or Cox proportional hazards model for a survival task.}
 
 \item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
 
@@ -167,7 +170,8 @@ with each element being a vector of assays to combine. Special value \code{"all"
 
 \item{outcomeTrain}{For the \code{train} function, either a factor vector of classes, a \code{\link{Surv}} object, or
 a character string, or vector of such strings, containing column name(s) of column(s)
-containing either classes or time and event information about survival.}
+containing either classes or time and event information about survival. If column names
+of survival information, time must be in first column and event status in the second.}
 
 \item{assayIDs}{A character vector for assays to train with. Special value \code{"all"}
 uses all assays in the input object.}

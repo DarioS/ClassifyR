@@ -16,7 +16,8 @@
 #' \code{matrix} or \code{\link{DataFrame}}, the rows are samples, and the columns are features.
 #' @param outcomeTrain Either a factor vector of classes, a \code{\link{Surv}} object, or
 #' a character string, or vector of such strings, containing column name(s) of column(s)
-#' containing either classes or time and event information about survival.
+#' containing either classes or time and event information about survival. If column names
+#' of survival information, time must be in first column and event status in the second.
 #' @param measurementsTest Same data type as \code{measurementsTrain}, but only the test
 #' samples.
 #' @param outcomeTest Same data type as \code{outcomeTrain}, but for only the test
@@ -256,12 +257,19 @@ input data. Autmomatically reducing to smaller number.")
     {
       if(is.null(modellingParams@trainParams@getFeatures))
       selectedFeatures <- originalFeatures[selectedFeaturesIndices]
-      else selectedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices] 
+      else selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices] 
     } else {
       featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))
-      if(is.null(modellingParams@trainParams@getFeatures))
-      selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
-      else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]
+      if(length(featureColumns) == 1)
+      {
+         if(is.null(modellingParams@trainParams@getFeatures))
+            selectedFeatures <- originalFeatures[selectedFeaturesIndices]
+         else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]            
+      } else {
+                if(is.null(modellingParams@trainParams@getFeatures))
+                  selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
+                else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]            
+      }
     }
     importanceTable <- S4Vectors::DataFrame(selectedFeatures, performanceChanges)
     if(ncol(importanceTable) == 2) colnames(importanceTable)[1] <- "feature"
@@ -272,6 +280,7 @@ input data. Autmomatically reducing to smaller number.")
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
 
   # Convert back into original, potentially unsafe feature identifiers unless it is a nested cross-validation.
+  
   if(is.null(.iteration) || .iteration != "internal")
   {
     if(!is.null(rankedFeaturesIndices))
@@ -283,9 +292,16 @@ input data. Autmomatically reducing to smaller number.")
         else rankedFeatures <- colnames(measurementsTrain)[rankedFeaturesIndices]            
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))          
-        if(is.null(modellingParams@trainParams@getFeatures))
-          rankedFeatures <- originalFeatures[rankedFeaturesIndices, ]
-        else rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns]
+        if(length(featureColumns) == 1)
+        {
+          if(is.null(modellingParams@trainParams@getFeatures))
+            rankedFeatures <- originalFeatures[rankedFeaturesIndices]
+          else rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns]
+        } else {
+          if(is.null(modellingParams@trainParams@getFeatures))
+            rankedFeatures <- originalFeatures[rankedFeaturesIndices, ]
+          else rankedFeatures <- S4Vectors::mcols(measurementsTrain)[rankedFeaturesIndices, featureColumns] 
+        }
       }
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
@@ -297,9 +313,16 @@ input data. Autmomatically reducing to smaller number.")
         else selectedFeatures <- colnames(measurementsTrain)[selectedFeaturesIndices]
       } else {
         featureColumns <- na.omit(match(c("assay", "feature"), colnames(S4Vectors::mcols(measurementsTrain))))  
-        if(is.null(modellingParams@trainParams@getFeatures))
-          selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
-        else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]
+        if(length(featureColumns) == 1)
+        {
+          if(is.null(modellingParams@trainParams@getFeatures))
+            selectedFeatures <- originalFeatures[selectedFeaturesIndices]
+          else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]            
+        } else {
+                if(is.null(modellingParams@trainParams@getFeatures))
+                  selectedFeatures <- originalFeatures[selectedFeaturesIndices, ]
+                else selectedFeatures <- S4Vectors::mcols(measurementsTrain)[selectedFeaturesIndices, featureColumns]            
+        }
       }
     } else { selectedFeatures <- NULL}
   } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 
