@@ -35,7 +35,8 @@ a character string, or vector of such strings, containing column name(s) of colu
 containing either classes or time and event information about survival. If
 \code{measurements} is a \code{MultiAssayExperiment}, the names of the column (class) or
 columns (survival) in the table extracted by \code{colData(data)} that contain(s) the samples'
-outcome to use for prediction.}
+outcome to use for prediction. If column names of survival information, time must be in first
+column and event status in the second.}
 
 \item{crossValParams}{An object of class \code{\link{CrossValParams}},
 specifying the kind of cross-validation to be done.}

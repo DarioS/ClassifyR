@@ -4,11 +4,14 @@
 \alias{samplesMetricMap}
 \alias{samplesMetricMap,list-method}
 \alias{samplesMetricMap,matrix-method}
+\alias{samplesMetricMap,ClassifyResult-method}
 \title{Plot a Grid of Sample Error Rates or Accuracies}
 \usage{
+\S4method{samplesMetricMap}{ClassifyResult}(results, ...)
+
 \S4method{samplesMetricMap}{list}(
   results,
-  comparison = "Classifier Name",
+  comparison = "auto",
   metric = c("Sample Error", "Sample Accuracy", "Sample C-index"),
   featureValues = NULL,
   featureName = NULL,
@@ -55,7 +58,10 @@
 \item{results}{A list of \code{\link{ClassifyResult}} objects. Could also be
 a matrix of pre-calculated metrics, for backwards compatibility.}
 
-\item{comparison}{Default: "Classifier Name". The aspect of the experimental
+\item{...}{Parameters not used by the \code{ClassifyResult} method that does
+list-packaging but used by the main \code{list} method.}
+
+\item{comparison}{Default: "auto". The aspect of the experimental
 design to compare. Can be any characteristic that all results share.}
 
 \item{metric}{Default: "Sample Error". The sample-wise metric to plot.}

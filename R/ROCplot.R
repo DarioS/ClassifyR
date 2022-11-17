@@ -86,7 +86,7 @@ setMethod("ROCplot", "ClassifyResult", function(results, ...) {
 
 #' @rdname ROCplot
 #' @export
-setMethod("ROCplot", "list", 
+setMethod("ROCplot", "list",
           function(results, mode = c("merge", "average"), interval = 95,
                    comparison = "auto", lineColours = "auto",
                    lineWidth = 1, fontSizes = c(24, 16, 12, 12, 12), labelPositions = seq(0.0, 1.0, 0.2),
@@ -101,10 +101,18 @@ setMethod("ROCplot", "list",
   if(comparison == "auto")
   {
     if(max(characteristicsCounts) == length(results))
-      comparison <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
-    else
+    { # Choose a characteristic which varies the most across the results.
+      candidates <- names(characteristicsCounts)[characteristicsCounts == length(results)]
+      allCharacteristics <- do.call(rbind, lapply(results, function(result) result@characteristics))
+      distinctValues <- by(allCharacteristics[, "value"], allCharacteristics[, "characteristic"], function(values) length(unique(values)))
+      comparison <- names(distinctValues)[which.max(distinctValues)][1]
+    } else {
       stop("No characteristic is present for all results but must be.")
+    }
   }
+  resultsWithComparison <- sum(sapply(results, function(result) any(result@characteristics[, "characteristic"] == comparison)))
+  if(resultsWithComparison < length(results))
+    stop("Not all results have comparison characteristic ", comparison, ' but need to.')
                
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
   distinctClasses <- levels(actualOutcome(results[[1]]))
