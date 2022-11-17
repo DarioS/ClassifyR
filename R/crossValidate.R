@@ -521,17 +521,6 @@ Using an ordinary GLM instead.")
     classifier
 }
 
-######################################
-######################################
-#' A function to generate a CrossValParams object
-#'
-#' @inheritParams crossValidate
-#'
-#' @return CrossValParams object
-#'
-#' @examples
-#' CVparams <- generateCrossValParams(nRepeats = 20, nFolds = 5, nCores = 8, selectionOptimisation = "none")
-#' @import BiocParallel
 generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisation){
 
     seed <- .Random.seed[1]
@@ -554,31 +543,7 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
     if(!any(tuneMode %in% c("Resubstitution", "Nested CV", "none"))) stop("selectionOptimisation must be Nested CV or Resubstitution or none")
     CrossValParams(permutations = nRepeats, folds = nFolds, parallelParams = BPparam, tuneMode = tuneMode)
 }
-######################################
 
-######################################
-#' A function to generate a ModellingParams object
-#'
-#' @inheritParams crossValidate
-#' @param assayIDs A vector of data set identifiers as long at the number of data sets.
-#'
-#' @return ModellingParams object
-#'
-#' @examples
-#' data(asthma)
-#' # First make a toy example assay with multiple data types. We'll randomly assign different features to be clinical, gene or protein.
-#' set.seed(51773)
-#' measurements <- DataFrame(measurements, check.names = FALSE) 
-#' mcols(measurements)$assay <- c(rep("clinical",20),sample(c("gene", "protein"), ncol(measurements)-20, replace = TRUE))
-#' mcols(measurements)$feature <- colnames(measurements)
-#' modellingParams <- generateModellingParams(assayIDs = c("clinical", "gene", "protein"),
-#'                                           measurements = measurements, 
-#'                                           nFeatures = list(clinical = 10, gene = 10, protein = 10),
-#'                                           selectionMethod = list(clinical = "t-test", gene = "t-test", protein = "t-test"),
-#'                                           selectionOptimisation = "none",
-#'                                           classifier = "randomForest",
-#'                                           multiViewMethod = "merge")
-#' @import BiocParallel
 generateModellingParams <- function(assayIDs,
                                     measurements,
                                     nFeatures,
