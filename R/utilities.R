@@ -131,8 +131,8 @@
         paramList <- append(paramList, tuneCombo)
       do.call(featureRanking, paramList)
     })
-    
-    if(attr(featureRanking, "name") == "previousSelection") # Actually selection not ranking.
+
+    if(attr(featureRanking, "name") %in% c("previousSelection", "Union Selection")) # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
     if(crossValParams@tuneMode == "none") # No parameters to choose between.
