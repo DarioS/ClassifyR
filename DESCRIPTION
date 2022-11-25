@@ -36,7 +36,7 @@ Description: The software formalises a framework for classification in R.
              may be developed by the user, by creating an interface to the framework.
 License: GPL-3
 Packaged: 2014-10-18 11:16:55 UTC; dario
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2
 NeedsCompilation: yes
 Collate:
     'ROCplot.R'
