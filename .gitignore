@@ -2,6 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+src/ClassifyR.so
+src/coxformatrices.o
 
 
 # vscode stuff

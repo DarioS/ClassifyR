@@ -88,7 +88,7 @@ setClassUnion("tabularOrList", c("tabular", "list"))
 #' @examples
 #' 
 #'   CrossValParams() # Default is 100 permutations and 5 folds of each.
-#'   snow <- SnowParam(workers = 4, RNGseed = 999)
+#'   snow <- SnowParam(workers = 2, RNGseed = 999)
 #'   CrossValParams("Leave-k-Out", leave = 2, parallelParams = snow)
 #'   # Fully reproducible Leave-2-out cross-validation on 4 cores,
 #'   # even if feature selection or classifier use random sampling.

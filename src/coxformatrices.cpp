@@ -9,19 +9,19 @@
 extern"C" {
     void coxmat(double *regmat, int *ncolmat, int *nrowmat, 
                 double *reg,double *zscores,double *coefs,
-                Sint   *maxiter,   Sint   *nusedx,    Sint   *nvarx, 
-                double *time,      Sint   *status, 
-                double *offset,	double *weights,   Sint   *strata,
+                int   *maxiter,   int   *nusedx,    int   *nvarx, 
+                double *time,      int   *status, 
+                double *offset,	double *weights,   int   *strata,
                 double *means,     double *beta,      double *u, 
-                double *imat2,     double loglik[2],  Sint   *flag, 
+                double *imat2,     double loglik[2],  int   *flag, 
                 double *work,	double *eps,       double *tol_chol,
                 double *sctest,double *sctest2,double *sctest3){
         // int reg[*nrowmat];
         int i=0;
         int j=0;
         double sclback=*sctest;
-        Sint maxlback=*maxiter;
-        //Sint stratalback;
+        int maxlback=*maxiter;
+        //int stratalback;
         double betalback=1;
         
         for(j=0;j< *ncolmat;j++){
@@ -142,11 +142,11 @@ extern"C" {
  */
 
 
-void coxfit2(Sint   *maxiter,   Sint   *nusedx,    Sint   *nvarx, 
-             double *time,      Sint   *status,    double *covar2, 
-             double *offset,	double *weights,   Sint   *strata,
+void coxfit2(int   *maxiter,   int   *nusedx,    int   *nvarx, 
+             double *time,      int   *status,    double *covar2, 
+             double *offset,	double *weights,   int   *strata,
              double *means,     double *beta,      double *u, 
-             double *imat2,     double loglik[2],  Sint   *flag, 
+             double *imat2,     double loglik[2],  int   *flag, 
              double *work,	double *eps,       double *tol_chol,
              double *sctest, double *sctest2,double *sctest3){
     int i,j,k, person;
