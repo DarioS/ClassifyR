@@ -5,64 +5,64 @@
  **  Including this in each routine helps prevent mismatched argument errors
  */
 
-void agexact(Sint *maxiter,  Sint *nusedx,   Sint *nvarx,   double *start, 
-             double *stop,   Sint *event,    double *covar2,double *offset, 
-             Sint   *strata, double *means,  double *beta,  double *u, 
-             double *imat2,  double loglik[2], Sint *flag,  double *work, 
-             Sint   *work2,  double *eps,    double *tol_chol, double *sctest);
+void agexact(int *maxiter,  int *nusedx,   int *nvarx,   double *start, 
+             double *stop,   int *event,    double *covar2,double *offset, 
+             int   *strata, double *means,  double *beta,  double *u, 
+             double *imat2,  double loglik[2], int *flag,  double *work, 
+             int   *work2,  double *eps,    double *tol_chol, double *sctest);
              
-             void agfit2( Sint   *maxiter,  Sint   *nusedx,  Sint   *nvarx, 
-                          double *start,    double *stop,    Sint   *event, 
+             void agfit2( int   *maxiter,  int   *nusedx,  int   *nvarx, 
+                          double *start,    double *stop,    int   *event, 
                           double *covar2,   double *offset,  double *weights,
-                          Sint   *strata,   double *means,   double *beta, 
+                          int   *strata,   double *means,   double *beta, 
                           double *u,        double *imat2,   double loglik[2], 
-                                                                          Sint   *flag,     double *work,    Sint   *end,
+                                                                          int   *flag,     double *work,    int   *end,
                                                                           double *eps,      double *tol_chol,double *sctest);
              
-             void agfit4_a(Sint *nusedx, Sint *nvarx, double *yy, 
+             void agfit4_a(int *nusedx, int *nvarx, double *yy, 
                            double *covar2, double *offset2,
-                           double *weights2, Sint *strata2,
+                           double *weights2, int *strata2,
                            double *means, double *beta, double *u, 
                            double *loglik, 
-                           Sint *methodx, Sint *ptype2, Sint *pdiag2,
-                           Sint *nfrail,  Sint *frail2);
+                           int *methodx, int *ptype2, int *pdiag2,
+                           int *nfrail,  int *frail2);
              
-             void agfit4_b(Sint *maxiter, Sint *nusedx, Sint *nvarx, 
+             void agfit4_b(int *maxiter, int *nusedx, int *nvarx, 
                            double *beta, double *u,
                            double *imat2,  double *jmat2, double *loglik, 
-                           Sint *flag,  double *eps, double *tolerch, Sint *methodx, 
-                           Sint *nfrail, double *fbeta, double *fdiag);
+                           int *flag,  double *eps, double *tolerch, int *methodx, 
+                           int *nfrail, double *fbeta, double *fdiag);
              
-             void agfit_null(Sint   *n,      Sint   *method,   double *start, double *stop, 
-                             Sint   *event,  double * offset,  double *weights,
-                             Sint   *strata, double loglik[2]);
+             void agfit_null(int   *n,      int   *method,   double *start, double *stop, 
+                             int   *event,  double * offset,  double *weights,
+                             int   *strata, double loglik[2]);
              
-             void aghaz2(Sint   *n,     double *start,   double *stop,   Sint   *event, 
-                         double *score, Sint   * strata, double *hazard, double * cumhaz);
+             void aghaz2(int   *n,     double *start,   double *stop,   int   *event, 
+                         double *score, int   * strata, double *hazard, double * cumhaz);
              
-             void agmart(Sint   *n,     Sint   *method,  double *start,   double *stop, 
-                         Sint   *event, double *score,   double *wt,      Sint   *strata, 
+             void agmart(int   *n,     int   *method,  double *start,   double *stop, 
+                         int   *event, double *score,   double *wt,      int   *strata, 
                          double *resid);
              
-             void agres12(Sint   *nx,     Sint   *nvarx,   double *y,    double *covar2, 
-                          Sint   *strata, double *score,   Sint *method, double *resid2, 
+             void agres12(int   *nx,     int   *nvarx,   double *y,    double *covar2, 
+                          int   *strata, double *score,   int *method, double *resid2, 
                           double *a);
              
-             void agscore(Sint   *nx,       Sint   *nvarx,      double *y,
-                          double *covar2,   Sint   *strata,     double *score,
-                          double *weights,  Sint   *method,     double *resid2, double *a);
+             void agscore(int   *nx,       int   *nvarx,      double *y,
+                          double *covar2,   int   *strata,     double *score,
+                          double *weights,  int   *method,     double *resid2, double *a);
              
-             void agsurv1(Sint   *sn,     Sint   *snvar,  double *y,      double *score, 
-                          Sint   *strata, 
-                          double *surv,   double *varh,   Sint   *snsurv,
+             void agsurv1(int   *sn,     int   *snvar,  double *y,      double *score, 
+                          int   *strata, 
+                          double *surv,   double *varh,   int   *snsurv,
                           double *xmat,   double *d,      double *varcov, double *yy,
-                          Sint   *shisn,  double *hisy,   double *hisxmat,double *hisrisk, 
-                          Sint   *hisstrat);
+                          int   *shisn,  double *hisy,   double *hisxmat,double *hisrisk, 
+                          int   *hisstrat);
              
-             void agsurv2(Sint   *sn,      Sint   *snvar,    double *y, 
-                          double *score,   Sint   *strata,   double *wt,    double *surv, 
+             void agsurv2(int   *sn,      int   *snvar,    double *y, 
+                          double *score,   int   *strata,   double *wt,    double *surv, 
                           double *varh,    double *xmat,     double *varcov, 
-                          Sint   *snsurv,  double *d,        Sint   *sncurve,
+                          int   *snsurv,  double *d,        int   *sncurve,
                           double *newx,    double *newrisk);
              
              void chinv2  (double **matrix, int n);
@@ -72,57 +72,57 @@ void agexact(Sint *maxiter,  Sint *nusedx,   Sint *nvarx,   double *start,
              int cholesky3(double **matrix, int n, int m, double *diag, double toler);
              void chsolve3(double **matrix, int n, int m, double *diag, double *y);
              
-             void coxdetail(Sint   *nusedx,   Sint   *nvarx,    Sint   *ndeadx, 
-                            double *y,        double *covar2,   Sint   *strata,  
+             void coxdetail(int   *nusedx,   int   *nvarx,    int   *ndeadx, 
+                            double *y,        double *covar2,   int   *strata,  
                             double *score,    double *weights,  double *means2, 
-                            double *u2,       double *var,      Sint   *rmat,
+                            double *u2,       double *var,      int   *rmat,
                             double *nrisk2,   double *work);
              
-             void coxfit2(Sint   *maxiter,   Sint   *nusedx,    Sint   *nvarx, 
-                          double *time,      Sint   *status,    double *covar2, 
-                          double *offset,	double *weights,   Sint   *strata,
+             void coxfit2(int   *maxiter,   int   *nusedx,    int   *nvarx, 
+                          double *time,      int   *status,    double *covar2, 
+                          double *offset,	double *weights,   int   *strata,
                           double *means,     double *beta,      double *u, 
-                          double *imat2,     double loglik[2],  Sint   *flag, 
+                          double *imat2,     double loglik[2],  int   *flag, 
                           double *work,	double *eps,       double *tol_chol,
                           double *sctest,double *sctest2, double *sctest3);
              
-             void coxfit4_a(Sint *nusedx, Sint *nvarx, double *yy, 
+             void coxfit4_a(int *nusedx, int *nvarx, double *yy, 
                             double *covar2, double *offset2,
-                            double *weights2, Sint *strata2,
+                            double *weights2, int *strata2,
                             double *means, double *beta, double *u, 
                             double *loglik, 
-                            Sint *methodx, Sint *ptype2, Sint *pdiag2,
-                            Sint *nfrail,  Sint *frail2);
+                            int *methodx, int *ptype2, int *pdiag2,
+                            int *nfrail,  int *frail2);
              
-             void coxfit4_b(Sint *maxiter, Sint *nusedx, Sint *nvarx, 
+             void coxfit4_b(int *maxiter, int *nusedx, int *nvarx, 
                             double *beta, double *u,
                             double *imat2,  double *jmat2, double *loglik, 
-                            Sint *flag,  double *eps, double *tolerch, Sint *methodx, 
-                            Sint *nfrail, double *fbeta, double *fdiag);
+                            int *flag,  double *eps, double *tolerch, int *methodx, 
+                            int *nfrail, double *fbeta, double *fdiag);
              
-             void coxfit4_c (Sint *nusedx, Sint *nvar, Sint *methodx, double *expect);
+             void coxfit4_c (int *nusedx, int *nvar, int *methodx, double *expect);
              
-             void coxfit_null(Sint   *nusedx,    Sint   *method,   double *time, 
-                              Sint   *status,    double *score,    double *weights, 
-                              Sint   *strata,    double *loglik, double *resid);
+             void coxfit_null(int   *nusedx,    int   *method,   double *time, 
+                              int   *status,    double *score,    double *weights, 
+                              int   *strata,    double *loglik, double *resid);
              
-             void coxhaz2(Sint   *n,      double *score,   Sint   *mark, 
-                          Sint   *strata, double *hazard,  double *cumhaz);
+             void coxhaz2(int   *n,      double *score,   int   *mark, 
+                          int   *strata, double *hazard,  double *cumhaz);
              
-             void coxmart(Sint   *sn,     Sint   *method,    double *time, 
-                          Sint   *status, Sint   * strata,   double *score, 
+             void coxmart(int   *sn,     int   *method,    double *time, 
+                          int   *status, int   * strata,   double *score, 
                           double *wt,     double *expect);
              
-             void coxph_wtest(Sint *nvar2, Sint *ntest, double *var, double *b,
+             void coxph_wtest(int *nvar2, int *ntest, double *var, double *b,
                               double *scratch, double *tolerch);
              
-             void coxscho(Sint   *nusedx,    Sint   *nvarx,    double *y, 
-                          double *covar2,    double *score,    Sint   *strata,  
-                          Sint   *method2,   double *work);
+             void coxscho(int   *nusedx,    int   *nvarx,    double *y, 
+                          double *covar2,    double *score,    int   *strata,  
+                          int   *method2,   double *work);
              
-             void coxscore(Sint   *nx,      Sint   *nvarx,    double *y, 
-                           double *covar2,  Sint   *strata,   double *score, 
-                           double *weights, Sint   *method,   double *resid2,
+             void coxscore(int   *nx,      int   *nvarx,    double *y, 
+                           double *covar2,  int   *strata,   double *score, 
+                           double *weights, int   *method,   double *resid2,
                            double *scratch);
              
              double coxsafe(double x);
@@ -131,40 +131,40 @@ void agexact(Sint *maxiter,  Sint *nusedx,   Sint *nvarx,   double *start,
              void init_doloop(int min, int max);
              int doloop      (int nloops, int *index);
              
-             void pyears1(Sint   *sn,      Sint   *sny,      Sint   *sdoevent, 
+             void pyears1(int   *sn,      int   *sny,      int   *sdoevent, 
                           double *sy,      double *wt,       
-                          Sint   *sedim,   Sint   *efac, 
-                          Sint   *edims,   double *secut,    double *expect, 
-                          double *sedata,  Sint   *sodim,    Sint   *ofac, 
-                          Sint   *odims,   double *socut,    Sint   *smethod, 
+                          int   *sedim,   int   *efac, 
+                          int   *edims,   double *secut,    double *expect, 
+                          double *sedata,  int   *sodim,    int   *ofac, 
+                          int   *odims,   double *socut,    int   *smethod, 
                           double *sodata,  double *pyears,   double *pn, 
                           double *pcount,  double *pexpect,  double *offtable);
              
-             void pyears2(Sint   *sn,      Sint   *sny,   Sint   *sdoevent, 
+             void pyears2(int   *sn,      int   *sny,   int   *sdoevent, 
                           double *sy,      double *wt,    
-                          Sint   *sodim,   Sint   *ofac, 
-                          Sint   *odims,   double *socut, double *sodata,
+                          int   *sodim,   int   *ofac, 
+                          int   *odims,   double *socut, double *sodata,
                           double *pyears,  double *pn,    double *pcount, 
                           double *offtable);
              
              double pystep(int nc,        int  *index,  int  *index2,   double *wt, 
-                           double *data,  Sint *fac,    Sint *dims,     double **cuts, 
+                           double *data,  int *fac,    int *dims,     double **cuts, 
                            double step,   int  edge);
              
-             void survdiff2(Sint   *nn,     Sint   *nngroup,    Sint   *nstrat, 
-                            double *rho,    double *time,       Sint   *status, 
-                            Sint   *group,  Sint   *strata,	   double *obs, 
+             void survdiff2(int   *nn,     int   *nngroup,    int   *nstrat, 
+                            double *rho,    double *time,       int   *status, 
+                            int   *group,  int   *strata,	   double *obs, 
                             double *exp,    double *var,        double *risk, 
                             double *kaplan);
              
-             void survfit2(Sint   *sn,      double *y,       double *wt,
-                           Sint   *strata,  Sint   *method,  Sint   *error, 
+             void survfit2(int   *sn,      double *y,       double *wt,
+                           int   *strata,  int   *method,  int   *error, 
                            double *mark,    double *surv,	double *varh,
                            double *risksum);
              
-             void survfit3(Sint   *sn,        double *y,               double *wt,
-                           Sint   *strata,    Sint   *method,          Sint   *error, 
-                           Sint   *nstrat,    double *ntimes_strata,  
+             void survfit3(int   *sn,        double *y,               double *wt,
+                           int   *strata,    int   *method,          int   *error, 
+                           int   *nstrat,    double *ntimes_strata,  
                            double *timelist,  double *weighted_event,  double *surv,
                            double *varh,	 double *risksum,         double *enter,
                            double *exit_censored);
@@ -177,18 +177,18 @@ void agexact(Sint *maxiter,  Sint *nusedx,   Sint *nvarx,   double *start,
                            SEXP dist,       SEXP expr,   SEXP rho);
              
              double survregc1(int n,          int nvar,     int nstrat,      int whichcase,
-                              double *beta,   int dist,     Sint *strat,     double *offset,
+                              double *beta,   int dist,     int *strat,     double *offset,
                               double *time1,  double *time2, double *status, double *wt,
                               double **covar, double **imat, double **JJ,    double *u, 
                               SEXP expr,      SEXP rho,      double *dummy,  int nf,
-                              Sint *frail,    double *fdiag, double *jdiag );
+                              int *frail,    double *fdiag, double *jdiag );
              
              double survregc2(int n,          int nvar,     int nstrat,      int whichcase,
-                              double *beta,   int dist,     Sint *strat,     double *offset,
+                              double *beta,   int dist,     int *strat,     double *offset,
                               double *time1,  double *time2, double *status, double *wt,
                               double **covar, double **imat, double **JJ,    double *u, 
                               SEXP expr,      SEXP rho,      double *dummy,  int nf,
-                              Sint *frail,    double *fdiag, double *jdiag );
+                              int *frail,    double *fdiag, double *jdiag );
              
              void survpenal(int whichcase, int nfrail,    int  nvar2,    double **hmat, 
                             double **JJ,   double *hdiag, double *jdiag,
