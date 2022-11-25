@@ -22,13 +22,20 @@ randomForestPredictInterface <- function(forest, measurementsTest, ..., returnTy
   if(verbose == 3)
     message("Predicting using random forest.")  
   measurementsTest <- as.data.frame(measurementsTest)
-  classPredictions <- predict(forest, measurementsTest)$predictions
-  classScores <- predict(forest, measurementsTest, predict.all = TRUE)[[1]]
-  classScores <- t(apply(classScores, 1, function(sampleRow) table(factor(classes[sampleRow], levels = classes)) / forest$forest$num.trees))
-  rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
-  switch(returnType, class = classPredictions,
-         score = classScores,
-         both = data.frame(class = classPredictions, classScores, check.names = FALSE))
+  
+  predictions <- predict(forest, measurementsTest)
+  if(predictions$treetype == "Classification")
+  {
+    classPredictions <- predictions$predictions
+    classScores <- predict(forest, measurementsTest, predict.all = TRUE)[[1]]
+    classScores <- t(apply(classScores, 1, function(sampleRow) table(factor(classes[sampleRow], levels = classes)) / forest$forest$num.trees))
+    rownames(classScores) <- names(classPredictions) <- rownames(measurementsTest)
+    switch(returnType, class = classPredictions,
+           score = classScores,
+           both = data.frame(class = classPredictions, classScores, check.names = FALSE))
+  } else { # It is "Survival".
+      rowSums(predictions$survival)
+  }
 }
 
 ################################################################################
