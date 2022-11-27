@@ -258,14 +258,11 @@ DDresults
 
 The naive Bayes kernel classifier by default uses the vertical distance between class densities but it can instead use the horizontal distance to the nearest non-zero density cross-over point to confidently classify samples in the tails of the densities.
 
-Now, the classification error for each sample is also calculated for both the differential means and differential distribution classifiers and both *ClassifyResult* objects generated so far are plotted with *samplesMetricMap*.
+The per-sample classification accuracy is automatically calculated for both the differential means and differential distribution classifiers and plotted with *samplesMetricMap*.
 
 ```{r, fig.width = 10, fig.height = 7}
-DMresults <- calcCVperformance(DMresults, "Sample Error")
-DDresults <- calcCVperformance(DDresults, "Sample Error")
 resultsList <- list(Abundance = DMresults, Distribution = DDresults)
-samplesMetricMap(resultsList, metric = "Sample Error", xAxisLabel = "Sample",
-                              showXtickLabels = FALSE)
+samplesMetricMap(resultsList, showXtickLabels = FALSE)
 ```
 
 The benefit of this plot is that it allows the easy identification of samples which are hard to classify and could be explained by considering additional information about them. Differential distribution class prediction appears to be biased to the majority class (No Asthma).
