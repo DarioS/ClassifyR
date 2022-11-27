@@ -10,7 +10,7 @@
 
 \S4method{performancePlot}{list}(
   results,
-  performanceName = "auto",
+  metric = "auto",
   characteristicsList = list(x = "auto"),
   aggregate = character(),
   coloursList = list(),
@@ -29,7 +29,7 @@
 
 \item{...}{Not used by end user.}
 
-\item{performanceName}{Default: \code{"auto"}. The name of the
+\item{metric}{Default: \code{"auto"}. The name of the
 performance measure or "auto". If the results are classification then
 balanced accuracy will be displayed. Otherwise, the results would be survival risk
 predictions and then C-index will be displayed. This is one of the names printed
@@ -122,7 +122,7 @@ calculated, and a barchart is plotted.
                             list(function(oracle){}), NULL, predicted, actual)
   result2 <- calcCVperformance(result2, "Macro F1")
   
-  performancePlot(list(result1, result2), performanceName = "Macro F1",
+  performancePlot(list(result1, result2), metric = "Macro F1",
                   title = "Comparison")
 
 }

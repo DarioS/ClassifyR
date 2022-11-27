@@ -34,7 +34,7 @@ randomForestPredictInterface <- function(forest, measurementsTest, ..., returnTy
            score = classScores,
            both = data.frame(class = classPredictions, classScores, check.names = FALSE))
   } else { # It is "Survival".
-      rowSums(predictions$survival)
+      -1 * rowSums(predictions$survival) # Make it a risk score.
   }
 }
 

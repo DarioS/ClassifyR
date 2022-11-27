@@ -15,7 +15,7 @@
 #' \code{characteristicsList['x']} to aggregate to a single number by taking
 #' the mean. This is particularly meaningful when the cross-validation is
 #' leave-k-out, when k is small.
-#' @param performanceName Default: \code{"auto"}. The name of the
+#' @param metric Default: \code{"auto"}. The name of the
 #' performance measure or "auto". If the results are classification then
 #' balanced accuracy will be displayed. Otherwise, the results would be survival risk
 #' predictions and then C-index will be displayed. This is one of the names printed
@@ -81,7 +81,7 @@
 #'                             list(function(oracle){}), NULL, predicted, actual)
 #'   result2 <- calcCVperformance(result2, "Macro F1")
 #'   
-#'   performancePlot(list(result1, result2), performanceName = "Macro F1",
+#'   performancePlot(list(result1, result2), metric = "Macro F1",
 #'                   title = "Comparison")
 #' 
 #' @importFrom rlang sym
@@ -99,7 +99,7 @@ setMethod("performancePlot", "ClassifyResult", function(results, ...) {
 #' @rdname performancePlot
 #' @export
 setMethod("performancePlot", "list",
-          function(results, performanceName = "auto",
+          function(results, metric = "auto",
                    characteristicsList = list(x = "auto"), aggregate = character(), coloursList = list(), orderingList = list(),
                    densityStyle = c("box", "violin"), yLimits = NULL, fontSizes = c(24, 16, 12, 12), title = NULL,
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE)
@@ -118,34 +118,34 @@ setMethod("performancePlot", "list",
     else
       stop("No characteristic is present for all results but must be.")
   }
-  if(performanceName == "auto")
-      performanceName <- ifelse("risk" %in% colnames(results[[1]]@predictions), "C-index", "Balanced Accuracy")
+  if(metric == "auto")
+      metric <- ifelse("risk" %in% colnames(results[[1]]@predictions), "C-index", "Balanced Accuracy")
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))
-  performanceNames <- unlist(lapply(results, function(result)
+  metrics <- unlist(lapply(results, function(result)
     if(!is.null(result@performance)) names(result@performance)))
-  namesCounts <- table(performanceNames)
+  namesCounts <- table(metrics)
   commonNames <- names(namesCounts)[namesCounts == length(results)]
-  if(!performanceName %in% commonNames)
+  if(!metric %in% commonNames)
   {
-    warning(paste(performanceName, "not found in all elements of results. Calculating it now."))
-    results <- lapply(results, function(result) calcCVperformance(result, performanceName))
+    warning(paste(metric, "not found in all elements of results. Calculating it now."))
+    results <- lapply(results, function(result) calcCVperformance(result, metric))
   }
   
-  ifelse(performanceName == "Matthews Correlation Coefficient", baseline <- 0, baseline <- 0.5)
+  ifelse(metric == "Matthews Correlation Coefficient", baseline <- 0, baseline <- 0.5)
  
   plotData <- do.call(rbind, mapply(function(result, index)
                     {
-                      if(!performanceName %in% names(result@performance))
-                        stop(performanceName, " not calculated for element ", index, " of results list.")
+                      if(!metric %in% names(result@performance))
+                        stop(metric, " not calculated for element ", index, " of results list.")
                       row <- result@characteristics[, "characteristic"] == characteristicsList[["x"]] 
                       if(any(row) && result@characteristics[row, "value"] %in% aggregate)
-                        performance <- mean(result@performance[[performanceName]])
+                        performance <- mean(result@performance[[metric]])
                       else
-                        performance <- result@performance[[performanceName]]
+                        performance <- result@performance[[metric]]
                       rows <- match(unlist(characteristicsList), result@characteristics[, "characteristic"])
                       summaryTable <- data.frame(as.list(result@characteristics[rows, "value"]), performance)
-                      colnames(summaryTable) <- c(characteristicsList, performanceName)
+                      colnames(summaryTable) <- c(characteristicsList, metric)
                       summaryTable
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
@@ -182,12 +182,12 @@ setMethod("performancePlot", "list",
   if(any(analysisGroupSizes > 1))
   {
     multiPlotData <- do.call(rbind, analysisGrouped[analysisGroupSizes > 1])
-    performancePlot <- performancePlot + densityStyle(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!fillVariable, colour = !!lineVariable))
+    performancePlot <- performancePlot + densityStyle(data = multiPlotData, ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(metric)), fill = !!fillVariable, colour = !!lineVariable))
   }
   if(any(analysisGroupSizes == 1))
   {
     singlePlotData <- do.call(rbind, analysisGrouped[analysisGroupSizes == 1])
-    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(performanceName)), fill = !!fillVariable, colour = !!lineVariable))
+    performancePlot <- performancePlot + ggplot2::geom_bar(data = singlePlotData, stat = "identity", ggplot2::aes(x = !!characteristicsList[['x']], y = !!(rlang::sym(metric)), fill = !!fillVariable, colour = !!lineVariable))
   }
   
   if(!is.null(yLimits)) yLimits = c(0, 1)
