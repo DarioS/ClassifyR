@@ -15,7 +15,12 @@
 #' same length as the number of columns that \code{results} has.
 #' @param comparison Default: "auto". The aspect of the experimental
 #' design to compare. Can be any characteristic that all results share.
-#' @param metric Default: "Sample Error". The sample-wise metric to plot.
+#' @param metric Default: \code{"auto"}. The name of the
+#' performance measure or "auto". If the results are classification then
+#' sample accuracy will be displayed. Otherwise, the results would be survival risk
+#' predictions and then a sample C-index will be displayed. Valid values are \code{"Sample Error"},
+#' \code{"Sample Error"} or \code{"Sample C-index"}. If the metric is not stored in the
+#' results list, the performance metric will be calculated automatically.
 #' @param featureValues If not NULL, can be a named factor or named numeric
 #' vector specifying some variable of interest to plot above the heatmap.
 #' @param featureName A label describing the information in
@@ -66,8 +71,8 @@
 #'                             value = c("Example", "Bartlett Test", "Differential Variability", "2 Permutations, 2 Folds")),
 #'                             LETTERS[1:10], features, list(1:100), list(sample(10, 10)),
 #'                             list(function(oracle){}), NULL, predicted, actual)
-#'   result1 <- calcCVperformance(result1, "Sample Error")
-#'   result2 <- calcCVperformance(result2, "Sample Error")
+#'   result1 <- calcCVperformance(result1)
+#'   result2 <- calcCVperformance(result2)
 #'   groups <- factor(rep(c("Male", "Female"), length.out = 10))
 #'   names(groups) <- LETTERS[1:10]
 #'   cholesterol <- c(4.0, 5.5, 3.9, 4.9, 5.7, 7.1, 7.9, 8.0, 8.5, 7.2)
@@ -95,10 +100,10 @@ setMethod("samplesMetricMap", "ClassifyResult", function(results, ...) {
 setMethod("samplesMetricMap", "list", 
           function(results,
                    comparison = "auto",
-                   metric = c("Sample Error", "Sample Accuracy", "Sample C-index"),
+                   metric = "auto",
                    featureValues = NULL, featureName = NULL,
-                   metricColours = list(c("#3F48CC", "#6F75D8", "#9FA3E5", "#CFD1F2", "#FFFFFF"),
-                                        c("#880015", "#A53F4F", "#C37F8A", "#E1BFC4", "#FFFFFF")),
+                   metricColours = list(c("#FFFFFF", "#CFD1F2", "#9FA3E5", "#6F75D8", "#3F48CC"),
+                                        c("#FFFFFF", "#E1BFC4", "#C37F8A", "#A53F4F", "#880015")),
                    classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
                    fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` = "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison"),
@@ -125,6 +130,17 @@ setMethod("samplesMetricMap", "list",
       stop("No characteristic is present for all results but must be.")
     }
   }
+  isSurvival <- "risk" %in% colnames(results[[1]]@predictions)
+  validMetrics <- c("Sample Error", "Sample Accuracy", "Sample C-index")
+  if(metric == "auto")
+    metric <- ifelse(isSurvival, "Sample C-index", "Sample Accuracy")
+  else
+    if(!metric %in% validMetrics) stop("metric must be one of ", validMetrics, " but is ", metric, '.')   
+  if(isSurvival && is.list(metricColours)) metricColours <- metricColours[[1]]
+  metricText <- gsub("Sample ", '', metric) # For legend labelling.
+  if(showXtickLabels == FALSE && xAxisLabel == "Sample Name") xAxisLabel <- "Sample"
+     
+  
   resultsWithComparison <- sum(sapply(results, function(result) any(result@characteristics[, "characteristic"] == comparison)))
   if(resultsWithComparison < length(results))
     stop("Not all results have comparison characteristic ", comparison, ' but need to.')
@@ -135,13 +151,17 @@ setMethod("samplesMetricMap", "list",
     compareFactor <- sapply(results, function(result) {
                      useRow <- result@characteristics[, "characteristic"] == comparison
                      result@characteristics[useRow, "value"]
-                    })  
-  metric <- match.arg(metric)
-  metricText <- switch(metric, `Sample Error` = "Error", `Sample Accuracy` = "Accuracy", `Sample C-index` = "C-index")
+                    })
   
-  allCalculated <- all(sapply(results, function(result) metric %in% names(performance(result))))
-  if(!allCalculated)
-    stop("One or more classification results lack the calculated sample-specific metric.")
+  metrics <- unlist(lapply(results, function(result)
+    if(!is.null(result@performance)) names(result@performance)))
+  namesCounts <- table(metrics)
+  commonNames <- names(namesCounts)[namesCounts == length(results)]
+  if(!metric %in% commonNames)
+  {
+    warning(paste(metric, "not found in all elements of results. Calculating it now."))
+    results <- lapply(results, function(result) calcCVperformance(result, metric))
+  }
   if(!is.null(featureValues) && is.null(featureName))
     stop("featureValues is specified by featureNames isn't. Specify both.")
   if(!is.null(featureValues) && is.null(names(featureValues)))
