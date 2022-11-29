@@ -514,7 +514,7 @@ cleanClassifier <- function(classifier, measurements, nFeatures){
     {
       replacements <- sapply(checkENs, function(checkEN) ifelse(any(nFeatures[[checkEN]] == 1), "GLM", "elasticNetGLM"))
       classifier[checkENs] <- replacements
-      if(any(replacements) == "GLM")    
+      if(any(replacements == "GLM"))
         warning("Elastic Net GLM requires two or more features as input but there is only one.
 Using an ordinary GLM instead.")
     }
