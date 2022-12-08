@@ -37,7 +37,7 @@
 \item{topRanked}{A sequence of thresholds of number of the best features to
 use for overlapping.}
 
-\item{comparison}{Default: within. The aspect of the experimental design to
+\item{comparison}{Default: \code{"within"}. The aspect of the experimental design to
 compare. Can be any characteristic that all results share or special value
 "within" to compared between all pairwise iterations of cross-validation.}
 

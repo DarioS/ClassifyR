@@ -129,10 +129,12 @@
       tuneCombo <- tuneCombosSelect[rowIndex, , drop = FALSE]
       if(tuneCombo != "none") # Add real parameters before function call.
         paramList <- append(paramList, tuneCombo)
+      if(attr(featureRanking, "name") == "randomSelection")
+        paramList <- append(paramList, nFeatures = topNfeatures)
       do.call(featureRanking, paramList)
     })
 
-    if(attr(featureRanking, "name") %in% c("previousSelection", "Union Selection")) # Actually selection not ranking.
+    if(attr(featureRanking, "name") %in% c("randomSelection", "previousSelection", "Union Selection")) # Actually selection not ranking.
       return(list(NULL, rankings[[1]], NULL))
     
     if(crossValParams@tuneMode == "none") # No parameters to choose between.
@@ -509,6 +511,8 @@
         "KS" = KolmogorovSmirnovRanking,
         "KL" = KullbackLeiblerRanking,
         "CoxPH" = coxphRanking,
+        "previousSelection" = previousSelection,
+        "randomSelection" = randomSelection,
         "selectMulti" = selectMulti
     )
 }

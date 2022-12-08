@@ -26,7 +26,7 @@
 #' @param results A list of \code{\link{ClassifyResult}} objects.
 #' @param topRanked A sequence of thresholds of number of the best features to
 #' use for overlapping.
-#' @param comparison Default: within. The aspect of the experimental design to
+#' @param comparison Default: \code{"within"}. The aspect of the experimental design to
 #' compare. Can be any characteristic that all results share or special value
 #' "within" to compared between all pairwise iterations of cross-validation.
 #' @param referenceLevel The level of the comparison factor to use as the

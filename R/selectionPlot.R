@@ -36,7 +36,7 @@
 #' 
 #' @aliases selectionPlot selectionPlot,list-method
 #' @param results A list of \code{\link{ClassifyResult}} objects.
-#' @param comparison Default: within. The aspect of the experimental design to
+#' @param comparison Default: \code{"within"}. The aspect of the experimental design to
 #' compare. Can be any characteristic that all results share or either one of
 #' the special values \code{"within"} to compare between all pairwise
 #' iterations of cross-validation. or \code{"size"}, to draw a bar chart of the

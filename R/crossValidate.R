@@ -22,8 +22,8 @@
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 #' Set to NULL or "all" if all features should be used.
-#' @param selectionMethod Default: "auto". A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
-#' and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"} t-test (two categories) / F-test (three or more categories) ranking
+#' @param selectionMethod Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
+#' and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
 #' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.
 #' @param selectionOptimisation A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.
 #' @param performanceType Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Otherwise, any one of the
@@ -91,10 +91,10 @@ setMethod("crossValidate", "DataFrame",
           function(measurements,
                    outcome,
                    nFeatures = 20,
-                   selectionMethod = "t-test",
+                   selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
                    performanceType = "auto",
-                   classifier = "randomForest",
+                   classifier = "auto",
                    multiViewMethod = "none",
                    assayCombinations = "all",
                    nFolds = 5,
@@ -297,10 +297,10 @@ setMethod("crossValidate", "MultiAssayExperiment",
           function(measurements,
                    outcome, 
                    nFeatures = 20,
-                   selectionMethod = "t-test",
+                   selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
                    performanceType = "auto",
-                   classifier = "randomForest",
+                   classifier = "auto",
                    multiViewMethod = "none",
                    assayCombinations = "all",
                    nFolds = 5,
@@ -331,10 +331,10 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
           function(measurements,
                    outcome, 
                    nFeatures = 20,
-                   selectionMethod = "t-test",
+                   selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
                    performanceType = "auto",
-                   classifier = "randomForest",
+                   classifier = "auto",
                    multiViewMethod = "none",
                    assayCombinations = "all",
                    nFolds = 5,
@@ -364,10 +364,10 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
           function(measurements,
                    outcome,
                    nFeatures = 20,
-                   selectionMethod = "t-test",
+                   selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
                    performanceType = "auto",
-                   classifier = "randomForest",
+                   classifier = "auto",
                    multiViewMethod = "none",
                    assayCombinations = "all",
                    nFolds = 5,
@@ -399,10 +399,10 @@ setMethod("crossValidate", "list",
           function(measurements,
                    outcome, 
                    nFeatures = 20,
-                   selectionMethod = "t-test",
+                   selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
                    performanceType = "auto",
-                   classifier = "randomForest",
+                   classifier = "auto",
                    multiViewMethod = "none",
                    assayCombinations = "all",
                    nFolds = 5,
@@ -764,19 +764,18 @@ generateMultiviewParams <- function(assayIDs,
 }
 
 # measurements, outcome are mutually exclusive with x, outcomeTrain, measurementsTest, outcomeTest.
-CV <- function(measurements = NULL,
-               outcome = NULL, x = NULL, outcomeTrain = NULL, measurementsTest = NULL, outcomeTest = NULL,
+CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcomeTest,
                assayIDs,
-               nFeatures = NULL,
-               selectionMethod = "t-test",
-               selectionOptimisation = "Resubstitution",
+               nFeatures,
+               selectionMethod,
+               selectionOptimisation,
                performanceType,
-               classifier = "elasticNetGLM",
-               multiViewMethod = "none",
-               nFolds = 5,
-               nRepeats = 100,
-               nCores = 1,
-               characteristicsLabel = NULL)
+               classifier,
+               multiViewMethod,
+               nFolds,
+               nRepeats,
+               nCores,
+               characteristicsLabel)
 
 {
     # Which data-types or data-views are present?
@@ -848,7 +847,7 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @param performanceType Performance metric to optimise if classifier has any tuning parameters.
 #' @method train DataFrame
 #' @export
-train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", performanceType = "auto",
+train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures = 20, classifier = "auto", performanceType = "auto",
                             multiViewMethod = "none", assayIDs = "all", ...) # ... for prepareData.
                    {
               prepArgs <- list(x, outcomeTrain)
@@ -863,18 +862,20 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
               # Ensure performance type is one of the ones that can be calculated by the package.
               if(!performanceType %in% c("auto", .ClassifyRenvir[["performanceTypes"]]))
                 stop(paste("performanceType must be one of", paste(c("auto", .ClassifyRenvir[["performanceTypes"]]), collapse = ", "), "but is", performanceType))
-              
+
+              isCategorical <- is.character(outcomeTrain) && (length(outcomeTrain) == 1 || length(outcomeTrain) == nrow(measurements)) || is.factor(outcomeTrain)
               if(performanceType == "auto")
-              {
-                if(is.character(outcomeTrain) && (length(outcomeTrain) == 1 || length(outcomeTrain) == nrow(x)) || is.factor(outcomeTrain))
-                  performanceType <- "Balanced Accuracy"
-                else performanceType <- "C-index"
-              }
+                if(isCategorical) performanceType <- "Balanced Accuracy" else performanceType <- "C-index"
+              if(length(selectionMethod) == 1 && selectionMethod == "auto")
+                if(isCategorical) selectionMethod <- "t-test" else selectionMethod <- "CoxPH"
+              if(length(classifier) == 1 && classifier == "auto")
+                if(isCategorical) classifier <- "randomForest" else classifier <- "CoxPH"
               
               measurements <- measurementsAndOutcome[["measurements"]]
               outcomeTrain <- measurementsAndOutcome[["outcome"]]
               
               classifier <- cleanClassifier(classifier = classifier, measurements = measurements)
+              selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod, measurements = measurements)
               if(assayIDs == "all") assayIDs <- unique(S4Vectors::mcols(measurements)[, "assay"])
               if(is.null(assayIDs)) assayIDs <- 1
               names(assayIDs) <- assayIDs
@@ -886,30 +887,52 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
                           # Loop over assays
                           sapply(classifier[[assayIndex]], function(classifierForAssay) {
                               # Loop over classifiers
+                                sapply(selectionMethod[[assayIndex]], function(selectionForAssay) {
+                                  # Loop over selectors
                               
                                   measurementsUse <- measurements
                                   if(assayIndex != 1) measurementsUse <- measurements[, S4Vectors::mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   
-                                  classifierParams <- .classifierKeywordToParams(classifierForAssay)
-                                  if(!is.null(classifierParams$trainParams@tuneParams))
-                                    classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
-                                  modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
-                                                               trainParams = classifierParams$trainParams, predictParams = classifierParams$predictParams)
-                                  
-                                  .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = 0)[["model"]]
-                                  ## train model
-                          },
-                          simplify = FALSE)
-                      },
-                      simplify = FALSE)
+                                  modellingParams <- generateModellingParams(assayIDs = assayIDs, measurements = measurements, nFeatures = nFeatures,
+                                                     selectionMethod = selectionMethod, selectionOptimisation = "Resubstitution", performanceType = performanceType,
+                                                     classifier = classifier, multiViewMethod = "none")
+                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = 0)
+                                  selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
+                                  tuneDetailsSelect <- topFeatures[[3]]
+                                  measurementsUse <- measurementsUse[, selectedFeaturesIndices]
 
-                  models <- unlist(resClassifier, recursive = FALSE)
+                                  classifierParams <- .classifierKeywordToParams(classifierForAssay)
+                                  modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
+                                                                     trainParams = classifierParams$trainParams, predictParams = classifierParams$predictParams)
+                                  if(!is.null(tuneDetailsSelect))
+                                  {
+                                    tuneDetailsSelectUse <- tuneDetailsSelect[["tuneCombinations"]][tuneDetailsSelect[["bestIndex"]], , drop = FALSE]
+                                    avoidTune <- match(colnames(tuneDetailsSelectUse), names(modellingParams@trainParams@tuneParams))
+                                    if(any(!is.na(avoidTune)))
+                                    {
+                                      modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneDetailsSelectUse[!is.na(avoidTune)])
+                                      modellingParams@trainParams@tuneParams <- modellingParams@trainParams@tuneParams[-na.omit(avoidTune)]
+                                      if(length(modellingParams@trainParams@tuneParams) == 0) modellingParams@trainParams@tuneParams <- NULL
+                                    }
+                                  }
+                                  if(!is.null(modellingParams@trainParams@tuneParams))
+                                    modellingParams$trainParams@tuneParams <- c(modellingParams$trainParams@tuneParams, performanceType = performanceType)
+                                  
+                                  trained <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = 0)[["model"]]
+                                  attr(trained, "predictFunction") <- classifierParams$predictParams@predictor
+                                  trained
+                                  ## train model
+                                }, simplify = FALSE)
+                          }, simplify = FALSE)
+                      }, simplify = FALSE)
+
+                  models <- unlist(unlist(resClassifier, recursive = FALSE), recursive = FALSE)
                   if(length(models) == 1) {
                       model <- models[[1]]
-                      class(model) <- c(class(model), "trainedByClassifyR")
+                      class(model) <- c("trainedByClassifyR", class(model))
                       models <- NULL
                   } else {
-                      class(models) <- c(class(models), "listOfModels", "trainedByClassifyR")
+                      class(models) <- c("listOfModels", "trainedByClassifyR", class(models))
                   }
               }
 
@@ -932,6 +955,8 @@ train.DataFrame <- function(x, outcomeTrain, classifier = "randomForest", perfor
 
                # Generate params for each assay. This could be extended to have different selectionMethods for each type
                  paramsAssays <- mapply(generateModellingParams,
+                                        nFeatures = nFeatures[assayIDs],
+                                        selectionMethod = selectionMethod[assayIDs],
                                         assayIDs = assayIDs,
                                         measurements = assayTrain[assayIDs],
                                         classifier = classifier[assayIDs],
@@ -1049,9 +1074,11 @@ predict.trainedByClassifyR <- function(object, newData, ...)
               newData <- prepareData(newData, useFeatures = allFeatureNames(object))
               # Some classifiers dangerously use positional matching rather than column name matching.
               # newData columns are sorted so that the right column ordering is guaranteed.
-            }
-
+    }
+    
+    predictFunctionUse <- attr(object, "predictFunction")
+    class(object) <- rev(class(object)) # Now want the predict method of the specific model to be picked, so put model class first.
     if (is(object, "listOfModels")) 
-         mapply(function(model, assay) predict(model, assay), object, newData, SIMPLIFY = FALSE)
-    else predict(object, newData) # Object is itself a trained model and it is assumed that a predict method is defined for it.
+         mapply(function(model, assay) predictFunctionUse(model, assay), object, newData, SIMPLIFY = FALSE)
+    else predictFunctionUse(object, newData) # Object is itself a trained model and it is assumed that a predict method is defined for it.
 }
