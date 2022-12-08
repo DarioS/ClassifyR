@@ -13,7 +13,7 @@
 #' a matrix of pre-calculated metrics, for backwards compatibility.
 #' @param classes If \code{results} is a matrix, this is a factor vector of the
 #' same length as the number of columns that \code{results} has.
-#' @param comparison Default: "auto". The aspect of the experimental
+#' @param comparison Default: \code{"auto"}. The aspect of the experimental
 #' design to compare. Can be any characteristic that all results share.
 #' @param metric Default: \code{"auto"}. The name of the
 #' performance measure or "auto". If the results are classification then

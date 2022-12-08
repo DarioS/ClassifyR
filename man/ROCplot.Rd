@@ -30,7 +30,7 @@
 \item{...}{Parameters not used by the \code{ClassifyResult} method but passed to
 the \code{list} method.}
 
-\item{mode}{Default: "merge". Whether to merge all predictions of all
+\item{mode}{Default: \code{"merge"}. Whether to merge all predictions of all
 iterations of cross-validation into one set or keep them separate. Keeping
 them separate will cause separate ROC curves to be computed for each
 iteration and confidence intervals to be drawn with the solid line being the

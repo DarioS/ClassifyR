@@ -45,6 +45,7 @@
     "pairsDifferencesRanking", "Pairs Differences",
     "previousSelection", "Previous Selection", 
     "previousTrained", "Previous Trained",
+    "randomSelection", "Random Selection",
     "randomForestTrainInterface", "Random Forest",
     "SVMtrainInterface", "Support Vector Machine",
     "coxphTrainInterface", "Cox Proportional Hazards",
@@ -67,7 +68,8 @@
     "likelihoodRatio", "Likelihood ratio test (normal distribution).",
     "KS", "Kolmogorov-Smirnov test for differences in distributions.",
     "KL", "Kullback-Leibler divergence between distributions.",
-    "CoxPH", "Cox proportional hazards Wald test per-feature."
+    "CoxPH", "Cox proportional hazards Wald test per-feature.",
+    "randomSelection", "Randomly selects a specified number of features."
     ),
   ncol = 2, byrow = TRUE, dimnames = list(NULL, c("selectionMethod Keyword", "Description"))
 ) |> as.data.frame()

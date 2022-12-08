@@ -16,7 +16,7 @@ ModellingParams(
 )
 }
 \arguments{
-\item{balancing}{Default: "downsample". A character value specifying what kind
+\item{balancing}{Default: \code{"downsample"}. A character value specifying what kind
 of class balancing to do, if any.}
 
 \item{transformParams}{Parameters used for feature transformation inside of C.V.

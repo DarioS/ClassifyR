@@ -5,9 +5,12 @@
 \alias{prepareData,matrix-method}
 \alias{prepareData,DataFrame-method}
 \alias{prepareData,MultiAssayExperiment-method}
+\alias{prepareData,data.frame-method}
 \title{Convert Different Data Classes into DataFrame and Filter Features}
 \usage{
 \S4method{prepareData}{matrix}(measurements, outcome, ...)
+
+\S4method{prepareData}{data.frame}(measurements, outcome, ...)
 
 \S4method{prepareData}{DataFrame}(
   measurements,

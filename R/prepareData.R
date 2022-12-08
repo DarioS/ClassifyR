@@ -49,6 +49,14 @@ setMethod("prepareData", "matrix",
 
 #' @rdname prepareData
 #' @export
+setMethod("prepareData", "data.frame",
+  function(measurements, outcome, ...)
+{
+  prepareData(S4Vectors::DataFrame(measurements, check.names = FALSE), outcome, ...)
+})
+
+#' @rdname prepareData
+#' @export
 setMethod("prepareData", "DataFrame",
   function(measurements, outcome, useFeatures = "all", maxMissingProp = 0.0, topNvariance = NULL)
 {

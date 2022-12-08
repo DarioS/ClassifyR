@@ -815,7 +815,7 @@ setClass("ModellingParams", representation(
 #' @rdname ModellingParams-class
 #' @aliases ModellingParams ModellingParams-class
 #' @docType class
-#' @param balancing Default: "downsample". A character value specifying what kind
+#' @param balancing Default: \code{"downsample"}. A character value specifying what kind
 #' of class balancing to do, if any.
 #' @param transformParams Parameters used for feature transformation inside of C.V.
 #' specified by a \code{\link{TransformParams}} instance. Optional, can be \code{NULL}.
