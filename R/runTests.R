@@ -67,6 +67,7 @@ setMethod("runTests", c("matrix"), function(measurements, outcome, ...) # Matrix
 })
 
 #' @rdname runTests
+#' @import BiocParallel
 #' @export
 setMethod("runTests", "DataFrame", function(measurements, outcome, crossValParams = CrossValParams(), modellingParams = ModellingParams(),
            characteristics = S4Vectors::DataFrame(), ..., verbose = 1)

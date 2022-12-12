@@ -25,12 +25,8 @@
 #' feature selection, \code{"random"} if \code{doRandomFeatures} is \code{TRUE} for metrics of random selection and
 #' \code{"params"} for a list of parameters used during the execution of this function.
 #' @author Harry Robertson
-
-#' @import plyr
-#' @import dplyr
 #'
 #' @export
-#' 
 
 crissCrossValidate <- function(measurements, outcomes, 
                                nFeatures = 20, selectionMethod = "auto",

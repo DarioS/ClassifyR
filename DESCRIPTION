@@ -3,8 +3,8 @@ Type: Package
 Title: A framework for cross-validated classification problems, with
        applications to differential variability and differential
        distribution testing
-Version: 3.3.9
-Date: 2022-12-08
+Version: 3.4.0
+Date: 2022-12-12
 Authors@R:
     c(
     person(given = "Dario", family = "Strbenac", email = "dario.strbenac@sydney.edu.au", role = c("aut", "cre")),
@@ -20,18 +20,17 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 biocViews: Classification, Survival
 Depends: R (>= 4.1.0), generics, methods, S4Vectors, MultiAssayExperiment, BiocParallel, survival
-Imports: grid, genefilter, utils, dplyr, plyr, tidyr, rlang, ranger, ggplot2 (>= 3.0.0), ggpubr, reshape2
+Imports: grid, genefilter, utils, dplyr, tidyr, rlang, ranger, ggplot2 (>= 3.0.0), ggpubr, reshape2
 Suggests: limma, edgeR, car, Rmixmod, gridExtra (>= 2.0.0), cowplot,
         BiocStyle, pamr, PoiClaClu, parathyroidSE, knitr, htmltools, gtable,
         scales, e1071, rmarkdown, IRanges, robustbase, glmnet, class, randomForestSRC,
         MatrixModels, xgboost
-Description: The software formalises a framework for classification in R.
-             There are four stages; Data transformation, feature selection, classifier training,
-             and prediction. The requirements of variable types and names are
+Description: The software formalises a framework for classification and survival model evaluatio
+             in R. There are four stages; Data transformation, feature selection, model training,
+             and prediction. The requirements of variable types and variable order are
              fixed, but specialised variables for functions can also be provided.
-             The classification framework is wrapped in a driver loop, that
-             reproducibly carries out a number of cross-validation schemes.
-             Functions for differential expression, differential variability,
+             The framework is wrapped in a driver loop that reproducibly carries out a
+             number of cross-validation schemes. Functions for differential mean, differential variability,
              and differential distribution are included. Additional functions
              may be developed by the user, by creating an interface to the framework.
 License: GPL-3

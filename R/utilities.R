@@ -130,7 +130,7 @@
       if(tuneCombo != "none") # Add real parameters before function call.
         paramList <- append(paramList, tuneCombo)
       if(attr(featureRanking, "name") == "randomSelection")
-        paramList <- append(paramList, nFeatures = topNfeatures)
+        paramList <- append(paramList, list(nFeatures = topNfeatures))
       do.call(featureRanking, paramList)
     })
 
