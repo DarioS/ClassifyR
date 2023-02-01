@@ -15,8 +15,8 @@ The empty constructor is provided for convenience.
 \section{Constructor}{
 
 \describe{
-\item{}{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
-intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}
+\item{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
+intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}}{
 Creates a \code{TrainParams} object which stores the function which will do the
 classifier building and parameters that the function will use.
 \describe{
@@ -46,9 +46,8 @@ features.}
 
 \section{Summary}{
 
-\code{trainParams} is a \code{TrainParams} object.
 \describe{
-\item{}{
+\item{\code{trainParams} is a \code{TrainParams} object.}{
   \code{show(trainParams)}: Prints a short summary of what \code{trainParams} contains.
 }}
 }

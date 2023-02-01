@@ -176,8 +176,7 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 #' @usage NULL
 #' @section Constructor:
 #' \describe{
-#' \item{}{
-#' \code{TransformParams(transform, characteristics = DataFrame(), intermediate = character(0), ...)} 
+#' \item{\code{TransformParams(transform, characteristics = DataFrame(), intermediate = character(0), ...)}}{ 
 #' Creates a \code{TransformParams} object which stores the function which will do the
 #' transformation and parameters that the function will use.
 #' \describe{
@@ -196,9 +195,9 @@ setClassUnion("TransformParamsOrNULL", c("TransformParams", "NULL"))
 #' } } }
 #' 
 #' @section Summary:
-#' \code{transformParams} is a \code{TransformParams} object.
+
 #' \describe{
-#' \item{}{
+#' \item{\code{transformParams} is a \code{TransformParams} object.}{
 #'     \code{show(transformParams)}: Prints a short summary of what \code{transformParams} contains.
 #'  }}
 #' 
@@ -271,41 +270,31 @@ setClass("FeatureSetCollection", representation(sets = "list"))
 #' @docType class
 #' @usage NULL
 #' @section Constructor:
-#' \describe{\item{}{
-#' \code{FeatureSetCollection(sets)}}
-#' }
+#' 
+#' \describe{
+#' \item{\code{FeatureSetCollection(sets)}}{
 #' \describe{
 #' \item{\code{sets}}{A named list. The names of the list
 #' describe the sets and the elements of the list specify the features which
 #' comprise the sets.}
 #' }
+#' }}
 #' @section Summary:
-#' \code{featureSets} is a \code{FeatureSetCollection} object.
 #' 
 #' \describe{
-#'   \item{}{
-#'     \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.
-#'    }
-#'   \item{}{
+#'   \item{\code{featureSets} is a \code{FeatureSetCollection} object.}{
+#'     \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.\cr
 #'     \code{length(featureSets)}: Prints how many sets of features there are.
-#'    }  
+#'    }
 #' }
 #' @section Subsetting:
 #' The \code{FeatureSetCollection} may be subsetted to a smaller set of elements or a single set
 #' may be extracted as a vector.
-#'  \code{featureSets} is a \code{FeatureSetCollection} object.
 #'  \describe{
-#'  \item{}{
-#'    \code{featureSets[i:j]}:
-#'      Reduces the object to a subset of the feature sets between elements \code{i} and \code{j}
-#'      of the collection.
-#'  }
-#'  \item{}{
-#'    \code{featureSets[[i]]}:
-#'      Extract the feature set identified by \code{i}. \code{i} may be a numeric index
-#'      or the character name of a feature set.
-#'    }    
-#'  }
+#'  \item{\code{featureSets} is a \code{FeatureSetCollection} object.}{
+#'    \code{featureSets[i:j]}: Reduces the object to a subset of the feature sets between elements \code{i} and \code{j} of the collection.\cr
+#'    \code{featureSets[[i]]}: Extract the feature set identified by \code{i}. \code{i} may be a numeric index or the character name of a feature set.
+#'  }}
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -484,36 +473,22 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{}{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),
-#' subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)} Creates a \code{SelectParams}
-#' object which stores the function(s) which will do the selection and parameters that the
-#' function will use.
-#' \describe{\item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}}
-#' for valid keywords.}
-#' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics
-#' of feature selection to be done. First column must be named \code{"charateristic"} and
-#' second column must be named \code{"value"}. If using wrapper functions for feature
-#' selection in this package, the feature selection name will automatically be
-#' generated and therefore it is not necessary to specify it.}
-#' \item{\code{minPresence}}{If a list of functions was provided, how many of
-#' those must a feature have been selected by to be used in classification. 1
-#' is equivalent to a set union and a number the same length as
-#' \code{featureSelection} is equivalent to set intersection.}
-#' \item{\code{intermediate}}{Character vector. Names of any variables created
-#' in prior stages by \code{\link{runTest}} that need to be passed to a feature
-#' selection function.}
-#' \item{\code{subsetToSelections}}{Whether to subset the data table(s), after feature selection has been done.}
-#' \item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of
-#' the list are the names of the parameters and the vectors are the values of the parameters to try. All possible
-#' combinations are generated. Two elements named \code{nFeatures} and \code{performanceType} are mandatory, to
-#' define the performance metric which will be used to select features and how many top-ranked features to try.}
-#' \item{\code{...}}{Other named parameters which will be used by the
-#' selection function. If \code{featureSelection} was a list of functions,
-#' this must be a list of lists, as long as \code{featureSelection}.} } } }
+#' \item
+#'     {\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)}}
+#'     {Creates a \code{SelectParams} object which stores the function(s) which will do the selection and parameters that the function will use.\cr
+#'     \describe{
+#'         \item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}} for valid keywords.}
+#'         \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics of feature selection to be done. First column must be named \code{"charateristic"} and second column must be named \code{"value"}. If using wrapper functions for feature selection in this package, the feature selection name will automatically be generated and therefore it is not necessary to specify it.}
+#'         \item{\code{minPresence}}{If a list of functions was provided, how many of those must a feature have been selected by to be used in classification. 1 is equivalent to a set union and a number the same length as \code{featureSelection} is equivalent to set intersection.}
+#'         \item{\code{intermediate}}{Character vector. Names of any variables created in prior stages by \code{\link{runTest}} that need to be passed to a feature selection function.}
+#'         \item{\code{subsetToSelections}}{Whether to subset the data table(s), after feature selection has been done.}
+#'         \item{\code{tuneParams}}{A list specifying tuning parameters required during feature selection. The names of the list are the names of the parameters and the vectors are the values of the parameters to try. All possible combinations are generated. Two elements named \code{nFeatures} and \code{performanceType} are mandatory, to define the performance metric which will be used to select features and how many top-ranked features to try.}
+#'         \item{\code{...}}{Other named parameters which will be used by the selection function. If \code{featureSelection} was a list of functions, this must be a list of lists, as long as \code{featureSelection}.}}
+#'     }
+#' }
 #' @section Summary:
-#' \code{selectParams} is a \code{SelectParams} object.
 #' \describe{
-#' \item{}{
+#' \item{\code{selectParams} is a \code{SelectParams} object.}{
 #'   \code{show(SelectParams)}: Prints a short summary of what \code{selectParams} contains.
 #' }}
 #' @author Dario Strbenac
@@ -605,8 +580,8 @@ setClass("TrainParams", representation(
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{}{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
-#' intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}
+#' \item{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
+#' intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}}{
 #' Creates a \code{TrainParams} object which stores the function which will do the
 #' classifier building and parameters that the function will use.
 #' \describe{
@@ -633,9 +608,8 @@ setClass("TrainParams", representation(
 #' features.}
 #' \item{\code{...}}{Other named parameters which will be used by the classifier.} } } }
 #' @section Summary:
-#' \code{trainParams} is a \code{TrainParams} object.
 #' \describe{
-#' \item{}{
+#' \item{\code{trainParams} is a \code{TrainParams} object.}{
 #'   \code{show(trainParams)}: Prints a short summary of what \code{trainParams} contains.
 #' }}
 #' @author Dario Strbenac
@@ -719,9 +693,10 @@ setClass("PredictParams", representation(
 #' @aliases PredictParams PredictParams-class PredictParams,missing-method
 #' PredictParams,characterOrFunction-method show,PredictParams-method
 #' @docType class
-#' @section Constructor: \describe{\item{}{
-#' \code{PredictParams(predictor, characteristics = DataFrame(), intermediate =
-#' character(0), ...)} Creates a PredictParams object which stores the function
+#' @section Constructor: 
+#' \describe{
+#' \item{\code{PredictParams(predictor, characteristics = DataFrame(), intermediate = character(0), ...)}}{
+#' Creates a PredictParams object which stores the function
 #' which will do the class prediction, if required, and parameters that the
 #' function will use. If the training function also makes predictions, this
 #' must be set to \code{NULL}.}
@@ -735,9 +710,8 @@ setClass("PredictParams", representation(
 #' passed to the prediction function.}
 #' \item{\code{...}}{Other arguments that \code{predictor} may use.} } }
 #' @section Summary:
-#' \code{predictParams} is a \code{PredictParams} object.
 #' \describe{
-#' \item{}{
+#' \item{\code{predictParams} is a \code{PredictParams} object.}{
 #'   \code{show(predictParams)}: Prints a short summary of what \code{predictParams} contains.
 #' }}
 #' @author Dario Strbenac
@@ -905,9 +879,8 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' }
 #' 
 #' @section Summary:
-#' \code{result} is a \code{ClassifyResult} object.
 #' \describe{
-#' \item{}{
+#' \item{\code{result} is a \code{ClassifyResult} object.}{
 #'     \code{show(result)}: Prints a short summary of what \code{result} contains.
 #' }}
 #' 

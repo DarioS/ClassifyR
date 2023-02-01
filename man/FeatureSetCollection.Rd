@@ -18,27 +18,25 @@ binary interactions (i.e. Two-column matrix of feature identifiers).
 }
 \section{Constructor}{
 
-\describe{\item{}{
-\code{FeatureSetCollection(sets)}}
-}
+
+\describe{
+\item{\code{FeatureSetCollection(sets)}}{
 \describe{
 \item{\code{sets}}{A named list. The names of the list
 describe the sets and the elements of the list specify the features which
 comprise the sets.}
 }
+}}
 }
 
 \section{Summary}{
 
-\code{featureSets} is a \code{FeatureSetCollection} object.
 
 \describe{
-  \item{}{
-    \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.
-   }
-  \item{}{
+  \item{\code{featureSets} is a \code{FeatureSetCollection} object.}{
+    \code{show(featureSets)}: Prints a short summary of what \code{featureSets} contains.\cr
     \code{length(featureSets)}: Prints how many sets of features there are.
-   }  
+   }
 }
 }
 
@@ -46,19 +44,11 @@ comprise the sets.}
 
 The \code{FeatureSetCollection} may be subsetted to a smaller set of elements or a single set
 may be extracted as a vector.
- \code{featureSets} is a \code{FeatureSetCollection} object.
  \describe{
- \item{}{
-   \code{featureSets[i:j]}:
-     Reduces the object to a subset of the feature sets between elements \code{i} and \code{j}
-     of the collection.
- }
- \item{}{
-   \code{featureSets[[i]]}:
-     Extract the feature set identified by \code{i}. \code{i} may be a numeric index
-     or the character name of a feature set.
-   }    
- }
+ \item{\code{featureSets} is a \code{FeatureSetCollection} object.}{
+   \code{featureSets[i:j]}: Reduces the object to a subset of the feature sets between elements \code{i} and \code{j} of the collection.\cr
+   \code{featureSets[[i]]}: Extract the feature set identified by \code{i}. \code{i} may be a numeric index or the character name of a feature set.
+ }}
 }
 
 \examples{

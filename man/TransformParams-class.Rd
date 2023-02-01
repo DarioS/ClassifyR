@@ -14,8 +14,7 @@ Collects and checks necessary parameters required for transformation within CV.
 \section{Constructor}{
 
 \describe{
-\item{}{
-\code{TransformParams(transform, characteristics = DataFrame(), intermediate = character(0), ...)} 
+\item{\code{TransformParams(transform, characteristics = DataFrame(), intermediate = character(0), ...)}}{ 
 Creates a \code{TransformParams} object which stores the function which will do the
 transformation and parameters that the function will use.
 \describe{
@@ -36,9 +35,8 @@ function.}
 
 \section{Summary}{
 
-\code{transformParams} is a \code{TransformParams} object.
 \describe{
-\item{}{
+\item{\code{transformParams} is a \code{TransformParams} object.}{
     \code{show(transformParams)}: Prints a short summary of what \code{transformParams} contains.
  }}
 }

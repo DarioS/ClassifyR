@@ -68,9 +68,8 @@ most popular value of the parameter in cross-validation is used.}
 
 \section{Summary}{
 
-\code{result} is a \code{ClassifyResult} object.
 \describe{
-\item{}{
+\item{\code{result} is a \code{ClassifyResult} object.}{
     \code{show(result)}: Prints a short summary of what \code{result} contains.
 }}
 }

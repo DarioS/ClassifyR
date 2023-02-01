@@ -19,9 +19,10 @@ to the levels of the class vector of the input data set, or a data frame
 which has two columns named class and score.
 }
 \section{Constructor}{
- \describe{\item{}{
-\code{PredictParams(predictor, characteristics = DataFrame(), intermediate =
-character(0), ...)} Creates a PredictParams object which stores the function
+ 
+\describe{
+\item{\code{PredictParams(predictor, characteristics = DataFrame(), intermediate = character(0), ...)}}{
+Creates a PredictParams object which stores the function
 which will do the class prediction, if required, and parameters that the
 function will use. If the training function also makes predictions, this
 must be set to \code{NULL}.}
@@ -38,9 +39,8 @@ passed to the prediction function.}
 
 \section{Summary}{
 
-\code{predictParams} is a \code{PredictParams} object.
 \describe{
-\item{}{
+\item{\code{predictParams} is a \code{PredictParams} object.}{
   \code{show(predictParams)}: Prints a short summary of what \code{predictParams} contains.
 }}
 }
