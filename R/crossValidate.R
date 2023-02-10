@@ -21,7 +21,8 @@
 #' of survival information, time must be in first column and event status in the second.
 #' @param extraParams A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
 #' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
-#' \code{"select"}, \code{"train"}, \code{"predict"}.
+#' \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
+#' the website), specify the list element to be \code{NULL}.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
@@ -622,10 +623,15 @@ generateModellingParams <- function(assayIDs,
         {
           if(is.null(classifierParams$trainParams@otherParams)) classifierParams$trainParams@otherParams <- extraParams[["train"]][paramIndex]
           else classifierParams$trainParams@otherParams[parameterName] <- parameter
-        } else {
+        } else if(length(parameter) > 1) {
           if(is.null(classifierParams$trainParams@tuneParams)) classifierParams$trainParams@tuneParams <- extraParams[["train"]][paramIndex]
           else classifierParams$trainParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
-        }
+        } else { # Remove the parameter
+          inOther <- match(parameterName, names(classifierParams$trainParams@otherParams))
+          inTune <- match(parameterName, names(classifierParams$trainParams@tuneParams))
+          if(!is.na(inOther)) classifierParams$trainParams@otherParams <- classifierParams$trainParams@otherParams[-inOther]
+          if(!is.na(inTune)) classifierParams$trainParams@tuneParams <- classifierParams$trainParams@tuneParams[-inTune]
+        } 
       }
     }
     if(!is.null(extraParams) && "predict" %in% names(extraParams))
@@ -638,10 +644,15 @@ generateModellingParams <- function(assayIDs,
         {
           if(is.null(classifierParams$predictParams@otherParams)) classifierParams$predictParams@otherParams <- extraParams[["predict"]][paramIndex]
           else classifierParams$predictParams@otherParams[parameterName] <- parameter
-        } else {
+        } else if(length(parameter) > 1) {
           if(is.null(classifierParams$predictParams@tuneParams)) classifierParams$predictParams@tuneParams <- extraParams[["predict"]][paramIndex]
           else classifierParams$predictParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
-        }
+        } else { # Remove the parameter
+          inOther <- match(parameterName, names(classifierParams$predictParams@otherParams))
+          inTune <- match(parameterName, names(classifierParams$predictParams@tuneParams))
+          if(!is.na(inOther)) classifierParams$predictParams@otherParams <- classifierParams$predictParams@otherParams[-inOther]
+          if(!is.na(inTune)) classifierParams$predictParams@tuneParams <- classifierParams$predictParams@tuneParams[-inTune]
+        } 
       }
     }    
     
@@ -661,9 +672,14 @@ generateModellingParams <- function(assayIDs,
           {
             if(is.null(classifierParams$selectParams@otherParams)) classifierParams$selectParams@otherParams <- extraParams[["select"]][paramIndex]
             else classifierParams$selectParams@otherParams[parameterName] <- parameter
-          } else {
+          } else if(length(parameter) > 1) {
             if(is.null(classifierParams$selectParams@tuneParams)) classifierParams$selectParams@tuneParams <- extraParams[["select"]][paramIndex]
             else classifierParams$selectParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+          } else { # Remove the parameter
+             inOther <- match(parameterName, names(classifierParams$selectParams@otherParams))
+             inTune <- match(parameterName, names(classifierParams$selectParams@tuneParams))
+             if(!is.na(inOther)) classifierParams$selectParams@otherParams <- classifierParams$selectParams@otherParams[-inOther]
+             if(!is.na(inTune)) classifierParams$selectParams@tuneParams <- classifierParams$selectParams@tuneParams[-inTune]
           }
         }
       }
@@ -890,7 +906,7 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @method train DataFrame
 #' @export
 train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures = 20, classifier = "auto", performanceType = "auto",
-                            multiViewMethod = "none", assayIDs = "all", extraParams = NULL)
+                            multiViewMethod = "none", assayIDs = "all", extraParams = NULL, ...)
                    {
               prepParams <- list(x, outcomeTrain)
               if(!is.null(extraParams) && "prepare" %in% names(extraParams))
@@ -950,9 +966,14 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                         {
                                           if(is.null(classifierParams$trainParams@otherParams)) classifierParams$trainParams@otherParams <- extraParams[["train"]][paramIndex]
                                           else classifierParams$trainParams@otherParams[parameterName] <- parameter
-                                        } else {
+                                        } else if (length(parameter) > 1) {
                                           if(is.null(classifierParams$trainParams@tuneParams)) classifierParams$trainParams@tuneParams <- extraParams[["train"]][paramIndex]
                                           else classifierParams$trainParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+                                        } else { # Remove the parameter
+                                          inOther <- match(parameterName, names(classifierParams$trainParams@otherParams))
+                                          inTune <- match(parameterName, names(classifierParams$trainParams@tuneParams))
+                                          if(!is.na(inOther)) classifierParams$trainParams@otherParams <- classifierParams$trainParams@otherParams[-inOther]
+                                          if(!is.na(inTune)) classifierParams$trainParams@tuneParams <- classifierParams$trainParams@otherParams[-inTune]
                                         }
                                       }
                                     }
@@ -966,10 +987,15 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                         {
                                           if(is.null(classifierParams$predictParams@otherParams)) classifierParams$predictParams@otherParams <- extraParams[["predict"]][paramIndex]
                                           else classifierParams$predictParams@otherParams[parameterName] <- parameter
-                                        } else {
+                                        } else if (length(parameter) > 1) {
                                           if(is.null(classifierParams$predictParams@tuneParams)) classifierParams$predictParams@tuneParams <- extraParams[["predict"]][paramIndex]
                                           else classifierParams$predictParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
-                                        }
+                                        } else { # Remove the parameter
+                                          inOther <- match(parameterName, names(classifierParams$predictParams@otherParams))
+                                          inTune <- match(parameterName, names(classifierParams$predictParams@tuneParams))
+                                          if(!is.na(inOther)) classifierParams$predictParams@otherParams <- classifierParams$predictParams@otherParams[-inOther]
+                                          if(!is.na(inTune)) classifierParams$predictParams@tuneParams <- classifierParams$predictParams@otherParams[-inTune]
+                                        } 
                                       }
                                     }
                                   

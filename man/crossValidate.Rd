@@ -116,7 +116,8 @@ crossValidate(measurements, outcome, ...)
   performanceType = "auto",
   multiViewMethod = "none",
   assayIDs = "all",
-  extraParams = NULL
+  extraParams = NULL,
+  ...
 )
 
 \method{train}{list}(x, outcomeTrain, ...)
@@ -170,7 +171,8 @@ with each element being a vector of assays to combine. Special value \code{"all"
 
 \item{extraParams}{A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
 parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
-\code{"select"}, \code{"train"}, \code{"predict"}.}
+\code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
+the website), specify the list element to be \code{NULL}.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 
