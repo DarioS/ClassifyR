@@ -1,0 +1,23 @@
+---
+title: "Parameter Tuning Presets for crossValidate and Their Customisation"
+author: Dario Strbenac <br>
+        The University of Sydney, Australia.
+output: 
+    BiocStyle::html_document:
+        css: style.css
+        toc: false
+---
+
+When a choice about a model to use is made and specified to `crossValidate`, performance tuning of a range of typical values is automatically made. These values can be changed or removed. Below is a table of models and their default values, which can be changed by specifying the `extraParams` parameter. It is a list with named elements. Each element must be named one of `"select"`, `"train"` or `"predict"` (as well as `"prepare"` for data preparation which is not a parameter tuning operation, so is not discussed here), to identify which modelling the parameter corresponds to.
+
+Model | Keyword | Default Parameters | Other Parameters
+----|:----:|:----:|:----:
+Random Forest | `"randomForest"` | `mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)` and `num.trees = c(10, seq(100, 500, 100)` | See `?ranger::ranger` 
+Random Survival Forest | `"randomSurvivalForest"` | `mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)` and `num.trees = c(10, seq(100, 500, 100)` | See `?randomForestSRC::rfsrc`
+Extreme Gradient Boosting | `"XGB"` | `mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)` and `nrounds = c(5, 10, 15)` | See `?xgboost::xgboost`
+k Nearest Neighbours | `"kNN"` | `k = 1:5` | See `?class::knn`
+Support Vector Machine | `"SVM"` | `kernel = c("linear", "polynomial", "radial", "sigmoid")` and  `cost = 10^(-3:3))` | See `?e1071::svm`
+naive Bayes Kernel | `"naiveBayes"` | `difference = c("unweighted", "weighted")` | `weighting = c("height difference", "crossover distance")` and `minDifference`, a number 0 or higher.
+Mixtures of Normals | `"mixturesNormals"` | `nbCluster = 1:2` | `difference = c("unweighted", "weighted")` and `weighting = c("height difference", "crossover distance")` and `minDifference`, a number 0 or higher.
+
+Note that the last two models are not wrappers but custom implementations in this package. The weighting parameter specifies how the differences between classes are calculated. Either the height difference of a class's fitted density to another class's nearest density is used or the horizontal distance from the measurement value to the nearest position where the density of that class crosses any other class. The distances are only used if `difference` is `weighted`. `minDifference` specifies the minimum distance between densities for a feature to have a vote for a particular class. The default of 0 means that every feature votes for the class which has the highest density at that point, regardless how close the density of any other class is to it.
