@@ -32,7 +32,7 @@ crossValidate(measurements, outcome, ...)
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  ...
+  extraParams = NULL
 )
 
 \S4method{crossValidate}{MultiAssayExperiment}(
@@ -49,7 +49,7 @@ crossValidate(measurements, outcome, ...)
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  ...
+  extraParams = NULL
 )
 
 \S4method{crossValidate}{data.frame}(
@@ -66,7 +66,7 @@ crossValidate(measurements, outcome, ...)
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  ...
+  extraParams = NULL
 )
 
 \S4method{crossValidate}{matrix}(
@@ -83,7 +83,7 @@ crossValidate(measurements, outcome, ...)
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  ...
+  extraParams = NULL
 )
 
 \S4method{crossValidate}{list}(
@@ -100,7 +100,7 @@ crossValidate(measurements, outcome, ...)
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  ...
+  extraParams = NULL
 )
 
 \method{train}{matrix}(x, outcomeTrain, ...)
@@ -116,7 +116,7 @@ crossValidate(measurements, outcome, ...)
   performanceType = "auto",
   multiViewMethod = "none",
   assayIDs = "all",
-  ...
+  extraParams = NULL
 )
 
 \method{train}{list}(x, outcomeTrain, ...)
@@ -127,7 +127,7 @@ crossValidate(measurements, outcome, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
-or a list of these objects containing the data.}
+or a list of the basic tabular objects containing the data.}
 
 \item{outcome}{A vector of class labels of class \code{\link{factor}} of the
 same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
@@ -136,7 +136,7 @@ length 2 or 3 specifying the time and event columns in \code{measurements} for s
 \code{\link{MultiAssayExperiment}}, the column name(s) in \code{colData(measurements)} representing the outcome.  If column names
 of survival information, time must be in first column and event status in the second.}
 
-\item{...}{Parameters passed into \code{\link{prepareData}} which control subsetting and filtering of input data.}
+\item{...}{For \code{train} and \code{predict} functions, parameters not used by the non-DataFrame signature functions but passed into the DataFrame signature function.}
 
 \item{nFeatures}{The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
@@ -144,7 +144,7 @@ a different number of features will be used for each assay. If a named list of v
 Set to NULL or "all" if all features should be used.}
 
 \item{selectionMethod}{Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
-and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
+and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
 and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
@@ -155,7 +155,7 @@ and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is 
 and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, then a random forest is used for a classification
 task or Cox proportional hazards model for a survival task.}
 
-\item{multiViewMethod}{A character vector specifying the multiview method or data integration approach to use.}
+\item{multiViewMethod}{Default: \code{"none"}. A character vector specifying the multiview method or data integration approach to use. See \code{available("multiViewMethod") for possibilities.}}
 
 \item{assayCombinations}{A character vector or list of character vectors proposing the assays or, in the case of a list, combination of assays to use
 with each element being a vector of assays to combine. Special value \code{"all"} means all possible subsets of assays.}
@@ -167,6 +167,10 @@ with each element being a vector of assays to combine. Special value \code{"all"
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
 
 \item{characteristicsLabel}{A character specifying an additional label for the cross-validation run.}
+
+\item{extraParams}{A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
+parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
+\code{"select"}, \code{"train"}, \code{"predict"}.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 
@@ -190,8 +194,10 @@ An object of class \code{\link{ClassifyResult}}
 }
 \description{
 This function has been designed to facilitate the comparison of classification
-methods using cross-validation. A selection of typical comparisons are implemented. The \code{train} function
-is a convenience method for training on one data set and predicting on an independent validation data set.
+methods using cross-validation, particularly when there are multiple assays per biological unit.
+A selection of typical comparisons are implemented. The \code{train} function
+is a convenience method for training on one data set and likewise \code{predict} for predicting on an
+independent validation data set.
 }
 \details{
 \code{classifier} can be any a keyword for any of the implemented approaches as shown by \code{available()}.

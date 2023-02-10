@@ -656,3 +656,26 @@ predict.dlda <- function(object, newdata, ...) { # Remove once sparsediscrim is 
 .dmvnorm_diag <- function(x, mean, sigma) { # Remove once sparsediscrim is reinstated to CRAN.
   exp(sum(dnorm(x, mean=mean, sd=sqrt(sigma), log=TRUE)))
 }
+
+# Function to create permutations of a vector, with the possibility to restrict values at certain positions.
+# fixed parameter is a data frame with first column position and second column value.
+.permutations <- function(data, fixed = NULL)
+{
+  items <- length(data)
+  multipliedTo1 <- factorial(items)
+  if(items > 1) 
+    permutations <- structure(vapply(seq_along(data), function(index)
+                     rbind(data[index], .permutations(data[-index])), 
+                     data[rep(1L, multipliedTo1)]), dim = c(items, multipliedTo1))
+  else permutations <- data
+  
+  if(!is.null(fixed))
+  {
+    for(rowIndex in seq_len(nrow(fixed)))
+    {
+      keepColumns <- permutations[fixed[rowIndex, 1], ] == fixed[rowIndex, 2]
+      permutations <- permutations[, keepColumns]
+    }
+  }
+  permutations
+}
