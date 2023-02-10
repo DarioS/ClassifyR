@@ -1,11 +1,13 @@
 #' Cross-validation to evaluate classification performance.
 #' 
 #' This function has been designed to facilitate the comparison of classification
-#' methods using cross-validation. A selection of typical comparisons are implemented. The \code{train} function
-#' is a convenience method for training on one data set and predicting on an independent validation data set.
+#' methods using cross-validation, particularly when there are multiple assays per biological unit.
+#' A selection of typical comparisons are implemented. The \code{train} function
+#' is a convenience method for training on one data set and likewise \code{predict} for predicting on an
+#' independent validation data set.
 #'
 #' @param measurements Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
-#' or a list of these objects containing the data.
+#' or a list of the basic tabular objects containing the data.
 #' @param x Same as \code{measurements} but only training samples.
 #' @param outcome A vector of class labels of class \code{\link{factor}} of the
 #' same length as the number of samples in \code{measurements} or a character vector of length 1 containing the
@@ -17,13 +19,15 @@
 #' a character string, or vector of such strings, containing column name(s) of column(s)
 #' containing either classes or time and event information about survival. If column names
 #' of survival information, time must be in first column and event status in the second.
-#' @param ... Parameters passed into \code{\link{prepareData}} which control subsetting and filtering of input data.
+#' @param extraParams A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
+#' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
+#' \code{"select"}, \code{"train"}, \code{"predict"}.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 #' Set to NULL or "all" if all features should be used.
 #' @param selectionMethod Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
-#' and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
+#' and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
 #' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.
 #' @param selectionOptimisation A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.
 #' @param performanceType Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Otherwise, any one of the
@@ -31,13 +35,14 @@
 #' @param classifier Default: \code{"auto"}. A character vector of classification methods to compare. If a named character vector with names corresponding to different assays, 
 #' and performing multiview classification, the respective classification methods will be used on each assay. If \code{"auto"}, then a random forest is used for a classification
 #' task or Cox proportional hazards model for a survival task.
-#' @param multiViewMethod A character vector specifying the multiview method or data integration approach to use.
+#' @param multiViewMethod Default: \code{"none"}. A character vector specifying the multiview method or data integration approach to use. See \code{available("multiViewMethod") for possibilities.}
 #' @param assayCombinations A character vector or list of character vectors proposing the assays or, in the case of a list, combination of assays to use
 #' with each element being a vector of assays to combine. Special value \code{"all"} means all possible subsets of assays.
 #' @param nFolds A numeric specifying the number of folds to use for cross-validation.
 #' @param nRepeats A numeric specifying the the number of repeats or permutations to use for cross-validation.
 #' @param nCores A numeric specifying the number of cores used if the user wants to use parallelisation. 
 #' @param characteristicsLabel A character specifying an additional label for the cross-validation run.
+#' @param ... For \code{train} and \code{predict} functions, parameters not used by the non-DataFrame signature functions but passed into the DataFrame signature function.
 #' @param object A trained model to predict with.
 #' @param newData The data to use to make predictions with.
 #'
@@ -100,11 +105,14 @@ setMethod("crossValidate", "DataFrame",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, ...)
+                   characteristicsLabel = NULL, extraParams = NULL)
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              measurementsAndOutcome <- prepareData(measurements, outcome, ...)
+              prepParams <- list(measurements, outcome)
+              if("prepare" %in% names(extraParams))
+                prepParams <- c(prepParams, extraParams[["prepare"]])
+              measurementsAndOutcome <- do.call(prepareData, prepParams)
               measurements <- measurementsAndOutcome[["measurements"]]
               outcome <- measurementsAndOutcome[["outcome"]]
               
@@ -177,7 +185,8 @@ setMethod("crossValidate", "DataFrame",
                                       nFolds = nFolds,
                                       nRepeats = nRepeats,
                                       nCores = nCores,
-                                      characteristicsLabel = characteristicsLabel
+                                      characteristicsLabel = characteristicsLabel,
+                                      extraParams = extraParams
                                   )
                               },
                               simplify = FALSE)
@@ -213,7 +222,8 @@ setMethod("crossValidate", "DataFrame",
                          nFolds = nFolds,
                          nRepeats = nRepeats,
                          nCores = nCores,
-                         characteristicsLabel = characteristicsLabel)
+                         characteristicsLabel = characteristicsLabel,
+                         extraParams = extraParams)
                   }, simplify = FALSE)
 
               }
@@ -246,7 +256,8 @@ setMethod("crossValidate", "DataFrame",
                          nFolds = nFolds,
                          nRepeats = nRepeats,
                          nCores = nCores,
-                         characteristicsLabel = characteristicsLabel)
+                         characteristicsLabel = characteristicsLabel,
+                         extraParams = extraParams)
                   }, simplify = FALSE)
 
               }
@@ -280,7 +291,8 @@ setMethod("crossValidate", "DataFrame",
                          nFolds = nFolds,
                          nRepeats = nRepeats,
                          nCores = nCores,
-                         characteristicsLabel = characteristicsLabel)
+                         characteristicsLabel = characteristicsLabel,
+                         extraParams = extraParams)
                   }, simplify = FALSE)
 
               }
@@ -306,9 +318,13 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, ...)
+                   characteristicsLabel = NULL, extraParams = NULL)
           {
-              measurementsAndOutcome <- prepareData(measurements, outcome, ...)
+              # Check that data is in the right format, if not already done for MultiAssayExperiment input.
+              prepParams <- list(measurements, outcome)
+              if("prepare" %in% names(extraParams))
+                prepParams <- c(prepParams, extraParams[["prepare"]])
+              measurementsAndOutcome <- do.call(prepareData, prepParams)
 
               crossValidate(measurements = measurementsAndOutcome[["measurements"]],
                             outcome = measurementsAndOutcome[["outcome"]], 
@@ -322,7 +338,8 @@ setMethod("crossValidate", "MultiAssayExperiment",
                             nFolds = nFolds,
                             nRepeats = nRepeats,
                             nCores = nCores,
-                            characteristicsLabel = characteristicsLabel)
+                            characteristicsLabel = characteristicsLabel,
+                            extraParams = extraParams)
           })
 
 #' @rdname crossValidate
@@ -340,7 +357,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, ...)
+                   characteristicsLabel = NULL, extraParams = NULL)
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
               crossValidate(measurements = measurements,
@@ -355,7 +372,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                             nFolds = nFolds,
                             nRepeats = nRepeats,
                             nCores = nCores,
-                            characteristicsLabel = characteristicsLabel, ...) # ... for prepareData.
+                            characteristicsLabel = characteristicsLabel, extraParams = extraParams)
           })
 
 #' @rdname crossValidate
@@ -373,7 +390,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, ...)
+                   characteristicsLabel = NULL, extraParams = NULL)
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
               crossValidate(measurements = measurements,
@@ -388,7 +405,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
                             nFolds = nFolds,
                             nRepeats = nRepeats,
                             nCores = nCores,
-                            characteristicsLabel = characteristicsLabel, ...) # ... for prepareData.
+                            characteristicsLabel = characteristicsLabel, extraParams = extraParams)
           })
 
 # This expects that each table is about the same set of samples and thus
@@ -408,7 +425,7 @@ setMethod("crossValidate", "list",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, ...)
+                   characteristicsLabel = NULL, extraParams = NULL)
           {
               # Check data type is valid
               if (!(all(sapply(measurements, class) %in% c("data.frame", "DataFrame", "matrix")))) {
@@ -456,7 +473,7 @@ setMethod("crossValidate", "list",
                             nFolds = nFolds,
                             nRepeats = nRepeats,
                             nCores = nCores,
-                            characteristicsLabel = characteristicsLabel, ...)
+                            characteristicsLabel = characteristicsLabel, extraParams = extraParams)
           })
 
 
@@ -544,6 +561,8 @@ generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisati
     CrossValParams(permutations = nRepeats, folds = nFolds, parallelParams = BPparam, tuneMode = tuneMode)
 }
 
+
+# Returns a 
 generateModellingParams <- function(assayIDs,
                                     measurements,
                                     nFeatures,
@@ -551,7 +570,8 @@ generateModellingParams <- function(assayIDs,
                                     selectionOptimisation,
                                     performanceType = "auto",
                                     classifier,
-                                    multiViewMethod = "none"
+                                    multiViewMethod = "none",
+                                    extraParams
 ){
     if(multiViewMethod != "none") {
         params <- generateMultiviewParams(assayIDs,
@@ -559,13 +579,11 @@ generateModellingParams <- function(assayIDs,
                                           nFeatures,
                                           selectionMethod,
                                           selectionOptimisation,
-                                          performanceType = performanceType,
+                                          performanceType,
                                           classifier,
-                                          multiViewMethod)
+                                          multiViewMethod, extraParams)
         return(params)
     }
-
-
 
 
     if(length(assayIDs) > 1) obsFeatures <- sum(S4Vectors::mcols(measurements)[, "assay"] %in% assayIDs)
@@ -576,8 +594,7 @@ generateModellingParams <- function(assayIDs,
 
     if(max(nFeatures) > obsFeatures) {
 
-        warning("nFeatures greater than the max number of features in data.
-                                                 Setting to max")
+        warning("nFeatures greater than the max number of features in data. Setting to max")
         nFeatures <- pmin(nFeatures, obsFeatures)
     }
 
@@ -585,21 +602,72 @@ generateModellingParams <- function(assayIDs,
     
     # Check classifier
     knownClassifiers <- .ClassifyRenvir[["classifyKeywords"]][, "classifier Keyword"]
-    if(!classifier %in% knownClassifiers)
-        stop(paste("Classifier must exactly match of these (be careful of case):", paste(knownClassifiers, collapse = ", ")))
-
+    if(any(!classifier %in% knownClassifiers))
+        stop(paste("classifier must exactly match these options (be careful of case):", paste(knownClassifiers, collapse = ", ")))
+    
+    # Always return a list for ease of processing. Unbox at end if just one.
     classifierParams <- .classifierKeywordToParams(classifier)
+
+    # Modify the parameters with performanceType addition and any other to overwrite.
     if(!is.null(classifierParams$trainParams@tuneParams))
       classifierParams$trainParams@tuneParams <- c(classifierParams$trainParams@tuneParams, performanceType = performanceType)
 
+    if(!is.null(extraParams) && "train" %in% names(extraParams))
+    {
+      for(paramIndex in seq_along(extraParams[["train"]]))
+      {
+        parameter <- extraParams[["train"]][[paramIndex]]
+        parameterName <- names(extraParams[["train"]])[paramIndex]
+        if(length(parameter) == 1)
+        {
+          if(is.null(classifierParams$trainParams@otherParams)) classifierParams$trainParams@otherParams <- extraParams[["train"]][paramIndex]
+          else classifierParams$trainParams@otherParams[parameterName] <- parameter
+        } else {
+          if(is.null(classifierParams$trainParams@tuneParams)) classifierParams$trainParams@tuneParams <- extraParams[["train"]][paramIndex]
+          else classifierParams$trainParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+        }
+      }
+    }
+    if(!is.null(extraParams) && "predict" %in% names(extraParams))
+    {
+      for(paramIndex in seq_along(extraParams[["predict"]]))
+      {
+        parameter <- extraParams[["predict"]][[paramIndex]]
+        parameterName <- names(extraParams[["predict"]])[paramIndex]
+        if(length(parameter) == 1)
+        {
+          if(is.null(classifierParams$predictParams@otherParams)) classifierParams$predictParams@otherParams <- extraParams[["predict"]][paramIndex]
+          else classifierParams$predictParams@otherParams[parameterName] <- parameter
+        } else {
+          if(is.null(classifierParams$predictParams@tuneParams)) classifierParams$predictParams@tuneParams <- extraParams[["predict"]][paramIndex]
+          else classifierParams$predictParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+        }
+      }
+    }    
+    
     selectionMethod <- unlist(selectionMethod)
-
-    selectionMethod <- ifelse(is.null(selectionMethod), "none", selectionMethod)
+    if(is.null(selectionMethod)) selectionMethod <- "none"
 
     if(selectionMethod != "none")
-        selectParams <- SelectParams(selectionMethod,
-                        tuneParams = list(nFeatures = nFeatures, performanceType = performanceType))
-    else selectParams <- NULL
+    {
+      selectParams <- SelectParams(selectionMethod, tuneParams = list(nFeatures = nFeatures, performanceType = performanceType))
+      if(!is.null(extraParams) && "select" %in% names(extraParams))
+      {
+        for(paramIndex in seq_along(extraParams[["select"]]))
+        {
+          parameter <- extraParams[["select"]][[paramIndex]]
+          parameterName <- names(extraParams[["select"]])[paramIndex]
+          if(length(parameter) == 1)
+          {
+            if(is.null(classifierParams$selectParams@otherParams)) classifierParams$selectParams@otherParams <- extraParams[["select"]][paramIndex]
+            else classifierParams$selectParams@otherParams[parameterName] <- parameter
+          } else {
+            if(is.null(classifierParams$selectParams@tuneParams)) classifierParams$selectParams@tuneParams <- extraParams[["select"]][paramIndex]
+            else classifierParams$selectParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+          }
+        }
+      }
+    } else {selectParams <- NULL}
 
     params <- ModellingParams(
         balancing = "none",
@@ -617,7 +685,6 @@ generateModellingParams <- function(assayIDs,
     # }
     #
 
-
     params
 
 }
@@ -632,7 +699,7 @@ generateMultiviewParams <- function(assayIDs,
                                     selectionOptimisation,
                                     performanceType,
                                     classifier,
-                                    multiViewMethod){
+                                    multiViewMethod, extraParams){
 
     if(multiViewMethod == "merge"){
 
@@ -651,18 +718,21 @@ generateMultiviewParams <- function(assayIDs,
                                      selectionOptimisation = selectionOptimisation,
                                      performanceType = performanceType,
                                      classifier = classifier,
-                                     multiViewMethod = "none"),
+                                     multiViewMethod = "none",
+                                     extraParams = extraParams),
                                  SIMPLIFY = FALSE)
 
-        # Generate some params for merged model.
+        # Generate some params for merged model. Which ones?
+        # Reconsider how to do this well later. 
         params <- generateModellingParams(assayIDs = assayIDs,
                                           measurements = measurements,
                                           nFeatures = nFeatures,
-                                          selectionMethod = selectionMethod,
+                                          selectionMethod = selectionMethod[[1]],
                                           selectionOptimisation = "none",
                                           performanceType = performanceType,
-                                          classifier = classifier,
-                                          multiViewMethod = "none")
+                                          classifier = classifier[[1]],
+                                          multiViewMethod = "none",
+                                          extraParams = extraParams)
 
         # Update selectParams to use
         params@selectParams <- SelectParams("selectMulti",
@@ -690,7 +760,8 @@ generateMultiviewParams <- function(assayIDs,
                                  MoreArgs = list(
                                      selectionOptimisation = selectionOptimisation,
                                      performanceType = performanceType,
-                                     multiViewMethod = "none"),
+                                     multiViewMethod = "none",
+                                     extraParams = extraParams),
                                  SIMPLIFY = FALSE)
 
 
@@ -703,36 +774,6 @@ generateMultiviewParams <- function(assayIDs,
 
         return(params)
     }
-
-    if(multiViewMethod == "prevalidation"){
-
-        # Split measurements up by assay.
-        assayTrain <- sapply(assayIDs, function(assayID) measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayID], simplify = FALSE)
-
-        # Generate params for each assay. This could be extended to have different selectionMethods for each type
-        paramsAssays <- mapply(generateModellingParams,
-                                 nFeatures = nFeatures[assayIDs],
-                                 selectionMethod = selectionMethod[assayIDs],
-                                 assayIDs = assayIDs,
-                                 measurements = assayTrain[assayIDs],
-                                 classifier = classifier[assayIDs],
-                                 MoreArgs = list(
-                                     selectionOptimisation = selectionOptimisation,
-                                     performanceType = performanceType,
-                                     multiViewMethod = "none"),
-                                 SIMPLIFY = FALSE)
-
-
-        params <- ModellingParams(
-            balancing = "none",
-            selectParams = NULL,
-            trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
-            predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics)
-        )
-
-        return(params)
-    }
-
 
     if(multiViewMethod == "PCA"){
 
@@ -748,7 +789,8 @@ generateMultiviewParams <- function(assayIDs,
                                  classifier = classifier["clinical"],
                                  selectionOptimisation = selectionOptimisation,
                                  performanceType = performanceType,
-                                 multiViewMethod = "none"))
+                                 multiViewMethod = "none",
+                                 extraParams = extraParams))
 
 
         params <- ModellingParams(
@@ -775,7 +817,7 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
                nFolds,
                nRepeats,
                nCores,
-               characteristicsLabel)
+               characteristicsLabel, extraParams)
 
 {
     # Which data-types or data-views are present?
@@ -797,7 +839,7 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
                                                selectionOptimisation = selectionOptimisation,
                                                performanceType = performanceType,
                                                classifier = classifier,
-                                               multiViewMethod = multiViewMethod)
+                                               multiViewMethod = multiViewMethod, extraParams = extraParams)
     
     if(length(assayIDs) > 1 || length(assayIDs) == 1 && assayIDs != 1) assayText <- assayIDs else assayText <- NULL
     characteristics <- S4Vectors::DataFrame(characteristic = c(if(!is.null(assayText)) "Assay Name" else NULL, "Classifier Name", "Selection Name", "multiViewMethod", "characteristicsLabel"), value = c(if(!is.null(assayText)) paste(assayText, collapse = ", ") else NULL, paste(classifier, collapse = ", "),  paste(selectionMethod, collapse = ", "), multiViewMethod, characteristicsLabel))
@@ -848,16 +890,12 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @method train DataFrame
 #' @export
 train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures = 20, classifier = "auto", performanceType = "auto",
-                            multiViewMethod = "none", assayIDs = "all", ...) # ... for prepareData.
+                            multiViewMethod = "none", assayIDs = "all", extraParams = NULL)
                    {
-              prepArgs <- list(x, outcomeTrain)
-              extraInputs <- list(...)
-              prepExtras <- numeric()
-              if(length(extraInputs) > 0)
-                prepExtras <- which(names(extraInputs) %in% .ClassifyRenvir[["prepareDataFormals"]])
-              if(length(prepExtras) > 0)
-                prepArgs <- append(prepArgs, extraInputs[prepExtras])
-              measurementsAndOutcome <- do.call(prepareData, prepArgs)
+              prepParams <- list(x, outcomeTrain)
+              if(!is.null(extraParams) && "prepare" %in% names(extraParams))
+                prepParams <- c(prepParams, extraParams[["prepare"]])
+              measurementsAndOutcome <- do.call(prepareData, prepParams)
               
               # Ensure performance type is one of the ones that can be calculated by the package.
               if(!performanceType %in% c("auto", .ClassifyRenvir[["performanceTypes"]]))
@@ -895,13 +933,46 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   
                                   modellingParams <- generateModellingParams(assayIDs = assayIDs, measurements = measurements, nFeatures = nFeatures,
                                                      selectionMethod = selectionMethod, selectionOptimisation = "Resubstitution", performanceType = performanceType,
-                                                     classifier = classifier, multiViewMethod = "none")
+                                                     classifier = classifier, multiViewMethod = "none", extraParams = extraParams)
                                   topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = 0)
                                   selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
                                   tuneDetailsSelect <- topFeatures[[3]]
                                   measurementsUse <- measurementsUse[, selectedFeaturesIndices]
 
                                   classifierParams <- .classifierKeywordToParams(classifierForAssay)
+                                  if(!is.null(extraParams) && "train" %in% names(extraParams))
+                                  {
+                                     for(paramIndex in seq_along(extraParams[["train"]]))
+                                     {
+                                        parameter <- extraParams[["train"]][[paramIndex]]
+                                        parameterName <- names(extraParams[["train"]])[paramIndex]
+                                        if(length(parameter) == 1)
+                                        {
+                                          if(is.null(classifierParams$trainParams@otherParams)) classifierParams$trainParams@otherParams <- extraParams[["train"]][paramIndex]
+                                          else classifierParams$trainParams@otherParams[parameterName] <- parameter
+                                        } else {
+                                          if(is.null(classifierParams$trainParams@tuneParams)) classifierParams$trainParams@tuneParams <- extraParams[["train"]][paramIndex]
+                                          else classifierParams$trainParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+                                        }
+                                      }
+                                    }
+                                  if(!is.null(extraParams) && "predict" %in% names(extraParams))
+                                  {
+                                      for(paramIndex in seq_along(extraParams[["predict"]]))
+                                      {
+                                        parameter <- extraParams[["predict"]][[paramIndex]]
+                                        parameterName <- names(extraParams[["predict"]])[paramIndex]
+                                        if(length(parameter) == 1)
+                                        {
+                                          if(is.null(classifierParams$predictParams@otherParams)) classifierParams$predictParams@otherParams <- extraParams[["predict"]][paramIndex]
+                                          else classifierParams$predictParams@otherParams[parameterName] <- parameter
+                                        } else {
+                                          if(is.null(classifierParams$predictParams@tuneParams)) classifierParams$predictParams@tuneParams <- extraParams[["predict"]][paramIndex]
+                                          else classifierParams$predictParams@tuneParams[parameterName] <- parameter # Multiple values, so tune them.
+                                        }
+                                      }
+                                    }
+                                  
                                   modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                                                      trainParams = classifierParams$trainParams, predictParams = classifierParams$predictParams)
                                   if(!is.null(tuneDetailsSelect))
@@ -1079,6 +1150,6 @@ predict.trainedByClassifyR <- function(object, newData, ...)
     predictFunctionUse <- attr(object, "predictFunction")
     class(object) <- rev(class(object)) # Now want the predict method of the specific model to be picked, so put model class first.
     if (is(object, "listOfModels")) 
-         mapply(function(model, assay) predictFunctionUse(model, assay), object, newData, SIMPLIFY = FALSE)
-    else predictFunctionUse(object, newData) # Object is itself a trained model and it is assumed that a predict method is defined for it.
+         mapply(function(model, assay) predictFunctionUse(model, assay), object, newData, MoreArgs = list(...), SIMPLIFY = FALSE)
+    else do.call(predictFunctionUse, list(object, newData, ...)) # Object is itself a trained model and it is assumed that a predict method is defined for it.
 }
