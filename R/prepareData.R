@@ -180,10 +180,10 @@ setMethod("prepareData", "MultiAssayExperiment",
   if(is.null(clinicalPredictors))
     stop("'clinicalPredictors' must be a vector of informative clinical features (i.e. not sample IDs, sampling dates, etc.) to consider for classification.")      
 
-  if(any(anyReplicated(measurements[, , omicsTargets])))
+  if(any(anyReplicated(measurements)))
     stop("Data set contains replicates. Please remove or average replicate observations and try again.")
  
-  if(is.null(outcomeColums))
+  if(is.null(outcomeColumns))
     stop("'outcomeColumns' is a mandatory parameter but was not specified.")
       
   if(!all(outcomeColumns %in% colnames(MultiAssayExperiment::colData(measurements))))
@@ -195,6 +195,7 @@ setMethod("prepareData", "MultiAssayExperiment",
   dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(clinicalPredictors, outcomeColumns))
   rownames(dataTable) <- dataTable[, "primary"]
   S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
+  dataTable <- dataTable[, -match("primary", colnames(dataTable))]
   colnames(S4Vectors::mcols(dataTable))[1] <- "assay"
             
   # Sample information variable names not included in column metadata of wide table but only as row names of it.

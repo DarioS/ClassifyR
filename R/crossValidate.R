@@ -32,7 +32,7 @@
 #' Set to NULL or "all" if all features should be used.
 #' @param selectionMethod Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 #' and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
-#' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{NULL} is also a valid value, meaning that no
+#' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{"none"} is also a valid value, meaning that no
 #' indepedent feature selection will be performed (but implicit selection might still happen with the classifier).
 #' @param selectionOptimisation A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.
 #' @param performanceType Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Otherwise, any one of the
@@ -114,7 +114,7 @@ setMethod("crossValidate", "DataFrame",
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              if(!"assay" %in% S4Vectors::mcols(measurements)) # Assay is put there by prepareData for MultiAssayExperiment, skip if present. 
+              if(!"assay" %in% colnames(S4Vectors::mcols(measurements))) # Assay is put there by prepareData for MultiAssayExperiment, skip if present. 
               {
                 prepParams <- list(measurements, outcome, clinicalPredictors)
                 if("prepare" %in% names(extraParams))
@@ -594,7 +594,6 @@ generateModellingParams <- function(assayIDs,
     }    
     
     selectionMethod <- unlist(selectionMethod)
-    if(is.null(selectionMethod)) selectionMethod <- "none"
 
     if(selectionMethod != "none")
     {

@@ -129,7 +129,7 @@ Set to NULL or "all" if all features should be used.}
 
 \item{selectionMethod}{Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
-and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{NULL} is also a valid value, meaning that no
+and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{"none"} is also a valid value, meaning that no
 indepedent feature selection will be performed (but implicit selection might still happen with the classifier).}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
