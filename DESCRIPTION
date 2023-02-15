@@ -72,6 +72,7 @@ Collate:
     'interfaceXGB.R'
     'performancePlot.R'
     'plotFeatureClasses.R'
+    'precisionPathway.R'
     'prepareData.R'
     'previousSelection.R'
     'previousTrained.R'

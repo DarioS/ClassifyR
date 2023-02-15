@@ -22,14 +22,18 @@
 #' @param extraParams A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
 #' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 #' \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
-#' the website), specify the list element to be \code{NULL}.
+#' the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.
+#' @param clinicalPredictors If \code{measurements} is a \code{MultiAssayExperiment},
+#' a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
+#' sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
 #' Set to NULL or "all" if all features should be used.
 #' @param selectionMethod Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 #' and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
-#' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.
+#' and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{NULL} is also a valid value, meaning that no
+#' indepedent feature selection will be performed (but implicit selection might still happen with the classifier).
 #' @param selectionOptimisation A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.
 #' @param performanceType Default: \code{"auto"}. If \code{"auto"}, then balanced accuracy for classification or C-index for survival. Otherwise, any one of the
 #' options described in \code{\link{calcPerformance}} may otherwise be specified.
@@ -93,7 +97,7 @@ setGeneric("crossValidate", function(measurements, outcome, ...)
 
 #' @rdname crossValidate
 #' @export
-setMethod("crossValidate", "DataFrame", 
+setMethod("crossValidate", "DataFrame",
           function(measurements,
                    outcome,
                    nFeatures = 20,
@@ -110,12 +114,15 @@ setMethod("crossValidate", "DataFrame",
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              prepParams <- list(measurements, outcome)
-              if("prepare" %in% names(extraParams))
-                prepParams <- c(prepParams, extraParams[["prepare"]])
-              measurementsAndOutcome <- do.call(prepareData, prepParams)
-              measurements <- measurementsAndOutcome[["measurements"]]
-              outcome <- measurementsAndOutcome[["outcome"]]
+              if(!"assay" %in% S4Vectors::mcols(measurements)) # Assay is put there by prepareData for MultiAssayExperiment, skip if present. 
+              {
+                prepParams <- list(measurements, outcome, clinicalPredictors)
+                if("prepare" %in% names(extraParams))
+                  prepParams <- c(prepParams, extraParams[["prepare"]])
+                measurementsAndOutcome <- do.call(prepareData, prepParams)
+                measurements <- measurementsAndOutcome[["measurements"]]
+                outcome <- measurementsAndOutcome[["outcome"]]
+              }
               
               # Ensure performance type is one of the ones that can be calculated by the package.
               if(!performanceType %in% c("auto", .ClassifyRenvir[["performanceTypes"]]))
@@ -305,9 +312,10 @@ setMethod("crossValidate", "DataFrame",
 #' @rdname crossValidate
 #' @export
 # One or more omics data sets, possibly with clinical data.
-setMethod("crossValidate", "MultiAssayExperiment",
+setMethod("crossValidate", "MultiAssayExperimentOrList",
           function(measurements,
-                   outcome, 
+                   outcome,
+                   clinicalPredictors = NULL,
                    nFeatures = 20,
                    selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
@@ -321,7 +329,7 @@ setMethod("crossValidate", "MultiAssayExperiment",
                    characteristicsLabel = NULL, extraParams = NULL)
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              prepParams <- list(measurements, outcome)
+              prepParams <- list(measurements, outcome, clinicalPredictors)
               if("prepare" %in% names(extraParams))
                 prepParams <- c(prepParams, extraParams[["prepare"]])
               measurementsAndOutcome <- do.call(prepareData, prepParams)
@@ -407,76 +415,6 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
                             nCores = nCores,
                             characteristicsLabel = characteristicsLabel, extraParams = extraParams)
           })
-
-# This expects that each table is about the same set of samples and thus
-# has the same number of rows as every other table.
-#' @rdname crossValidate                                                            
-#' @export
-setMethod("crossValidate", "list",
-          function(measurements,
-                   outcome, 
-                   nFeatures = 20,
-                   selectionMethod = "auto",
-                   selectionOptimisation = "Resubstitution",
-                   performanceType = "auto",
-                   classifier = "auto",
-                   multiViewMethod = "none",
-                   assayCombinations = "all",
-                   nFolds = 5,
-                   nRepeats = 20,
-                   nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
-          {
-              # Check data type is valid
-              if (!(all(sapply(measurements, class) %in% c("data.frame", "DataFrame", "matrix")))) {
-                  stop("assays must be of type data.frame, DataFrame or matrix")
-              }
-              
-              # Check the list is named
-              if (is.null(names(measurements))) {
-                  stop("Measurements must be a named list.")
-              }
-              
-              # Check same number of samples for all datasets
-              if (!length(unique(sapply(measurements, nrow))) == 1) {
-                  stop("All datasets must have the same samples.")
-              }
-              
-              # Check the number of outcome is the same
-              if (!all(sapply(measurements, nrow) == length(outcome)) && !is.character(outcome)) {
-                  stop("outcome must have same number of samples as measurements.")
-              }
-              
-              df_list <- sapply(measurements, S4Vectors::DataFrame, check.names = FALSE)
-              
-              df_list <- mapply(function(meas, nam){
-                  S4Vectors::mcols(meas)$assay <- nam
-                  S4Vectors::mcols(meas)$feature <- colnames(meas)
-                  meas
-              }, df_list, names(df_list))
-              
-              
-              combined_df <- do.call("cbind", df_list) 
-              colnames(combined_df) <- S4Vectors::mcols(combined_df)$feature
-
-
-              
-              crossValidate(measurements = combined_df,
-                            outcome = outcome, 
-                            nFeatures = nFeatures,
-                            selectionMethod = selectionMethod,
-                            selectionOptimisation = selectionOptimisation,
-                            performanceType = performanceType,
-                            classifier = classifier,
-                            multiViewMethod = multiViewMethod,
-                            assayCombinations = assayCombinations,
-                            nFolds = nFolds,
-                            nRepeats = nRepeats,
-                            nCores = nCores,
-                            characteristicsLabel = characteristicsLabel, extraParams = extraParams)
-          })
-
-
 
 ######################################
 ######################################
@@ -1126,9 +1064,9 @@ train.list <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @method train MultiAssayExperiment
 #' @export
-train.MultiAssayExperiment <- function(x, outcome, ...)
+train.MultiAssayExperiment <- function(x, outcome, clinicalPredictors = NULL, ...)
           {
-              prepArgs <- list(x, outcome)
+              prepArgs <- list(x, outcome, clinicalPredictors)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
@@ -1167,7 +1105,7 @@ predict.trainedByClassifyR <- function(object, newData, ...)
     newData <- do.call(cbind, newData)
     } else if(is(newData, "MultiAssayExperiment"))
             {
-              newData <- prepareData(newData, useFeatures = allFeatureNames(object))
+              newData <- prepareData(newData, clinicalPredictors = subset(allFeatureNames(object), assay == "clinical")[, "feature"])
               # Some classifiers dangerously use positional matching rather than column name matching.
               # newData columns are sorted so that the right column ordering is guaranteed.
     }
