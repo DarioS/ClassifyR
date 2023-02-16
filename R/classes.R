@@ -35,6 +35,9 @@ setClassUnion("DataFrameOrNULL", c("DataFrame", "NULL"))
 setClassUnion("tabular", c("data.frame", "DataFrame", "matrix"))
 setClassUnion("tabularOrList", c("tabular", "list"))
 
+# List-like assay data
+setClassUnion("MultiAssayExperimentOrList", c("MultiAssayExperiment", "list"))
+
 ################################################################################
 #
 # Params

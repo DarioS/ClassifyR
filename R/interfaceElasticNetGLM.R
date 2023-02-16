@@ -6,20 +6,26 @@ elasticNetGLMtrainInterface <- function(measurementsTrain, classesTrain, lambda 
     stop("The package 'glmnet' could not be found. Please install it.")
   if(verbose == 3)
     message("Fitting elastic net regularised GLM classifier to data.")
-    
-  measurementsMatrix <- glmnet::makeX(as(measurementsTrain, "data.frame"))
 
-  fitted <- glmnet::glmnet(measurementsMatrix, classesTrain, family = "multinomial", ...)
-
+  # One-hot encoding needed.    
+  measurementsTrain <- MatrixModels::model.Matrix(~ 0 + ., data = measurementsTrain)
+  fitted <- glmnet::glmnet(measurementsTrain, classesTrain, family = "multinomial", weights = as.numeric(1 / (table(classesTrain)[classesTrain] / length(classesTrain))), ...)
+  # Inverse class size weighting needed to give decent predictions when class imbalance.
+  
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
-  { # Pick one lambda based on resubstitution performance.
-    bestLambda <- fitted[["lambda"]][which.min(sapply(fitted[["lambda"]], function(lambda) # Largest Lambda with minimum balanced error rate.
+  { # Pick one lambda based on resubstitution performance. But not the one that makes all variables excluded from model.
+    lambdaConsider <- colSums(as.matrix(fitted[["beta"]][[1]])) != 0
+    bestLambda <- fitted[["lambda"]][lambdaConsider][which.min(sapply(fitted[["lambda"]][lambdaConsider], function(lambda) # Largest Lambda with minimum balanced error rate.
     {
-      classPredictions <- factor(as.character(predict(fitted, measurementsMatrix, s = lambda, type = "class")), levels = fitted[["classnames"]])
+      classPredictions <- factor(as.character(predict(fitted, measurementsTrain, s = lambda, type = "class")), levels = fitted[["classnames"]])
       calcExternalPerformance(classesTrain, classPredictions, "Balanced Error")
     }))[1]]
     attr(fitted, "tune") <- list(lambda = bestLambda)
   }
+  
+  attr(fitted, "featureNames") <- colnames(measurementsTrain)
+  attr(fitted, "featureGroups") <- measurementsTrain@assign
+  
   fitted
 }
 attr(elasticNetGLMtrainInterface, "name") <- "elasticNetGLMtrainInterface"
@@ -28,6 +34,8 @@ attr(elasticNetGLMtrainInterface, "name") <- "elasticNetGLMtrainInterface"
 elasticNetGLMpredictInterface <- function(model, measurementsTest, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   returnType <- match.arg(returnType)
+  # One-hot encoding needed.    
+  measurementsTest <- MatrixModels::model.Matrix(~ 0 + ., data = measurementsTest)
   
   # Ensure that testing data has same columns names in same order as training data.
   # Remove those annoying backquotes which glmnet adds if variables have spaces in names.
@@ -41,11 +49,11 @@ elasticNetGLMpredictInterface <- function(model, measurementsTest, lambda, ..., 
   if(missing(lambda)) # Tuning parameters are not passed to prediction functions.
     lambda <- attr(model, "tune")[["lambda"]] # Sneak it in as an attribute on the model.
 
-  testMatrix <- glmnet::makeX(as(measurementsTest, "data.frame"))
-  testMatrix <- testMatrix[, rownames(model[["beta"]][[1]])]
   
-  classPredictions <- factor(as.character(predict(model, testMatrix, s = lambda, type = "class")), levels = model[["classnames"]])
-  classScores <- predict(model, testMatrix, s = lambda, type = "response")[, , 1]
+  measurementsTest <- measurementsTest[, rownames(model[["beta"]][[1]])]
+  
+  classPredictions <- factor(as.character(predict(model, measurementsTest, s = lambda, type = "class")), levels = model[["classnames"]])
+  classScores <- predict(model, measurementsTest, s = lambda, type = "response")[, , 1]
   
   if(is.matrix(classScores))
     classScores <- classScores[, model[["classnames"]]]
@@ -61,16 +69,20 @@ elasticNetGLMpredictInterface <- function(model, measurementsTest, lambda, ..., 
 #
 # Get selected features (i.e. non-zero model coefficients)
 #
+# Note: Need to convert back to actual features when factors were expanded into
+# multiple columns using indicator variables.
+#
 ################################################################################
 
 elasticNetFeatures <- function(model)
                       {
-                        inputFeatures <- rownames(model[["beta"]][[1]])            
                         # Floating point numbers test for equality.
                         whichCoefficientColumn <- which(abs(model[["lambda"]] - attr(model, "tune")[["lambda"]]) < 0.00001)[1]
                         coefficientsUsed <- sapply(model[["beta"]], function(classCoefficients) classCoefficients[, whichCoefficientColumn])
                         featureScores <- rowSums(abs(coefficientsUsed))
-                        rankedFeaturesIndices <- order(featureScores, decreasing = TRUE)
-                        selectedFeaturesIndices <- which(featureScores != 0)
+                        featureGroups <- attr(model, "featureGroups")[match(names(featureScores), attr(model, "featureNames"))]
+                        groupScores <- unname(by(featureScores, featureGroups, max))
+                        rankedFeaturesIndices <- order(groupScores, decreasing = TRUE)
+                        selectedFeaturesIndices <- which(groupScores != 0)
                         list(rankedFeaturesIndices, selectedFeaturesIndices)
                       }

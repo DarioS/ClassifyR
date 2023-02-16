@@ -9,7 +9,7 @@ GLMtrainInterface <- function(measurementsTrain, classesTrain, ..., verbose = 3)
         fitData <- cbind(measurementsTrain, class = classesTrain)
         classesTrain <- "class" # Column name for glm fit.
     } else {fitData <- measurementsTrain}
-  glm(class ~ . + 0, family = binomial, data = fitData, ...)
+  glm(class ~ . + 0, family = binomial, data = fitData, weights = as.numeric(1 / (table(classesTrain)[classesTrain] / length(classesTrain))), ...)
 }
 attr(GLMtrainInterface, "name") <- "GLMtrainInterface"
 

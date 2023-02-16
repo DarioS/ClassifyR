@@ -6,8 +6,7 @@
 \alias{crossValidate,DataFrame-method}
 \alias{crossValidate,MultiAssayExperiment-method,}
 \alias{crossValidate,data.frame-method}
-\alias{crossValidate,MultiAssayExperiment-method}
-\alias{crossValidate,list-method}
+\alias{crossValidate,MultiAssayExperimentOrList-method}
 \alias{train.matrix}
 \alias{train.data.frame}
 \alias{train.DataFrame}
@@ -16,8 +15,6 @@
 \alias{predict.trainedByClassifyR}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-crossValidate(measurements, outcome, ...)
-
 \S4method{crossValidate}{DataFrame}(
   measurements,
   outcome,
@@ -35,9 +32,10 @@ crossValidate(measurements, outcome, ...)
   extraParams = NULL
 )
 
-\S4method{crossValidate}{MultiAssayExperiment}(
+\S4method{crossValidate}{MultiAssayExperimentOrList}(
   measurements,
   outcome,
+  clinicalPredictors = NULL,
   nFeatures = 20,
   selectionMethod = "auto",
   selectionOptimisation = "Resubstitution",
@@ -86,23 +84,6 @@ crossValidate(measurements, outcome, ...)
   extraParams = NULL
 )
 
-\S4method{crossValidate}{list}(
-  measurements,
-  outcome,
-  nFeatures = 20,
-  selectionMethod = "auto",
-  selectionOptimisation = "Resubstitution",
-  performanceType = "auto",
-  classifier = "auto",
-  multiViewMethod = "none",
-  assayCombinations = "all",
-  nFolds = 5,
-  nRepeats = 20,
-  nCores = 1,
-  characteristicsLabel = NULL,
-  extraParams = NULL
-)
-
 \method{train}{matrix}(x, outcomeTrain, ...)
 
 \method{train}{data.frame}(x, outcomeTrain, ...)
@@ -122,7 +103,7 @@ crossValidate(measurements, outcome, ...)
 
 \method{train}{list}(x, outcomeTrain, ...)
 
-\method{train}{MultiAssayExperiment}(x, outcome, ...)
+\method{train}{MultiAssayExperiment}(x, outcome, clinicalPredictors = NULL, ...)
 
 \method{predict}{trainedByClassifyR}(object, newData, ...)
 }
@@ -146,7 +127,8 @@ Set to NULL or "all" if all features should be used.}
 
 \item{selectionMethod}{Default: \code{"auto"}. A character vector of feature selection methods to compare. If a named character vector with names corresponding to different assays, 
 and performing multiview classification, the respective selection methods will be used on each assay. If \code{"auto"}, t-test (two categories) / F-test (three or more categories) ranking
-and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value.}
+and top \code{nFeatures} optimisation is done. Otherwise, the ranking method is per-feature Cox proportional hazards p-value. \code{"none"} is also a valid value, meaning that no
+indepedent feature selection will be performed (but implicit selection might still happen with the classifier).}
 
 \item{selectionOptimisation}{A character of "Resubstitution", "Nested CV" or "none" specifying the approach used to optimise \code{nFeatures}.}
 
@@ -172,7 +154,11 @@ with each element being a vector of assays to combine. Special value \code{"all"
 \item{extraParams}{A list of parameters that will be used to overwrite default settings of transformation, selection, or model-building functions or
 parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
-the website), specify the list element to be \code{NULL}.}
+the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.}
+
+\item{clinicalPredictors}{Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
+a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
+sample acquisition dates, etc. which are not relevant for outcome prediction.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 
