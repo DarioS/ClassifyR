@@ -23,7 +23,7 @@
 #' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 #' \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 #' the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.
-#' @param clinicalPredictors If \code{measurements} is a \code{MultiAssayExperiment},
+#' @param clinicalPredictors Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
 #' a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
 #' sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
@@ -92,6 +92,7 @@
 #' # performancePlot(c(result, resultMerge))
 #' 
 #' @importFrom survival Surv
+#' @usage NULL
 setGeneric("crossValidate", function(measurements, outcome, ...)
     standardGeneric("crossValidate"))
 
@@ -116,7 +117,7 @@ setMethod("crossValidate", "DataFrame",
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
               if(!"assay" %in% colnames(S4Vectors::mcols(measurements))) # Assay is put there by prepareData for MultiAssayExperiment, skip if present. 
               {
-                prepParams <- list(measurements, outcome, clinicalPredictors)
+                prepParams <- list(measurements, outcome)
                 if("prepare" %in% names(extraParams))
                   prepParams <- c(prepParams, extraParams[["prepare"]])
                 measurementsAndOutcome <- do.call(prepareData, prepParams)

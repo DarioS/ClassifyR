@@ -15,8 +15,6 @@
 \alias{predict.trainedByClassifyR}
 \title{Cross-validation to evaluate classification performance.}
 \usage{
-crossValidate(measurements, outcome, ...)
-
 \S4method{crossValidate}{DataFrame}(
   measurements,
   outcome,
@@ -158,7 +156,7 @@ parameters which will be passed into the data cleaning function. The names of th
 \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.}
 
-\item{clinicalPredictors}{If \code{measurements} is a \code{MultiAssayExperiment},
+\item{clinicalPredictors}{Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
 a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
 sample acquisition dates, etc. which are not relevant for outcome prediction.}
 

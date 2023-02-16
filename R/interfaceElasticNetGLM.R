@@ -9,12 +9,12 @@ elasticNetGLMtrainInterface <- function(measurementsTrain, classesTrain, lambda 
 
   # One-hot encoding needed.    
   measurementsTrain <- MatrixModels::model.Matrix(~ 0 + ., data = measurementsTrain)
-  fitted <- glmnet::glmnet(measurementsTrain, classesTrain, family = "multinomial", ...)
+  fitted <- glmnet::glmnet(measurementsTrain, classesTrain, family = "multinomial", weights = as.numeric(1 / (table(classesTrain)[classesTrain] / length(classesTrain))), ...)
+  # Inverse class size weighting needed to give decent predictions when class imbalance.
   
-
   if(is.null(lambda)) # fitted has numerous models for automatically chosen lambda values.
   { # Pick one lambda based on resubstitution performance. But not the one that makes all variables excluded from model.
-      lambdaConsider <- colSums(as.matrix(fitted[["beta"]][[1]])) != 0
+    lambdaConsider <- colSums(as.matrix(fitted[["beta"]][[1]])) != 0
     bestLambda <- fitted[["lambda"]][lambdaConsider][which.min(sapply(fitted[["lambda"]][lambdaConsider], function(lambda) # Largest Lambda with minimum balanced error rate.
     {
       classPredictions <- factor(as.character(predict(fitted, measurementsTrain, s = lambda, type = "class")), levels = fitted[["classnames"]])
