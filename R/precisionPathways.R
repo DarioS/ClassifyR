@@ -26,7 +26,7 @@
 #' @param nFolds A numeric specifying the number of folds to use for cross-validation.
 #' @param nRepeats A numeric specifying the the number of repeats or permutations to use for cross-validation.
 #' @param nCores A numeric specifying the number of cores used if the user wants to use parallelisation.
-#' @param pathways A set of pathways created by \code{precisionPathwaysTrain} to be used for predicting on a new data set.
+#' @param pathways A set of pathways created by \code{precisionPathwaysTrain} which is an object of class \code{PrecisionPathways} to be used for predicting on a new data set.
 #' @rdname precisionPathways
 #' @return An object of class \code{PrecisionPathways} which is basically a named list that other plotting and
 #' tabulating functions can use.
@@ -57,7 +57,7 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
             measurementsAndClass <- do.call(prepareData, prepArgs)
               
             .precisionPathwaysTrain(measurementsAndClass[["measurements"]], measurementsAndClass[["outcome"]],
-                                   fixedAssays = fixedAssays, confidenceCutoff = confidenceCutoff,
+                                   clinicalPredictors = clinicalPredictors, fixedAssays = fixedAssays, confidenceCutoff = confidenceCutoff,
                                    minAssaySamples = minAssaySamples, nFeatures = nFeatures,
                                    selectionMethod = selectionMethod, classifier = classifier,
                                    nFolds = nFolds, nRepeats = nRepeats, nCores = nCores)
@@ -66,7 +66,7 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
 # Internal method which carries out all of the processing, obtaining reformatted data from the
 # MultiAssayExperiment and list (of basic rectangular tables) S4 methods.
 .precisionPathwaysTrain <- function(measurements, class, fixedAssays = "clinical",
-                   confidenceCutoff = 0.8, minAssaySamples = 10,
+                   clinicalPredictors = clinicalPredictors, confidenceCutoff = 0.8, minAssaySamples = 10,
                    nFeatures = 20, selectionMethod = setNames(c(NULL, rep("t-test", length(measurements))), c("clinical", names(measurements))),
                    classifier = setNames(c("elasticNetGLM", rep("randomForest", length(measurements))), c("clinical", names(measurements))),
                    nFolds = 5, nRepeats = 20, nCores = 1)
@@ -101,6 +101,7 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
                 predictionsSamplesCounts <- table(allPredictions[, "sample"], allPredictions[, "class"])
                 confidences <- 2 * abs(predictionsSamplesCounts[, 1] / rowSums(predictionsSamplesCounts) - 0.5)
                 sampleIDsUse <- names(confidences)[confidences > confidenceCutoff]
+                sampleIDsUse <- setdiff(sampleIDsUse, samplesUsed)
                 
                 # Check if too few samples left for next round. Include them in this round, if so.
                 remainingIDs <- setdiff(allSampleIDs, c(samplesUsed, sampleIDsUse))
@@ -134,14 +135,17 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
                 if(breakEarly == TRUE) break
               }
               pathwayString <- paste(assaysProcessed, collapse = '-')
-              parameters = list(confidenceCutoff = confidenceCutoff, minAssaySamples = minAssaySamples)
-              list(models = modelsList, parameters = parameters, pathway = pathwayString,
+              individualsTableAll[, "Tier"] <- factor(individualsTableAll[, "Tier"], levels = permutation)
+              list(pathway = pathwayString,
                   individuals = individualsTableAll, tiers = tierTableAll)
             })
-            
-            class(precisionPathways) <- "PrecisionPathways"
             names(precisionPathways) <- sapply(precisionPathways, "[[", "pathway")
-            precisionPathways
+            result <- list(models = modelsList, assaysPermutations = assaysPermutations,
+                           parameters = list(confidenceCutoff = confidenceCutoff, minAssaySamples = minAssaySamples),
+                           clinicalPredictors = clinicalPredictors, pathways = precisionPathways)
+            class(result) <- "PrecisionPathways"
+            
+            result
 }
 
 # A nice print method to avoid flooding the screen with lots of tables
@@ -150,7 +154,7 @@ print.PrecisionPathways <- function(x)
 {
   cat("An object of class 'PrecisionPathways'.\n")
   cat("Pathways:\n")
-  cat(paste(names(x), collapse = '\n'))
+  cat(paste(names(x[["pathways"]]), collapse = '\n'))
 }
 
 #' @usage NULL
@@ -159,7 +163,7 @@ setGeneric("precisionPathwaysPredict", function(pathways, measurements, class, .
 
 #' @rdname precisionPathways
 #' @export
-setMethod("precisionPathwaysPredict", "MultiAssayExperimentOrList", 
+setMethod("precisionPathwaysPredict", c("PrecisionPathways", "MultiAssayExperimentOrList"), 
           function(pathways, measurements, class)
           {
             if(is.list(measurements)) # Ensure plain list has clinical data.
@@ -168,7 +172,8 @@ setMethod("precisionPathwaysPredict", "MultiAssayExperimentOrList",
               if (!any(names(measurements) == "clinical"))
                 stop("One of the tables must be named \"clinical\".")
             }
-            prepArgs <- list(measurements, outcomeColumns = class)
+
+            prepArgs <- list(measurements, outcomeColumns = class, clinicalPredictors = pathways[["clinicalPredictors"]])
             measurementsAndClass <- do.call(prepareData, prepArgs)
               
             .precisionPathwaysPredict(pathways, measurementsAndClass[["measurements"]], measurementsAndClass[["outcome"]])
@@ -176,5 +181,259 @@ setMethod("precisionPathwaysPredict", "MultiAssayExperimentOrList",
 
 .precisionPathwaysPredict <- function(pathways, measurements, class)
 {
-  # To do.
+
+  # Step 1: Extract all of previously fitted models and permutations.
+  modelsList <- pathways[["models"]]
+  assayIDs <- lapply(PPT[["models"]], function(model) model@characteristics[model@characteristics[, 1] == "Assay Name", 2])
+  assaysPermutations <- pathways[["assaysPermutations"]]
+  confidenceCutoff <- pathways[["parameters"]][["confidenceCutoff"]]
+  minAssaySamples <- pathways[["parameters"]][["minAssaySamples"]]
+  
+  # Step 2: Loop over each pathway and each assay in order to determine which samples are used at that level
+  # and which are passed onwards.
+  precisionPathways <- lapply(as.data.frame(assaysPermutations), function(permutation)
+  {
+    assaysProcessed <- character()
+    samplesUsed <- character()
+    individualsTableAll <- S4Vectors::DataFrame()
+    tierTableAll <- S4Vectors::DataFrame()
+    breakEarly = FALSE
+    for(assay in permutation)
+    {
+      # Step 2a: Identify all samples which are consistently predicted.
+      modelIndex <- match(assay, assayIDs)
+      allPredictions <- predictions(modelsList[[modelIndex]])
+      allSampleIDs <- sampleNames(modelsList[[modelIndex]])
+      predictionsSamplesCounts <- table(allPredictions[, "sample"], allPredictions[, "class"])
+      confidences <- 2 * abs(predictionsSamplesCounts[, 1] / rowSums(predictionsSamplesCounts) - 0.5)
+      sampleIDsUse <- names(confidences)[confidences > confidenceCutoff]
+      sampleIDsUse <- setdiff(sampleIDsUse, samplesUsed)
+                
+      # Check if too few samples left for next round. Include them in this round, if so.
+      remainingIDs <- setdiff(allSampleIDs, c(samplesUsed, sampleIDsUse))
+      if(length(remainingIDs) < minAssaySamples)
+      {
+        sampleIDsUse <- c(sampleIDsUse, remainingIDs)
+        breakEarly = TRUE
+      } else { }
+                
+      predictionsSamplesCounts <- predictionsSamplesCounts[sampleIDsUse, ]
+                
+      # Step 2b: Individuals predictions and sample-wise accuracy, tier-wise error.
+      maxVotes <- apply(predictionsSamplesCounts, 1, function(sample) which.max(sample))
+      predictedClasses <- factor(colnames(predictionsSamplesCounts)[maxVotes],
+                                 levels = colnames(predictionsSamplesCounts))    
+      individualsTable <- S4Vectors::DataFrame(Tier = assay,
+                                               `Sample ID` = sampleIDsUse,
+                                               `Predicted` = predictedClasses,
+                                               `Accuracy` = performance(modelsList[[modelIndex]])[["Sample Accuracy"]][sampleIDsUse],
+                                                check.names = FALSE)
+      knownClasses <- actualOutcome(modelsList[[modelIndex]])[match(sampleIDsUse, allSampleIDs)]
+      balancedAccuracy <- calcExternalPerformance(knownClasses, predictedClasses)
+      tierTable <- S4Vectors::DataFrame(Tier = assay,
+                                        `Balanced Accuracy` = balancedAccuracy, check.names = FALSE)
+                
+      assaysProcessed <- c(assaysProcessed, assay)
+      individualsTableAll <- rbind(individualsTableAll, individualsTable)
+      tierTableAll <- rbind(tierTableAll, tierTable)
+      samplesUsed <- c(samplesUsed, sampleIDsUse)
+                
+      if(breakEarly == TRUE) break
+    }
+    pathwayString <- paste(assaysProcessed, collapse = '-')
+    individualsTableAll[, "Tier"] <- factor(individualsTableAll[, "Tier"], levels = permutation)
+    list(pathway = pathwayString,
+         individuals = individualsTableAll, tiers = tierTableAll)
+  })
+  names(precisionPathways) <- sapply(precisionPathways, "[[", "pathway")
+  result <- list(models = modelsList, assaysPermutations = assaysPermutations,
+                 parameters = list(confidenceCutoff = confidenceCutoff, minAssaySamples = minAssaySamples),
+                 clinicalPredictors = clinicalPredictors, pathways = precisionPathways)
+  class(result) <- "PrecisionPathways"
+            
+  result
+}
+
+# Calculate accuracy and costs of each pathway.
+
+#' Various Functions for Evaluating Precision Pathways
+#' 
+#' These functions tabulate or plot various aspects of precision pathways, such as accuracies and costs.
+#' 
+#' @param precisionPathways A pathway of class \code{PrecisionPathways}.
+#' @param costs A named vector of assays with the cost of each one.
+#' @rdname precisionPathwaysEvaluations
+#' @export
+calcCostsAndPerformance <- function(precisionPathways, costs = NULL)
+{
+  if(is.null(costs))
+    stop("'costs' of each assay must be specified.")      
+  pathwayIDs <- names(precisionPathways[["pathways"]])
+  accuraciesCosts <- do.call(rbind, lapply(precisionPathways[["pathways"]], function(pathway)
+  {
+    predictions <- pathway[["individuals"]][, "Predicted"]
+    knownClasses <- actualOutcome(precisionPathways$models[[1]])
+    allNames <- sampleNames(precisionPathways$models[[1]])
+    knownClasses <- knownClasses[match(pathway[["individuals"]][, "Sample ID"], allNames)]
+    balancedAccuracy <- calcExternalPerformance(knownClasses, predictions)
+    
+    costTotal <- sum(costs[match(pathway[["individuals"]][, "Tier"], names(costs))])
+    
+    data.frame(accuracy = round(balancedAccuracy, 2), cost = costTotal)
+  }))
+
+  precisionPathways$performance <- accuraciesCosts
+  precisionPathways
+}
+
+# Print a summary table, including accuracy and costs.
+
+#' @param object A set of pathways of class \code{PrecisionPathways}.
+#' @param weights A numeric vector of length two specifying how to weight the predictive accuracy
+#' and the cost during ranking. Must sum to 1.
+#' @rdname precisionPathwaysEvaluations
+#' @export
+summary.PrecisionPathways <- function(object, weights = c(accuracy = 0.5, cost = 0.5))
+{
+  summaryTable <- data.frame(Pathway = rownames(object[["performance"]]),
+                             `Balanced Accuracy` = object[["performance"]][, "accuracy"],
+                             `Total Cost` = object[["performance"]][, "cost"],
+                              check.names = FALSE)
+  rankingScores <- list(rank(object[["performance"]][, "accuracy"]), rank(-object[["performance"]][, "cost"]))
+  finalScores <- rowSums(mapply(function(scores, weight)
+               {
+                 scores * weight
+               }, rankingScores, as.list(weights)))
+  summaryTable <- cbind(summaryTable, Score = finalScores)
+  summaryTable
+}
+
+#' @param precisionPathways A pathway of class \code{PrecisionPathways}.
+#' @param pathwayColours A named vector of colours with names being the names of pathways. If none is specified,
+#' a default colour scheme will automatically be chosen.
+#' @rdname precisionPathwaysEvaluations
+#' @export
+bubblePlot.PrecisionPathways <- function(precisionPathways, pathwayColours = NULL)
+{
+  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))    
+  if(is.null(pathwayColours)) pathwayColours <- scales::hue_pal()(length(precisionPathways[["pathways"]]))
+  performance <- precisionPathways[["performance"]]
+  performance <- cbind(Sequence = rownames(performance), performance)
+  ggplot2::ggplot(performance, aes(x = accuracy, y = cost, colour = Sequence)) + geom_point() +
+    ggplot2::scale_color_manual(values = pathwayColours) + labs(x = "Balanced Accuracy", y = "Total Cost")
+}
+
+#' @param precisionPathways A pathway of class \code{PrecisionPathways}.
+#' @param pathway A chracter vector of length 1 specifying which pathway to plot, e.g. "clinical-mRNA".
+#' @param nodeColours A named vector of colours with names being \code{"assay"}, \code{"class1"},\code{"class2"}.
+#' a default colour scheme will automatically be chosen.
+#' @rdname precisionPathwaysEvaluations
+#' @export
+flowchart.PrecisionPathways <- function(precisionPathways, pathway, nodeColours = c(assay = "#86C57C", class1 = "#ACCEE0", class2 = "#F47F72"))
+{
+  if(!requireNamespace("data.tree", quietly = TRUE))
+    stop("The package 'data.tree' could not be found. Please install it.")
+
+  pathwayUse <- precisionPathways[["pathways"]][[pathway]]
+  assayIDs <- pathwayUse[["tiers"]][, 1]
+  possibleClasses <- levels(precisionPathways$models[[1]]@actualOutcome)
+  samplesTiers <- pathwayUse$individuals
+      
+  pathwayTree <- Node$new(assayIDs[1])
+  currentNode <- pathwayTree
+  for(assay in assayIDs)
+  {
+    toDo <- nrow(samplesTiers) - max(which(samplesTiers[, "Tier"] == assay))
+    class1Predictions <- currentNode$AddChild(possibleClasses[1], counter = nrow(subset(samplesTiers, Predicted == possibleClasses[1] & Tier == assay)), nodeType = "Class1")
+    uncertain <- currentNode$AddChild("Uncertain", counter = toDo, nodeType = "Uncertain")
+    class2Predictions = currentNode$AddChild(possibleClasses[2], counter = nrow(subset(samplesTiers, Predicted == possibleClasses[2] & Tier == assay)), nodeType = "Class2")
+    
+    if(toDo == 0) {break} else {
+      currentNode <- uncertain
+      currentNode <- currentNode$AddChild(assayIDs[match(assay, assayIDs) + 1], nodeType = "Platform")
+    }
+  }
+          
+  SetGraphStyle(pathwayTree, rankdir = "LR")
+  SetEdgeStyle(pathwayTree, fontname = 'helvetica', label = .getEdgeLabel)
+  SetNodeStyle(pathwayTree, style = "filled", shape = .getNodeShape, fontcolor = "black", fillcolor = .getFillColour, fontname = 'helvetica')
+  plot(pathwayTree)
+}
+
+.getEdgeLabel <- function(node)
+{
+  nSamples <<- nrow(samplesTiers)
+  if(node$isRoot || node$nodeType == "Platform")
+  {
+    label <- NULL
+  } else {
+    value <- round((node$counter / nSamples) * 100)
+    label <- paste(value,  "% (", node$counter, ")", sep = '')
+  }
+  return(label)
+}
+
+.getNodeShape <- function(node){
+  if(node$isRoot || node$nodeType == "Platform"){
+    shape = "oval"
+  } else {
+    shape = "box"
+  }
+}
+
+.getFillColour <- function(node) {
+  if(node$isRoot || node$nodeType == "Platform"){
+    colour <<- nodeColours[["assay"]]
+  } else if(node$nodeType == "Class1"){
+    colour <<- nodeColours[["class1"]]
+  } else if(node$nodeType == "Class2"){
+    colour <<- nodeColours[["class2"]]
+  } else {
+    colour = "snow3"
+  }
+  return(colour)
+}
+
+
+#' @param classColours A named vector of colours with names being \code{"class1"},\code{"class2"}, and \code{"accuracy"}.
+#' a default colour scheme will automatically be chosen.
+#' @rdname precisionPathwaysEvaluations
+#' @export
+strataPlot.PrecisionPathways <- function(precisionPathways, pathway, classColours = c(class1 = "#4DAF4A", class2 = "#984EA3"))
+{
+  pathwayUse <- precisionPathways[["pathways"]][[pathway]]
+  assayIDs <- pathwayUse[["tiers"]][, 1]
+  possibleClasses <- levels(precisionPathways$models[[1]]@actualOutcome)
+  samplesTiers <- pathwayUse$individuals
+  samplesTiers$trueClass <- actualOutcome(precisionPathways$models[[1]])[match(samplesTiers[, "Sample ID"], sampleNames(precisionPathways$models[[1]]))]
+  samplesTiers <- dplyr::arrange(as.data.frame(samplesTiers), Tier, trueClass, Accuracy)
+  samplesTiers$ID = 1:nrow(samplesTiers)
+  samplesTiers$colour = ifelse(samplesTiers$trueClass == levels(samplesTiers[, "Predicted"])[1], classColours["class1"], classColours["class2"])
+
+  strataPlot <- ggplot(mapping = aes(x = ID, y = Tier), data = samplesTiers) +
+                geom_tile(aes(fill = trueClass)) +
+    scale_fill_manual(values = unname(classColours))  +
+    labs(title = paste("Pathway:", pathway), fill = "True Class", x = "", y = "") +
+    guides(fill = guide_legend(title.position = "top")) +
+    ggnewscale::new_scale_fill() +
+    geom_tile(aes(fill = Accuracy)) +
+    scale_fill_gradient(low = "#377EB8", high = "#E41A1C") +
+    labs(fill = "Accuracy") +
+    guides(fill = guide_colorbar(title.position = "top")) +
+    theme(panel.background = element_blank(),
+          axis.text.x = element_blank(),
+          aspect.ratio = 1/4, 
+          plot.title = element_text(face = "bold", size = 20),
+          legend.title = element_text(face = "bold", size = 12),
+          legend.text = element_text(size = 10),
+          legend.position = "bottom",
+          axis.text = element_text(size = 15)) +
+    annotate("tile",
+               x = samplesTiers$ID,
+               y = length(levels(samplesTiers[, "Tier"])) + 0.8,
+               height = 0.6,
+               fill = samplesTiers$colour)  +
+    coord_cartesian(expand = FALSE) 
+    
+  strataPlot
 }

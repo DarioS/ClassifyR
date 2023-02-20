@@ -3,7 +3,7 @@
 \name{precisionPathwaysTrain}
 \alias{precisionPathwaysTrain}
 \alias{precisionPathwaysTrain,MultiAssayExperimentOrList-method}
-\alias{precisionPathwaysPredict,MultiAssayExperimentOrList-method}
+\alias{precisionPathwaysPredict,PrecisionPathways,MultiAssayExperimentOrList-method}
 \title{Precision Pathways for Sample Prediction Based on Prediction Confidence.}
 \usage{
 \S4method{precisionPathwaysTrain}{MultiAssayExperimentOrList}(
@@ -25,7 +25,7 @@
   nCores = 1
 )
 
-\S4method{precisionPathwaysPredict}{MultiAssayExperimentOrList}(pathways, measurements, class)
+\S4method{precisionPathwaysPredict}{PrecisionPathways,MultiAssayExperimentOrList}(pathways, measurements, class)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{MultiAssayExperiment}} or a list of the basic tabular objects containing the data.}
@@ -63,7 +63,7 @@ would have less than this number of samples, the samples are incorporated into t
 
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
 
-\item{pathways}{A set of pathways created by \code{precisionPathwaysTrain} to be used for predicting on a new data set.}
+\item{pathways}{A set of pathways created by \code{precisionPathwaysTrain} which is an object of class \code{PrecisionPathways} to be used for predicting on a new data set.}
 }
 \value{
 An object of class \code{PrecisionPathways} which is basically a named list that other plotting and
