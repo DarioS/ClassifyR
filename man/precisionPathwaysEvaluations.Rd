@@ -12,15 +12,15 @@ calcCostsAndPerformance(precisionPathways, costs = NULL)
 
 \method{summary}{PrecisionPathways}(object, weights = c(accuracy = 0.5, cost = 0.5))
 
-bubblePlot.PrecisionPathways(precisionPathways, pathwayColours = NULL)
+\method{bubblePlot}{PrecisionPathways}(precisionPathways, pathwayColours = NULL)
 
-flowchart.PrecisionPathways(
+\method{flowchart}{PrecisionPathways}(
   precisionPathways,
   pathway,
   nodeColours = c(assay = "#86C57C", class1 = "#ACCEE0", class2 = "#F47F72")
 )
 
-strataPlot.PrecisionPathways(
+\method{strataPlot}{PrecisionPathways}(
   precisionPathways,
   pathway,
   classColours = c(class1 = "#4DAF4A", class2 = "#984EA3")

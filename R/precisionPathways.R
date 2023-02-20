@@ -308,6 +308,10 @@ summary.PrecisionPathways <- function(object, weights = c(accuracy = 0.5, cost =
   summaryTable
 }
 
+bubblePlot <- function (precisionPathways, ...) {
+   UseMethod("bubblePlot", precisionPathways)
+ }
+
 #' @param precisionPathways A pathway of class \code{PrecisionPathways}.
 #' @param pathwayColours A named vector of colours with names being the names of pathways. If none is specified,
 #' a default colour scheme will automatically be chosen.
@@ -319,9 +323,13 @@ bubblePlot.PrecisionPathways <- function(precisionPathways, pathwayColours = NUL
   if(is.null(pathwayColours)) pathwayColours <- scales::hue_pal()(length(precisionPathways[["pathways"]]))
   performance <- precisionPathways[["performance"]]
   performance <- cbind(Sequence = rownames(performance), performance)
-  ggplot2::ggplot(performance, aes(x = accuracy, y = cost, colour = Sequence)) + geom_point() +
-    ggplot2::scale_color_manual(values = pathwayColours) + labs(x = "Balanced Accuracy", y = "Total Cost")
+  ggplot2::ggplot(performance, aes(x = accuracy, y = cost, colour = Sequence, size = 4)) + ggplot2::geom_point() +
+    ggplot2::scale_color_manual(values = pathwayColours) + ggplot2::labs(x = "Balanced Accuracy", y = "Total Cost") + ggplot2::guides(size = FALSE)
 }
+
+flowchart <- function (precisionPathways, ...) {
+   UseMethod("flowchart", precisionPathways)
+ }
 
 #' @param precisionPathways A pathway of class \code{PrecisionPathways}.
 #' @param pathway A chracter vector of length 1 specifying which pathway to plot, e.g. "clinical-mRNA".
@@ -394,6 +402,9 @@ flowchart.PrecisionPathways <- function(precisionPathways, pathway, nodeColours 
   return(colour)
 }
 
+strataPlot <- function (precisionPathways, ...) {
+   UseMethod("strataPlot", precisionPathways)
+ }
 
 #' @param classColours A named vector of colours with names being \code{"class1"},\code{"class2"}, and \code{"accuracy"}.
 #' a default colour scheme will automatically be chosen.
@@ -410,30 +421,30 @@ strataPlot.PrecisionPathways <- function(precisionPathways, pathway, classColour
   samplesTiers$ID = 1:nrow(samplesTiers)
   samplesTiers$colour = ifelse(samplesTiers$trueClass == levels(samplesTiers[, "Predicted"])[1], classColours["class1"], classColours["class2"])
 
-  strataPlot <- ggplot(mapping = aes(x = ID, y = Tier), data = samplesTiers) +
-                geom_tile(aes(fill = trueClass)) +
-    scale_fill_manual(values = unname(classColours))  +
-    labs(title = paste("Pathway:", pathway), fill = "True Class", x = "", y = "") +
-    guides(fill = guide_legend(title.position = "top")) +
+  strataPlot <- ggplot2::ggplot(mapping = ggplot2::aes(x = ID, y = Tier), data = samplesTiers) +
+                ggplot2::geom_tile(aes(fill = trueClass)) +
+    ggplot2::scale_fill_manual(values = unname(classColours))  +
+    ggplot2::labs(title = paste("Pathway:", pathway), fill = "True Class", x = "", y = "") +
+    ggplot2::guides(fill = guide_legend(title.position = "top")) +
     ggnewscale::new_scale_fill() +
     geom_tile(aes(fill = Accuracy)) +
-    scale_fill_gradient(low = "#377EB8", high = "#E41A1C") +
-    labs(fill = "Accuracy") +
-    guides(fill = guide_colorbar(title.position = "top")) +
-    theme(panel.background = element_blank(),
-          axis.text.x = element_blank(),
+    ggplot2::scale_fill_gradient(low = "#377EB8", high = "#E41A1C") +
+    ggplot2::labs(fill = "Accuracy") +
+    ggplot2::guides(fill = guide_colorbar(title.position = "top")) +
+    ggplot2::theme(panel.background = ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_blank(),
           aspect.ratio = 1/4, 
-          plot.title = element_text(face = "bold", size = 20),
-          legend.title = element_text(face = "bold", size = 12),
-          legend.text = element_text(size = 10),
+          plot.title = ggplot2::element_text(face = "bold", size = 20),
+          legend.title = ggplot2::element_text(face = "bold", size = 12),
+          legend.text = ggplot2::element_text(size = 10),
           legend.position = "bottom",
-          axis.text = element_text(size = 15)) +
+          axis.text = ggplot2::element_text(size = 15)) +
     annotate("tile",
                x = samplesTiers$ID,
                y = length(levels(samplesTiers[, "Tier"])) + 0.8,
                height = 0.6,
                fill = samplesTiers$colour)  +
-    coord_cartesian(expand = FALSE) 
+    ggplot2::coord_cartesian(expand = FALSE) 
     
   strataPlot
 }
