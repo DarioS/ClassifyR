@@ -2,6 +2,7 @@
 % Please edit documentation in R/precisionPathways.R
 \name{precisionPathwaysTrain}
 \alias{precisionPathwaysTrain}
+\alias{precisionPathwaysPredict}
 \alias{precisionPathwaysTrain,MultiAssayExperimentOrList-method}
 \alias{precisionPathwaysPredict,PrecisionPathways,MultiAssayExperimentOrList-method}
 \title{Precision Pathways for Sample Prediction Based on Prediction Confidence.}

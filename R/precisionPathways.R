@@ -28,6 +28,7 @@
 #' @param nCores A numeric specifying the number of cores used if the user wants to use parallelisation.
 #' @param pathways A set of pathways created by \code{precisionPathwaysTrain} which is an object of class \code{PrecisionPathways} to be used for predicting on a new data set.
 #' @rdname precisionPathways
+#' @aliases precisionPathwaysTrain precisionPathwaysPredict
 #' @return An object of class \code{PrecisionPathways} which is basically a named list that other plotting and
 #' tabulating functions can use.
 #' @examples
