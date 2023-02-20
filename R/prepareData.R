@@ -235,15 +235,15 @@ setMethod("prepareData", "list",
   if("clinical" %in% names(measurements))
     measurements[["clinical"]] <- measurements[["clinical"]][, clinicalPredictors]
              
-  allMetadata <- mapply(function(measurementsOne, assayID) {
+  allMetadata <- do.call(rbind, mapply(function(measurementsOne, assayID) {
                         data.frame(assay = assayID, feature = colnames(measurementsOne))
-                        }, measurements, names(measurements))
+                        }, measurements, names(measurements), SIMPLIFY = FALSE))
   allMeasurements <- do.call("cbind", measurements)
   # Different assays e.g. mRNA, protein could have same feature name e.g. BRAF.
   colnames(allMeasurements) <- paste(allMetadata[, "assay"], allMetadata[, "feature"], sep = '_')
-  allDataFrame <- DataFrame(allMeasurements)
+  allMeasurements <- DataFrame(allMeasurements)
   S4Vectors::mcols(allMeasurements) <- allMetadata
     
   # Do other filtering and preparation in DataFrame function.
-  prepareData(dataTable, outcome, clinicalPredictors = NULL, ...)
+  prepareData(allMeasurements, outcome, clinicalPredictors = NULL, ...)
 })

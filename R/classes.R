@@ -8,6 +8,7 @@
 #
 ################################################################################
 
+setOldClass("PrecisionPathways")
 
 # Union of A Function and NULL
 setClassUnion("functionOrNULL", c("function", "NULL"))
