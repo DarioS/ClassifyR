@@ -10,7 +10,7 @@
 \usage{
 calcCostsAndPerformance(precisionPathways, costs = NULL)
 
-\method{summary}{PrecisionPathways}(object, weights = c(accuracy = 0.5, cost = 0.5))
+\method{summary}{PrecisionPathways}(object, weights = c(accuracy = 0.5, cost = 0.5), ...)
 
 \method{bubblePlot}{PrecisionPathways}(precisionPathways, pathwayColours = NULL)
 
@@ -35,6 +35,8 @@ calcCostsAndPerformance(precisionPathways, costs = NULL)
 
 \item{weights}{A numeric vector of length two specifying how to weight the predictive accuracy
 and the cost during ranking. Must sum to 1.}
+
+\item{...}{Not used but just following the S3 requirement of the generic template.}
 
 \item{pathwayColours}{A named vector of colours with names being the names of pathways. If none is specified,
 a default colour scheme will automatically be chosen.}

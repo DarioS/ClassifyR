@@ -292,9 +292,10 @@ calcCostsAndPerformance <- function(precisionPathways, costs = NULL)
 #' @param object A set of pathways of class \code{PrecisionPathways}.
 #' @param weights A numeric vector of length two specifying how to weight the predictive accuracy
 #' and the cost during ranking. Must sum to 1.
+#' @param ... Not used but just following the S3 requirement of the generic template.
 #' @rdname precisionPathwaysEvaluations
 #' @export
-summary.PrecisionPathways <- function(object, weights = c(accuracy = 0.5, cost = 0.5))
+summary.PrecisionPathways <- function(object, weights = c(accuracy = 0.5, cost = 0.5), ...)
 {
   summaryTable <- data.frame(Pathway = rownames(object[["performance"]]),
                              `Balanced Accuracy` = object[["performance"]][, "accuracy"],

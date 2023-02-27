@@ -39,7 +39,7 @@ created by \code{\link{crossValidate}}, \code{\link{runTests}} or \code{\link{ru
 }
 \section{Constructor}{
 
-\preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
+\code{ClassifyResult(characteristics, originalNames, originalFeatures,
               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 \describe{
 \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the

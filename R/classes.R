@@ -477,7 +477,7 @@ setClassUnion("SelectParamsOrNULL", c("SelectParams", "NULL"))
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{\preformatted{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)}}{Creates a \code{SelectParams} object which stores the function(s) which will do the selection and parameters that the function will use.\cr
+#' \item{\code{SelectParams(featureRanking, characteristics = DataFrame(), minPresence = 1, intermediate = character(0),subsetToSelections = TRUE, tuneParams = list(nFeatures = seq(10, 100, 10), performanceType = "Balanced Accuracy"), ...)}}{Creates a \code{SelectParams} object which stores the function(s) which will do the selection and parameters that the function will use.\cr
 #'     \describe{
 #'         \item{\code{featureRanking}}{A character keyword referring to a registered feature ranking function. See \code{\link{available}} for valid keywords.}
 #'         \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the characteristics of feature selection to be done. First column must be named \code{"charateristic"} and second column must be named \code{"value"}. If using wrapper functions for feature selection in this package, the feature selection name will automatically be generated and therefore it is not necessary to specify it.}
@@ -582,7 +582,7 @@ setClass("TrainParams", representation(
 #' @docType class
 #' @section Constructor:
 #' \describe{
-#' \item{\preformatted{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
+#' \item{\code{TrainParams(classifier, balancing = c("downsample", "upsample", "none"), characteristics = DataFrame(),
 #' intermediate = character(0), tuneParams = NULL, getFeatures = NULL, ...)}}{
 #' Creates a \code{TrainParams} object which stores the function which will do the
 #' classifier building and parameters that the function will use.
@@ -854,7 +854,7 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' @docType class
 #' 
 #' @section Constructor:
-#' \preformatted{ClassifyResult(characteristics, originalNames, originalFeatures,
+#' \code{ClassifyResult(characteristics, originalNames, originalFeatures,
 #'               rankedFeatures, chosenFeatures, models, tunedParameters, predictions, actualOutcome, importance = NULL, modellingParams = NULL, finalModel = NULL)}
 #' \describe{
 #' \item{\code{characteristics}}{A \code{\link{DataFrame}} describing the
