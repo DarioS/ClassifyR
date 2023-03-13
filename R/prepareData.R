@@ -90,6 +90,7 @@ setMethod("prepareData", "DataFrame",
     # is FALSE by default, so it is more likely to be character format these days. Handle it.
     if(class(outcome) != "factor") # Assume there will be no ordinary regression prediction tasks ... for now.
       outcome <- factor(outcome)
+    else outcome <- droplevels(outcome) # Ensure that no unused factor levels remain.
   }
   
   # survival's Surv constructor has two inputs for the popular right-censored data and
@@ -225,7 +226,7 @@ setMethod("prepareData", "list",
     stop("Because one provided table in the list is named \"clinical\", 'clinicalPredictors' must be a vector of informative clinical features (i.e. not sample IDs, sampling dates, etc.) to consider for classification.")
 
   # Check data type is valid.
-  if(!(all(sapply(measurements, class) %in% c("data.frame", "DataFrame", "matrix"))))
+  if(!(all(sapply(measurements, function(assay) is(assay, "tabular")))))
     stop("assays in the list must be of type data.frame, DataFrame or matrix")
               
   # Check same number of samples for all datasets

@@ -1,8 +1,7 @@
 selectMulti <- function(measurementsTrain, classesTrain, params, verbose = 0)
-          {
+          {                      
               assaysIndices <- lapply(unique(S4Vectors::mcols(measurementsTrain)[["assay"]]), function(assay) which(S4Vectors::mcols(measurementsTrain)[["assay"]] == assay))
-              assayTrain <- lapply(assaysIndices, function(assayIndices) measurementsTrain[, assayIndices])
-              
+              assayTrain <- lapply(assaysIndices, function(assayIndices) measurementsTrain[, assayIndices, drop = FALSE])
               featuresIndices <- mapply(.doSelection, 
                                          measurements = assayTrain,
                                          modellingParams = params,
