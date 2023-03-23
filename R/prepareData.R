@@ -142,12 +142,12 @@ setMethod("prepareData", "DataFrame",
       if(!is.list(useFeatures) || is.null(names(useFeatures)))
           stop("'useFeatures' must be a named list for multi-assay data.")
         
-      dropFeaturesIndices <- mapply(function(assayID, features)
+      dropFeaturesIndices <- unlist(mapply(function(assayID, features)
       {
         assayIndices <- which(mcols(measurements)$assay == assayID)  
         useIndicies <- intersect(assayIndices, which(mcols(measurements)$feature %in% features))
         setdiff(assayIndices, useIndicies) # To drop.
-      }, names(useFeatures), useFeatures)
+      }, names(useFeatures), useFeatures))
       measurements <- measurements[, -dropFeaturesIndices]
 
     } else { # A single tabular data set (i.e. matrix or DataFrame) was the user's input.
