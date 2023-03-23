@@ -16,19 +16,14 @@
 \S4method{prepareData}{DataFrame}(
   measurements,
   outcome,
-  clinicalPredictors = NULL,
+  useFeatures = NULL,
   maxMissingProp = 0,
   topNvariance = NULL
 )
 
-\S4method{prepareData}{MultiAssayExperiment}(
-  measurements,
-  outcomeColumns = NULL,
-  clinicalPredictors = NULL,
-  ...
-)
+\S4method{prepareData}{MultiAssayExperiment}(measurements, outcomeColumns = NULL, useFeatures = NULL, ...)
 
-\S4method{prepareData}{list}(measurements, outcome = NULL, clinicalPredictors = NULL, ...)
+\S4method{prepareData}{list}(measurements, outcome = NULL, useFeatures = NULL, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{matrix}}, \code{\link{DataFrame}}
@@ -45,15 +40,17 @@ a character string, or vector of such strings, containing column name(s) of colu
 containing either classes or time and event information about survival. If column names
 of survival information, time must be in first column and event status in the second.}
 
-\item{clinicalPredictors}{If \code{measurements} is a \code{MultiAssayExperiment},
-a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
-sample acquisition dates, etc. which are not relevant for outcome prediction.}
+\item{useFeatures}{Default: \code{NULL} (i.e. use all provided features). If \code{measurements} is a \code{MultiAssayExperiment} or list of tabular data,
+a named list of features to use. Otherwise, the input data is a single table and this can just be a vector of feature names.
+For any assays not in the named list, all of their features are used. \code{"clinical"} is also a valid assay name and refers to the clinical data table.
+This allows for the avoidance of variables such spike-in RNAs, sample IDs, sample acquisition dates, etc. which are not relevant for outcome prediction.}
 
 \item{maxMissingProp}{Default: 0.0. A proportion less than 1 which is the maximum
 tolerated proportion of missingness for a feature to be retained for modelling.}
 
-\item{topNvariance}{Default: NULL. An integer number of most variable features per assay to subset to.
-Assays with less features won't be reduced in size.}
+\item{topNvariance}{Default: NULL. If \code{measurements} is a \code{MultiAssayExperiment} or list of tabular data, a named integer vector of most variable 
+features per assay to subset to. If the input data is a single table, then simply a single integer.
+If an assays has less features, it won't be reduced in size but stay as-is.}
 
 \item{outcomeColumns}{If \code{measurements} is a \code{MultiAssayExperiment}, the
 names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}

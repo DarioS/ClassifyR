@@ -10,7 +10,7 @@
 \S4method{precisionPathwaysTrain}{MultiAssayExperimentOrList}(
   measurements,
   class,
-  clinicalPredictors = NULL,
+  useFeatures = NULL,
   maxMissingProp = 0,
   topNvariance = NULL,
   fixedAssays = "clinical",
@@ -34,8 +34,9 @@
 \item{class}{Same as \code{measurements} but only training samples. IF \code{measurements} is a \code{list}, may also be
 a vector of classes.}
 
-\item{clinicalPredictors}{Default: \code{NULL}. Must be a character vector of clinical features to use in modelling. This allows avoidance of things like sample IDs,
-sample acquisition dates, etc. which are not relevant for outcome prediction.}
+\item{useFeatures}{Default: \code{NULL} (i.e. use all provided features). A named list of features to use. Otherwise, the input data is a single table and this can just be a vector of feature names.
+For any assays not in the named list, all of their features are used. \code{"clinical"} is also a valid assay name and refers to the clinical data table.
+This allows for the avoidance of variables such spike-in RNAs, sample IDs, sample acquisition dates, etc. which are not relevant for outcome prediction.}
 
 \item{maxMissingProp}{Default: 0.0. A proportion less than 1 which is the maximum
 tolerated proportion of missingness for a feature to be retained for modelling.}

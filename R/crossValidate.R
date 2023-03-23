@@ -23,9 +23,6 @@
 #' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 #' \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 #' the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.
-#' @param clinicalPredictors Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
-#' a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
-#' sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
@@ -316,7 +313,6 @@ setMethod("crossValidate", "DataFrame",
 setMethod("crossValidate", "MultiAssayExperimentOrList",
           function(measurements,
                    outcome,
-                   clinicalPredictors = NULL,
                    nFeatures = 20,
                    selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
@@ -330,7 +326,7 @@ setMethod("crossValidate", "MultiAssayExperimentOrList",
                    characteristicsLabel = NULL, extraParams = NULL)
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              prepParams <- list(measurements, outcome, clinicalPredictors)
+              prepParams <- list(measurements, outcome)
               if("prepare" %in% names(extraParams))
                 prepParams <- c(prepParams, extraParams[["prepare"]])
               measurementsAndOutcome <- do.call(prepareData, prepParams)
@@ -1064,9 +1060,9 @@ train.list <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @method train MultiAssayExperiment
 #' @export
-train.MultiAssayExperiment <- function(x, outcome, clinicalPredictors = NULL, ...)
+train.MultiAssayExperiment <- function(x, outcome, ...)
           {
-              prepArgs <- list(x, outcome, clinicalPredictors)
+              prepArgs <- list(x, outcome)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
@@ -1090,7 +1086,7 @@ train.MultiAssayExperiment <- function(x, outcome, clinicalPredictors = NULL, ..
 #' stored in a \code{\link{ClassifyResult}} object.
 #' @method predict trainedByClassifyR
 #' @export
-predict.trainedByClassifyR <- function(object, newData, ...)
+predict.trainedByClassifyR <- function(object, newData, outcome, ...)
 {
   if(is(newData, "tabular")) # Simply tabular data.
   {
@@ -1105,9 +1101,7 @@ predict.trainedByClassifyR <- function(object, newData, ...)
     newData <- do.call(cbind, newData)
     } else if(is(newData, "MultiAssayExperiment"))
             {
-              newData <- prepareData(newData, clinicalPredictors = subset(allFeatureNames(object), assay == "clinical")[, "feature"])
-              # Some classifiers dangerously use positional matching rather than column name matching.
-              # newData columns are sorted so that the right column ordering is guaranteed.
+              newData <- prepareData(newData, outcome)
     }
     
     predictFunctionUse <- attr(object, "predictFunction")
