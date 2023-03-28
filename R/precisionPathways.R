@@ -8,8 +8,9 @@
 #' @param measurements Either a \code{\link{MultiAssayExperiment}} or a list of the basic tabular objects containing the data.
 #' @param class Same as \code{measurements} but only training samples. IF \code{measurements} is a \code{list}, may also be
 #' a vector of classes.
-#' @param clinicalPredictors Default: \code{NULL}. Must be a character vector of clinical features to use in modelling. This allows avoidance of things like sample IDs,
-#' sample acquisition dates, etc. which are not relevant for outcome prediction.
+#' @param useFeatures Default: \code{NULL} (i.e. use all provided features). A named list of features to use. Otherwise, the input data is a single table and this can just be a vector of feature names.
+#' For any assays not in the named list, all of their features are used. \code{"clinical"} is also a valid assay name and refers to the clinical data table.
+#' This allows for the avoidance of variables such spike-in RNAs, sample IDs, sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param maxMissingProp Default: 0.0. A proportion less than 1 which is the maximum
 #' tolerated proportion of missingness for a feature to be retained for modelling.
 #' @param topNvariance Default: NULL. An integer number of most variable features per assay to subset to.
@@ -41,7 +42,7 @@ setGeneric("precisionPathwaysTrain", function(measurements, class, ...)
 #' @rdname precisionPathways
 #' @export
 setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList", 
-          function(measurements, class, clinicalPredictors = NULL, maxMissingProp = 0.0, topNvariance = NULL,
+          function(measurements, class, useFeatures = NULL, maxMissingProp = 0.0, topNvariance = NULL,
                    fixedAssays = "clinical", confidenceCutoff = 0.8, minAssaySamples = 10,
                    nFeatures = 20, selectionMethod = setNames(c("none", rep("t-test", length(measurements))), c("clinical", names(measurements))),
                    classifier = setNames(c("elasticNetGLM", rep("randomForest", length(measurements))), c("clinical", names(measurements))),
@@ -53,12 +54,12 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
               if (!any(names(measurements) == "clinical"))
                 stop("One of the tables must be named \"clinical\".")
             }
-            prepArgs <- list(measurements, outcomeColumns = class, clinicalPredictors = clinicalPredictors,
+            prepArgs <- list(measurements, outcomeColumns = class, useFeatures = useFeatures,
                              maxMissingProp = maxMissingProp, topNvariance = topNvariance)
             measurementsAndClass <- do.call(prepareData, prepArgs)
               
             .precisionPathwaysTrain(measurementsAndClass[["measurements"]], measurementsAndClass[["outcome"]],
-                                   clinicalPredictors = clinicalPredictors, fixedAssays = fixedAssays, confidenceCutoff = confidenceCutoff,
+                                   useFeatures = useFeatures, fixedAssays = fixedAssays, confidenceCutoff = confidenceCutoff,
                                    minAssaySamples = minAssaySamples, nFeatures = nFeatures,
                                    selectionMethod = selectionMethod, classifier = classifier,
                                    nFolds = nFolds, nRepeats = nRepeats, nCores = nCores)
@@ -67,7 +68,7 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
 # Internal method which carries out all of the processing, obtaining reformatted data from the
 # MultiAssayExperiment and list (of basic rectangular tables) S4 methods.
 .precisionPathwaysTrain <- function(measurements, class, fixedAssays = "clinical",
-                   clinicalPredictors = clinicalPredictors, confidenceCutoff = 0.8, minAssaySamples = 10,
+                   useFeatures = useFeatures, confidenceCutoff = 0.8, minAssaySamples = 10,
                    nFeatures = 20, selectionMethod = setNames(c(NULL, rep("t-test", length(measurements))), c("clinical", names(measurements))),
                    classifier = setNames(c("elasticNetGLM", rep("randomForest", length(measurements))), c("clinical", names(measurements))),
                    nFolds = 5, nRepeats = 20, nCores = 1)
@@ -143,7 +144,7 @@ setMethod("precisionPathwaysTrain", "MultiAssayExperimentOrList",
             names(precisionPathways) <- sapply(precisionPathways, "[[", "pathway")
             result <- list(models = modelsList, assaysPermutations = assaysPermutations,
                            parameters = list(confidenceCutoff = confidenceCutoff, minAssaySamples = minAssaySamples),
-                           clinicalPredictors = clinicalPredictors, pathways = precisionPathways)
+                           useFeatures = useFeatures, pathways = precisionPathways)
             class(result) <- "PrecisionPathways"
             
             result
@@ -174,7 +175,7 @@ setMethod("precisionPathwaysPredict", c("PrecisionPathways", "MultiAssayExperime
                 stop("One of the tables must be named \"clinical\".")
             }
 
-            prepArgs <- list(measurements, outcomeColumns = class, clinicalPredictors = pathways[["clinicalPredictors"]])
+            prepArgs <- list(measurements, outcomeColumns = class, useFeatures = pathways[["useFeatures"]])
             measurementsAndClass <- do.call(prepareData, prepArgs)
               
             .precisionPathwaysPredict(pathways, measurementsAndClass[["measurements"]], measurementsAndClass[["outcome"]])
@@ -185,7 +186,7 @@ setMethod("precisionPathwaysPredict", c("PrecisionPathways", "MultiAssayExperime
 
   # Step 1: Extract all of previously fitted models and permutations.
   modelsList <- pathways[["models"]]
-  assayIDs <- lapply(PPT[["models"]], function(model) model@characteristics[model@characteristics[, 1] == "Assay Name", 2])
+  assayIDs <- lapply(pathways[["models"]], function(model) model@characteristics[model@characteristics[, 1] == "Assay Name", 2])
   assaysPermutations <- pathways[["assaysPermutations"]]
   confidenceCutoff <- pathways[["parameters"]][["confidenceCutoff"]]
   minAssaySamples <- pathways[["parameters"]][["minAssaySamples"]]
@@ -216,7 +217,7 @@ setMethod("precisionPathwaysPredict", c("PrecisionPathways", "MultiAssayExperime
       {
         sampleIDsUse <- c(sampleIDsUse, remainingIDs)
         breakEarly = TRUE
-      } else { }
+      }
                 
       predictionsSamplesCounts <- predictionsSamplesCounts[sampleIDsUse, ]
                 
@@ -249,7 +250,7 @@ setMethod("precisionPathwaysPredict", c("PrecisionPathways", "MultiAssayExperime
   names(precisionPathways) <- sapply(precisionPathways, "[[", "pathway")
   result <- list(models = modelsList, assaysPermutations = assaysPermutations,
                  parameters = list(confidenceCutoff = confidenceCutoff, minAssaySamples = minAssaySamples),
-                 clinicalPredictors = clinicalPredictors, pathways = precisionPathways)
+                 useFeatures = useFeatures, pathways = precisionPathways)
   class(result) <- "PrecisionPathways"
             
   result

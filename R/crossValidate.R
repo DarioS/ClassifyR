@@ -23,9 +23,6 @@
 #' parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 #' \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 #' the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.
-#' @param clinicalPredictors Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
-#' a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
-#' sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param nFeatures The number of features to be used for classification. If this is a single number, the same number of features will be used for all comparisons
 #' or assays. If a numeric vector these will be optimised over using \code{selectionOptimisation}. If a named vector with the same names of multiple assays, 
 #' a different number of features will be used for each assay. If a named list of vectors, the respective number of features will be optimised over. 
@@ -50,6 +47,9 @@
 #' @param ... For \code{train} and \code{predict} functions, parameters not used by the non-DataFrame signature functions but passed into the DataFrame signature function.
 #' @param object A trained model to predict with.
 #' @param newData The data to use to make predictions with.
+#' @param verbose Default: 0. A number between 0 and 3 for the amount of
+#' progress messages to give.  A higher number will produce more messages as
+#' more lower-level functions print messages.
 #'
 #' @details
 #' \code{classifier} can be any a keyword for any of the implemented approaches as shown by \code{available()}.
@@ -111,7 +111,7 @@ setMethod("crossValidate", "DataFrame",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
+                   characteristicsLabel = NULL, extraParams = NULL, verbose = 0)
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
@@ -316,7 +316,6 @@ setMethod("crossValidate", "DataFrame",
 setMethod("crossValidate", "MultiAssayExperimentOrList",
           function(measurements,
                    outcome,
-                   clinicalPredictors = NULL,
                    nFeatures = 20,
                    selectionMethod = "auto",
                    selectionOptimisation = "Resubstitution",
@@ -330,7 +329,7 @@ setMethod("crossValidate", "MultiAssayExperimentOrList",
                    characteristicsLabel = NULL, extraParams = NULL)
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
-              prepParams <- list(measurements, outcome, clinicalPredictors)
+              prepParams <- list(measurements, outcome)
               if("prepare" %in% names(extraParams))
                 prepParams <- c(prepParams, extraParams[["prepare"]])
               measurementsAndOutcome <- do.call(prepareData, prepParams)
@@ -887,7 +886,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   modellingParams <- generateModellingParams(assayIDs = assayIDs, measurements = measurements, nFeatures = nFeatures,
                                                      selectionMethod = selectionMethod, selectionOptimisation = "Resubstitution", performanceType = performanceType,
                                                      classifier = classifier, multiViewMethod = "none", extraParams = extraParams)
-                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = 0)
+                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = verbose)
                                   selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
                                   tuneDetailsSelect <- topFeatures[[3]]
                                   measurementsUse <- measurementsUse[, selectedFeaturesIndices]
@@ -952,7 +951,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   if(!is.null(modellingParams@trainParams@tuneParams))
                                     modellingParams$trainParams@tuneParams <- c(modellingParams$trainParams@tuneParams, performanceType = performanceType)
                                   
-                                  trained <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = 0)[["model"]]
+                                  trained <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = verbose)[["model"]]
                                   attr(trained, "predictFunction") <- classifierParams$predictParams@predictor
                                   trained
                                   ## train model
@@ -977,7 +976,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
               ### Merging or binding to combine data
               if(multiViewMethod == "merge"){
                   measurementsUse <- measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIDs, drop = FALSE]
-                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                   class(model) <- c("trainedByClassifyR", class(model))
               }
 
@@ -1002,7 +1001,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                     selectParams = NULL,
                                     trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
                                     predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics))
-                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                  class(model) <- c("trainedByClassifyR", class(model))
               }
               
@@ -1018,7 +1017,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                 modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                    trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
                                    predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics))
-                model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                 class(model) <- c("trainedByClassifyR", class(model))
               }
               if(missing(models) || is.null(models)) return(model) else return(models)
@@ -1064,9 +1063,9 @@ train.list <- function(x, outcomeTrain, ...)
 #' @rdname crossValidate
 #' @method train MultiAssayExperiment
 #' @export
-train.MultiAssayExperiment <- function(x, outcome, clinicalPredictors = NULL, ...)
+train.MultiAssayExperiment <- function(x, outcome, ...)
           {
-              prepArgs <- list(x, outcome, clinicalPredictors)
+              prepArgs <- list(x, outcome)
               extraInputs <- list(...)
               prepExtras <- trainExtras <- numeric()
               if(length(extraInputs) > 0)
@@ -1090,7 +1089,7 @@ train.MultiAssayExperiment <- function(x, outcome, clinicalPredictors = NULL, ..
 #' stored in a \code{\link{ClassifyResult}} object.
 #' @method predict trainedByClassifyR
 #' @export
-predict.trainedByClassifyR <- function(object, newData, ...)
+predict.trainedByClassifyR <- function(object, newData, outcome, ...)
 {
   if(is(newData, "tabular")) # Simply tabular data.
   {
@@ -1105,9 +1104,7 @@ predict.trainedByClassifyR <- function(object, newData, ...)
     newData <- do.call(cbind, newData)
     } else if(is(newData, "MultiAssayExperiment"))
             {
-              newData <- prepareData(newData, clinicalPredictors = subset(allFeatureNames(object), assay == "clinical")[, "feature"])
-              # Some classifiers dangerously use positional matching rather than column name matching.
-              # newData columns are sorted so that the right column ordering is guaranteed.
+              newData <- prepareData(newData, outcome)
     }
     
     predictFunctionUse <- attr(object, "predictFunction")

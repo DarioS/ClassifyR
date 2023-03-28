@@ -29,13 +29,13 @@
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  extraParams = NULL
+  extraParams = NULL,
+  verbose = 0
 )
 
 \S4method{crossValidate}{MultiAssayExperimentOrList}(
   measurements,
   outcome,
-  clinicalPredictors = NULL,
   nFeatures = 20,
   selectionMethod = "auto",
   selectionOptimisation = "Resubstitution",
@@ -103,9 +103,9 @@
 
 \method{train}{list}(x, outcomeTrain, ...)
 
-\method{train}{MultiAssayExperiment}(x, outcome, clinicalPredictors = NULL, ...)
+\method{train}{MultiAssayExperiment}(x, outcome, ...)
 
-\method{predict}{trainedByClassifyR}(object, newData, ...)
+\method{predict}{trainedByClassifyR}(object, newData, outcome, ...)
 }
 \arguments{
 \item{measurements}{Either a \code{\link{DataFrame}}, \code{\link{data.frame}}, \code{\link{matrix}}, \code{\link{MultiAssayExperiment}} 
@@ -156,9 +156,9 @@ parameters which will be passed into the data cleaning function. The names of th
 \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.}
 
-\item{clinicalPredictors}{Default: \code{NULL}. If \code{measurements} is a \code{MultiAssayExperiment},
-a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
-sample acquisition dates, etc. which are not relevant for outcome prediction.}
+\item{verbose}{Default: 0. A number between 0 and 3 for the amount of
+progress messages to give.  A higher number will produce more messages as
+more lower-level functions print messages.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 

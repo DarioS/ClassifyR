@@ -18,13 +18,15 @@
 #' @param outcomeColumns If \code{measurements} is a \code{MultiAssayExperiment}, the
 #' names of the column (class) or columns (survival) in the table extracted by \code{colData(data)}
 #' that contain(s) the each individual's outcome to use for prediction.
-#' @param clinicalPredictors If \code{measurements} is a \code{MultiAssayExperiment},
-#' a character vector of features to use in modelling. This allows avoidance of things like sample IDs,
-#' sample acquisition dates, etc. which are not relevant for outcome prediction.
+#' @param useFeatures Default: \code{NULL} (i.e. use all provided features). If \code{measurements} is a \code{MultiAssayExperiment} or list of tabular data,
+#' a named list of features to use. Otherwise, the input data is a single table and this can just be a vector of feature names.
+#' For any assays not in the named list, all of their features are used. \code{"clinical"} is also a valid assay name and refers to the clinical data table.
+#' This allows for the avoidance of variables such spike-in RNAs, sample IDs, sample acquisition dates, etc. which are not relevant for outcome prediction.
 #' @param maxMissingProp Default: 0.0. A proportion less than 1 which is the maximum
 #' tolerated proportion of missingness for a feature to be retained for modelling.
-#' @param topNvariance Default: NULL. An integer number of most variable features per assay to subset to.
-#' Assays with less features won't be reduced in size.
+#' @param topNvariance Default: NULL. If \code{measurements} is a \code{MultiAssayExperiment} or list of tabular data, a named integer vector of most variable 
+#' features per assay to subset to. If the input data is a single table, then simply a single integer.
+#' If an assays has less features, it won't be reduced in size but stay as-is.
 #' @param ... Variables not used by the \code{matrix} nor the
 #' \code{MultiAssayExperiment} method which are passed into and used by the
 #' \code{DataFrame} method.
@@ -56,7 +58,7 @@ setMethod("prepareData", "data.frame",
 #' @rdname prepareData
 #' @export
 setMethod("prepareData", "DataFrame",
-  function(measurements, outcome, clinicalPredictors = NULL, maxMissingProp = 0.0, topNvariance = NULL)
+  function(measurements, outcome, useFeatures = NULL, maxMissingProp = 0.0, topNvariance = NULL)
 {
   if(is.null(rownames(measurements)))
   {
@@ -127,16 +129,29 @@ setMethod("prepareData", "DataFrame",
       outcome <- survival::Surv(outcome[, 1], outcome[, 2], outcome[, 3])
   }
   
-  if(!is.null(clinicalPredictors))
+  if("clinical" %in% is.null(mcols(measurements)$assay) && (is.null(useFeatures) || !"clinical" %in% names(useFeatures)))
+  {
+    warning("Using clinical table, but no 'useFeatures' named list element for it is specified. Clinical data often has\n", 
+    "lots of uninformative variables. Please consider specifying useful features.")
+  }
+  
+  if(!is.null(useFeatures))
   {
     if(!is.null(mcols(measurements)$assay))
     {
-      clinicalIndices <- which(mcols(measurements)$assay == "clinical")
-      usePredictors <- intersect(clinicalIndices, which(mcols(measurements)$feature %in% clinicalPredictors))
-      dropIndices <- setdiff(clinicalIndices, usePredictors)
-      if(length(dropIndices) > 0) measurements <- measurements[, -dropIndices]
-    } else { # The DataFrame is entirely clinical data.
-      measurements <- measurements[, clinicalPredictors]
+      if(!is.list(useFeatures) || is.null(names(useFeatures)))
+          stop("'useFeatures' must be a named list for multi-assay data.")
+        
+      dropFeaturesIndices <- unlist(mapply(function(assayID, features)
+      {
+        assayIndices <- which(mcols(measurements)$assay == assayID)  
+        useIndicies <- intersect(assayIndices, which(mcols(measurements)$feature %in% features))
+        setdiff(assayIndices, useIndicies) # To drop.
+      }, names(useFeatures), useFeatures))
+      measurements <- measurements[, -dropFeaturesIndices]
+
+    } else { # A single tabular data set (i.e. matrix or DataFrame) was the user's input.
+      measurements <- measurements[, useFeatures]
     }
   }  
 
@@ -160,13 +175,15 @@ setMethod("prepareData", "DataFrame",
   if(!is.null(topNvariance))
   {
     if(is.null(mcols(measurements)$assay)) assays <- rep(1, ncol(measurements)) else assays <- mcols(measurements)$assay
-    do.call(cbind, lapply(unqiue(assays), function(assay)
+    measurements <- do.call(cbind, lapply(unqiue(assays), function(assay)
     {
-      assayColumns <- which(assays == assay)    
-      if(length(assayColumns) < topNvariance)
+      assayColumns <- which(assays == assay)
+      assayTopN <- topNvariance
+      if(length(topNvariance) > 1) assayTopN <- topNvariance[assay]
+      if(length(assayColumns) < assayTopN)
         measurements[, assayColumns]
       else
-        measurements[, assayColumns][order(apply(measurements[, assayColumns], 2, var, na.rm = TRUE), decreasing = TRUE)[1:topNvariance]]  
+        measurements[, assayColumns][order(apply(measurements[, assayColumns], 2, var, na.rm = TRUE), decreasing = TRUE)[1:assayTopN]]  
     }))
   }
   
@@ -176,10 +193,13 @@ setMethod("prepareData", "DataFrame",
 #' @rdname prepareData
 #' @export
 setMethod("prepareData", "MultiAssayExperiment",
-  function(measurements, outcomeColumns = NULL, clinicalPredictors = NULL, ...)
+  function(measurements, outcomeColumns = NULL, useFeatures = NULL, ...)
 {
-  if(is.null(clinicalPredictors))
-    stop("'clinicalPredictors' must be a vector of informative clinical features (i.e. not sample IDs, sampling dates, etc.) to consider for classification.")      
+  if(is.null(useFeatures) || !"clinical" %in% names(useFeatures))
+  {
+    warning("No 'useFeatures' named list element for clincal data is specified. Clinical data often has\n", 
+    "lots of uninformative variables. Please consider specifying useful features.")
+  }
 
   if(any(anyReplicated(measurements)))
     stop("Data set contains replicates. Please remove or average replicate observations and try again.")
@@ -193,7 +213,7 @@ setMethod("prepareData", "MultiAssayExperiment",
   # Get all desired measurements tables and clinical columns.
   # These form the independent variables to be used for making predictions with.
   # Variable names will have names like RNA_BRAF for traceability.
-  dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(clinicalPredictors, outcomeColumns))
+  dataTable <- MultiAssayExperiment::wideFormat(measurements, colDataCols = union(useFeatures, outcomeColumns))
   rownames(dataTable) <- dataTable[, "primary"]
   S4Vectors::mcols(dataTable)[, "sourceName"] <- gsub("colDataCols", "clinical", S4Vectors::mcols(dataTable)[, "sourceName"])
   dataTable <- dataTable[, -match("primary", colnames(dataTable))]
@@ -209,21 +229,24 @@ setMethod("prepareData", "MultiAssayExperiment",
   S4Vectors::mcols(dataTable) <- S4Vectors::mcols(dataTable)[, c("assay", "feature")]
     
   # Do other filtering and preparation in DataFrame function.
-  prepareData(dataTable, outcomeColumns, clinicalPredictors = NULL, ...)
+  prepareData(dataTable, outcomeColumns, useFeatures = NULL, ...)
 })
 
 #' @rdname prepareData
 #' @export
 setMethod("prepareData", "list",
-  function(measurements, outcome = NULL, clinicalPredictors = NULL, ...)
+  function(measurements, outcome = NULL, useFeatures = NULL, ...)
 {
   # Check the list is named.
   if(is.null(names(measurements)))
     stop("'measurements' must be a named list.")
 
-  # If clinical table is present, features to use must be user-specified.            
-  if("clinical" %in% names(measurements) && is.null(clinicalPredictors))
-    stop("Because one provided table in the list is named \"clinical\", 'clinicalPredictors' must be a vector of informative clinical features (i.e. not sample IDs, sampling dates, etc.) to consider for classification.")
+  # If clinical table is present, features to use should be user-specified.            
+  if("clinical" %in% names(measurements) && (is.null(useFeatures) || !"clinical" %in% names(useFeatures)))
+  {
+    warning("Using clinical table, but no 'useFeatures' named list element for it is specified. Clinical data often has\n", 
+    "lots of uninformative variables. Please consider specifying useful features.")
+  }
 
   # Check data type is valid.
   if(!(all(sapply(measurements, function(assay) is(assay, "tabular")))))
@@ -233,8 +256,11 @@ setMethod("prepareData", "list",
   if (!length(unique(sapply(measurements, nrow))) == 1)
     stop("All datasets must have the same samples.")
       
-  if("clinical" %in% names(measurements))
-    measurements[["clinical"]] <- measurements[["clinical"]][, clinicalPredictors]
+  for(filterIndex in seq_along(useFeatures))
+  {
+    listIndex <- match(names(useFeatures)[filterIndex], names(measurements))
+    measurements[[listIndex]] <- measurements[[listIndex]][, useFeatures[[filterIndex]]]
+  }
              
   allMetadata <- do.call(rbind, mapply(function(measurementsOne, assayID) {
                         data.frame(assay = assayID, feature = colnames(measurementsOne))
@@ -246,5 +272,5 @@ setMethod("prepareData", "list",
   S4Vectors::mcols(allMeasurements) <- allMetadata
     
   # Do other filtering and preparation in DataFrame function.
-  prepareData(allMeasurements, outcome, clinicalPredictors = NULL, ...)
+  prepareData(allMeasurements, outcome, useFeatures = NULL, ...)
 })
