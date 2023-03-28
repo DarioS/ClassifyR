@@ -29,7 +29,8 @@
   nRepeats = 20,
   nCores = 1,
   characteristicsLabel = NULL,
-  extraParams = NULL
+  extraParams = NULL,
+  verbose = 0
 )
 
 \S4method{crossValidate}{MultiAssayExperimentOrList}(
@@ -154,6 +155,10 @@ with each element being a vector of assays to combine. Special value \code{"all"
 parameters which will be passed into the data cleaning function. The names of the list must be one of \code{"prepare"},
 \code{"select"}, \code{"train"}, \code{"predict"}. To remove one of the defaults (see the article titled Parameter Tuning Presets for crossValidate and Their Customisation on
 the website), specify the list element to be \code{NULL}. For the valid element names in the \code{"prepare"} list, see \code{?prepareData}.}
+
+\item{verbose}{Default: 0. A number between 0 and 3 for the amount of
+progress messages to give.  A higher number will produce more messages as
+more lower-level functions print messages.}
 
 \item{x}{Same as \code{measurements} but only training samples.}
 

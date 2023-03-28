@@ -47,6 +47,9 @@
 #' @param ... For \code{train} and \code{predict} functions, parameters not used by the non-DataFrame signature functions but passed into the DataFrame signature function.
 #' @param object A trained model to predict with.
 #' @param newData The data to use to make predictions with.
+#' @param verbose Default: 0. A number between 0 and 3 for the amount of
+#' progress messages to give.  A higher number will produce more messages as
+#' more lower-level functions print messages.
 #'
 #' @details
 #' \code{classifier} can be any a keyword for any of the implemented approaches as shown by \code{available()}.
@@ -108,7 +111,7 @@ setMethod("crossValidate", "DataFrame",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
+                   characteristicsLabel = NULL, extraParams = NULL, verbose = 0)
 
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
@@ -883,7 +886,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   modellingParams <- generateModellingParams(assayIDs = assayIDs, measurements = measurements, nFeatures = nFeatures,
                                                      selectionMethod = selectionMethod, selectionOptimisation = "Resubstitution", performanceType = performanceType,
                                                      classifier = classifier, multiViewMethod = "none", extraParams = extraParams)
-                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = 0)
+                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = verbose)
                                   selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
                                   tuneDetailsSelect <- topFeatures[[3]]
                                   measurementsUse <- measurementsUse[, selectedFeaturesIndices]
@@ -948,7 +951,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   if(!is.null(modellingParams@trainParams@tuneParams))
                                     modellingParams$trainParams@tuneParams <- c(modellingParams$trainParams@tuneParams, performanceType = performanceType)
                                   
-                                  trained <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = 0)[["model"]]
+                                  trained <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, CrossValParams(), modellingParams, verbose = verbose)[["model"]]
                                   attr(trained, "predictFunction") <- classifierParams$predictParams@predictor
                                   trained
                                   ## train model
@@ -973,7 +976,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
               ### Merging or binding to combine data
               if(multiViewMethod == "merge"){
                   measurementsUse <- measurements[, S4Vectors::mcols(measurements)[["assay"]] %in% assayIDs, drop = FALSE]
-                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                   class(model) <- c("trainedByClassifyR", class(model))
               }
 
@@ -998,7 +1001,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                     selectParams = NULL,
                                     trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
                                     predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics))
-                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                  class(model) <- c("trainedByClassifyR", class(model))
               }
               
@@ -1014,7 +1017,7 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                 modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
                                    trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
                                    predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics))
-                model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = 0)[["model"]]
+                model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                 class(model) <- c("trainedByClassifyR", class(model))
               }
               if(missing(models) || is.null(models)) return(model) else return(models)
