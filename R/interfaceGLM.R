@@ -4,7 +4,7 @@ GLMtrainInterface <- function(measurementsTrain, classesTrain, ..., verbose = 3)
   if(verbose == 3)
     message("Fitting GLM classifier to data.")
   fitData <- cbind(measurementsTrain, class = classesTrain)
-  glm(class ~ . + 0, family = binomial, data = fitData, weights = as.numeric(1 / (table(classesTrain)[classesTrain] / length(classesTrain))), ...)
+  glm(class ~ . + 0, family = quasibinomial, data = fitData, weights = as.numeric(1 / (table(classesTrain)[classesTrain] / length(classesTrain))), ...)
 }
 attr(GLMtrainInterface, "name") <- "GLMtrainInterface"
 

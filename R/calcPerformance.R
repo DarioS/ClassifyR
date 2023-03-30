@@ -30,7 +30,9 @@
 #' calcExternalPerformance,factor,factor-method calcExternalPerformance,Surv,numeric-method
 #' calcCVperformance,ClassifyResult-method
 #' @param result An object of class \code{\link{ClassifyResult}}.
-#' @param performanceType A character vector of length 1. Default: \code{"Balanced Accuracy"}.
+#' @param resultsList A list of modelling results. Each element must be of type \code{\link{ClassifyResult}}.
+#' @param performanceTypes Default: \code{"auto"} A character vector. If \code{"auto"}, Balanced Accuracy will be used
+#' for a classification task and C-index for a time-to-event task.
 #' Must be one of the following options:
 #' \itemize{
 #' \item{\code{"Error"}: Ordinary error rate.}
@@ -91,35 +93,41 @@ standardGeneric("calcExternalPerformance"))
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("factor", "factor"),
           function(actualOutcome, predictedOutcome, # Both are classes.
-                   performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
-                                       "Sample Error", "Sample Accuracy",
-                                       "Micro Precision", "Micro Recall",
-                                       "Micro F1", "Macro Precision",
-                                       "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
+                   performanceTypes = "auto")
 {
-  performanceType <- match.arg(performanceType)
-  if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
+  if(length(performanceTypes) == 1 && performanceTypes == "auto") performanceTypes <- "Balanced Accuracy"
+              
+  if(length(levels(actualOutcome)) > 2 && performanceTypes == "Matthews Correlation Coefficient")
     stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
   if(is(predictedOutcome, "factor")) levels(predictedOutcome) <- levels(actualOutcome)
-  .calcPerformance(list(actualOutcome), list(predictedOutcome), performanceType = performanceType)[["values"]]
+  
+  sapply(performanceTypes, function(performanceType)
+    .calcPerformance(list(actualOutcome), list(predictedOutcome), performanceType = performanceTypes)[["values"]]
+  )
 })
 
 #' @rdname calcPerformance
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("Surv", "numeric"),
-          function(actualOutcome, predictedOutcome, performanceType = "C-index")
+          function(actualOutcome, predictedOutcome, performanceTypes = "auto")
           {
-            performanceType <- match.arg(performanceType)
-            .calcPerformance(actualOutcome, predictedOutcome, performanceType = performanceType)[["values"]]
+            if(length(performanceTypes) == 1 && performanceTypes == "auto") performanceTypes <- "C-index"
+            
+            sapply(performanceTypes, function(performanceType)
+              .calcPerformance(actualOutcome, predictedOutcome, performanceType = performanceType)[["values"]]
+            )
           })
 
 #' @rdname calcPerformance
 #' @exportMethod calcExternalPerformance
 setMethod("calcExternalPerformance", c("factor", "tabular"), # table has class probabilities per sample.
-          function(actualOutcome, predictedOutcome, performanceType = "AUC")
+          function(actualOutcome, predictedOutcome, performanceTypes = "auto")
           {
-            performanceType <- match.arg(performanceType)
-            .calcPerformance(actualOutcome, predictedOutcome, performanceType = performanceType)[["values"]]
+            if(length(performanceTypes) == 1 && performanceTypes == "auto") performanceTypes <- "AUC"
+            
+            sapply(performanceTypes, function(performanceType)
+              .calcPerformance(actualOutcome, predictedOutcome, performanceType = performanceType)[["values"]]
+            )
           })
 
 #' @rdname calcPerformance
@@ -131,55 +139,55 @@ setGeneric("calcCVperformance", function(result, ...)
 #' @rdname calcPerformance
 #' @exportMethod calcCVperformance
 setMethod("calcCVperformance", "ClassifyResult",
-          function(result, performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
-                                               "Sample Error", "Sample Accuracy",
-                                               "Micro Precision", "Micro Recall",
-                                               "Micro F1", "Macro Precision",
-                                               "Macro Recall", "Macro F1", "Matthews Correlation Coefficient", "AUC", 
-                                               "C-index", "Sample C-index"))
+          function(result, performanceTypes = "auto")
 {
-  performanceType <- match.arg(performanceType)
   actualOutcome <- actualOutcome(result) # Extract the known outcome of each sample.
-  
-  ### Group by permutation
-  if(!performanceType %in% c("Sample Error", "Sample Accuracy"))
+  if(length(performanceTypes) == 1 && performanceTypes == "auto")
   {
-    if("permutation" %in% colnames(result@predictions))
-      grouping <- result@predictions[, "permutation"]
-    else # A set of folds or all leave-k-out predictions or independent train and test sets.
-      grouping <- rep(1, nrow(result@predictions))
+      if(is.factor(actualOutcome)) performanceTypes <- "Balanced Accuracy" else performanceTypes <- "C-index"
   }
   
-  ### Performance for survival data
-  if(performanceType %in% c("C-index", "Sample C-index")) {
-    samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-    performance <- .calcPerformance(actualOutcome = actualOutcome[match(result@predictions[, "sample"], sampleNames(result))],
-                                    predictedOutcome = result@predictions[, "risk"], 
-                                    samples = samples,
-                                    performanceType = performanceType, 
-                                    grouping = grouping)
-    result@performance[[performance[["name"]]]] <- performance[["values"]]
-    return(result)
+  # Allow calculation of multiple metrics at once.
+  for(performanceType in performanceTypes)
+  {
+      ### Group by permutation
+      if(!performanceType %in% c("Sample Error", "Sample Accuracy"))
+      {
+        if("permutation" %in% colnames(result@predictions))
+          grouping <- result@predictions[, "permutation"]
+        else # A set of folds or all leave-k-out predictions or independent train and test sets.
+          grouping <- rep(1, nrow(result@predictions))
+      }
+      
+      ### Performance for survival data
+      if(performanceType %in% c("C-index", "Sample C-index")) {
+        samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
+        performance <- .calcPerformance(actualOutcome = actualOutcome[match(result@predictions[, "sample"], sampleNames(result))],
+                                        predictedOutcome = result@predictions[, "risk"], 
+                                        samples = samples,
+                                        performanceType = performanceType, 
+                                        grouping = grouping)
+        result@performance[[performance[["name"]]]] <- performance[["values"]]
+      }
+      
+      if(performanceType == "AUC") {
+        performance <- .calcPerformance(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))],
+                                        result@predictions[, levels(actualOutcome)],
+                                        performanceType = performanceType, grouping = grouping)
+        result@performance[[performance[["name"]]]] <- performance[["values"]]
+      }
+      
+      ### Performance for data with classes
+      if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
+        stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
+    
+      classLevels <- levels(actualOutcome)
+      samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
+      predictedOutcome <- factor(result@predictions[, "class"], levels = classLevels)
+      actualOutcome <- factor(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
+      performance <- .calcPerformance(actualOutcome, predictedOutcome, samples, performanceType, grouping)
+      result@performance[[performance[["name"]]]] <- performance[["values"]]
   }
-  
-  if(performanceType == "AUC") {
-    performance <- .calcPerformance(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))],
-                                    result@predictions[, levels(actualOutcome)],
-                                    performanceType = performanceType, grouping = grouping)
-    result@performance[[performance[["name"]]]] <- performance[["values"]]
-    return(result)
-  }
-  
-  ### Performance for data with classes
-  if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
-    stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
-
-  classLevels <- levels(actualOutcome)
-  samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-  predictedOutcome <- factor(result@predictions[, "class"], levels = classLevels)
-  actualOutcome <- factor(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
-  performance <- .calcPerformance(actualOutcome, predictedOutcome, samples, performanceType, grouping)
-  result@performance[[performance[["name"]]]] <- performance[["values"]]
   result
 })
 
@@ -360,4 +368,33 @@ setMethod("calcCVperformance", "ClassifyResult",
   }
 
   list(name = performanceType, values = performanceValues)
+}
+
+#' @rdname calcPerformance
+#' @param aggregate Default: \code{"median"}. Can also be \code{"mean"}. If there are multiple values, such as for repeated
+#' cross-validation, then they are summarised to a single number using either mean or median.
+#' @export performanceTable
+#' @importFrom tidyr pivot_wider
+performanceTable <- function(resultsList, performanceTypes = "auto", aggregate = c("median", "mean"))
+{
+  aggregate <- match.arg(aggregate)
+  actualOutcome <- actualOutcome(resultsList[[1]]) # Establish outcome type.
+  if(length(performanceTypes) == 1 && performanceTypes == "auto")
+  {
+      if(is.factor(actualOutcome)) performanceTypes <- "Balanced Accuracy" else performanceTypes <- "C-index"
+  }
+
+  names(performanceTypes) <- performanceTypes
+  do.call(rbind, lapply(resultsList, function(result)
+  {
+    performances <- lapply(performanceTypes, function(performanceType)
+    {
+      if(!performanceType %in% names(performance(result)))
+        performance <- performance(calcCVperformance(result, performanceType))[[performanceType]]
+      else
+        performance <- performance(result)[[performanceType]]
+      if(aggregate == "median") median(performance) else mean(performance)
+    })
+    DataFrame(tidyr::pivot_wider(as.data.frame(result@characteristics), names_from = characteristic, values_from = value), performances, check.names = FALSE)  
+  }))
 }

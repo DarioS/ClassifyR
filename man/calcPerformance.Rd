@@ -8,35 +8,34 @@
 \alias{calcExternalPerformance,Surv,numeric-method}
 \alias{calcCVperformance,ClassifyResult-method}
 \alias{calcExternalPerformance,factor,tabular-method}
+\alias{performanceTable}
 \title{Add Performance Calculations to a ClassifyResult Object or Calculate for a
 Pair of Factor Vectors}
 \usage{
 \S4method{calcExternalPerformance}{factor,factor}(
   actualOutcome,
   predictedOutcome,
-  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
-    "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
-    "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient")
+  performanceTypes = "auto"
 )
 
 \S4method{calcExternalPerformance}{Surv,numeric}(
   actualOutcome,
   predictedOutcome,
-  performanceType = "C-index"
+  performanceTypes = "auto"
 )
 
 \S4method{calcExternalPerformance}{factor,tabular}(
   actualOutcome,
   predictedOutcome,
-  performanceType = "AUC"
+  performanceTypes = "auto"
 )
 
-\S4method{calcCVperformance}{ClassifyResult}(
-  result,
-  performanceType = c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
-    "Sample Error", "Sample Accuracy", "Micro Precision", "Micro Recall", "Micro F1",
-    "Macro Precision", "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
-    "AUC", "C-index", "Sample C-index")
+\S4method{calcCVperformance}{ClassifyResult}(result, performanceTypes = "auto")
+
+performanceTable(
+  resultsList,
+  performanceTypes = "auto",
+  aggregate = c("median", "mean")
 )
 }
 \arguments{
@@ -44,7 +43,8 @@ Pair of Factor Vectors}
 
 \item{predictedOutcome}{A factor vector or survival information of the same length as \code{actualOutcome} specifying each sample's predicted outcome.}
 
-\item{performanceType}{A character vector of length 1. Default: \code{"Balanced Accuracy"}.
+\item{performanceTypes}{Default: \code{"auto"} A character vector. If \code{"auto"}, Balanced Accuracy will be used
+for a classification task and C-index for a time-to-event task.
 Must be one of the following options:
 \itemize{
 \item{\code{"Error"}: Ordinary error rate.}
@@ -75,6 +75,11 @@ there are two classes.}
 }}
 
 \item{result}{An object of class \code{\link{ClassifyResult}}.}
+
+\item{resultsList}{A list of modelling results. Each element must be of type \code{\link{ClassifyResult}}.}
+
+\item{aggregate}{Default: \code{"median"}. Can also be \code{"mean"}. If there are multiple values, such as for repeated
+cross-validation, then they are summarised to a single number using either mean or median.}
 }
 \value{
 If \code{calcCVperformance} was run, an updated
