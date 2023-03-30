@@ -144,7 +144,7 @@ setMethod("calcCVperformance", "ClassifyResult",
   actualOutcome <- actualOutcome(result) # Extract the known outcome of each sample.
   if(length(performanceTypes) == 1 && performanceTypes == "auto")
   {
-      if(is.factor(actualOutcome)) performanceTypes <- "Balanced Accuracy" else performanceTypes <- "C-index"
+      if(is.factor(actualOutcome)) performanceTypes <- c("AUC", "Balanced Accuracy") else performanceTypes <- "C-index"
   }
   
   # Allow calculation of multiple metrics at once.
@@ -178,15 +178,20 @@ setMethod("calcCVperformance", "ClassifyResult",
       }
       
       ### Performance for data with classes
-      if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
-        stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
-    
-      classLevels <- levels(actualOutcome)
-      samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
-      predictedOutcome <- factor(result@predictions[, "class"], levels = classLevels)
-      actualOutcome <- factor(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
-      performance <- .calcPerformance(actualOutcome, predictedOutcome, samples, performanceType, grouping)
-      result@performance[[performance[["name"]]]] <- performance[["values"]]
+      if(performanceType %in% c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
+                                 "Micro Precision", "Micro Recall", "Micro F1", "Macro Precision",
+                                 "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
+      {
+        if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
+          stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
+        
+        classLevels <- levels(actualOutcome)
+        samples <- factor(result@predictions[, "sample"], levels = sampleNames(result))
+        predictedOutcome <- factor(result@predictions[, "class"], levels = classLevels)
+        actualOutcome <- factor(actualOutcome[match(result@predictions[, "sample"], sampleNames(result))], levels = classLevels, ordered = TRUE)
+        performance <- .calcPerformance(actualOutcome, predictedOutcome, samples, performanceType, grouping)
+        result@performance[[performance[["name"]]]] <- performance[["values"]]
+      }
   }
   result
 })
@@ -381,7 +386,7 @@ performanceTable <- function(resultsList, performanceTypes = "auto", aggregate =
   actualOutcome <- actualOutcome(resultsList[[1]]) # Establish outcome type.
   if(length(performanceTypes) == 1 && performanceTypes == "auto")
   {
-      if(is.factor(actualOutcome)) performanceTypes <- "Balanced Accuracy" else performanceTypes <- "C-index"
+      if(is.factor(actualOutcome)) performanceTypes <- c("AUC", "Balanced Accuracy") else performanceTypes <- "C-index"
   }
 
   names(performanceTypes) <- performanceTypes
