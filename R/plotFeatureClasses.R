@@ -230,7 +230,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
         if(whichNumericFeaturePlots %in% c("both", "density"))
         {
           densPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = measurement, colour = class)) +
-            ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = lineWidth) +
+            ggplot2::stat_density(ggplot2::aes(y = ggplot2::after_stat(density)), geom = "path", position = "identity", size = lineWidth) +
             ggplot2::scale_colour_manual("Class", values = colours) + ggplot2::coord_cartesian(xlim = measurementLimits) +
             ggplot2::scale_x_continuous(breaks = xLabelPositions) + ggplot2::scale_y_continuous(breaks = yLabelPositions)
           

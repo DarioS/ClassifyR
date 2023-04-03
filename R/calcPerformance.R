@@ -180,7 +180,8 @@ setMethod("calcCVperformance", "ClassifyResult",
       ### Performance for data with classes
       if(performanceType %in% c("Balanced Accuracy", "Balanced Error", "Error", "Accuracy",
                                  "Micro Precision", "Micro Recall", "Micro F1", "Macro Precision",
-                                 "Macro Recall", "Macro F1", "Matthews Correlation Coefficient"))
+                                 "Macro Recall", "Macro F1", "Matthews Correlation Coefficient",
+                                 "Sample Error", "Sample Accuracy"))
       {
         if(length(levels(actualOutcome)) > 2 && performanceType == "Matthews Correlation Coefficient")
           stop("Error: Matthews Correlation Coefficient specified but data set has more than 2 classes.")
