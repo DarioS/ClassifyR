@@ -320,7 +320,7 @@ bubblePlot <- function (precisionPathways, ...) {
 #' a default colour scheme will automatically be chosen.
 #' @rdname precisionPathwaysEvaluations
 #' @export
-bubblePlot.PrecisionPathways <- function(precisionPathways, pathwayColours = NULL)
+bubblePlot.PrecisionPathways <- function(precisionPathways, pathwayColours = NULL, ...)
 {
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))    
   if(is.null(pathwayColours)) pathwayColours <- scales::hue_pal()(length(precisionPathways[["pathways"]]))
@@ -340,7 +340,7 @@ flowchart <- function (precisionPathways, ...) {
 #' a default colour scheme will automatically be chosen.
 #' @rdname precisionPathwaysEvaluations
 #' @export
-flowchart.PrecisionPathways <- function(precisionPathways, pathway, nodeColours = c(assay = "#86C57C", class1 = "#ACCEE0", class2 = "#F47F72"))
+flowchart.PrecisionPathways <- function(precisionPathways, pathway, nodeColours = c(assay = "#86C57C", class1 = "#ACCEE0", class2 = "#F47F72"), ...)
 {
   if(!requireNamespace("data.tree", quietly = TRUE))
     stop("The package 'data.tree' could not be found. Please install it.")
@@ -413,7 +413,7 @@ strataPlot <- function (precisionPathways, ...) {
 #' a default colour scheme will automatically be chosen.
 #' @rdname precisionPathwaysEvaluations
 #' @export
-strataPlot.PrecisionPathways <- function(precisionPathways, pathway, classColours = c(class1 = "#4DAF4A", class2 = "#984EA3"))
+strataPlot.PrecisionPathways <- function(precisionPathways, pathway, classColours = c(class1 = "#4DAF4A", class2 = "#984EA3"), ...)
 {
   pathwayUse <- precisionPathways[["pathways"]][[pathway]]
   assayIDs <- pathwayUse[["tiers"]][, 1]

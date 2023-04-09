@@ -144,7 +144,13 @@ setMethod("calcCVperformance", "ClassifyResult",
   actualOutcome <- actualOutcome(result) # Extract the known outcome of each sample.
   if(length(performanceTypes) == 1 && performanceTypes == "auto")
   {
-      if(is.factor(actualOutcome)) performanceTypes <- c("AUC", "Balanced Accuracy") else performanceTypes <- "C-index"
+      if(is.factor(actualOutcome))
+      {
+        if(all(levels(actualOutcome) %in% colnames(predictions(result)))) # Class scores present.
+          performanceTypes <- c("AUC", "Balanced Accuracy")
+        else # No class scores available in prections table.
+          performanceTypes <- "Balanced Accuracy"
+    } else performanceTypes <- "C-index"
   }
   
   # Allow calculation of multiple metrics at once.
