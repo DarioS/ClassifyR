@@ -16,7 +16,8 @@ crissCrossValidate(
   classifier = "auto",
   nFolds = 5,
   nRepeats = 20,
-  nCores = 1
+  nCores = 1,
+  verbose = 0
 )
 }
 \arguments{
@@ -50,6 +51,9 @@ for a classification task or Cox proportional hazards model for a survival task.
 \item{nRepeats}{A numeric specifying the the number of repeats or permutations to use for cross-validation.}
 
 \item{nCores}{A numeric specifying the number of cores used if the user wants to use parallelisation.}
+
+\item{verbose}{Default: 0. A number between 0 and 3 for the amount of progress messages to give.  A higher number will produce more messages as
+more lower-level functions print messages.}
 }
 \value{
 A list with elements \code{"real"} for the matrix of pairwise performance metrics using real

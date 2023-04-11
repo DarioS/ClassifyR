@@ -2,6 +2,27 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 3.4.0}{\itemize{
+  \item
+  Companion website with more in-depth explanation and examples.
+  \item
+  Default random forest classifier based on ranger now does two-step classification; one for variable importance and one for model fitting, as recommended by ranger's developer.
+  \item
+  More functions use automatic parameter value selection as their defaults.
+  \item
+  \code{randomSelection} function to choose random sets of features in cross-validation.
+  \item
+  \code{crossValidate} function now permits custom parameter tuning via \code{extraParams}.
+  \item
+  Elastic net GLM and ordinary GLM now calculate class weights be default, so as to perform well in class-imbalanced scenarios.
+  \item
+  \code{precisionPathwaysTrain} and \code{precisionPathwaysPredict} functions for building tree-like models of multiple assays and their accessory functions \code{calcCostsAndPerformance}, \code{bubblePlot}, \code{flowchart}, \code{strataPlot} for model performance evaluation.
+  \item
+  \code{crissCrossValidate} function that takes a list of data sets with the same set of features and the same set of outcomes and does all possible pairs of training and prediction to evaluate generalisability. \code{crissCrossPlot} for visual evaluation.
+  \item
+  
+}}
+
 \section{Version 3.2.0}{\itemize{
   \item
   Fast Cox survival analysis.
