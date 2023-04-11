@@ -98,6 +98,7 @@
   multiViewMethod = "none",
   assayIDs = "all",
   extraParams = NULL,
+  verbose = 0,
   ...
 )
 

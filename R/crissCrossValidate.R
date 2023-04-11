@@ -21,6 +21,8 @@
 #' options described in \code{\link{calcPerformance}} may otherwise be specified.
 #' @param doRandomFeatures Default: \code{FALSE}. Whether to perform random feature selection to establish a baseline performance. Either \code{FALSE} or \code{TRUE}
 #' are permitted values.
+#' @param verbose Default: 0. A number between 0 and 3 for the amount of progress messages to give.  A higher number will produce more messages as
+#' more lower-level functions print messages.
 #' @return A list with elements \code{"real"} for the matrix of pairwise performance metrics using real
 #' feature selection, \code{"random"} if \code{doRandomFeatures} is \code{TRUE} for metrics of random selection and
 #' \code{"params"} for a list of parameters used during the execution of this function.
@@ -35,10 +37,11 @@ crissCrossValidate <- function(measurements, outcomes,
                                performanceType = "auto",
                                doRandomFeatures = FALSE,
                                classifier = "auto",
-                               nFolds = 5, nRepeats = 20, nCores = 1)
+                               nFolds = 5, nRepeats = 20, nCores = 1, verbose = 0)
 {
   trainType <- match.arg(trainType)
   if(!is.list(measurements)) stop("'measurements' is not of type list but is of type", class(measurements))
+  if(is.null(names(measurements))) stop("Each element of 'measurements' must be named by the name of the data set.")
   if(!is.list(outcomes)) stop("'outcomes' is not of type list but is of type", class(outcomes))
   isCategorical <- is.character(outcomes[[1]]) && (length(outcomes[[1]]) == 1 || length(outcomes[[1]]) == nrow(measurements[[1]])) || is.factor(outcomes[[1]])
   if(performanceType == "auto")
@@ -58,13 +61,14 @@ crissCrossValidate <- function(measurements, outcomes,
   # If trainType is modelTrain, then build a model on a data set and test it on every data set.
   if(trainType == "modelTrain")
   {
+    if(verbose > 0) message("Using built training models on all test data sets.")
     # Build a model for each dataset.
     trainedModels <- mapply(function(measurementsOne, outcomesOne)
     {
       train(measurementsOne, outcomesOne,
             nFeatures = nFeatures,
             selectionMethod = selectionMethod, selectionOptimisation = selectionOptimisation,
-            classifier = classifier, multiViewMethod = "none")
+            classifier = classifier, multiViewMethod = "none", verbose = verbose)
      }, measurements, outcomes, SIMPLIFY = FALSE)
 
     # Perform pair-wise model assessment.
@@ -72,9 +76,9 @@ crissCrossValidate <- function(measurements, outcomes,
     {
       mapply(function(testData, testOutcomes)
       {
-        predictions <- predict(trainedModel, testData)
+        predictions <- predict(trainedModel, testData, verbose = verbose)
         if(is(predictions, "tabular")) predictions <- predictions[, na.omit(match(c("class", "risk"), colnames(predictions)))]
-        calcExternalPerformance(predictions, testOutcomes, performanceType)
+        calcExternalPerformance(testOutcomes, predictions, performanceType)
       }, measurements, outcomes)
     })
 
@@ -82,6 +86,7 @@ crissCrossValidate <- function(measurements, outcomes,
                               dimnames = list(paste("Select and Train", names(measurements)), paste("Predict", names(measurements))))
     realPerformance <- round(realPerformance, 2)
   } else { # trainType is "modelTest".
+    if(verbose > 0) message("Using features chonsen in training to do cross-validation in the test data sets.")
     trainedModels <- mapply(function(measurementsOne, outcomesOne)
     {
       crossValidate(measurementsOne, outcomesOne,
@@ -92,7 +97,7 @@ crissCrossValidate <- function(measurements, outcomes,
                     multiViewMethod = "none",
                     nFolds = nFolds,
                     nCores = nCores,
-                    nRepeats = nRepeats)
+                    nRepeats = nRepeats, verbose = verbose)
      }, measurements, outcomes, SIMPLIFY = FALSE)
     
     # Make it for runTests, which allows existing results to be passed into selection process.

@@ -842,7 +842,7 @@ train.data.frame <- function(x, outcomeTrain, ...)
 #' @method train DataFrame
 #' @export
 train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures = 20, classifier = "auto", performanceType = "auto",
-                            multiViewMethod = "none", assayIDs = "all", extraParams = NULL, ...)
+                            multiViewMethod = "none", assayIDs = "all", extraParams = NULL, verbose = 0, ...)
                    {
               prepParams <- list(x, outcomeTrain)
               if(!is.null(extraParams) && "prepare" %in% names(extraParams))
