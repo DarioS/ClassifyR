@@ -848,6 +848,8 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
               if(!is.null(extraParams) && "prepare" %in% names(extraParams))
                 prepParams <- c(prepParams, extraParams[["prepare"]])
               measurementsAndOutcome <- do.call(prepareData, prepParams)
+              measurements <- measurementsAndOutcome[["measurements"]]
+              outcomeTrain <- measurementsAndOutcome[["outcome"]]
               
               # Ensure performance type is one of the ones that can be calculated by the package.
               if(!performanceType %in% c("auto", .ClassifyRenvir[["performanceTypes"]]))
@@ -860,13 +862,10 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                 if(isCategorical) selectionMethod <- "t-test" else selectionMethod <- "CoxPH"
               if(length(classifier) == 1 && classifier == "auto")
                 if(isCategorical) classifier <- "randomForest" else classifier <- "CoxPH"
-              
-              measurements <- measurementsAndOutcome[["measurements"]]
-              outcomeTrain <- measurementsAndOutcome[["outcome"]]
-              
+
               classifier <- cleanClassifier(classifier = classifier, measurements = measurements)
               selectionMethod <- cleanSelectionMethod(selectionMethod = selectionMethod, measurements = measurements)
-              if(assayIDs == "all") assayIDs <- unique(S4Vectors::mcols(measurements)[, "assay"])
+              if(assayIDs == "all") assayIDs <- unique(S4Vectors::mcols(measurements)$assay)
               if(is.null(assayIDs)) assayIDs <- 1
               names(assayIDs) <- assayIDs
               names(classifier) <- assayIDs
