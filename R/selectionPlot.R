@@ -161,9 +161,14 @@ setMethod("selectionPlot", "list",
   {
     characteristicsCounts <- table(unlist(lapply(results, function(result) result@characteristics[["characteristic"]])))
     if(max(characteristicsCounts) == length(results))
-      characteristicsList[["x"]] <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)][1]
-    else
+    {
+      validCharacteristics <- names(characteristicsCounts)[characteristicsCounts == max(characteristicsCounts)]
+      allCharacteristics <- do.call(rbind, lapply(results, function(result) result@characteristics))
+      valuesPerCharacteristic <- by(allCharacteristics, allCharacteristics[, "characteristic"], function(characteristicValues) length(unique(characteristicValues[, "value"])))
+      characteristicsList[["x"]] <- names(valuesPerCharacteristic)[which.max(valuesPerCharacteristic)]
+    } else {
       stop("No characteristic is present for all results but must be.")
+    }
   }
   
   allFeaturesList <- lapply(results, function(result)
