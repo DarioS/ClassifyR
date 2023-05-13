@@ -85,7 +85,12 @@ setMethod("prepareData", "DataFrame",
   {
     outcomeColumn <- match(outcome, colnames(measurements))
     if(is.na(outcomeColumn))
-      stop("Specified column name of outcome is not present in the data table.")
+    {
+      if(!is.null(mcols(measurements)$feature))
+        outcomeColumn <- match(outcome, mcols(measurements)$feature)
+      if(is.na(outcomeColumn))
+        stop("Specified column name of outcome is not present in the data table.")
+    }
     outcome <- measurements[, outcomeColumn]
     measurements <- measurements[, -outcomeColumn, drop = FALSE]
     # R version 4 and greater no longer automatically casts character columns to factors because stringsAsFactors
@@ -101,7 +106,13 @@ setMethod("prepareData", "DataFrame",
   {
     outcomeColumns <- match(outcome, colnames(measurements))
     if(any(is.na(outcomeColumns)))
-      stop("Specified column names of outcome is not present in the data table.")
+    {
+      if(!is.null(mcols(measurements)$feature))
+        outcomeColumns <- match(outcome, mcols(measurements)$feature)
+      if(any(is.na(outcomeColumns)))  
+        stop("Specified column names of outcome is not present in the data table.")
+    }
+    
     outcome <- measurements[, outcomeColumns]
     measurements <- measurements[, -outcomeColumns, drop = FALSE]
   }
@@ -258,7 +269,10 @@ setMethod("prepareData", "list",
       
   for(filterIndex in seq_along(useFeatures))
   {
-    listIndex <- match(names(useFeatures)[filterIndex], names(measurements))
+    assayFilter <- names(useFeatures)[filterIndex]      
+    listIndex <- match(assayFilter, names(measurements))
+    if(!is.null(outcome) && assayFilter == "clinical" && length(outcome) <= 3)
+        useFeatures[[filterIndex]] <- union(useFeatures[[filterIndex]], outcome)
     measurements[[listIndex]] <- measurements[[listIndex]][, useFeatures[[filterIndex]]]
   }
              
@@ -268,9 +282,10 @@ setMethod("prepareData", "list",
   allMeasurements <- do.call("cbind", measurements)
   # Different assays e.g. mRNA, protein could have same feature name e.g. BRAF.
   colnames(allMeasurements) <- paste(allMetadata[, "assay"], allMetadata[, "feature"], sep = '_')
+  rownames(allMeasurements) <- rownames(measurements[[1]])
   allMeasurements <- DataFrame(allMeasurements)
   S4Vectors::mcols(allMeasurements) <- allMetadata
-    
+  
   # Do other filtering and preparation in DataFrame function.
   prepareData(allMeasurements, outcome, useFeatures = NULL, ...)
 })
