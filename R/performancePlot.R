@@ -36,7 +36,10 @@
 #' @param orderingList An optional named list. Any of the variables specified
 #' to \code{characteristicsList} can be the name of an element of this list and
 #' the value of the element is the order in which the factors should be
-#' presented in, in case alphabetical sorting is undesirable.
+#' presented in, in case alphabetical sorting is undesirable. Special values
+#' \code{"performanceAscending"} and \code{"performanceDescending"} indicate that
+#' the order of levels will be computed based on the median performance value of
+#' the characteristic being sorted into ascending or descending order.
 #' @param yLimits The minimum and maximum value of the performance metric to
 #' plot.
 #' @param densityStyle Default: "box". Either \code{"violin"} for violin plot or
@@ -156,7 +159,10 @@ setMethod("performancePlot", "list",
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
   plotData <- plotData[, !duplicated(colnames(plotData))]
-  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
+    plotData[, "Assay Name"] <- gsub("\n", " ", plotData[, "Assay Name"])
+  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList, metric)
+  
+
 
   # Fill in any missing variables needed for ggplot2 code.
   if("fillColour" %in% names(characteristicsList))
