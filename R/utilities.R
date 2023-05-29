@@ -407,12 +407,18 @@
 }
 
 # Don't just plot groups alphabetically, but do so in a meaningful order.
-.addUserLevels <- function(plotData, orderingList)
+.addUserLevels <- function(plotData, orderingList, metric)
 {
-  for(orderingIndex in 1:length(orderingList))
+  for(orderingIndex in seq_along(orderingList))
   {
-    plotData[, names(orderingList)[orderingIndex]] <- factor(plotData[, names(orderingList)[orderingIndex]],
-                                                             levels = orderingList[[orderingIndex]])
+    orderingID <- names(orderingList)[orderingIndex]
+    ordering <- orderingList[[orderingIndex]]
+    if(length(ordering) == 1 && ordering %in% c("performanceAscending", "performanceDescending"))
+    { # Order by median values of each group.
+      characteristicMedians <- by(plotData[, metric], plotData[, orderingID], median)
+      ordering <- names(characteristicMedians)[order(characteristicMedians, decreasing = ordering == "performanceDescending")]
+    }
+    plotData[, orderingID] <- factor(plotData[, orderingID], levels = ordering)
   }
   plotData
 }
