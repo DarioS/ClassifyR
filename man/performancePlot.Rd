@@ -58,7 +58,10 @@ empty, a palette of colours will be automatically chosen.}
 \item{orderingList}{An optional named list. Any of the variables specified
 to \code{characteristicsList} can be the name of an element of this list and
 the value of the element is the order in which the factors should be
-presented in, in case alphabetical sorting is undesirable.}
+presented in, in case alphabetical sorting is undesirable. Special values
+\code{"performanceAscending"} and \code{"performanceDescending"} indicate that
+the order of levels will be computed based on the median performance value of
+the characteristic being sorted into ascending or descending order.}
 
 \item{densityStyle}{Default: "box". Either \code{"violin"} for violin plot or
 \code{"box"} for box plot.}
