@@ -194,7 +194,7 @@ setMethod("crossValidate", "DataFrame",
                                       nRepeats = nRepeats,
                                       nCores = nCores,
                                       characteristicsLabel = characteristicsLabel,
-                                      extraParams = extraParams
+                                      extraParams = extraParams, verbose = verbose
                                   )
                               },
                               simplify = FALSE)
@@ -231,7 +231,7 @@ setMethod("crossValidate", "DataFrame",
                          nRepeats = nRepeats,
                          nCores = nCores,
                          characteristicsLabel = characteristicsLabel,
-                         extraParams = extraParams)
+                         extraParams = extraParams, verbose = verbose)
                   }, simplify = FALSE)
 
               }
@@ -265,7 +265,7 @@ setMethod("crossValidate", "DataFrame",
                          nRepeats = nRepeats,
                          nCores = nCores,
                          characteristicsLabel = characteristicsLabel,
-                         extraParams = extraParams)
+                         extraParams = extraParams, verbose = verbose)
                   }, simplify = FALSE)
 
               }
@@ -300,7 +300,7 @@ setMethod("crossValidate", "DataFrame",
                          nRepeats = nRepeats,
                          nCores = nCores,
                          characteristicsLabel = characteristicsLabel,
-                         extraParams = extraParams)
+                         extraParams = extraParams, verbose = verbose)
                   }, simplify = FALSE)
 
               }
@@ -769,7 +769,7 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
                nFolds,
                nRepeats,
                nCores,
-               characteristicsLabel, extraParams)
+               characteristicsLabel, extraParams, verbose)
 
 {
     # Which data-types or data-views are present?
@@ -798,7 +798,7 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
 
     if(!is.null(measurements))
     { # Cross-validation.
-      classifyResults <- runTests(measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
+      classifyResults <- runTests(measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, verbose = verbose)
       fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
     } else { # Independent training and testing.
       classifyResults <- runTest(x, outcomeTrain, measurementsTest, outcomeTest, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
