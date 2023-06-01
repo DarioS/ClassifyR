@@ -159,10 +159,7 @@ setMethod("performancePlot", "list",
                     }, results, 1:length(results), SIMPLIFY = FALSE))
   
   plotData <- plotData[, !duplicated(colnames(plotData))]
-    plotData[, "Assay Name"] <- gsub("\n", " ", plotData[, "Assay Name"])
   if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList, metric)
-  
-
 
   # Fill in any missing variables needed for ggplot2 code.
   if("fillColour" %in% names(characteristicsList))
