@@ -20,9 +20,11 @@ extern"C" {
         int i=0;
         int j=0;
         double sclback=*sctest;
+        double sclback2=*sctest2;
+        double sclback3=*sctest3;
         int maxlback=*maxiter;
         //int stratalback;
-        double betalback=1;
+        double betalback=*beta;
         
         for(j=0;j< *ncolmat;j++){
             

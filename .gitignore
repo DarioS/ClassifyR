@@ -5,6 +5,8 @@
 src/ClassifyR.so
 src/coxformatrices.o
 
+# debug stuff
+debug
 
 # vscode stuff
 .vscode
