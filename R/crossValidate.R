@@ -885,10 +885,17 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                   modellingParams <- generateModellingParams(assayIDs = assayIDs, measurements = measurements, nFeatures = nFeatures,
                                                      selectionMethod = selectionMethod, selectionOptimisation = "Resubstitution", performanceType = performanceType,
                                                      classifier = classifier, multiViewMethod = "none", extraParams = extraParams)
-                                  topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = verbose)
-                                  selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
-                                  tuneDetailsSelect <- topFeatures[[3]]
-                                  measurementsUse <- measurementsUse[, selectedFeaturesIndices]
+
+                                  if(!is.null(modellingParams@selectParams))
+                                  {
+                                    topFeatures <- .doSelection(measurementsUse, outcomeTrain, CrossValParams(), modellingParams, verbose = verbose)
+                                    selectedFeaturesIndices <- topFeatures[[2]] # Extract for subsetting.
+                                    tuneDetailsSelect <- topFeatures[[3]]
+                                    measurementsUse <- measurementsUse[, selectedFeaturesIndices]
+                                  } else {
+                                    tuneDetailsSelect <- NULL
+                                    measurementsUse <- measurements
+                                  }
 
                                   classifierParams <- .classifierKeywordToParams(classifierForAssay)
                                   if(!is.null(extraParams) && "train" %in% names(extraParams))
