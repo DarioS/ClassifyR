@@ -17,6 +17,7 @@ coxnetTrainInterface <- function(measurementsTrain, survivalTrain, lambda = NULL
   offset <- -mean(predict(fitted, measurementsMatrix, s = fit$lambda.min, type = "link"))
   attr(fitted, "tune") <- list(lambda = fit$lambda.min, offset = offset)
   
+  class(fitted) <- class(fitted)[1] # Get rid of glmnet which messes with dispatch. 
   fitted
 }
 attr(coxnetTrainInterface, "name") <- "coxnetTrainInterface"
