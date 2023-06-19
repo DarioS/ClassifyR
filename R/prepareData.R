@@ -198,6 +198,10 @@ setMethod("prepareData", "DataFrame",
     }))
   }
   
+  # Names are on both the covariates and outcome. Ensure consistent ordering.
+  if(!is.null(rownames(measurements)) && !is.null(names(outcome)))
+      measurements <- measurements[match(names(outcome), rownames(measurements)), ]
+  
   list(measurements = measurements, outcome = outcome)
 })
 
@@ -279,6 +283,10 @@ setMethod("prepareData", "list",
   allMetadata <- do.call(rbind, mapply(function(measurementsOne, assayID) {
                         data.frame(assay = assayID, feature = colnames(measurementsOne))
                         }, measurements, names(measurements), SIMPLIFY = FALSE))
+  
+  # Ensure that sample IDs are consistently ordered in all data tables.
+  measurements <- lapply(measurements, function(measurementsOne) measurementsOne[rownames(measurements[[1]]), ])
+  
   allMeasurements <- do.call("cbind", measurements)
   # Different assays e.g. mRNA, protein could have same feature name e.g. BRAF.
   colnames(allMeasurements) <- paste(allMetadata[, "assay"], allMetadata[, "feature"], sep = '_')
