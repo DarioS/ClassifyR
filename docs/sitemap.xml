@@ -1,123 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/404.html</loc>
+    <loc>/404.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/ClassifyR.html</loc>
+    <loc>/articles/ClassifyR.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/DevelopersGuide.html</loc>
+    <loc>/articles/DevelopersGuide.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/incorporateNew.html</loc>
+    <loc>/articles/incorporateNew.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/index.html</loc>
+    <loc>/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/introduction.html</loc>
+    <loc>/articles/introduction.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/multiViewMethods.html</loc>
+    <loc>/articles/multiViewMethods.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/articles/performanceEvaluation.html</loc>
+    <loc>/articles/performanceEvaluation.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/authors.html</loc>
+    <loc>/articles/presets.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/index.html</loc>
+    <loc>/articles/survival.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/ClassifyResult-class.html</loc>
+    <loc>/authors.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/CrossValParams-class.html</loc>
+    <loc>/index.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/FeatureSetCollection.html</loc>
+    <loc>/reference/ClassifyResult-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/HuRI.html</loc>
+    <loc>/reference/CrossValParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/ModellingParams-class.html</loc>
+    <loc>/reference/FeatureSetCollection.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/PredictParams-class.html</loc>
+    <loc>/reference/HuRI.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/ROCplot.html</loc>
+    <loc>/reference/METABRICclinical.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/SelectParams-class.html</loc>
+    <loc>/reference/ModellingParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/TrainParams-class.html</loc>
+    <loc>/reference/PredictParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/TransformParams-class.html</loc>
+    <loc>/reference/ROCplot.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/asthma.html</loc>
+    <loc>/reference/SelectParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/available.html</loc>
+    <loc>/reference/TrainParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/calcPerformance.html</loc>
+    <loc>/reference/TransformParams-class.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/colCoxTests.html</loc>
+    <loc>/reference/asthma.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/crossValidate.html</loc>
+    <loc>/reference/available.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/distribution.html</loc>
+    <loc>/reference/calcPerformance.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/edgesToHubNetworks.html</loc>
+    <loc>/reference/colCoxTests.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/featureSetSummary.html</loc>
+    <loc>/reference/crissCrossPlot.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/generateCrossValParams.html</loc>
+    <loc>/reference/crissCrossValidate.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/generateModellingParams.html</loc>
+    <loc>/reference/crossValidate.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/index.html</loc>
+    <loc>/reference/distribution.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/interactorDifferences.html</loc>
+    <loc>/reference/edgesToHubNetworks.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/performancePlot.html</loc>
+    <loc>/reference/featureSetSummary.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/plotFeatureClasses.html</loc>
+    <loc>/reference/generateCrossValParams.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/prepareData.html</loc>
+    <loc>/reference/generateModellingParams.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/rankingPlot.html</loc>
+    <loc>/reference/index.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/runTest.html</loc>
+    <loc>/reference/interactorDifferences.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/runTests.html</loc>
+    <loc>/reference/performancePlot.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/samplesMetricMap.html</loc>
+    <loc>/reference/plotFeatureClasses.html</loc>
   </url>
   <url>
-    <loc>https://sydneybiox.github.io/ClassifyR/reference/selectionPlot.html</loc>
+    <loc>/reference/precisionPathways.html</loc>
+  </url>
+  <url>
+    <loc>/reference/precisionPathwaysEvaluations.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prepareData.html</loc>
+  </url>
+  <url>
+    <loc>/reference/rankingPlot.html</loc>
+  </url>
+  <url>
+    <loc>/reference/runTest.html</loc>
+  </url>
+  <url>
+    <loc>/reference/runTests.html</loc>
+  </url>
+  <url>
+    <loc>/reference/samplesMetricMap.html</loc>
+  </url>
+  <url>
+    <loc>/reference/selectionPlot.html</loc>
   </url>
 </urlset>

@@ -4,7 +4,7 @@ known classes and a vector of predicted classes determined outside of the
 ClassifyR package, a single metric value is calculated. If
 calcCVperformance is used, annotates the results of calling
 crossValidate, runTests or runTest with one of the user-specified performance measures."><title>Add Performance Calculations to a ClassifyResult Object or Calculate for a
-Pair of Factor Vectors — calcExternalPerformance • ClassifyR</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Add Performance Calculations to a ClassifyResult Object or Calculate for a
+Pair of Factor Vectors — calcExternalPerformance • ClassifyR</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Add Performance Calculations to a ClassifyResult Object or Calculate for a
 Pair of Factor Vectors — calcExternalPerformance"><meta property="og:description" content="If calcExternalPerformance is used, such as when having a vector of
 known classes and a vector of predicted classes determined outside of the
 ClassifyR package, a single metric value is calculated. If
@@ -16,11 +16,11 @@ crossValidate, runTests or runTest with one of the user-specified performance me
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-dark"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,8 +34,17 @@ crossValidate, runTests or runTest with one of the user-specified performance me
 <li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../articles/index.html">Articles</a>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/DevelopersGuide.html">**ClassifyR** Developer's Guide</a>
+    <a class="dropdown-item" href="../articles/incorporateNew.html">Creating a Wrapper for New Functionality and Registering It</a>
+    <a class="dropdown-item" href="../articles/introduction.html">Introduction to the Concepts of ClassifyR</a>
+    <a class="dropdown-item" href="../articles/multiViewMethods.html">Multi-view Methods for Modelling of Multiple Data Views</a>
+    <a class="dropdown-item" href="../articles/performanceEvaluation.html">Performance Evaluation of Fitted Models</a>
+    <a class="dropdown-item" href="../articles/presets.html">Parameter Tuning Presets for crossValidate and Their Customisation</a>
+    <a class="dropdown-item" href="../articles/survival.html">Survival Data Analysis</a>
+  </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -67,25 +76,30 @@ ClassifyR package, a single metric value is calculated. If
 <span><span class="fu">calcExternalPerformance</span><span class="op">(</span></span>
 <span>  <span class="va">actualOutcome</span>,</span>
 <span>  <span class="va">predictedOutcome</span>,</span>
-<span>  performanceType <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Balanced Accuracy"</span>, <span class="st">"Balanced Error"</span>, <span class="st">"Error"</span>, <span class="st">"Accuracy"</span>,</span>
-<span>    <span class="st">"Sample Error"</span>, <span class="st">"Sample Accuracy"</span>, <span class="st">"Micro Precision"</span>, <span class="st">"Micro Recall"</span>, <span class="st">"Micro F1"</span>,</span>
-<span>    <span class="st">"Macro Precision"</span>, <span class="st">"Macro Recall"</span>, <span class="st">"Macro F1"</span>, <span class="st">"Matthews Correlation Coefficient"</span><span class="op">)</span></span>
+<span>  performanceTypes <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for Surv,numeric</span></span>
 <span><span class="fu">calcExternalPerformance</span><span class="op">(</span></span>
 <span>  <span class="va">actualOutcome</span>,</span>
 <span>  <span class="va">predictedOutcome</span>,</span>
-<span>  performanceType <span class="op">=</span> <span class="st">"C-index"</span></span>
+<span>  performanceTypes <span class="op">=</span> <span class="st">"auto"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for factor,tabular</span></span>
+<span><span class="fu">calcExternalPerformance</span><span class="op">(</span></span>
+<span>  <span class="va">actualOutcome</span>,</span>
+<span>  <span class="va">predictedOutcome</span>,</span>
+<span>  performanceTypes <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for ClassifyResult</span></span>
-<span><span class="fu">calcCVperformance</span><span class="op">(</span></span>
-<span>  <span class="va">result</span>,</span>
-<span>  performanceType <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Balanced Accuracy"</span>, <span class="st">"Balanced Error"</span>, <span class="st">"Error"</span>, <span class="st">"Accuracy"</span>,</span>
-<span>    <span class="st">"Sample Error"</span>, <span class="st">"Sample Accuracy"</span>, <span class="st">"Micro Precision"</span>, <span class="st">"Micro Recall"</span>, <span class="st">"Micro F1"</span>,</span>
-<span>    <span class="st">"Macro Precision"</span>, <span class="st">"Macro Recall"</span>, <span class="st">"Macro F1"</span>, <span class="st">"Matthews Correlation Coefficient"</span>,</span>
-<span>    <span class="st">"AUC"</span>, <span class="st">"C-index"</span>, <span class="st">"Sample C-index"</span><span class="op">)</span></span>
+<span><span class="fu">calcCVperformance</span><span class="op">(</span><span class="va">result</span>, performanceTypes <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">performanceTable</span><span class="op">(</span></span>
+<span>  <span class="va">resultsList</span>,</span>
+<span>  performanceTypes <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"mean"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -99,8 +113,9 @@ ClassifyR package, a single metric value is calculated. If
 <dd><p>A factor vector or survival information of the same length as <code>actualOutcome</code> specifying each sample's predicted outcome.</p></dd>
 
 
-<dt>performanceType</dt>
-<dd><p>A character vector of length 1. Default: <code>"Balanced Accuracy"</code>.
+<dt>performanceTypes</dt>
+<dd><p>Default: <code>"auto"</code> A character vector. If <code>"auto"</code>, Balanced Accuracy will be used
+for a classification task and C-index for a time-to-event task.
 Must be one of the following options:</p><ul><li><p><code>"Error"</code>: Ordinary error rate.</p></li>
 <li><p><code>"Accuracy"</code>: Ordinary accuracy.</p></li>
 <li><p><code>"Balanced Error"</code>: Balanced error rate.</p></li>
@@ -131,6 +146,15 @@ there are two classes.</p></li>
 
 <dt>result</dt>
 <dd><p>An object of class <code><a href="ClassifyResult-class.html">ClassifyResult</a></code>.</p></dd>
+
+
+<dt>resultsList</dt>
+<dd><p>A list of modelling results. Each element must be of type <code><a href="ClassifyResult-class.html">ClassifyResult</a></code>.</p></dd>
+
+
+<dt>aggregate</dt>
+<dd><p>Default: <code>"median"</code>. Can also be <code>"mean"</code>. If there are multiple values, such as for repeated
+cross-validation, then they are summarised to a single number using either mean or median.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -178,8 +202,8 @@ classifier predicts all samples as belonging to the majority class.</p>
 <span class="r-in"><span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">calcCVperformance</span><span class="op">(</span><span class="va">result</span><span class="op">)</span> </span></span>
 <span class="r-in"><span>  <span class="fu"><a href="ClassifyResult-class.html">performance</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`Balanced Accuracy`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.6166667 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.38 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
@@ -193,7 +217,7 @@ classifier predicts all samples as belonging to the majority class.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer></div>
