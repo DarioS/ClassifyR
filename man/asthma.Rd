@@ -9,7 +9,7 @@
 \format{
 \code{measurements} has a row for each sample and a column for each
 gene. \code{classes} is a factor vector with values No and Yes, indicating if
-a partiular person has asthma or not.
+a particular person has asthma or not.
 }
 \source{
 A Nasal Brush-based Classifier of Asthma Identified by Machine

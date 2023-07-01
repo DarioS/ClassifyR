@@ -1,0 +1,53 @@
+---
+title: "Survival Data Analysis"
+author: Dario Strbenac <br>
+        The University of Sydney, Australia.
+output: 
+    BiocStyle::html_document:
+        css: style.css
+        toc: false
+---
+
+The modelling of survival data may be done using ClassifyR, not only categorical data. Currently, feature selection based on Cox proportional hazards ranking and models built on Cox proportional hazards or random survival forests are available.
+
+To illustrate, clinical variables of the METABRIC breast cancer cohort will be used to predict risk scores for patients.
+
+```{r, include = FALSE}
+library(ClassifyR)
+data(METABRICclinical) # Contains measurements and classes variables.
+head(clinical)
+```
+
+Cross-validation is very similar to the classification scenario, except that a `Surv` object or two column names indicating the time and event (in that order) are to be specified.
+
+```{r}
+survCrossValidated <- crossValidate(clinical, c("timeRFS", "eventRFS"))
+survCrossValidated
+```
+
+By default, Cox proportional hazards has been used for feature selection as well as modelling.
+
+The distribution of C-index values can be plotted.
+
+```{r}
+performancePlot(survCrossValidated)
+```
+
+The typical C-index is about 0.65, often seen in genomics analysis.
+
+Now, do no explicit feature selection and use a random survival forest. This will take substantially longer than Cox proportional hazards because parameter tuning of the fraction of variables to consider at each split and the number of trees to build are optimised over a grid of default values (see [Parameter Tuning Presets](presets.html) article for details).
+
+```{r}
+survForestCrossValidated <- crossValidate(clinical, c("timeRFS", "eventRFS"),
+                                          selectionMethod = "none",
+                                          classifier = "randomSurvivalForest",
+                                          nCores = 20)
+resultsList <- list(survCrossValidated, survForestCrossValidated)
+performancePlot(resultsList)
+```
+
+The random survival forest performs better than random chance but not better than Cox proportional hazards.
+
+**Exercise**: Plot the per-sample C-index using `samplesMetricMap(resultsList)` to identify patients who are predicted well and those who are not.
+
+Finally, note that extreme gradient boosting can also fit survival models. `classifier = "XGB"` will fit such a model. Remember that `classifier` can also be a vector of strings, so all three models can be fitted in one command.
