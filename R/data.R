@@ -10,7 +10,7 @@
 #' @docType data
 #' @format \code{measurements} has a row for each sample and a column for each
 #' gene. \code{classes} is a factor vector with values No and Yes, indicating if
-#' a partiular person has asthma or not.
+#' a particular person has asthma or not.
 #' @source A Nasal Brush-based Classifier of Asthma Identified by Machine
 #' Learning Analysis of Nasal RNA Sequence Data, \emph{Scientific Reports},
 #' 2018.  Webpage: \url{http://www.nature.com/articles/s41598-018-27189-4}
@@ -36,4 +36,15 @@ NULL
 #' @keywords datasets
 NULL
 
-
+#' METABRIC Clinical Data
+#' 
+#' 470 patients with eight features.
+#' 
+#' @name METABRICclinical
+#' @aliases clinical
+#' @docType data
+#' @format \code{clinical} A \code{\link{DataFrame}} containing clinical data.
+#' @source Dynamics of Breast Cancer Relapse Reveal Late-recurring ER-positive Genomic Subgroups, \emph{Nature},
+#' 2019.  Webpage: \url{https://www.nature.com/articles/s43018-020-0026-6}
+#' @keywords datasets
+NULL
