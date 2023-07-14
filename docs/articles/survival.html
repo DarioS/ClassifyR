@@ -27,7 +27,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.7</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,10 +68,12 @@
 
 
 
-<script src="survival_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Survival Data Analysis</h1>
-                        <h4 data-toc-skip class="author">Dario Strbenac <br> The University of Sydney, Australia.</h4>
+                        <h4 data-toc-skip class="author">Dario Strbenac
+<br> The University of Sydney, Australia.</h4>
             
       
       
@@ -80,10 +82,36 @@
 
     
     
-<p>The modelling of survival data may be done using ClassifyR, not only categorical data. Currently, feature selection based on Cox proportional hazards ranking and models built on Cox proportional hazards or random survival forests are available.</p>
-<p>To illustrate, clinical variables of the METABRIC breast cancer cohort will be used to predict risk scores for patients.</p>
-<p>Cross-validation is very similar to the classification scenario, except that a <code>Surv</code> object or two column names indicating the time and event (in that order) are to be specified.</p>
+<p>The modelling of survival data may be done using ClassifyR, not only
+categorical data. Currently, feature selection based on Cox proportional
+hazards ranking and models built on Cox proportional hazards or random
+survival forests are available.</p>
+<p>To illustrate, clinical variables of the METABRIC breast cancer
+cohort will be used to predict risk scores for patients.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">METABRICclinical</span><span class="op">)</span> <span class="co"># Contains measurements and classes variables.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">clinical</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## DataFrame with 6 rows and 8 columns</span></span>
+<span><span class="co">##         Breast.Tumour.Laterality ER.Status Inferred.Menopausal.State</span></span>
+<span><span class="co">##                         &lt;factor&gt;  &lt;factor&gt;                  &lt;factor&gt;</span></span>
+<span><span class="co">## MB-0002                        r       pos                      pre </span></span>
+<span><span class="co">## MB-0005                        r       pos                      pre </span></span>
+<span><span class="co">## MB-0010                        l       pos                      post</span></span>
+<span><span class="co">## MB-0013                        l       pos                      post</span></span>
+<span><span class="co">## MB-0014                        r       pos                      post</span></span>
+<span><span class="co">## MB-0018                        l       neg                      post</span></span>
+<span><span class="co">##         Lymph.Nodes.Positive     Grade      Size   timeRFS  eventRFS</span></span>
+<span><span class="co">##                    &lt;integer&gt; &lt;integer&gt; &lt;numeric&gt; &lt;integer&gt; &lt;integer&gt;</span></span>
+<span><span class="co">## MB-0002                    0         3        10      2539         0</span></span>
+<span><span class="co">## MB-0005                    1         2        15      4599         1</span></span>
+<span><span class="co">## MB-0010                    0         3        31        88         1</span></span>
+<span><span class="co">## MB-0013                    2         2        17      3378         0</span></span>
+<span><span class="co">## MB-0014                    1         2        10      4930         0</span></span>
+<span><span class="co">## MB-0018                    0         3        22      3422         0</span></span></code></pre>
+<p>Cross-validation is very similar to the classification scenario,
+except that a <code>Surv</code> object or two column names indicating
+the time and event (in that order) are to be specified.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">survCrossValidated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossValidate.html">crossValidate</a></span><span class="op">(</span><span class="va">clinical</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"timeRFS"</span>, <span class="st">"eventRFS"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">survCrossValidated</span></span></code></pre></div>
 <pre><code><span><span class="co">## An object of class 'ClassifyResult'.</span></span>
@@ -97,16 +125,23 @@
 <span><span class="co">## Features: List of length 100 of feature identifiers.</span></span>
 <span><span class="co">## Predictions: A data frame of 9400 rows.</span></span>
 <span><span class="co">## Performance Measures: None calculated yet.</span></span></code></pre>
-<p>By default, Cox proportional hazards has been used for feature selection as well as modelling.</p>
+<p>By default, Cox proportional hazards has been used for feature
+selection as well as modelling.</p>
 <p>The distribution of C-index values can be plotted.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/performancePlot.html">performancePlot</a></span><span class="op">(</span><span class="va">survCrossValidated</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Warning in .local(results, ...): C-index not found in all elements of results.</span></span>
 <span><span class="co">## Calculating it now.</span></span></code></pre>
-<p><img src="survival_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<p>The typical C-index is about 0.65, often seen in genomics analysis.</p>
-<p>Now, do no explicit feature selection and use a random survival forest. This will take substantially longer than Cox proportional hazards because parameter tuning of the fraction of variables to consider at each split and the number of trees to build are optimised over a grid of default values (see <a href="presets.html">Parameter Tuning Presets</a> article for details).</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p><img src="survival_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p>The typical C-index is about 0.65, often seen in genomics
+analysis.</p>
+<p>Now, do no explicit feature selection and use a random survival
+forest. This will take substantially longer than Cox proportional
+hazards because parameter tuning of the fraction of variables to
+consider at each split and the number of trees to build are optimised
+over a grid of default values (see <a href="presets.html">Parameter
+Tuning Presets</a> article for details).</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">survForestCrossValidated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossValidate.html">crossValidate</a></span><span class="op">(</span><span class="va">clinical</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"timeRFS"</span>, <span class="st">"eventRFS"</span><span class="op">)</span>,</span>
 <span>                                          selectionMethod <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>                                          classifier <span class="op">=</span> <span class="st">"randomSurvivalForest"</span>,</span>
@@ -115,10 +150,16 @@
 <span><span class="fu"><a href="../reference/performancePlot.html">performancePlot</a></span><span class="op">(</span><span class="va">resultsList</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Warning in .local(results, ...): C-index not found in all elements of results.</span></span>
 <span><span class="co">## Calculating it now.</span></span></code></pre>
-<p><img src="survival_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
-<p>The random survival forest performs better than random chance but not better than Cox proportional hazards.</p>
-<p><strong>Exercise</strong>: Plot the per-sample C-index using <code>samplesMetricMap(resultsList)</code> to identify patients who are predicted well and those who are not.</p>
-<p>Finally, note that extreme gradient boosting can also fit survival models. <code>classifier = "XGB"</code> will fit such a model. Remember that <code>classifier</code> can also be a vector of strings, so all three models can be fitted in one command.</p>
+<p><img src="survival_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p>The random survival forest performs better than random chance but not
+better than Cox proportional hazards.</p>
+<p><strong>Exercise</strong>: Plot the per-sample C-index using
+<code>samplesMetricMap(resultsList)</code> to identify patients who are
+predicted well and those who are not.</p>
+<p>Finally, note that extreme gradient boosting can also fit survival
+models. <code>classifier = "XGB"</code> will fit such a model. Remember
+that <code>classifier</code> can also be a vector of strings, so all
+three models can be fitted in one command.</p>
   </main>
 </div>
 
