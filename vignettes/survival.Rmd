@@ -16,8 +16,7 @@ To illustrate, clinical variables of the METABRIC breast cancer cohort will be u
 library(ClassifyR)
 ```
 
-```{r, include = FALSE}
-library(ClassifyR)
+```{r}
 data(METABRICclinical) # Contains measurements and classes variables.
 head(clinical)
 ```
