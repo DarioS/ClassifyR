@@ -17,7 +17,7 @@ library(ClassifyR)
 ```
 
 ```{r}
-data(METABRICclinical) # Contains measurements and classes variables.
+data(METABRICclinical) # Contains measurements and follow-up time and recurrence status.
 head(clinical)
 ```
 
