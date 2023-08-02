@@ -3,6 +3,8 @@ edgeRranking <- function(countsTrain, classesTrain, normFactorsOptions = NULL, d
 {
   if(verbose == 3)
     message("Doing edgeR LRT feature ranking")
+  if(!requireNamespace("edgeR", quietly = TRUE))
+    stop("The package 'edgeR' could not be found. Please install it.")
   
   # DGEList stores features as rows and samples as columns.          
   countsList <- edgeR::DGEList(t(as.matrix(countsTrain)), group = classesTrain)
