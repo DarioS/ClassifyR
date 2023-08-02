@@ -806,6 +806,10 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
       fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
     }
 
+    if (is.character(fullResult)) {
+       stop("Classification failed (see above).")
+    }
+
     classifyResults@finalModel <- list(fullResult$models)
     classifyResults
 }
