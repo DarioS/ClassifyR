@@ -132,6 +132,10 @@ input data. Autmomatically reducing to smaller number.")
       message("Error: All cross-validations had an error.")
       if(length(unique(unlist(results))) == 1)
         message("The common problem is: ", unlist(results)[[1]])
+        if(unlist(results)[[1]] == "subscript out of bounds") {
+          message("Ensure that you have installed all optional dependencies!")
+          message("Run `BiocManager::install('ClassifyR', dependencies = TRUE)`")
+        }
       return(results)
   } else if(sum(resultErrors) != 0) # Filter out cross-validations resulting in error.
   {
