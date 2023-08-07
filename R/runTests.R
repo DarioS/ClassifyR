@@ -131,7 +131,7 @@ input data. Autmomatically reducing to smaller number.")
   {
       message("Error: All cross-validations had an error.")
       if(length(unique(unlist(results))) == 1)
-        message("The common problem is: ", unlist(results)[[1]])
+        stop("The common problem is: ", unlist(results)[[1]])
       return(results)
   } else if(sum(resultErrors) != 0) # Filter out cross-validations resulting in error.
   {
