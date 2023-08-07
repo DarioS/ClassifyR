@@ -167,7 +167,7 @@
         if(ncol(tuneCombosTrain) > 1) # There are some parameters for training.
           modellingParams@trainParams@otherParams <- c(modellingParams@trainParams@otherParams, tuneCombosTrain[rowIndex, 2:ncol(tuneCombosTrain), drop = FALSE])
         modellingParams@trainParams@intermediate <- character(0)
-        
+
         # Do either resubstitution classification or nested-CV classification and calculate the resulting performance metric.
         if(crossValParams@tuneMode == "Resubstitution")
         {
@@ -175,8 +175,10 @@
           result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams = modellingParams,
                             verbose = verbose, .iteration = "internal")
-
+          if(is.character(result)) stop(result)
+          
           predictions <- result[["predictions"]]
+          
           # Classifiers will use a column "class" and survival models will use a column "risk".
           if(class(predictions) == "data.frame")
            predictedOutcome <- predictions[, na.omit(match(c("class", "risk"), colnames(predictions)))]
@@ -185,6 +187,7 @@
           calcExternalPerformance(outcomeTrain, predictedOutcome, performanceType)
         } else {
            result <- runTests(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose = verbose)
+           if(is.character(result)[[1]]) stop(result)
            result <- calcCVperformance(result, performanceType)
            median(performance(result)[[performanceType]])
          }
@@ -230,6 +233,7 @@
                             measurementsTrain, outcomeTrain,
                             crossValParams = NULL, modellingParams,
                             verbose = verbose, .iteration = "internal")
+          if(is.character(result)) stop(result)
 
           predictions <- result[["predictions"]]
           if(class(predictions) == "data.frame")
@@ -239,6 +243,7 @@
           calcExternalPerformance(outcomeTrain, predictedOutcome, performanceType)
         } else {
           result <- runTests(measurementsSubset, outcomeTrain, crossValParams, modellingParams, verbose = verbose)
+          if(is.character(result[[1]])) stop(result)
           result <- calcCVperformance(result, performanceType)
           median(performance(aResult)[[performanceType]])
         }
@@ -284,6 +289,7 @@
         result <- runTest(measurementsTrain, outcomeTrain, measurementsTrain, outcomeTrain,
                           crossValParams = NULL, modellingParams,
                           verbose = verbose, .iteration = "internal")
+        if(is.character(result)) stop(result)
 
         predictions <- result[["predictions"]]
         if(class(predictions) == "data.frame")
@@ -295,6 +301,7 @@
         result <- runTests(measurementsTrain, outcomeTrain,
                            crossValParams, modellingParams,
                            verbose = verbose, .iteration = "internal")
+        if(is.character(result[[1]])) stop(result)
         result <- calcCVperformance(result, performanceType)
         median(performances(result)[[performanceType]])
       }
