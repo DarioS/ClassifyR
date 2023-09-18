@@ -174,13 +174,37 @@ setMethod("prepareData", "DataFrame",
     outcome <- outcome[-dropSamples]  
   }
   
-  # Remove features with more missingness than allowed.
+  # Remove features or samples to ensure all features have less missingness than allowed.
   nSamples <- nrow(measurements)
+  nFeatures <- ncol(measurements)
   measurementsMatrix <- as.matrix(measurements) # For speed of calculation.
-  dropFeatures <- which(apply(measurementsMatrix, 2, function(featureMeasurements) sum(is.na(featureMeasurements)))
-                        / nrow(measurementsMatrix) > maxMissingProp)
-  if(length(dropFeatures) > 0)
-    measurements <- measurements[, -dropFeatures]
+  
+  # Iteratively collect feature and sample IDs to drop, after removing each feature or sample.
+  dropSamples <- character()
+  dropFeatures <- character()
+  missingOrNotMatrix <- is.na(measurementsMatrix)
+  NAfeaturesProportions <- colSums(missingOrNotMatrix) / nSamples
+  # Create an initial vector of feature IDs to individually check.
+  checkDropFeatures <- colnames(measurements)[(NAfeaturesProportions > maxMissingProp)]
+  for(checkColunName in checkDropFeatures)
+  {
+    columnProportionMissing <- sum(missingOrNotMatrix[, checkColunName]) / nrow(missingOrNotMatrix)
+    # Feature could be below the missingness threshold after previous sample removals. Skip.
+    if(columnProportionMissing <= maxMissingProp) next()
+    rowProportionsMissing <- rowSums(missingOrNotMatrix[missingOrNotMatrix[, checkColunName], , drop = FALSE]) / ncol(missingOrNotMatrix)
+    if(mean(rowProportionsMissing) > columnProportionMissing)
+    {# Get rid of the samples / rows with higher missingness.
+      samplesRemove <- rownames(missingOrNotMatrix)[missingOrNotMatrix[, checkColunName]]
+      dropSamples <- c(dropSamples, samplesRemove)
+      missingOrNotMatrix <- missingOrNotMatrix[-match(samplesRemove, rownames(missingOrNotMatrix)), ]
+    } else { # Remove the feature / column.
+      dropFeatures <- c(dropFeatures, checkColunName)
+      missingOrNotMatrix <- missingOrNotMatrix[, -match(checkColunName, colnames(missingOrNotMatrix))]
+    }
+  }
+      
+  if(length(dropFeatures) > 0) measurements <- measurements[, -match(dropFeatures, colnames(measurements))]
+  if(length(dropSamples) > 0) measurements <- measurements[-match(dropSamples, rownames(measurements)), ]
   
   # Use only the most N variable features per assay.
   if(!is.null(topNvariance))
