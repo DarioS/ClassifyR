@@ -799,14 +799,13 @@ CV <- function(measurements, outcome, x, outcomeTrain, measurementsTest, outcome
     if(!is.null(measurements))
     { # Cross-validation.
       classifyResults <- runTests(measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, verbose = verbose)
-      fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
     } else { # Independent training and testing.
       classifyResults <- runTest(x, outcomeTrain, measurementsTest, outcomeTest, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics)
-      
+      if(is.character(classifyResults)) stop(classifyResults)
       fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+      classifyResults@finalModel <- fullResult$models
     }
-
-    classifyResults@finalModel <- list(fullResult$models)
+    
     classifyResults
 }
 

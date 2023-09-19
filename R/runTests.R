@@ -179,10 +179,15 @@ input data. Autmomatically reducing to smaller number.")
     importance <- do.call(rbind, lapply(results, "[[", "importance"))
   
   fullResult <- runTest(measurements, outcome, measurements, outcome, crossValParams = crossValParams, modellingParams = modellingParams, characteristics = characteristics, .iteration = 1)
+  if(is.character(fullResult))
+  {
+    warning("Unable to fit a full model: ", fullResult)
+    fullResult <- list(models = NULL)
+  }
   
   ClassifyResult(characteristics, rownames(measurements), originalFeatures,
                  lapply(results, "[[", "ranked"), lapply(results, "[[", "selected"),
-                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams, list(fullResult$models))
+                 lapply(results, "[[", "models"), tuneList, predictionsTable, outcome, importance, modellingParams, fullResult$models)
 })
 
 #' @rdname runTests

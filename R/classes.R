@@ -876,8 +876,9 @@ setClassUnion("ModellingParamsOrNULL", c("ModellingParams", "NULL"))
 #' \item{\code{actualOutcome}}{The known class or survival data of each sample.}
 #' \item{\code{importance}}{The changes in model performance for each selected variable when it is excluded.}
 #' \item{\code{modellingParams}}{Stores the object used for defining the model building to enable future reuse.}
-#' \item{\code{finalModel}}{A model built using all of the sample for future use. For any tuning parameters, the
-#' most popular value of the parameter in cross-validation is used.}
+#' \item{\code{finalModel}}{A model built using all of the samples for future use. For any tuning parameters, the
+#' most popular value of the parameter in cross-validation is used. May be missing if some cross-validated fittings
+#' failed. Could be of any class, depending on the R package used to fit the model.}
 #' }
 #' 
 #' @section Summary:
@@ -943,7 +944,7 @@ setClass("ClassifyResult", representation(
   performance = "listOrNULL",
   importance = "DataFrameOrNULL",
   modellingParams = "ModellingParamsOrNULL",
-  finalModel = "listOrNULL")
+  finalModel = "ANY") # Different packages use different classes for fitted models.
 )
 #' @rdname ClassifyResult-class
 #' @usage NULL
