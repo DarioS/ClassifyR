@@ -1,20 +1,21 @@
 # Ranking of Survival-associated Features with coxph Statistic
 coxphRanking <- function(measurementsTrain, survivalTrain, verbose = 3) # Clinical data or one of the other inputs, transformed.
 {
-  
   pValues <- rep(NA, ncol(measurementsTrain))
   names(pValues) <- colnames(measurementsTrain)
 
   isCat <- sapply(measurementsTrain, class) %in% c("character", "factor")
   if(any(isCat))
   {
-    pValues[isCat] <- apply(measurementsTrain[,isCat, drop = FALSE], 2, function(featureColumn){
+    pValues[isCat] <- apply(measurementsTrain[, isCat, drop = FALSE], 2, function(featureColumn){
       fit <- survival::coxph(survivalTrain ~ featureColumn)
       s <- summary(fit)
       s$waldtest["pvalue"]
     })
-  } else {
-    tests <- colCoxTests(as.matrix(measurementsTrain[,!isCat, drop = FALSE]), survivalTrain)
+  }
+  if(any(!isCat))
+  {
+    tests <- colCoxTests(as.matrix(measurementsTrain[, !isCat, drop = FALSE]), survivalTrain)
     pValues[!isCat] <- tests[colnames(measurementsTrain), "p.value"]
   }
   order(pValues) # From smallest to largest.
