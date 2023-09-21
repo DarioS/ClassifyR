@@ -720,7 +720,8 @@ generateMultiviewParams <- function(assayIDs,
         params <- ModellingParams(
             balancing = "none",
             selectParams = NULL,
-            trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
+            trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics,
+                          getFeatures = prevalFeatures),
             predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics)
         )
 
@@ -748,7 +749,8 @@ generateMultiviewParams <- function(assayIDs,
         params <- ModellingParams(
             balancing = "none",
             selectParams = NULL,
-            trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
+            trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics,
+                                      getFeatures = PCAfeatures),
             predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics)
         )
 
@@ -1004,7 +1006,8 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                  modellingParams <- ModellingParams(
                                     balancing = "none",
                                     selectParams = NULL,
-                                    trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics),
+                                    trainParams = TrainParams(prevalTrainInterface, params = paramsAssays, characteristics = paramsAssays$clinical@trainParams@characteristics,
+                                                              getFeatures = prevalFeatures),
                                     predictParams = PredictParams(prevalPredictInterface, characteristics = paramsAssays$clinical@predictParams@characteristics))
                  model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                  class(model) <- c("trainedByClassifyR", class(model))
@@ -1020,7 +1023,8 @@ train.DataFrame <- function(x, outcomeTrain, selectionMethod = "auto", nFeatures
                                         multiViewMethod = "none"))
                 
                 modellingParams <- ModellingParams(balancing = "none", selectParams = NULL,
-                                   trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics),
+                                   trainParams = TrainParams(pcaTrainInterface, params = paramsClinical, nFeatures = nFeatures, characteristics = paramsClinical$clinical@trainParams@characteristics,
+                                                             getFeatures = PCAfeatures),
                                    predictParams = PredictParams(pcaPredictInterface, characteristics = paramsClinical$clinical@predictParams@characteristics))
                 model <- .doTrain(measurementsUse, outcomeTrain, NULL, NULL, crossValParams, modellingParams, verbose = verbose)[["model"]]
                 class(model) <- c("trainedByClassifyR", class(model))

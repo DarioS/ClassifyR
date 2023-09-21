@@ -1,4 +1,4 @@
-setClass("pcaModel", slots = list(fullModel = "list"))
+setClass("pcaModel", slots = "fullModel")
 
 pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
           {
@@ -72,19 +72,26 @@ pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
               fullModel = runTestOutput$models
               fullModel$fullFeatures = colnames(fullTrain)
               
-            
               # Make a class
               fullModel$pcaModels <- assayPCA # Add PCA "models" to final model.
               fullModel$nFeatures <- nFeatures
               fullModel$modellingParams <- finalModParam
+              fullModel$PCAfeaturesRanked <- runTestOutput$ranked$feature
+              fullModel$PCAfeaturesSelected <- runTestOutput$selected$feature
               fullModel <- new("pcaModel", fullModel = list(fullModel))
               fullModel
-          }
+}
+
+PCAfeatures <- function(PCAmodel)
+                  {
+                    list(PCAmodel@fullModel$PCAfeaturesRanked, PCAmodel@fullModel$PCAfeaturesSelected)
+                  }
+
 
 pcaPredictInterface <- function(fullModel, test, ..., returnType = "both", verbose = 0)
           {
               # Pull out my classification model
-              fullModel <- fullModel@fullModel[[1]]
+              fullModel <- fullModel@fullModel
               
               #Split my test data into a list of the different assays
               assayTest <- sapply(unique(S4Vectors::mcols(test)[["assay"]]), function(assay) test[, S4Vectors::mcols(test)[["assay"]] %in% assay], simplify = FALSE)

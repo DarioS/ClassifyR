@@ -192,6 +192,7 @@ input data. Autmomatically reducing to smaller number.")
   }
   
   # Some classifiers have one function for training and testing, so that's why test data is also passed in.
+  #trained <- .doTrain(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, crossValParams, modellingParams, verbose)
   trained <- tryCatch(.doTrain(measurementsTrain, outcomeTrain, measurementsTest, outcomeTest, crossValParams, modellingParams, verbose),
                       error = function(error) error[["message"]])
   if(is.character(trained)) return(trained) # An error occurred.
@@ -215,9 +216,9 @@ input data. Autmomatically reducing to smaller number.")
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
     
+    #predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose))
     predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
-                                error = function(error) error[["message"]]
-                                )
+                                error = function(error) error[["message"]])
     
     if(is.character(predictedOutcome)) # An error occurred.
       return(predictedOutcome) # Return early.
@@ -252,7 +253,7 @@ input data. Autmomatically reducing to smaller number.")
     if(!is.null(ncol(predictedOutcome)))
         predictedOutcome <- predictedOutcome[, na.omit(match(c("class", "risk"), colnames(predictedOutcome)))]
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomeTest, predictedOutcome, performanceType), 2)
-     
+    
     if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
     {
       if(is.null(modellingParams@trainParams@getFeatures))
@@ -280,12 +281,14 @@ input data. Autmomatically reducing to smaller number.")
   if(!is.null(tuneDetailsSelect)) tuneDetails <- tuneDetailsSelect else tuneDetails <- tuneDetailsTrain
 
   # Convert back into original, potentially unsafe feature identifiers unless it is a nested cross-validation.
-  
   if(is.null(.iteration) || .iteration != "internal")
   {
     if(!is.null(rankedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
+      if(!is.numeric(rankedFeaturesIndices)) # Metafeatures created by prevalidation or PCA.
+      {
+        rankedFeatures <- rankedFeaturesIndices
+      } else if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
         if(is.null(modellingParams@trainParams@getFeatures))          
           rankedFeatures <- originalFeatures[rankedFeaturesIndices]
@@ -306,7 +309,10 @@ input data. Autmomatically reducing to smaller number.")
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
-      if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
+      if(!is.numeric(rankedFeaturesIndices)) # Metafeatures created by prevalidation or PCA.
+      {
+          selectedFeatures <- selectedFeaturesIndices
+      } else if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
       {
         if(is.null(modellingParams@trainParams@getFeatures))
           selectedFeatures <- originalFeatures[selectedFeaturesIndices]
