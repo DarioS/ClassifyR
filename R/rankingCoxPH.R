@@ -16,7 +16,7 @@ coxphRanking <- function(measurementsTrain, survivalTrain, verbose = 3) # Clinic
   if(any(!isCat))
   {
     tests <- colCoxTests(as.matrix(measurementsTrain[, !isCat, drop = FALSE]), survivalTrain)
-    pValues[!isCat] <- tests[colnames(measurementsTrain), "p.value"]
+    pValues[!isCat] <- tests[, "p.value"]
   }
   order(pValues) # From smallest to largest.
 }
