@@ -17,6 +17,7 @@
   orderingList = list(),
   binsList = list(),
   yMax = 100,
+  densityStyle = c("box", "violin"),
   fontSizes = c(24, 16, 12, 16),
   title = if (comparison == "within") "Feature Selection Stability" else if (comparison
     == "size") "Feature Selection Size" else if (comparison == "importance")
@@ -61,12 +62,15 @@ value for each element of \code{results}.}
 No elements are mandatory. If specified, each list element's name must be
 either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 associated to fill or line by \code{characteristicsList} but this list is
-empty, a palette of colours will be automaticaly chosen.}
+empty, a palette of colours will be automatically chosen.}
 
 \item{orderingList}{An optional named list. Any of the variables specified
 to \code{characteristicsList} can be the name of an element of this list and
 the value of the element is the order in which the factors should be
-presented in, in case alphabetical sorting is undesirable.}
+presented in, in case alphabetical sorting is undesirable. Special values
+\code{"performanceAscending"} and \code{"performanceDescending"} indicate that
+the order of levels will be computed based on the median performance value of
+the characteristic being sorted into ascending or descending order.}
 
 \item{binsList}{Used only if \code{comparison} is \code{"size"}. A list with
 elements named \code{"setSizes"} and \code{"frequencies"} Both elements are
@@ -77,6 +81,9 @@ percentages to plot (e.g. 0, 20, 40, 60, 80, 100).}
 
 \item{yMax}{Used only if \code{comparison} is not \code{"size"}. The maximum
 value of the percentage overlap to plot.}
+
+\item{densityStyle}{Default: "box". Either \code{"violin"} for violin plot or
+\code{"box"} for box plot. If cross-validation is not repeated, then a bar chart.}
 
 \item{fontSizes}{A vector of length 4. The first number is the size of the
 title.  The second number is the size of the axes titles. The third number

@@ -64,7 +64,7 @@ the order of levels will be computed based on the median performance value of
 the characteristic being sorted into ascending or descending order.}
 
 \item{densityStyle}{Default: "box". Either \code{"violin"} for violin plot or
-\code{"box"} for box plot.}
+\code{"box"} for box plot. If cross-validation is not repeated, then a bar chart.}
 
 \item{yLimits}{The minimum and maximum value of the performance metric to
 plot.}

@@ -57,11 +57,14 @@
 #' No elements are mandatory. If specified, each list element's name must be
 #' either \code{"fillColours"} or \code{"lineColours"}. If a characteristic is
 #' associated to fill or line by \code{characteristicsList} but this list is
-#' empty, a palette of colours will be automaticaly chosen.
+#' empty, a palette of colours will be automatically chosen.
 #' @param orderingList An optional named list. Any of the variables specified
 #' to \code{characteristicsList} can be the name of an element of this list and
 #' the value of the element is the order in which the factors should be
-#' presented in, in case alphabetical sorting is undesirable.
+#' presented in, in case alphabetical sorting is undesirable. Special values
+#' \code{"performanceAscending"} and \code{"performanceDescending"} indicate that
+#' the order of levels will be computed based on the median performance value of
+#' the characteristic being sorted into ascending or descending order.
 #' @param binsList Used only if \code{comparison} is \code{"size"}. A list with
 #' elements named \code{"setSizes"} and \code{"frequencies"} Both elements are
 #' mandatory. \code{"setSizes"} specifies the bin boundaries for bins of
@@ -70,6 +73,8 @@
 #' percentages to plot (e.g. 0, 20, 40, 60, 80, 100).
 #' @param yMax Used only if \code{comparison} is not \code{"size"}. The maximum
 #' value of the percentage overlap to plot.
+#' @param densityStyle Default: "box". Either \code{"violin"} for violin plot or
+#' \code{"box"} for box plot. If cross-validation is not repeated, then a bar chart.
 #' @param fontSizes A vector of length 4. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the font size of the
@@ -145,7 +150,7 @@ setMethod("selectionPlot", "list",
           function(results,
                    comparison = "within", referenceLevel = NULL,
                    characteristicsList = list(x = "auto"), coloursList = list(), orderingList = list(), binsList = list(),
-                   yMax = 100, fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else if(comparison == "importance") "Variable Importance" else "Feature Selection Commonality",
+                   yMax = 100, densityStyle = c("box", "violin"), fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else if(comparison == "importance") "Variable Importance" else "Feature Selection Commonality",
                    yLabel = if(is.null(referenceLevel) && !comparison %in% c("size", "importance")) "Common Features (%)" else if(comparison == "size") "Set Size" else if(comparison == "importance") tail(names(results[[1]]@importance), 1) else paste("Common Features with", referenceLevel, "(%)"),
                    margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
 {
@@ -154,7 +159,10 @@ setMethod("selectionPlot", "list",
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
   if(comparison == "within" && !is.null(referenceLevel))
-    stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")              
+    stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
+              
+  densityStyle <- match.arg(densityStyle)
+  densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
             
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(panel.border = ggplot2::element_rect(fill = NA)))            
   if(characteristicsList[["x"]] == "auto")
@@ -354,7 +362,7 @@ setMethod("selectionPlot", "list",
   }
   
   if(rotate90 == TRUE) plotData[, xLabel] <- factor(plotData[, xLabel], levels = rev(levels(plotData[, xLabel])))
-  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList)
+  if(length(orderingList) > 0) plotData <- .addUserLevels(plotData, orderingList, "overlap")
   
   if(!comparison %in% c("size", "importance"))
   {
@@ -363,7 +371,7 @@ setMethod("selectionPlot", "list",
     selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!characteristicsList[['x']], y = overlap, fill = !!fillVariable, colour = !!lineVariable)) +
                             ggplot2::coord_cartesian(ylim = c(0, yMax)) + ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
                             ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
-    if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + ggplot2::geom_violin()
+    if(max(table(xData)) == 1) selectionPlot <- selectionPlot + ggplot2::geom_bar(stat = "identity") else selectionPlot <- selectionPlot + densityStyle()
   } else if(comparison == "importance") {
     changeName <- tail(colnames(plotData), 1)
     performanceName <- gsub("Change in ", '', changeName)
@@ -394,7 +402,7 @@ setMethod("selectionPlot", "list",
       {
         aPlot <- ggplot2::ggplot(plotDataGroup, ggplot2::aes(x = feature, y = !!rlang::sym(changeName), fill = !!fillVariable, colour = !!lineVariable)) + ggplot2::labs(x = NULL, y = NULL) +
                  ggplot2::theme(axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
-        aPlot <- aPlot + ggplot2::geom_hline(yintercept = 0, colour = "red", linetype = "dashed") + ggplot2::geom_violin()
+        aPlot <- aPlot + ggplot2::geom_hline(yintercept = 0, colour = "red", linetype = "dashed") + densityStyle()
         if("row" %in% names(characteristicsList))
           aPlot <- aPlot + ggplot2::facet_grid(rows = ggplot2::vars(!!rowVariable))
         if("column" %in% names(characteristicsList))
@@ -418,7 +426,7 @@ setMethod("selectionPlot", "list",
     plotData <- plotData[plotData[, "feature"] %in% keepFeatures, ]
     selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = feature, y = !!changeName, fill = !!fillVariable, colour = !!colourVariable)) +
       ggplot2::xlab(xLabel) + ggplot2::ylab(yLabel) +
-      ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) + ggplot2::geom_violin()
+      ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin) + densityStyle()
     }
   } else {
     selectionPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = !!rlang::sym(characteristicsList[['x']]), y = size)) +
@@ -436,6 +444,10 @@ setMethod("selectionPlot", "list",
   if(any(c("row", "column") %in% names(characteristicsList)))
     selectionPlot <- selectionPlot + ggplot2::facet_grid(ggplot2::vars(characteristicsList[["row"]]), ggplot2::vars(characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
+  # Multivariate characteristic so plot upset.
+  if(any(grepl(", ", plotData[, as.character(characteristicsList[['x']])])))
+      selectionPlot <- selectionPlot + ggupset::axis_combmatrix(sep = ", ") + ggupset::theme_combmatrix(combmatrix.panel.line.size = 0, combmatrix.label.text = ggplot2::element_text(colour = "black"))  
+  
   if(plot == TRUE)
     print(selectionPlot)
   

@@ -43,7 +43,7 @@
 #' @param yLimits The minimum and maximum value of the performance metric to
 #' plot.
 #' @param densityStyle Default: "box". Either \code{"violin"} for violin plot or
-#' \code{"box"} for box plot.
+#' \code{"box"} for box plot. If cross-validation is not repeated, then a bar chart.
 #' @param fontSizes A vector of length 4. The first number is the size of the
 #' title.  The second number is the size of the axes titles. The third number
 #' is the size of the axes values. The fourth number is the font size of the
@@ -204,7 +204,10 @@ setMethod("performancePlot", "list",
   
   performancePlot <- performancePlot + ggplot2::facet_grid(ggplot2::vars(!!rowVariable), ggplot2::vars(!!columnVariable)) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
   performancePlot <- performancePlot + ggplot2::ggtitle(title) + ggplot2::theme(legend.position = legendPosition, axis.title = ggplot2::element_text(size = fontSizes[2]), axis.text = ggplot2::element_text(colour = "black", size = fontSizes[3]), plot.title = ggplot2::element_text(size = fontSizes[1], hjust = 0.5), plot.margin = margin)
+
+  # Multivariate characteristic so plot upset.
+  if(any(grepl(", ", plotData[, as.character(characteristicsList[['x']])])))
+      performancePlot <- performancePlot + ggupset::axis_combmatrix(sep = ", ") + ggupset::theme_combmatrix(combmatrix.panel.line.size = 0, combmatrix.label.text = ggplot2::element_text(colour = "black"))
   
-   
   performancePlot
 })
