@@ -47,9 +47,9 @@ extremeGradientBoostingPredictInterface <- function(booster, measurementsTest, .
   if(verbose == 3)
     message("Predicting using boosted random forest.")  
   measurementsTest <- as(measurementsTest, "data.frame")
-  measurementsTest <- measurementsTest[, attr(booster, "featureNames")]
   # Convert to one-hot encoding as xgboost doesn't understand factors. Need to get rid of intercept afterwards.
   measurementsTest <- MatrixModels::model.Matrix(~ 0 + ., data = measurementsTest, sparse = TRUE)
+  measurementsTest <- measurementsTest[, attr(booster, "featureNames")]
   
   scores <- predict(booster, measurementsTest, reshape = TRUE)
   colnames(scores) <- attr(booster, "classes")
