@@ -161,6 +161,7 @@ input data. Autmomatically reducing to smaller number.")
     if(length(modellingParams@selectParams@intermediate) != 0)
       modellingParams@selectParams <- .addIntermediates(modellingParams@selectParams)
  
+    #topFeatures <- .doSelection(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose)
     topFeatures <- tryCatch(.doSelection(measurementsTrain, outcomeTrain, crossValParams, modellingParams, verbose),
                             error = function(error) error[["message"]])
     if(is.character(topFeatures)) return(topFeatures) # An error occurred.
@@ -216,9 +217,9 @@ input data. Autmomatically reducing to smaller number.")
     if(length(modellingParams@predictParams@intermediate) != 0)
       modellingParams@predictParams <- .addIntermediates(modellingParams@predictParams)
     
-    #predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose))
+    #predictedOutcome <- .doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose)
     predictedOutcome <- tryCatch(.doTest(trained[["model"]], measurementsTest, modellingParams@predictParams, verbose),
-                                error = function(error) error[["message"]])
+                                 error = function(error) error[["message"]])
     
     if(is.character(predictedOutcome)) # An error occurred.
       return(predictedOutcome) # Return early.
@@ -253,7 +254,7 @@ input data. Autmomatically reducing to smaller number.")
     if(!is.null(ncol(predictedOutcome)))
         predictedOutcome <- predictedOutcome[, na.omit(match(c("class", "risk"), colnames(predictedOutcome)))]
     performanceChanges <- round(performancesWithoutEach - calcExternalPerformance(outcomeTest, predictedOutcome, performanceType), 2)
-    
+
     if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
     {
       if(is.null(modellingParams@trainParams@getFeatures))
@@ -309,7 +310,7 @@ input data. Autmomatically reducing to smaller number.")
     } else { rankedFeatures <- NULL}
     if(!is.null(selectedFeaturesIndices))
     {
-      if(!is.numeric(rankedFeaturesIndices)) # Metafeatures created by prevalidation or PCA.
+      if(!is.numeric(selectedFeaturesIndices)) # Metafeatures created by prevalidation or PCA.
       {
           selectedFeatures <- selectedFeaturesIndices
       } else if(is.null(S4Vectors::mcols(measurementsTrain)) || !any(c("assay", "feature") %in% colnames(S4Vectors::mcols(measurementsTrain))))
@@ -334,7 +335,7 @@ input data. Autmomatically reducing to smaller number.")
   } else { # Nested use in feature selection. No feature selection in inner execution, so ignore features. 
       rankedFeatures <- selectedFeatures <- NULL
   }
-  
+
   if(!is.null(.iteration)) # This function was not called by the end user.
   {
     list(ranked = rankedFeatures, selected = selectedFeatures, models = models, testSet = rownames(measurementsTest), predictions = predictedOutcome, tune = tuneDetails, importance = importanceTable)

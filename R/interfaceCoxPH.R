@@ -7,6 +7,8 @@ coxphTrainInterface <- function(measurementsTrain, survivalTrain, ..., verbose =
     message("Fitting coxph classifier to training data and making predictions on test
             data.")
   
+  # coxph doesn't like DataFrame input.
+  measurementsTrain <- as.data.frame(measurementsTrain)    
   survival::coxph(survivalTrain ~ ., measurementsTrain)
 }
 attr(coxphTrainInterface, "name") <- "coxphTrainInterface"

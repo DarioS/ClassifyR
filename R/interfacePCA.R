@@ -78,7 +78,7 @@ pcaTrainInterface <- function(measurements, classes, params, nFeatures, ...)
               fullModel$modellingParams <- finalModParam
               fullModel$PCAfeaturesRanked <- runTestOutput$ranked$feature
               fullModel$PCAfeaturesSelected <- runTestOutput$selected$feature
-              fullModel <- new("pcaModel", fullModel = list(fullModel))
+              fullModel <- new("pcaModel", fullModel = fullModel)
               fullModel
 }
 
