@@ -158,6 +158,8 @@ setMethod("selectionPlot", "list",
     stop("The package 'ggplot2' could not be found. Please install it.")             
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
+  if(!requireNamespace("ggupset", quietly = TRUE))
+    stop("The package 'ggupset' could not be found. Please install it.")              
   if(comparison == "within" && !is.null(referenceLevel))
     stop("'comparison' should not be \"within\" if 'referenceLevel' is not NULL.")
               

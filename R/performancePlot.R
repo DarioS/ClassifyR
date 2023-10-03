@@ -111,6 +111,8 @@ setMethod("performancePlot", "list",
     stop("The package 'ggplot2' could not be found. Please install it.")             
   if(!requireNamespace("scales", quietly = TRUE))
     stop("The package 'scales' could not be found. Please install it.")
+  if(!requireNamespace("ggupset", quietly = TRUE))
+    stop("The package 'ggupset' could not be found. Please install it.")              
               
   densityStyle <- match.arg(densityStyle)
   densityStyle <- ifelse(densityStyle == "box", ggplot2::geom_boxplot, ggplot2::geom_violin)
