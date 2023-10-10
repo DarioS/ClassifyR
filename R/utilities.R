@@ -14,8 +14,8 @@
       foldsIndexes <- rep(1:nFolds, length.out = length(outcome))
       
       foldsIndex = 1
-      # Dummy encoding for when outcome is not a class.
-      if(is(outcome, "Surv")) outcome <- factor(rep("a", length(outcome)))
+      # Balance the non-censored observations across folds.
+      if(is(outcome, "Surv")) outcome <- factor(outcome[, "status"])
       for(outcomeName in levels(outcome))
       {
         # Permute the indexes of samples in the class.
