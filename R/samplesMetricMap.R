@@ -1,7 +1,7 @@
-#' Plot a Grid of Sample Error Rates or Accuracies
+#' Plot a Grid of Sample-wise Predictive Metrics
 #' 
 #' A grid of coloured tiles is drawn. There is one column for each sample and
-#' one row for each classification result.
+#' one row for each cross-validation result.
 #' 
 #' The names of \code{results} determine the row names that will be in the
 #' plot. The length of \code{metricColours} determines how many bins the metric
@@ -47,12 +47,9 @@
 #' @param showYtickLabels Logical. IF FALSE, the y-axis labels are hidden.
 #' @param yAxisLabel The name plotted for the y-axis. NULL suppresses label.
 #' @param legendSize The size of the boxes in the legends.
-#' @param plot Logical. IF \code{TRUE}, a plot is produced on the current
-#' graphics device.
 #' @param ... Parameters not used by the \code{ClassifyResult} method that does
 #' list-packaging but used by the main \code{list} method.
-#' @return A plot is produced and a grob is returned that can be saved to a
-#' graphics device.
+#' @return A grob is returned that can be drawn on a graphics device.
 #' @author Dario Strbenac
 #' @examples
 #' 
@@ -106,7 +103,7 @@ setMethod("samplesMetricMap", "list",
                                         c("#FFFFFF", "#E1BFC4", "#C37F8A", "#A53F4F", "#880015")),
                    classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
                    fontSizes = c(24, 16, 12, 12, 12),
-                   mapHeight = 4, title = switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` = "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison"),
+                   mapHeight = 4, title = "auto",
                    showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
                    yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"), plot = TRUE)
 {
@@ -136,6 +133,7 @@ setMethod("samplesMetricMap", "list",
     metric <- ifelse(isSurvival, "Sample C-index", "Sample Accuracy")
   else
     if(!metric %in% validMetrics) stop("metric must be one of ", validMetrics, " but is ", metric, '.')   
+  if(title == "auto") title <- switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` = "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison")
   if(isSurvival && is.list(metricColours)) metricColours <- metricColours[[1]]
   metricText <- gsub("Sample ", '', metric) # For legend labelling.
   if(showXtickLabels == FALSE && xAxisLabel == "Sample Name") xAxisLabel <- "Sample"
@@ -203,6 +201,7 @@ setMethod("samplesMetricMap", "list",
       ordering <- order(meanMetricCategory)    
   } else {
     featureValues <- featureValues[match(sampleNames(results[[1]]), names(featureValues))]
+    #featureValues <- featureValues[match(results[[1]]@performance[[metric]], names(featureValues))]
     if(metric != "Sample C-index") # Sort within each class.
       ordering <- order(knownClasses, featureValues, meanMetricCategory)
     else # Sort all samples together.
@@ -503,9 +502,7 @@ setMethod("samplesMetricMap", "list",
     grobTable <- gtable::gtable_add_grob(grobTable, secondLegend, 4, 2)
   }
   wholePlot <- gridExtra::arrangeGrob(grobTable, top = grid::textGrob(title, vjust = 0.5, gp = grid::gpar(fontsize = fontSizes[1])))
-
-  if(plot == TRUE)               
-    grid::grid.draw(wholePlot)
+  grid::grid.draw(wholePlot)
   wholePlot
 })
 
@@ -520,7 +517,7 @@ setMethod("samplesMetricMap", "matrix",
                    classColours = c("#3F48CC", "#880015"), groupColours = c("darkgreen", "yellow2"),
                    fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = "Error Comparison", showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
-                   yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"), plot = TRUE)
+                   yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"))
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
@@ -821,7 +818,5 @@ setMethod("samplesMetricMap", "matrix",
   }
   wholePlot <- gridExtra::arrangeGrob(grobTable, top = grid::textGrob(title, vjust = 0.5, gp = grid::gpar(fontsize = fontSizes[1])))
 
-  if(plot == TRUE)               
-    grid::grid.draw(wholePlot)
   wholePlot
 })

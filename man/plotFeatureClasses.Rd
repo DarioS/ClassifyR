@@ -27,8 +27,7 @@
   yLabelPositions = "auto",
   fontSizes = c(24, 16, 12, 12, 12),
   colours = c("#3F48CC", "#880015"),
-  showAssayName = TRUE,
-  plot = TRUE
+  showAssayName = TRUE
 )
 
 \S4method{plotFeatureClasses}{MultiAssayExperiment}(
@@ -133,9 +132,6 @@ vector must be as long as the distinct number of classes in the data set.}
 \item{showAssayName}{Logical. Default: \code{TRUE}. If \code{TRUE} and the
 data is in a \code{MultiAssayExperiment} object, the the name of the table
 in which the feature is stored in is added to the plot title.}
-
-\item{plot}{Logical. Default: \code{TRUE}. If \code{TRUE}, a plot is
-produced on the current graphics device.}
 
 \item{classesColumn}{If \code{measurementsTrain} is a \code{MultiAssayExperiment}, the
 names of the class column in the table extracted by \code{colData(multiAssayExperiment)}

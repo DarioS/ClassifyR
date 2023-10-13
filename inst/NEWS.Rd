@@ -2,6 +2,15 @@
 \title{ClassifyR News}
 \encoding{UTF-8}
 
+\section{Version 3.6.0}{\itemize{
+  \item
+  Balancing of non-censored event times across folds.
+  \item
+  Multiview methods with combinations of views have improved plots that switch to UpSet axis.
+  \item
+  Multiview methods have feature extractors to retain chosen features for analysis.
+}}
+
 \section{Version 3.4.0}{\itemize{
   \item
   Companion website with more in-depth explanation and examples.
@@ -19,8 +28,6 @@
   \code{precisionPathwaysTrain} and \code{precisionPathwaysPredict} functions for building tree-like models of multiple assays and their accessory functions \code{calcCostsAndPerformance}, \code{bubblePlot}, \code{flowchart}, \code{strataPlot} for model performance evaluation.
   \item
   \code{crissCrossValidate} function that takes a list of data sets with the same set of features and the same set of outcomes and does all possible pairs of training and prediction to evaluate generalisability. \code{crissCrossPlot} for visual evaluation.
-  \item
-  
 }}
 
 \section{Version 3.2.0}{\itemize{

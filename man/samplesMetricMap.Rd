@@ -5,7 +5,7 @@
 \alias{samplesMetricMap,list-method}
 \alias{samplesMetricMap,matrix-method}
 \alias{samplesMetricMap,ClassifyResult-method}
-\title{Plot a Grid of Sample Error Rates or Accuracies}
+\title{Plot a Grid of Sample-wise Predictive Metrics}
 \usage{
 \S4method{samplesMetricMap}{ClassifyResult}(results, ...)
 
@@ -21,8 +21,7 @@
   groupColours = c("darkgreen", "yellow2"),
   fontSizes = c(24, 16, 12, 12, 12),
   mapHeight = 4,
-  title = switch(metric, `Sample Error` = "Error Comparison", `Sample Accuracy` =
-    "Accuracy Comparison", `Sample C-index` = "Risk Score Comparison"),
+  title = "auto",
   showLegends = TRUE,
   xAxisLabel = "Sample Name",
   showXtickLabels = TRUE,
@@ -50,8 +49,7 @@
   showXtickLabels = TRUE,
   yAxisLabel = "Analysis",
   showYtickLabels = TRUE,
-  legendSize = grid::unit(1, "lines"),
-  plot = TRUE
+  legendSize = grid::unit(1, "lines")
 )
 }
 \arguments{
@@ -111,19 +109,15 @@ colour bar.}
 
 \item{legendSize}{The size of the boxes in the legends.}
 
-\item{plot}{Logical. IF \code{TRUE}, a plot is produced on the current
-graphics device.}
-
 \item{classes}{If \code{results} is a matrix, this is a factor vector of the
 same length as the number of columns that \code{results} has.}
 }
 \value{
-A plot is produced and a grob is returned that can be saved to a
-graphics device.
+A grob is returned that can be drawn on a graphics device.
 }
 \description{
 A grid of coloured tiles is drawn. There is one column for each sample and
-one row for each classification result.
+one row for each cross-validation result.
 }
 \details{
 The names of \code{results} determine the row names that will be in the

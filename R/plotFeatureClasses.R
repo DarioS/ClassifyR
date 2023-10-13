@@ -85,8 +85,6 @@
 #' @param showAssayName Logical. Default: \code{TRUE}. If \code{TRUE} and the
 #' data is in a \code{MultiAssayExperiment} object, the the name of the table
 #' in which the feature is stored in is added to the plot title.
-#' @param plot Logical. Default: \code{TRUE}. If \code{TRUE}, a plot is
-#' produced on the current graphics device.
 #' @return Plots are created on the current graphics device and a list of plot
 #' objects is invisibly returned. The classes of the plot object are determined
 #' based on the type of data plotted and the number of plots per feature
@@ -158,7 +156,7 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
                                                       xLabelPositions = "auto", yLabelPositions = "auto",
                                                       fontSizes = c(24, 16, 12, 12, 12),
                                                       colours = c("#3F48CC", "#880015"),
-                                                      showAssayName = TRUE, plot = TRUE)
+                                                      showAssayName = TRUE)
 {
   if(missing(useFeatures))
     stop("'useFeatures' must be specified.")
@@ -274,12 +272,6 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
           alignedPlots <- cowplot::align_plots(densPlot, stripPlot, align = 'v', axis = "lr")
           bothGraphics <- gridExtra::arrangeGrob(alignedPlots[[1]], alignedPlots[[2]], nrow = 2,
                                                  top = grid::textGrob(featureText, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
-          if(plot == TRUE)
-          {
-            grid::grid.draw(bothGraphics)
-            if(columnIndex != ncol(measurements))
-              grid::grid.newpage()
-          }
           bothGraphics
         } else if(whichNumericFeaturePlots == "density")
         {
@@ -292,13 +284,9 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
                            axis.title = ggplot2::element_text(size = fontSizes[2], colour = "black"), legend.title = ggplot2::element_text(size = fontSizes[4]),
                            legend.text = ggplot2::element_text(size = fontSizes[5])) + ggplot2::ggtitle(featureText)
           
-          if(plot == TRUE)
-            print(densPlot)
           densPlot
         } else {
           stripPlot <- stripPlot + ggplot2::ggtitle(featureText)
-          if(plot == TRUE)
-            print(stripPlot)
           stripPlot
         }
       } else { # Plotting variable is a factor.
@@ -316,8 +304,6 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
         {
           barPlot <- barPlot + ggplot2::facet_wrap(~ `facets grouping`, ncol = 1, strip.position = "left")
         }
-        if(plot == TRUE)
-          print(barPlot)
         barPlot
       }
     }))
@@ -348,8 +334,6 @@ setMethod("plotFeatureClasses", "DataFrame", function(measurements, classes, use
       {
         pairsPlot <- pairsPlot + ggplot2::facet_wrap(~ `facets grouping`, ncol = 1, strip.position = "left")
       }
-      if(plot == TRUE)
-        print(pairsPlot)
       pairsPlot
     }))
   }

@@ -88,8 +88,6 @@
 #' @param rotate90 Logical. If \code{TRUE}, the boxplot is horizontal.
 #' @param showLegend If \code{TRUE}, a legend is plotted next to the plot. If
 #' FALSE, it is hidden.
-#' @param plot Logical. If \code{TRUE}, a plot is produced on the current
-#' graphics device.
 #' @param parallelParams An object of class \code{\link{MulticoreParam}} or
 #' \code{\link{SnowParam}}.
 #' @param ... Not used by end user.
@@ -152,7 +150,7 @@ setMethod("selectionPlot", "list",
                    characteristicsList = list(x = "auto"), coloursList = list(), orderingList = list(), binsList = list(),
                    yMax = 100, densityStyle = c("box", "violin"), fontSizes = c(24, 16, 12, 16), title = if(comparison == "within") "Feature Selection Stability" else if(comparison == "size") "Feature Selection Size" else if(comparison == "importance") "Variable Importance" else "Feature Selection Commonality",
                    yLabel = if(is.null(referenceLevel) && !comparison %in% c("size", "importance")) "Common Features (%)" else if(comparison == "size") "Set Size" else if(comparison == "importance") tail(names(results[[1]]@importance), 1) else paste("Common Features with", referenceLevel, "(%)"),
-                   margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, plot = TRUE, parallelParams = bpparam())
+                   margin = grid::unit(c(1, 1, 1, 1), "lines"), rotate90 = FALSE, showLegend = TRUE, parallelParams = bpparam())
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")             
@@ -448,10 +446,7 @@ setMethod("selectionPlot", "list",
 
   # Multivariate characteristic so plot upset.
   if(any(grepl(", ", plotData[, as.character(characteristicsList[['x']])])))
-      selectionPlot <- selectionPlot + ggupset::axis_combmatrix(sep = ", ") + ggupset::theme_combmatrix(combmatrix.panel.line.size = 0, combmatrix.label.text = ggplot2::element_text(colour = "black"))  
-  
-  if(plot == TRUE)
-    print(selectionPlot)
+      selectionPlot <- selectionPlot + ggupset::axis_combmatrix(sep = ", ") + ggupset::theme_combmatrix(combmatrix.panel.line.size = 0, combmatrix.label.text = ggplot2::element_text(colour = "black"))
   
   selectionPlot
 })
