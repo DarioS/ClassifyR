@@ -442,7 +442,7 @@ setMethod("selectionPlot", "list",
     selectionPlot <- selectionPlot + ggplot2::coord_flip(ylim = c(0, yMax))
   
   if(any(c("row", "column") %in% names(characteristicsList)))
-    selectionPlot <- selectionPlot + ggplot2::facet_grid(ggplot2::vars(characteristicsList[["row"]]), ggplot2::vars(characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
+    selectionPlot <- selectionPlot + ggplot2::facet_grid(ggplot2::vars(!!characteristicsList[["row"]]), ggplot2::vars(!!characteristicsList[["column"]])) + ggplot2::theme(strip.text = ggplot2::element_text(size = fontSizes[4]))
 
   # Multivariate characteristic so plot upset.
   if(any(grepl(", ", plotData[, as.character(characteristicsList[['x']])])))
