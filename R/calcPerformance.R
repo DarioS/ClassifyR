@@ -238,10 +238,10 @@ setMethod("calcCVperformance", "ClassifyResult",
   {
     performanceValues <- do.call(rbind, mapply(function(iterationSurv, iterationPredictions, iterationSamples)
     {
-      do.call(rbind, lapply(allSamples, function(sampleID)
+      do.call(rbind, lapply(iterationSamples, function(sampleID)
       {
         sampleIndex <- which(iterationSamples == sampleID)
-        otherIndices <- setdiff(seq_along(allSamples), sampleIndex)
+        otherIndices <- setdiff(seq_along(iterationSamples), sampleIndex)
         concordants <- discordants <- 0
         iterationSurv <- as.matrix(iterationSurv)
         for(compareIndex in otherIndices)
@@ -267,7 +267,7 @@ setMethod("calcCVperformance", "ClassifyResult",
     sampleValues <- by(performanceValues[, c("concordant", "discordant")], performanceValues[, "sample"], colSums)
     Cindex <- round(sapply(sampleValues, '[', 1) / (sapply(sampleValues, '[', 1) + sapply(sampleValues, '[', 2)), 2)
     names(Cindex) <- names(sampleValues)
-    Cindex <- Cindex[!is.nan(Cindex)] # The individual with the smallest censored time will always have no useful inequalities.
+    Cindex[is.nan(Cindex)] <- NA # The individual with the smallest censored time might not have any useful inequalities in some results but rarely do.
     return(list(name = performanceType, values = Cindex))
   }
   

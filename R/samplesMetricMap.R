@@ -105,7 +105,7 @@ setMethod("samplesMetricMap", "list",
                    fontSizes = c(24, 16, 12, 12, 12),
                    mapHeight = 4, title = "auto",
                    showLegends = TRUE, xAxisLabel = "Sample Name", showXtickLabels = TRUE,
-                   yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"), plot = TRUE)
+                   yAxisLabel = "Analysis", showYtickLabels = TRUE, legendSize = grid::unit(1, "lines"))
 {
   if(!requireNamespace("ggplot2", quietly = TRUE))
     stop("The package 'ggplot2' could not be found. Please install it.")  
@@ -817,6 +817,7 @@ setMethod("samplesMetricMap", "matrix",
     grobTable <- gtable::gtable_add_grob(grobTable, secondLegend, 4, 2)
   }
   wholePlot <- gridExtra::arrangeGrob(grobTable, top = grid::textGrob(title, vjust = 0.5, gp = grid::gpar(fontsize = fontSizes[1])))
-
+  grid::grid.draw(wholePlot)
+  
   wholePlot
 })
