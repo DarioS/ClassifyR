@@ -12,8 +12,9 @@ The modelling of survival data may be done using ClassifyR, not only categorical
 
 To illustrate, clinical variables of the METABRIC breast cancer cohort will be used to predict risk scores for patients.
 
-```{r, include = FALSE}
+```{r, message = FALSE}
 library(ClassifyR)
+set.seed(8400)
 ```
 
 ```{r}

@@ -28,7 +28,7 @@ converted to percentages and plotted as lineplots."><!-- mathjax --><script src=
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.6.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,6 +97,7 @@ converted to percentages and plotted as lineplots.</p>
 <span>  orderingList <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  binsList <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  yMax <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  densityStyle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"box"</span>, <span class="st">"violin"</span><span class="op">)</span>,</span>
 <span>  fontSizes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">16</span>, <span class="fl">12</span>, <span class="fl">16</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">comparison</span> <span class="op">==</span> <span class="st">"within"</span><span class="op">)</span> <span class="st">"Feature Selection Stability"</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">comparison</span></span>
 <span>    <span class="op">==</span> <span class="st">"size"</span><span class="op">)</span> <span class="st">"Feature Selection Size"</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">comparison</span> <span class="op">==</span> <span class="st">"importance"</span><span class="op">)</span></span>
@@ -108,7 +109,6 @@ converted to percentages and plotted as lineplots.</p>
 <span>  margin <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="st">"lines"</span><span class="op">)</span>,</span>
 <span>  rotate90 <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  showLegend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  parallelParams <span class="op">=</span> <span class="fu">bpparam</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -154,14 +154,17 @@ value for each element of <code>results</code>.</p></dd>
 No elements are mandatory. If specified, each list element's name must be
 either <code>"fillColours"</code> or <code>"lineColours"</code>. If a characteristic is
 associated to fill or line by <code>characteristicsList</code> but this list is
-empty, a palette of colours will be automaticaly chosen.</p></dd>
+empty, a palette of colours will be automatically chosen.</p></dd>
 
 
 <dt>orderingList</dt>
 <dd><p>An optional named list. Any of the variables specified
 to <code>characteristicsList</code> can be the name of an element of this list and
 the value of the element is the order in which the factors should be
-presented in, in case alphabetical sorting is undesirable.</p></dd>
+presented in, in case alphabetical sorting is undesirable. Special values
+<code>"performanceAscending"</code> and <code>"performanceDescending"</code> indicate that
+the order of levels will be computed based on the median performance value of
+the characteristic being sorted into ascending or descending order.</p></dd>
 
 
 <dt>binsList</dt>
@@ -176,6 +179,11 @@ percentages to plot (e.g. 0, 20, 40, 60, 80, 100).</p></dd>
 <dt>yMax</dt>
 <dd><p>Used only if <code>comparison</code> is not <code>"size"</code>. The maximum
 value of the percentage overlap to plot.</p></dd>
+
+
+<dt>densityStyle</dt>
+<dd><p>Default: "box". Either <code>"violin"</code> for violin plot or
+<code>"box"</code> for box plot. If cross-validation is not repeated, then a bar chart.</p></dd>
 
 
 <dt>fontSizes</dt>
@@ -207,11 +215,6 @@ default, specifies whether stability or commonality is shown.</p></dd>
 <dt>showLegend</dt>
 <dd><p>If <code>TRUE</code>, a legend is plotted next to the plot. If
 FALSE, it is hidden.</p></dd>
-
-
-<dt>plot</dt>
-<dd><p>Logical. If <code>TRUE</code>, a plot is produced on the current
-graphics device.</p></dd>
 
 
 <dt>parallelParams</dt>
@@ -284,15 +287,13 @@ the last bin using <code><a href="https://rdrr.io/r/base/cut.html" class="extern
 <span class="r-in"><span>  <span class="va">cList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Classifier Name"</span>, fillColour <span class="op">=</span> <span class="st">"Classifier Name"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">selectionPlot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">result1</span>, <span class="va">result2</span><span class="op">)</span>, characteristicsList <span class="op">=</span> <span class="va">cList</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="selectionPlot-1.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="selectionPlot-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span>  </span></span>
 <span class="r-in"><span>  <span class="va">cList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Classifier Name"</span>, fillColour <span class="op">=</span> <span class="st">"size"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">selectionPlot</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">result1</span>, <span class="va">result2</span><span class="op">)</span>, comparison <span class="op">=</span> <span class="st">"size"</span>,</span></span>
 <span class="r-in"><span>                characteristicsList <span class="op">=</span> <span class="va">cList</span>,</span></span>
 <span class="r-in"><span>                binsList <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>frequencies <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span>, <span class="fl">10</span><span class="op">)</span>, setSizes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">25</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>                <span class="op">)</span></span></span>
-<span class="r-plt img"><img src="selectionPlot-3.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="selectionPlot-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="selectionPlot-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

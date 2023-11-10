@@ -204,7 +204,12 @@ setMethod("prepareData", "DataFrame",
   }
       
   if(length(dropFeatures) > 0) measurements <- measurements[, -match(dropFeatures, colnames(measurements))]
-  if(length(dropSamples) > 0) measurements <- measurements[-match(dropSamples, rownames(measurements)), ]
+  if(length(dropSamples) > 0)
+  {
+    dropIndices <- match(dropSamples, rownames(measurements))      
+    measurements <- measurements[-dropIndices, ]
+    outcome <- outcome[-dropIndices]
+  }
   
   # Use only the most N variable features per assay.
   if(!is.null(topNvariance))

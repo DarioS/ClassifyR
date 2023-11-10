@@ -78,6 +78,12 @@ Data Type | $n \times p$ | $p \times n$
 * A *Surv* object of the same length as the number of samples in the data which contains information about the time and censoring of the samples.
 * A *character* vector of length 2 or 3 that each match a column name in a data frame which holds information about the time and censoring of the samples. The time-to-event columns will automatically be removed before training is done.
 
+ClassifyR enforces reproducible research. Before beginning any cross-validation, the random number seed needs to be set in the current R session. Any number is fine.
+
+```{r}
+set.seed(9500)
+```
+
 The type of classifier used can be changed with the *classifier* argument. The default is a random forest, which seamlessly handles categorical and numerical data. A full list of classifiers can be seen by running *?crossValidate*. A feature selection step can be performed before classification using *nFeatures* and *selectionMethod*, which is a t-test by default. Similarly, the number of folds and number of repeats for cross validation can be changed with the *nFolds* and *nRepeats* arguments. If wanted, *nCores* can be specified to run the cross validation in parallel. To perform 5-fold cross-validation of a Support Vector Machine with 2 repeats:
 
 ```{r}
