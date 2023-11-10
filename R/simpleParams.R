@@ -39,10 +39,26 @@ GLMparams <- function() {
     return(list(trainParams = trainParams, predictParams = predictParams))
 }
 
+# Ridge GLM
+ridgeGLMparams <- function() {
+    trainParams <- TrainParams(penalisedGLMtrainInterface, alpha = 0, getFeatures = penalisedFeatures)
+    predictParams <- PredictParams(penalisedGLMpredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
 # Elastic net GLM
 elasticNetGLMparams <- function() {
-    trainParams <- TrainParams(elasticNetGLMtrainInterface, getFeatures = elasticNetFeatures)
-    predictParams <- PredictParams(elasticNetGLMpredictInterface)
+    trainParams <- TrainParams(penalisedGLMtrainInterface, alpha = 0.5, getFeatures = penalisedFeatures)
+    predictParams <- PredictParams(penalisedGLMpredictInterface)
+    
+    return(list(trainParams = trainParams, predictParams = predictParams))
+}
+
+# LASSO GLM
+LASSOGLMparams <- function() {
+    trainParams <- TrainParams(penalisedGLMtrainInterface, getFeatures = penalisedFeatures)
+    predictParams <- PredictParams(penalisedGLMpredictInterface)
     
     return(list(trainParams = trainParams, predictParams = predictParams))
 }

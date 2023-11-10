@@ -1,6 +1,6 @@
 # An Interface for glmnet Package's glmnet Function. Generalised linear models with sparsity.
 
-elasticNetGLMtrainInterface <- function(measurementsTrain, classesTrain, lambda = NULL, ..., verbose = 3)
+penalisedGLMtrainInterface <- function(measurementsTrain, classesTrain, lambda = NULL, ..., verbose = 3)
 {
   if(!requireNamespace("glmnet", quietly = TRUE))
     stop("The package 'glmnet' could not be found. Please install it.")
@@ -28,10 +28,10 @@ elasticNetGLMtrainInterface <- function(measurementsTrain, classesTrain, lambda 
   
   fitted
 }
-attr(elasticNetGLMtrainInterface, "name") <- "elasticNetGLMtrainInterface"
+attr(penalisedGLMtrainInterface, "name") <- "penalisedGLMtrainInterface"
 
 # model is of class multnet
-elasticNetGLMpredictInterface <- function(model, measurementsTest, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
+penalisedGLMpredictInterface <- function(model, measurementsTest, lambda, ..., returnType = c("both", "class", "score"), verbose = 3)
 { # ... just consumes emitted tuning variables from .doTrain which are unused.
   returnType <- match.arg(returnType)
   # One-hot encoding needed.    
@@ -74,7 +74,7 @@ elasticNetGLMpredictInterface <- function(model, measurementsTest, lambda, ..., 
 #
 ################################################################################
 
-elasticNetFeatures <- function(model)
+penalisedFeatures <- function(model)
                       {
                         # Floating point numbers test for equality.
                         whichCoefficientColumn <- which(abs(model[["lambda"]] - attr(model, "tune")[["lambda"]]) < 0.00001)[1]
