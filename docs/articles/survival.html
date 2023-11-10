@@ -27,7 +27,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.7.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,6 +89,9 @@ survival forests are available.</p>
 <p>To illustrate, clinical variables of the METABRIC breast cancer
 cohort will be used to predict risk scores for patients.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sydneybiox.github.io/ClassifyR/" class="external-link">ClassifyR</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">8400</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">METABRICclinical</span><span class="op">)</span> <span class="co"># Contains measurements and follow-up time and recurrence status.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">clinical</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## DataFrame with 6 rows and 8 columns</span></span>
@@ -111,7 +114,7 @@ cohort will be used to predict risk scores for patients.</p>
 <p>Cross-validation is very similar to the classification scenario,
 except that a <code>Surv</code> object or two column names indicating
 the time and event (in that order) are to be specified.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">survCrossValidated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossValidate.html">crossValidate</a></span><span class="op">(</span><span class="va">clinical</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"timeRFS"</span>, <span class="st">"eventRFS"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">survCrossValidated</span></span></code></pre></div>
 <pre><code><span><span class="co">## An object of class 'ClassifyResult'.</span></span>
@@ -123,12 +126,12 @@ the time and event (in that order) are to be specified.</p>
 <span><span class="co">##  characteristicsLabel                     none</span></span>
 <span><span class="co">##      Cross-validation 20 Permutations, 5 Folds</span></span>
 <span><span class="co">## Features: List of length 100 of feature identifiers.</span></span>
-<span><span class="co">## Predictions: A data frame of 9400 rows.</span></span>
+<span><span class="co">## Predictions: A data frame of 8620 rows.</span></span>
 <span><span class="co">## Performance Measures: None calculated yet.</span></span></code></pre>
 <p>By default, Cox proportional hazards has been used for feature
 selection as well as modelling.</p>
 <p>The distribution of C-index values can be plotted.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/performancePlot.html">performancePlot</a></span><span class="op">(</span><span class="va">survCrossValidated</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Warning in .local(results, ...): C-index not found in all elements of results.</span></span>
 <span><span class="co">## Calculating it now.</span></span></code></pre>
@@ -141,7 +144,7 @@ hazards because parameter tuning of the fraction of variables to
 consider at each split and the number of trees to build are optimised
 over a grid of default values (see <a href="presets.html">Parameter
 Tuning Presets</a> article for details).</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">survForestCrossValidated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossValidate.html">crossValidate</a></span><span class="op">(</span><span class="va">clinical</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"timeRFS"</span>, <span class="st">"eventRFS"</span><span class="op">)</span>,</span>
 <span>                                          selectionMethod <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>                                          classifier <span class="op">=</span> <span class="st">"randomSurvivalForest"</span>,</span>

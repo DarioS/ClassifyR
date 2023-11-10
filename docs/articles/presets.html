@@ -27,7 +27,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.7.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,10 +68,12 @@
 
 
 
-<script src="presets_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Parameter Tuning Presets for crossValidate and Their Customisation</h1>
-                        <h4 data-toc-skip class="author">Dario Strbenac <br> The University of Sydney, Australia.</h4>
+                        <h4 data-toc-skip class="author">Dario Strbenac
+<br> The University of Sydney, Australia.</h4>
             
       
       
@@ -80,7 +82,16 @@
 
     
     
-<p>When a choice about a model to use is made and specified to <code>crossValidate</code>, performance tuning of a range of typical values is automatically made. These values can be changed or removed. Below is a table of models and their default values, which can be changed by specifying the <code>extraParams</code> parameter. It is a list with named elements. Each element must be named one of <code>"select"</code>, <code>"train"</code> or <code>"predict"</code> (as well as <code>"prepare"</code> for data preparation which is not a parameter tuning operation, so is not discussed here), to identify which modelling the parameter corresponds to.</p>
+<p>When a choice about a model to use is made and specified to
+<code>crossValidate</code>, performance tuning of a range of typical
+values is automatically made. These values can be changed or removed.
+Below is a table of models and their default values, which can be
+changed by specifying the <code>extraParams</code> parameter. It is a
+list with named elements. Each element must be named one of
+<code>"select"</code>, <code>"train"</code> or <code>"predict"</code>
+(as well as <code>"prepare"</code> for data preparation which is not a
+parameter tuning operation, so is not discussed here), to identify which
+modelling the parameter corresponds to.</p>
 <table class="table">
 <colgroup>
 <col width="18%">
@@ -99,7 +110,8 @@
 <td>Random Forest</td>
 <td align="center"><code>"randomForest"</code></td>
 <td align="center">
-<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code> and <code>num.trees = c(10, seq(100, 500, 100)</code>
+<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code>
+and <code>num.trees = c(10, seq(100, 500, 100)</code>
 </td>
 <td align="center">See <code><a href="https://rdrr.io/pkg/ranger/man/ranger.html" class="external-link">?ranger::ranger</a></code>
 </td>
@@ -108,7 +120,8 @@
 <td>Random Survival Forest</td>
 <td align="center"><code>"randomSurvivalForest"</code></td>
 <td align="center">
-<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code> and <code>num.trees = c(10, seq(100, 500, 100)</code>
+<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code>
+and <code>num.trees = c(10, seq(100, 500, 100)</code>
 </td>
 <td align="center">See <code><a href="https://www.randomforestsrc.org//reference/rfsrc.html" class="external-link">?randomForestSRC::rfsrc</a></code>
 </td>
@@ -117,7 +130,8 @@
 <td>Extreme Gradient Boosting</td>
 <td align="center"><code>"XGB"</code></td>
 <td align="center">
-<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code> and <code>nrounds = c(5, 10, 15)</code>
+<code>mTryProportion = c(0.25, 0.33, 0.50, 0.66, 0.75, 1.00)</code>
+and <code>nrounds = c(5, 10, 15)</code>
 </td>
 <td align="center">See <code><a href="https://rdrr.io/pkg/xgboost/man/xgb.train.html" class="external-link">?xgboost::xgboost</a></code>
 </td>
@@ -133,7 +147,8 @@
 <td>Support Vector Machine</td>
 <td align="center"><code>"SVM"</code></td>
 <td align="center">
-<code>kernel = c("linear", "polynomial", "radial", "sigmoid")</code> and <code>cost = 10^(-3:3))</code>
+<code>kernel = c("linear", "polynomial", "radial", "sigmoid")</code>
+and <code>cost = 10^(-3:3))</code>
 </td>
 <td align="center">See <code><a href="https://rdrr.io/pkg/e1071/man/svm.html" class="external-link">?e1071::svm</a></code>
 </td>
@@ -143,18 +158,33 @@
 <td align="center"><code>"naiveBayes"</code></td>
 <td align="center"><code>difference = c("unweighted", "weighted")</code></td>
 <td align="center">
-<code>weighting = c("height difference", "crossover distance")</code> and <code>minDifference</code>, a number 0 or higher.</td>
+<code>weighting = c("height difference", "crossover distance")</code>
+and <code>minDifference</code>, a number 0 or higher.</td>
 </tr>
 <tr class="odd">
 <td>Mixtures of Normals</td>
 <td align="center"><code>"mixturesNormals"</code></td>
 <td align="center"><code>nbCluster = 1:2</code></td>
 <td align="center">
-<code>difference = c("unweighted", "weighted")</code> and <code>weighting = c("height difference", "crossover distance")</code> and <code>minDifference</code>, a number 0 or higher.</td>
+<code>difference = c("unweighted", "weighted")</code>
+and
+<code>weighting = c("height difference", "crossover distance")</code>
+and <code>minDifference</code>, a number 0 or higher.</td>
 </tr>
 </tbody>
 </table>
-<p>Note that the last two models are not wrappers but custom implementations in this package. The weighting parameter specifies how the differences between classes are calculated. Either the height difference of a class’s fitted density to another class’s nearest density is used or the horizontal distance from the measurement value to the nearest position where the density of that class crosses any other class. The distances are only used if <code>difference</code> is <code>weighted</code>. <code>minDifference</code> specifies the minimum distance between densities for a feature to have a vote for a particular class. The default of 0 means that every feature votes for the class which has the highest density at that point, regardless how close the density of any other class is to it.</p>
+<p>Note that the last two models are not wrappers but custom
+implementations in this package. The weighting parameter specifies how
+the differences between classes are calculated. Either the height
+difference of a class’s fitted density to another class’s nearest
+density is used or the horizontal distance from the measurement value to
+the nearest position where the density of that class crosses any other
+class. The distances are only used if <code>difference</code> is
+<code>weighted</code>. <code>minDifference</code> specifies the minimum
+distance between densities for a feature to have a vote for a particular
+class. The default of 0 means that every feature votes for the class
+which has the highest density at that point, regardless how close the
+density of any other class is to it.</p>
   </main>
 </div>
 

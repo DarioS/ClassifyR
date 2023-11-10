@@ -8,4 +8,5 @@ vignettes/performanceEvaluation.Rmd
 vignettes/multiViewMethods.Rmd
 vignettes/incorporateNew.Rmd
 vignettes/presets.Rmd
+vignettes/survival.Rmd
 ^\.github$

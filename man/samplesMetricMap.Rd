@@ -27,8 +27,7 @@
   showXtickLabels = TRUE,
   yAxisLabel = "Analysis",
   showYtickLabels = TRUE,
-  legendSize = grid::unit(1, "lines"),
-  plot = TRUE
+  legendSize = grid::unit(1, "lines")
 )
 
 \S4method{samplesMetricMap}{matrix}(

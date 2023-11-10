@@ -88,6 +88,7 @@
 #'                   title = "Comparison")
 #' 
 #' @importFrom rlang sym
+#' @importFrom ggupset axis_combmatrix theme_combmatrix
 #' @rdname performancePlot
 #' @usage NULL
 #' @export

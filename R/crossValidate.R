@@ -152,11 +152,6 @@ setMethod("crossValidate", "DataFrame",
               
               ##!!!!! Do something with data combinations
 
-              # Initiate seed so that comparisons are comparable.
-              x <- runif(1)
-              seed <- .Random.seed[1]
-
-
               ################################
               #### No multiview
               ################################
@@ -178,7 +173,6 @@ setMethod("crossValidate", "DataFrame",
                               # Loop over classifiers
                               sapply(selectionMethod[[assayIndex]], function(selectionForAssay) {
                                   # Loop over selectors
-                                  set.seed(seed)
                                   measurementsUse <- measurements
                                   if(assayIndex != 1) measurementsUse <- measurements[, S4Vectors::mcols(measurements)[, "assay"] == assayIndex, drop = FALSE]
                                   CV(
@@ -464,13 +458,13 @@ cleanClassifier <- function(classifier, measurements, nFeatures){
     if(!is.null(names(obsFeatures)) && all(names(obsFeatures) %in% names(classifier)) & is(classifier, "character")) classifier <- as.list(classifier[names(obsFeatures)])
     
     nFeatures <- nFeatures[names(classifier)]
-    checkENs <- which(classifier == "elasticNetGLM")
+    checkENs <- which(classifier %in% c("ridgeGLM", "elasticNetGLM", "LASSOGLM"))
     if(length(checkENs) > 0)
     {
-      replacements <- sapply(checkENs, function(checkEN) ifelse(any(nFeatures[[checkEN]] == 1), "GLM", "elasticNetGLM"))
+      replacements <- sapply(checkENs, function(checkEN) ifelse(any(nFeatures[[checkEN]] == 1), "GLM", classifier[[checkEN]]))
       classifier[checkENs] <- replacements
       if(any(replacements == "GLM"))
-        warning("Elastic Net GLM requires two or more features as input but there is only one.
+        warning("Penalised GLM requires two or more features as input but there is only one.
 Using an ordinary GLM instead.")
     }
     classifier
@@ -478,13 +472,16 @@ Using an ordinary GLM instead.")
 
 generateCrossValParams <- function(nRepeats, nFolds, nCores, selectionOptimisation){
 
-    seed <- .Random.seed[1]
-
+    if(!exists(".Random.seed")) stop("Predictive modelling should always be reproducible. Please use set.seed(<number>) yourself and run 'crossValidate' again.")
+    index <- ifelse(.Random.seed[2] + 2 == length(.Random.seed), 3, 3 + .Random.seed[2]) # Right after set.seed, the second number is the length of the random integer vector.
+    seed <- .Random.seed[index] # Get current random number.
+    
+    # Set the BPparam RNGseed.
     if(nCores == 1)
     {
         BPparam <- SerialParam(RNGseed = seed)
     } else { # Parallel processing is desired.
-        # Also set the BPparam RNGseed if the user ran set.seed(someNumber) themselves.
+        
         if(Sys.info()["sysname"] == "Windows") {# Only SnowParam suits Windows.
             BPparam <- BiocParallel::SnowParam(min(nCores, BiocParallel::snowWorkers("SOCK")), RNGseed = seed)
         } else if (Sys.info()["sysname"] %in% c("MacOS", "Linux")) {

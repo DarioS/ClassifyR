@@ -18,7 +18,7 @@ created by crossValidate, runTests or runTest."><!-- mathjax --><script src="htt
     
     <a class="navbar-brand me-2" href="../index.html">ClassifyR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.5.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.7.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,8 +113,9 @@ cross-validation iteration in which the prediction was made.</p></dd>
 <dd><p>Stores the object used for defining the model building to enable future reuse.</p></dd>
 
 <dt><code>finalModel</code></dt>
-<dd><p>A model built using all of the sample for future use. For any tuning parameters, the
-most popular value of the parameter in cross-validation is used.</p></dd>
+<dd><p>A model built using all of the samples for future use. For any tuning parameters, the
+most popular value of the parameter in cross-validation is used. May be missing if some cross-validated fittings
+failed. Could be of any class, depending on the R package used to fit the model.</p></dd>
 
 
 </dl></div>
@@ -175,10 +176,9 @@ of predictions made during the cross-validation procedure.</p></dd>
 <span class="r-in"><span>  <span class="co">#{</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">asthma</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="va">classified</span> <span class="op">&lt;-</span> <span class="fu"><a href="crossValidate.html">crossValidate</a></span><span class="op">(</span><span class="va">measurements</span>, <span class="va">classes</span>, nRepeats <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in generateCrossValParams(nRepeats = nRepeats, nFolds = nFolds,     nCores = nCores, selectionOptimisation = selectionOptimisation):</span> Predictive modelling should always be reproducible. Please use set.seed(&lt;number&gt;) yourself and run 'crossValidate' again.</span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">classified</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ClassifyResult"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"package")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ClassifyR"</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'classified' not found</span>
 <span class="r-in"><span>  <span class="co">#}</span></span></span>
 <span class="r-in"><span>  </span></span>
 </code></pre></div>
