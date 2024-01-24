@@ -66,6 +66,17 @@ setMethod("prepareData", "DataFrame",
     rownames(measurements) <- paste("Sample", seq_len(nrow(measurements)))
   }
       
+  if(is.numeric(outcome))
+  {
+    if(all(outcome == round(outcome))) # Suspiciously, all outcomes are integers.
+    {
+      warning("It seems that 'outcome' should be a factor. Converting to one and continuing.")
+      outcome <- factor(outcome)
+    } else { # outcome contains decimal numbers.
+      stop("'outcome' is continuous. Regression functionality is not provided.")
+    }
+  }      
+      
   # Won't ever be true if input data was MultiAssayExperiment because wideFormat already produces valid names.  
   # Need to check if input data was DataFrame because names might not be valid from user.
   if(!all(colnames(measurements) == make.names(colnames(measurements))))

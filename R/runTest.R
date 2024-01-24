@@ -363,9 +363,14 @@ input data. Autmomatically reducing to smaller number.")
       allOutcome <- c(outcomeTrain, outcomeTest)
       names(allOutcome) <- allSamples
     }
-
+    
+    predictsTable <- S4Vectors::DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE)
+    if(!is(predictedOutcome, "tabular"))
+    {
+        if(is.factor(predictedOutcome)) colnames(predictsTable)[2] <- "class" else colnames(predictsTable)[2] <- "risk"
+    }
     ClassifyResult(characteristics, allSamples, originalFeatures, list(rankedFeatures), list(selectedFeatures),
-                   list(models), tuneDetails, S4Vectors::DataFrame(sample = rownames(measurementsTest), predictedOutcome, check.names = FALSE), allOutcome, importanceTable, modellingParams, list(models))
+                   list(models), tuneDetails, predictsTable, allOutcome, importanceTable, modellingParams, list(models))
   }  
 })
 
