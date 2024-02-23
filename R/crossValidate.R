@@ -320,7 +320,7 @@ setMethod("crossValidate", "MultiAssayExperimentOrList",
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
+                   characteristicsLabel = NULL, extraParams = NULL, verbose = 0)
           {
               # Check that data is in the right format, if not already done for MultiAssayExperiment input.
               prepParams <- list(measurements, outcome)
@@ -359,7 +359,7 @@ setMethod("crossValidate", "data.frame", # data.frame of numeric measurements.
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
+                   characteristicsLabel = NULL, extraParams = NULL, verbose = 0)
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
               crossValidate(measurements = measurements,
@@ -392,7 +392,7 @@ setMethod("crossValidate", "matrix", # Matrix of numeric measurements.
                    nFolds = 5,
                    nRepeats = 20,
                    nCores = 1,
-                   characteristicsLabel = NULL, extraParams = NULL)
+                   characteristicsLabel = NULL, extraParams = NULL, verbose = 0)
           {
               measurements <- S4Vectors::DataFrame(measurements, check.names = FALSE)
               crossValidate(measurements = measurements,
