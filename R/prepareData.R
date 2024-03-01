@@ -66,7 +66,7 @@ setMethod("prepareData", "DataFrame",
     rownames(measurements) <- paste("Sample", seq_len(nrow(measurements)))
   }
       
-  if(is.numeric(outcome))
+  if(!is(outcome, "Surv") && is.numeric(outcome))
   {
     if(all(outcome == round(outcome))) # Suspiciously, all outcomes are integers.
     {
